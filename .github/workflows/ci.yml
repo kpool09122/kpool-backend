@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, feature/** ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo, pdo_mysql, phar, tokenizer, xml, xmlreader, xmlwriter
+        tools: composer:v2
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run code style fixer
+      run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+    - name: Run PHPStan
+      run: vendor/bin/phpstan analyse
+
+    - name: Run tests
+      run: vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-html=coverage-html
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: test_db
+        DB_USERNAME: root
+        DB_PASSWORD: password
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  deploy-coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download coverage artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage-html
+        path: coverage-html
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./coverage-html
+        destination_dir: coverage

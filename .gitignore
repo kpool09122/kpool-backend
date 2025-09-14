@@ -1,0 +1,37 @@
+# Dependencies
+/vendor/
+composer.lock
+
+# IDE
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+/coverage/
+/coverage-html/
+.phpunit.result.cache
+coverage.xml
+clover.xml
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Cache
+/cache/
+/tmp/
+.php-cs-fixer.cache
+
+# Build artifacts
+/build/
+/dist/ 

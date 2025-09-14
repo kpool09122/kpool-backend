@@ -1,0 +1,43 @@
+{
+    "name": "kpool/backend",
+    "description": "PHP Project with PHPUnit",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "symfony/uid": "^7.2",
+        "laravel/framework": "^12.0",
+        "illuminate/container": "^12.0",
+        "illuminate/contracts": "^12.0",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "friendsofphp/php-cs-fixer": "^3.86",
+        "phpstan/phpstan": "^2.1",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^10.0",
+        "illuminate/console": "*",
+        "illuminate/support": "*",
+        "illuminate/database": "*",
+        "phpunit/php-code-coverage": "^11.0",
+        "calebdw/larastan": "^3.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Businesses\\": "businesses/",
+            "Application\\": "application/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "phpstan": "./vendor/bin/phpstan analyse --memory-limit=512M",
+        "test": "vendor/bin/phpunit --coverage-html coverage-html",
+        "test-no-report": "vendor/bin/phpunit"
+    }
+}
