@@ -7,7 +7,7 @@ use InvalidArgumentException;
 
 class MemberName extends StringBaseValue
 {
-    public const MAX_LENGTH = 32;
+    public const int MAX_LENGTH = 32;
 
     public function __construct(
         protected readonly string $name,
@@ -24,7 +24,7 @@ class MemberName extends StringBaseValue
         }
 
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new InvalidArgumentException('Member name cannot exceed 32 characters');
+            throw new InvalidArgumentException('Member name cannot exceed  ' . self::MAX_LENGTH . '  characters');
         }
     }
 }

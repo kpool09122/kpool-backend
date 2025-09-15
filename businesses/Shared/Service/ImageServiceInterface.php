@@ -2,7 +2,7 @@
 
 namespace Businesses\Shared\Service;
 
-use Businesses\Member\Domain\ValueObject\ImageLink;
+use Businesses\Shared\ValueObject\ImageLink;
 
 interface ImageServiceInterface
 {

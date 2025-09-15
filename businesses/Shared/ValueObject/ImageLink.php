@@ -1,6 +1,6 @@
 <?php
 
-namespace Businesses\Member\Domain\ValueObject;
+namespace Businesses\Shared\ValueObject;
 
 use Businesses\Shared\ValueObject\Foundation\StringBaseValue;
 

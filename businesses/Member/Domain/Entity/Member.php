@@ -5,9 +5,9 @@ namespace Businesses\Member\Domain\Entity;
 use Businesses\Member\Domain\ValueObject\Birthday;
 use Businesses\Member\Domain\ValueObject\Career;
 use Businesses\Member\Domain\ValueObject\GroupIdentifier;
-use Businesses\Member\Domain\ValueObject\ImageLink;
 use Businesses\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Member\Domain\ValueObject\MemberName;
+use Businesses\Shared\ValueObject\ImageLink;
 
 class Member
 {
