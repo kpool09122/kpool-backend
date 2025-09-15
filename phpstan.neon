@@ -1,0 +1,16 @@
+includes:
+    - ./vendor/calebdw/larastan/extension.neon
+parameters:
+    level: 6
+    paths:
+        - businesses
+        - tests
+    excludePaths:
+        - vendor/*
+    ignoreErrors:
+        - '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::#'
+    treatPhpDocTypesAsCertain: false
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    checkDynamicProperties: true
+    reportUnmatchedIgnoredErrors: true
