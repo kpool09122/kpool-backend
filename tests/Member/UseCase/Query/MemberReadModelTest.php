@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Member\UseCase\Query\GetMember;
+namespace Tests\Member\UseCase\Query;
 
-use Businesses\Member\UseCase\Query\GetMember\MemberReadModel;
+use Businesses\Member\UseCase\Query\MemberReadModel;
 use DateTimeImmutable;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
