@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Member\Domain\ValueObject;
+namespace Tests\Shared\ValueObject;
 
-use Businesses\Member\Domain\ValueObject\ImageLink;
+use Businesses\Shared\ValueObject\ImageLink;
 use PHPUnit\Framework\TestCase;
 
 class ImageLinkTest extends TestCase

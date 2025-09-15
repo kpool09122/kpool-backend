@@ -7,20 +7,20 @@ use InvalidArgumentException;
 
 class Career extends StringBaseValue
 {
-    public const MAX_LENGTH = 2048;
+    public const int MAX_LENGTH = 2048;
 
     public function __construct(
-        protected readonly string $name,
+        protected readonly string $text,
     ) {
-        parent::__construct($name);
-        $this->validate($name);
+        parent::__construct($text);
+        $this->validate($text);
     }
 
     protected function validate(
         string $value,
     ): void {
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new InvalidArgumentException('Member name cannot exceed 2048 characters');
+            throw new InvalidArgumentException('Member name cannot exceed ' . self::MAX_LENGTH . ' characters');
         }
     }
 }

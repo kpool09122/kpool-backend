@@ -6,8 +6,8 @@ use Businesses\Member\Domain\Entity\Member;
 use Businesses\Member\Domain\ValueObject\Birthday;
 use Businesses\Member\Domain\ValueObject\Career;
 use Businesses\Member\Domain\ValueObject\GroupIdentifier;
-use Businesses\Member\Domain\ValueObject\ImageLink;
 use Businesses\Member\Domain\ValueObject\MemberName;
+use Businesses\Shared\ValueObject\ImageLink;
 
 interface MemberFactoryInterface
 {

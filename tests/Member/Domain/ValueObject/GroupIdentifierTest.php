@@ -28,7 +28,7 @@ class GroupIdentifierTest extends TestCase
      */
     public function testValidate(): void
     {
-        $ulid = 'invlid-ulid';
+        $ulid = 'invalid-ulid';
         $this->expectException(InvalidArgumentException::class);
         new GroupIdentifier($ulid);
     }
