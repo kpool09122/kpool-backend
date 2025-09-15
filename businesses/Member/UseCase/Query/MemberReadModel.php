@@ -6,6 +6,15 @@ use DateTimeImmutable;
 
 readonly class MemberReadModel
 {
+    /**
+     * @param string $memberId
+     * @param string $name
+     * @param string $groupName
+     * @param DateTimeImmutable $birthday
+     * @param string $career
+     * @param string $imageUrl
+     * @param list<SongReadModel> $songReadModels
+     */
     public function __construct(
         private string $memberId,
         private string $name,
@@ -13,6 +22,7 @@ readonly class MemberReadModel
         private DateTimeImmutable $birthday,
         private string $career,
         private string $imageUrl,
+        private array $songReadModels,
     ) {
     }
 
@@ -47,6 +57,14 @@ readonly class MemberReadModel
     }
 
     /**
+     * @return SongReadModel[]
+     */
+    public function songReadModels(): array
+    {
+        return $this->songReadModels;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -58,6 +76,7 @@ readonly class MemberReadModel
             'birthday' => $this->birthday,
             'career' => $this->career,
             'image_url' => $this->imageUrl,
+            'songs' => array_map(static fn (SongReadModel $songReadModel) => $songReadModel->toArray(), $this->songReadModels),
         ];
     }
 }
