@@ -1,6 +1,6 @@
 <?php
 
-namespace Businesses\Member\UseCase\Query\GetMember;
+namespace Businesses\Member\UseCase\Query;
 
 use DateTimeImmutable;
 
