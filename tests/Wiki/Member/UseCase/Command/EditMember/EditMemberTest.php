@@ -55,7 +55,10 @@ class EditMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -70,7 +73,7 @@ class EditMemberTest extends TestCase
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $base64EncodedImage,
@@ -87,7 +90,7 @@ class EditMemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imageLink,
@@ -110,7 +113,7 @@ class EditMemberTest extends TestCase
         $member = $editMember->process($input);
         $this->assertSame((string)$memberIdentifier, (string)$member->memberIdentifier());
         $this->assertSame((string)$name, (string)$member->name());
-        $this->assertSame((string)$groupIdentifier, (string)$member->groupIdentifier());
+        $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
         $this->assertSame($birthday, $member->birthday());
         $this->assertSame((string)$career, (string)$member->career());
         $this->assertSame((string)$imageLink, (string)$member->imageLink());
@@ -127,7 +130,10 @@ class EditMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -142,7 +148,7 @@ class EditMemberTest extends TestCase
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $base64EncodedImage,

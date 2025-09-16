@@ -34,7 +34,7 @@ class MemberFactoryTest extends TestCase
         $memberFactory = $this->app->make(MemberFactoryInterface::class);
         $member = $memberFactory->create($name);
         $this->assertSame((string)$name, (string)$member->name());
-        $this->assertNull($member->groupIdentifier());
+        $this->assertSame([], $member->groupIdentifiers());
         $this->assertNull($member->birthday());
         $this->assertSame('', (string)$member->career());
         $this->assertNull($member->imageLink());

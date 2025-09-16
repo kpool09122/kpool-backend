@@ -25,7 +25,10 @@ class CreateMemberInputTest extends TestCase
     public function test__construct(): void
     {
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -39,14 +42,14 @@ class CreateMemberInputTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new CreateMemberInput(
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $base64EncodedImage,
             $relevantVideoLinks,
         );
         $this->assertSame((string)$name, (string)$input->name());
-        $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
+        $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($birthday, $input->birthday());
         $this->assertSame($career, $input->career());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());

@@ -12,7 +12,7 @@ class CreateMemberInput implements CreateMemberInputPort
 {
     /**
      * @param MemberName $name
-     * @param GroupIdentifier|null $groupIdentifier
+     * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
      * @param string|null $base64EncodedImage
@@ -20,7 +20,7 @@ class CreateMemberInput implements CreateMemberInputPort
      */
     public function __construct(
         private MemberName $name,
-        private ?GroupIdentifier $groupIdentifier,
+        private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
         private ?string $base64EncodedImage,
@@ -33,9 +33,12 @@ class CreateMemberInput implements CreateMemberInputPort
         return $this->name;
     }
 
-    public function groupIdentifier(): ?GroupIdentifier
+    /**
+     * @return GroupIdentifier[]
+     */
+    public function groupIdentifiers(): array
     {
-        return $this->groupIdentifier;
+        return $this->groupIdentifiers;
     }
 
     public function birthday(): ?Birthday

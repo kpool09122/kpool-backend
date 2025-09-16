@@ -22,7 +22,7 @@ readonly class MemberFactory implements MemberFactoryInterface
         return new Member(
             new MemberIdentifier($this->ulidGenerator->generate()),
             $name,
-            null,
+            [],
             null,
             new Career(''),
             null,
