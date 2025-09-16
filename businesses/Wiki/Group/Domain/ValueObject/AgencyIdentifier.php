@@ -6,7 +6,7 @@ use Businesses\Shared\Service\Ulid\UlidValidator;
 use Businesses\Shared\ValueObject\Foundation\StringBaseValue;
 use InvalidArgumentException;
 
-class CompanyIdentifier extends StringBaseValue
+class AgencyIdentifier extends StringBaseValue
 {
     public function __construct(
         protected readonly string $id,

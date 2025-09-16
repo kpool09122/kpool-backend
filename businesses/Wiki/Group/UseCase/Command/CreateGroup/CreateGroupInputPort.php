@@ -2,7 +2,7 @@
 
 namespace Businesses\Wiki\Group\UseCase\Command\CreateGroup;
 
-use Businesses\Wiki\Group\Domain\ValueObject\CompanyIdentifier;
+use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
 use Businesses\Wiki\Group\Domain\ValueObject\SongIdentifier;
@@ -11,7 +11,7 @@ interface CreateGroupInputPort
 {
     public function name(): GroupName;
 
-    public function companyIdentifier(): CompanyIdentifier;
+    public function agencyIdentifier(): AgencyIdentifier;
 
     public function description(): Description;
 

@@ -29,7 +29,7 @@ class EditGroup implements EditGroupInterface
         }
 
         $group->setName($input->name());
-        $group->setCompanyIdentifier($input->companyIdentifier());
+        $group->setAgencyIdentifier($input->agencyIdentifier());
         $group->setDescription($input->description());
         $group->setSongIdentifiers($input->songIdentifiers());
         if ($input->base64EncodedImage()) {

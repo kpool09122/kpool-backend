@@ -2,7 +2,7 @@
 
 namespace Businesses\Wiki\Group\UseCase\Command\CreateGroup;
 
-use Businesses\Wiki\Group\Domain\ValueObject\CompanyIdentifier;
+use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
 use Businesses\Wiki\Group\Domain\ValueObject\SongIdentifier;
@@ -11,17 +11,17 @@ readonly class CreateGroupInput implements CreateGroupInputPort
 {
     /**
      * @param GroupName $name
-     * @param CompanyIdentifier $companyIdentifier
+     * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
      * @param string|null $base64EncodedImage
      */
     public function __construct(
-        private GroupName $name,
-        private CompanyIdentifier $companyIdentifier,
-        private Description $description,
-        private array $songIdentifiers,
-        private ?string $base64EncodedImage,
+        private GroupName        $name,
+        private AgencyIdentifier $agencyIdentifier,
+        private Description      $description,
+        private array            $songIdentifiers,
+        private ?string          $base64EncodedImage,
     ) {
     }
 
@@ -30,9 +30,9 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         return $this->name;
     }
 
-    public function companyIdentifier(): CompanyIdentifier
+    public function agencyIdentifier(): AgencyIdentifier
     {
-        return $this->companyIdentifier;
+        return $this->agencyIdentifier;
     }
 
     public function description(): Description

@@ -2,7 +2,7 @@
 
 namespace Tests\Wiki\Group\Domain\ValueObject;
 
-use Businesses\Wiki\Group\Domain\ValueObject\CompanyIdentifier;
+use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Tests\Helper\StrTestHelper;
@@ -17,7 +17,7 @@ class CompanyIdentifierTest extends TestCase
     public function test__construct(): void
     {
         $ulid = StrTestHelper::generateUlid();
-        $companyIdentifier = new CompanyIdentifier($ulid);
+        $companyIdentifier = new AgencyIdentifier($ulid);
         $this->assertSame($ulid, (string)$companyIdentifier);
     }
 
@@ -30,6 +30,6 @@ class CompanyIdentifierTest extends TestCase
     {
         $ulid = 'invalid-ulid';
         $this->expectException(InvalidArgumentException::class);
-        new CompanyIdentifier($ulid);
+        new AgencyIdentifier($ulid);
     }
 }

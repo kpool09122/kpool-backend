@@ -7,7 +7,7 @@ readonly class GroupReadModel
     /**
      * @param string $groupId
      * @param string $name
-     * @param string $companyName
+     * @param string $agencyName
      * @param string $description
      * @param string $imageUrl
      * @param list<SongReadModel> $songReadModels
@@ -15,10 +15,10 @@ readonly class GroupReadModel
     public function __construct(
         private string $groupId,
         private string $name,
-        private string $companyName,
+        private string $agencyName,
         private string $description,
         private string $imageUrl,
-        private array $songReadModels,
+        private array  $songReadModels,
     ) {
     }
 
@@ -32,9 +32,9 @@ readonly class GroupReadModel
         return $this->name;
     }
 
-    public function companyName(): string
+    public function agencyName(): string
     {
-        return $this->companyName;
+        return $this->agencyName;
     }
 
     public function description(): string
@@ -63,7 +63,7 @@ readonly class GroupReadModel
         return [
             'group_id' => $this->groupId,
             'name' => $this->name,
-            'company_name' => $this->companyName,
+            'company_name' => $this->agencyName,
             'description' => $this->description,
             'image_url' => $this->imageUrl,
             'songs' => array_map(static fn (SongReadModel $songReadModel) => $songReadModel->toArray(), $this->songReadModels),

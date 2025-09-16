@@ -20,7 +20,7 @@ class Description extends StringBaseValue
         string $value,
     ): void {
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new InvalidArgumentException('Member name cannot exceed ' . self::MAX_LENGTH . ' characters');
+            throw new InvalidArgumentException('Description cannot exceed ' . self::MAX_LENGTH . ' characters');
         }
     }
 }

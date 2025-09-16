@@ -2,6 +2,8 @@
 
 namespace Application\Providers\Wiki;
 
+use Businesses\Wiki\Agency\Domain\Factory\AgencyFactory;
+use Businesses\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Businesses\Wiki\Group\Domain\Factory\GroupFactory;
 use Businesses\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Businesses\Wiki\Member\Domain\Factory\MemberFactory;
@@ -17,5 +19,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(MemberFactoryInterface::class, MemberFactory::class);
         $this->app->singleton(GroupFactoryInterface::class, GroupFactory::class);
         $this->app->singleton(SongFactoryInterface::class, SongFactory::class);
+        $this->app->singleton(AgencyFactoryInterface::class, AgencyFactory::class);
     }
 }

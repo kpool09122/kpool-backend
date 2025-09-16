@@ -2,6 +2,10 @@
 
 namespace Application\Providers\Wiki;
 
+use Businesses\Wiki\Agency\UseCase\Command\CreateAgency\CreateAgency;
+use Businesses\Wiki\Agency\UseCase\Command\CreateAgency\CreateAgencyInterface;
+use Businesses\Wiki\Agency\UseCase\Command\EditAgency\EditAgency;
+use Businesses\Wiki\Agency\UseCase\Command\EditAgency\EditAgencyInterface;
 use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroup;
 use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroupInterface;
 use Businesses\Wiki\Group\UseCase\Command\EditGroup\EditGroup;
@@ -26,5 +30,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(EditGroupInterface::class, EditGroup::class);
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
         $this->app->singleton(EditSongInterface::class, EditSong::class);
+        $this->app->singleton(CreateAgencyInterface::class, CreateAgency::class);
+        $this->app->singleton(EditAgencyInterface::class, EditAgency::class);
     }
 }
