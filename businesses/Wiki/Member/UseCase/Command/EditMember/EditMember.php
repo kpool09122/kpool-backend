@@ -17,10 +17,10 @@ readonly class EditMember implements EditMemberInterface
 
     /**
      * @param EditMemberInputPort $input
-     * @return ?Member
+     * @return Member
      * @throws MemberNotFoundException
      */
-    public function process(EditMemberInputPort $input): ?Member
+    public function process(EditMemberInputPort $input): Member
     {
         $member = $this->memberRepository->findById($input->memberIdentifier());
 
@@ -40,6 +40,6 @@ readonly class EditMember implements EditMemberInterface
 
         $this->memberRepository->save($member);
 
-        return $this->memberRepository->findById($input->memberIdentifier());
+        return $member;
     }
 }

@@ -57,7 +57,7 @@ class MemberTest extends TestCase
         $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
         $this->assertSame((string)$career, (string)$member->career());
         $this->assertSame((string)$imagePath, (string)$member->imageLink());
-        $this->assertSame([(string)$link1, (string)$link2, (string)$link3], $member->relevantVideoLinks()->toString());
+        $this->assertSame([(string)$link1, (string)$link2, (string)$link3], $member->relevantVideoLinks()->toStringArray());
     }
 
     /**

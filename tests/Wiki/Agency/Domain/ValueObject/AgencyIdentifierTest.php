@@ -2,7 +2,7 @@
 
 namespace Tests\Wiki\Agency\Domain\ValueObject;
 
-use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
+use Businesses\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Tests\Helper\StrTestHelper;

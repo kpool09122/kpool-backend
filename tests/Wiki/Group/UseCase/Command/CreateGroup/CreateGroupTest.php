@@ -95,10 +95,6 @@ class CreateGroupTest extends TestCase
             ->once()
             ->with($group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($groupIdentifier)
-            ->andReturn($group);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);

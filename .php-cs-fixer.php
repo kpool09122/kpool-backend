@@ -3,6 +3,7 @@
 $finder = PhpCsFixer\Finder::create()
     ->in([
         __DIR__ . '/businesses',
+        __DIR__ . '/application',
         __DIR__ . '/tests',
     ])
     ->exclude('vendor');

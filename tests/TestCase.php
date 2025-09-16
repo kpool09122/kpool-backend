@@ -18,6 +18,8 @@ abstract class TestCase extends OrchestraTestCase
             \Application\Providers\Wiki\DomainServiceProvider::class,
             \Application\Providers\Wiki\UseCaseServiceProvider::class,
             \Application\Providers\SharedServiceProvider::class,
+            \Application\Providers\SiteManagement\DomainServiceProvider::class,
+            \Application\Providers\SiteManagement\UseCaseServiceProvider::class,
         ];
     }
 

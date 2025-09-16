@@ -24,7 +24,7 @@ class RelevantVideoLinksTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $this->assertSame($externalContentLinks, $relevantVideoLinks->links());
         $this->assertSame(3, $relevantVideoLinks->count());
-        $this->assertSame([(string)$link1, (string)$link2, (string)$link3], $relevantVideoLinks->toString());
+        $this->assertSame([(string)$link1, (string)$link2, (string)$link3], $relevantVideoLinks->toStringArray());
     }
 
     /**
@@ -39,7 +39,7 @@ class RelevantVideoLinksTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLink);
         $this->assertSame($externalContentLink, $relevantVideoLinks->links());
         $this->assertSame(0, $relevantVideoLinks->count());
-        $this->assertSame([], $relevantVideoLinks->toString());
+        $this->assertSame([], $relevantVideoLinks->toStringArray());
     }
 
     /**
@@ -64,5 +64,37 @@ class RelevantVideoLinksTest extends TestCase
             new ExternalContentLink('https://example11.youtube.com/watch?v=dQw4w9WgXcQ'),
         ];
         new RelevantVideoLinks($externalContentLinks);
+    }
+
+    /**
+     * 正常系: 文字列配列からRelevantVideoLinksを正しく作成できること.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testFromStringArray(): void
+    {
+        $array = [
+            'https://example.youtube.com/watch?v=dQw4w9WgXcQ',
+            'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',
+            'https://example3.youtube.com/watch?v=dQw4w9WgXcQ',
+            'https://example4.youtube.com/watch?v=dQw4w9WgXcQ',
+            'https://example5.youtube.com/watch?v=dQw4w9WgXcQ',
+            'https://example6.youtube.com/watch?v=dQw4w9WgXcQ',
+        ];
+        $relevantVideoLinks = RelevantVideoLinks::formStringArray($array);
+        $this->assertSame($array, $relevantVideoLinks->toStringArray());
+    }
+
+    /**
+     * 正常系: 空配列の場合もfromStringArrayでRelevantVideoLinksを正しく作成できること.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testFromStringArrayWhenEmpty(): void
+    {
+        $relevantVideoLinks = RelevantVideoLinks::formStringArray([]);
+        $this->assertSame([], $relevantVideoLinks->toStringArray());
     }
 }

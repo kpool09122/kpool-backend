@@ -14,7 +14,7 @@ class CreateAgency implements CreateAgencyInterface
     ) {
     }
 
-    public function process(CreateAgencyInputPort $input): ?Agency
+    public function process(CreateAgencyInputPort $input): Agency
     {
         $agency = $this->agencyFactory->create($input->name());
         $agency->setCEO($input->CEO());
@@ -25,6 +25,6 @@ class CreateAgency implements CreateAgencyInterface
 
         $this->agencyRepository->save($agency);
 
-        return $this->agencyRepository->findById($agency->agencyIdentifier());
+        return $agency;
     }
 }

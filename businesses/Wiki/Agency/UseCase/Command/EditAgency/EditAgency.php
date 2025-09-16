@@ -15,10 +15,10 @@ class EditAgency implements EditAgencyInterface
 
     /**
      * @param EditAgencyInputPort $input
-     * @return Agency|null
+     * @return Agency
      * @throws AgencyNotFoundException
      */
-    public function process(EditAgencyInputPort $input): ?Agency
+    public function process(EditAgencyInputPort $input): Agency
     {
         $agency = $this->agencyRepository->findById($input->agencyIdentifier());
 
@@ -35,6 +35,6 @@ class EditAgency implements EditAgencyInterface
 
         $this->agencyRepository->save($agency);
 
-        return $this->agencyRepository->findById($agency->agencyIdentifier());
+        return $agency;
     }
 }

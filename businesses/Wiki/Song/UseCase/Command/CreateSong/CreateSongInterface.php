@@ -6,5 +6,5 @@ use Businesses\Wiki\Song\Domain\Entity\Song;
 
 interface CreateSongInterface
 {
-    public function process(CreateSongInputPort $input): ?Song;
+    public function process(CreateSongInputPort $input): Song;
 }

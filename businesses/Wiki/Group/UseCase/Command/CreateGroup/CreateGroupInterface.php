@@ -6,5 +6,5 @@ use Businesses\Wiki\Group\Domain\Entity\Group;
 
 interface CreateGroupInterface
 {
-    public function process(CreateGroupInputPort $input): ?Group;
+    public function process(CreateGroupInputPort $input): Group;
 }

@@ -6,5 +6,5 @@ use Businesses\Wiki\Agency\Domain\Entity\Agency;
 
 interface CreateAgencyInterface
 {
-    public function process(CreateAgencyInputPort $input): ?Agency;
+    public function process(CreateAgencyInputPort $input): Agency;
 }

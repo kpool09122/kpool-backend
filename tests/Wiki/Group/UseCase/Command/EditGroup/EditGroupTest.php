@@ -92,7 +92,7 @@ class EditGroupTest extends TestCase
             ->with($group)
             ->andReturn(null);
         $groupRepository->shouldReceive('findById')
-            ->twice()
+            ->once()
             ->with($groupIdentifier)
             ->andReturn($group);
 

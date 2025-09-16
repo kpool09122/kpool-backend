@@ -106,10 +106,6 @@ class CreateMemberTest extends TestCase
             ->once()
             ->with($member)
             ->andReturn(null);
-        $memberRepository->shouldReceive('findById')
-            ->once()
-            ->with($memberIdentifier)
-            ->andReturn($member);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(MemberFactoryInterface::class, $memberFactory);

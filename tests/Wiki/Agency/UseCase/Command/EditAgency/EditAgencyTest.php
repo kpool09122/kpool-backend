@@ -83,13 +83,13 @@ class EditAgencyTest extends TestCase
             ->with($agency)
             ->andReturn(null);
         $agencyRepository->shouldReceive('findById')
-            ->twice()
+            ->once()
             ->with($agencyIdentifier)
             ->andReturn($agency);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $editGroup = $this->app->make(EditAgencyInterface::class);
-        $agency = $editGroup->process($input);
+        $editAgency = $this->app->make(EditAgencyInterface::class);
+        $agency = $editAgency->process($input);
         $this->assertSame((string)$agencyIdentifier, (string)$agency->agencyIdentifier());
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame((string)$CEO, (string)$agency->CEO());
@@ -138,7 +138,7 @@ class EditAgencyTest extends TestCase
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->expectException(AgencyNotFoundException::class);
-        $editGroup = $this->app->make(EditAgencyInterface::class);
-        $editGroup->process($input);
+        $editAgency = $this->app->make(EditAgencyInterface::class);
+        $editAgency->process($input);
     }
 }
