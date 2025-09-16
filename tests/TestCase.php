@@ -15,8 +15,8 @@ abstract class TestCase extends OrchestraTestCase
     protected function getPackageProviders($app): array
     {
         return [
-            \Application\Providers\DomainServiceProvider::class,
-            \Application\Providers\UseCaseServiceProvider::class,
+            \Application\Providers\Wiki\DomainServiceProvider::class,
+            \Application\Providers\Wiki\UseCaseServiceProvider::class,
             \Application\Providers\SharedServiceProvider::class,
         ];
     }

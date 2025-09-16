@@ -1,0 +1,24 @@
+<?php
+
+namespace Businesses\Shared\ValueObject;
+
+use Businesses\Shared\ValueObject\Foundation\StringBaseValue;
+use InvalidArgumentException;
+
+class ExternalContentLink extends StringBaseValue
+{
+    public function __construct(
+        protected readonly string $uri,
+    ) {
+        parent::__construct($uri);
+        $this->validate($uri);
+    }
+
+    protected function validate(
+        string $value,
+    ): void {
+        if (! str_starts_with($value, 'https://') || ! filter_var($value, FILTER_VALIDATE_URL)) {
+            throw new InvalidArgumentException("The URI '{$value}' is not a valid URL.");
+        }
+    }
+}

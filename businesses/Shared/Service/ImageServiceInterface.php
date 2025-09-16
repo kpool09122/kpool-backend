@@ -2,9 +2,9 @@
 
 namespace Businesses\Shared\Service;
 
-use Businesses\Shared\ValueObject\ImageLink;
+use Businesses\Shared\ValueObject\ImagePath;
 
 interface ImageServiceInterface
 {
-    public function upload(string $base64EncodedImage): ImageLink;
+    public function upload(string $base64EncodedImage): ImagePath;
 }
