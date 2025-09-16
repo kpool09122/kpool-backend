@@ -3,14 +3,17 @@
 namespace Tests\Wiki\Member\UseCase\Command\EditMember;
 
 use Businesses\Shared\Service\ImageServiceInterface;
+use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
 use Businesses\Wiki\Member\Domain\Entity\Member;
+use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Businesses\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMember;
 use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMemberInput;
 use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMemberInterface;
@@ -46,6 +49,7 @@ class EditMemberTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
+     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testProcess(): void
     {
@@ -58,6 +62,11 @@ class EditMemberTest extends TestCase
 2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
 지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
@@ -65,6 +74,7 @@ class EditMemberTest extends TestCase
             $birthday,
             $career,
             $base64EncodedImage,
+            $relevantVideoLinks,
         );
 
         $imageLink = new ImagePath('/resources/public/images/before.webp');
@@ -81,6 +91,7 @@ class EditMemberTest extends TestCase
             $birthday,
             $career,
             $imageLink,
+            $relevantVideoLinks,
         );
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
@@ -110,6 +121,7 @@ class EditMemberTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testWhenNotFoundMember(): void
     {
@@ -122,6 +134,11 @@ class EditMemberTest extends TestCase
 2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
 지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
@@ -129,6 +146,7 @@ class EditMemberTest extends TestCase
             $birthday,
             $career,
             $base64EncodedImage,
+            $relevantVideoLinks,
         );
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);

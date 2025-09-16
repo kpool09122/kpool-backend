@@ -8,16 +8,27 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 class Member
 {
+    /**
+     * @param MemberIdentifier $memberIdentifier
+     * @param MemberName $name
+     * @param GroupIdentifier|null $groupIdentifier
+     * @param Birthday|null $birthday
+     * @param Career $career
+     * @param ImagePath|null $imageLink
+     * @param RelevantVideoLinks $relevantVideoLinks
+     */
     public function __construct(
         private readonly MemberIdentifier $memberIdentifier,
-        private MemberName                $name,
-        private ?GroupIdentifier          $groupIdentifier,
-        private ?Birthday                 $birthday,
-        private Career                    $career,
-        private ?ImagePath                $imageLink,
+        private MemberName $name,
+        private ?GroupIdentifier $groupIdentifier,
+        private ?Birthday $birthday,
+        private Career $career,
+        private ?ImagePath $imageLink,
+        private RelevantVideoLinks $relevantVideoLinks,
     ) {
     }
 
@@ -74,5 +85,27 @@ class Member
     public function setImageLink(?ImagePath $imageLink): void
     {
         $this->imageLink = $imageLink;
+    }
+
+    /**
+     * @return RelevantVideoLinks
+     */
+    public function relevantVideoLinks(): RelevantVideoLinks
+    {
+        return $this->relevantVideoLinks;
+    }
+
+    public function relevantVideoLinksObject(): RelevantVideoLinks
+    {
+        return $this->relevantVideoLinks;
+    }
+
+    /**
+     * @param RelevantVideoLinks $relevantVideoLinks
+     * @return void
+     */
+    public function setRelevantVideoLinks(RelevantVideoLinks $relevantVideoLinks): void
+    {
+        $this->relevantVideoLinks = $relevantVideoLinks;
     }
 }

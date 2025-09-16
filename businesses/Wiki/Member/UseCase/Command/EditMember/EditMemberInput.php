@@ -7,6 +7,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 readonly class EditMemberInput implements EditMemberInputPort
 {
@@ -17,6 +18,7 @@ readonly class EditMemberInput implements EditMemberInputPort
         private ?Birthday $birthday,
         private Career $career,
         private ?string $base64EncodedImage,
+        private RelevantVideoLinks $relevantVideoLinks,
     ) {
     }
 
@@ -48,5 +50,10 @@ readonly class EditMemberInput implements EditMemberInputPort
     public function base64EncodedImage(): ?string
     {
         return $this->base64EncodedImage;
+    }
+
+    public function relevantVideoLinks(): RelevantVideoLinks
+    {
+        return $this->relevantVideoLinks;
     }
 }
