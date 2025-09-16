@@ -95,11 +95,6 @@ class Member
         return $this->relevantVideoLinks;
     }
 
-    public function relevantVideoLinksObject(): RelevantVideoLinks
-    {
-        return $this->relevantVideoLinks;
-    }
-
     /**
      * @param RelevantVideoLinks $relevantVideoLinks
      * @return void

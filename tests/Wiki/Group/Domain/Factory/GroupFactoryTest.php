@@ -36,7 +36,7 @@ class GroupFactoryTest extends TestCase
         $group = $groupFactory->create($name);
         $this->assertTrue(UlidValidator::isValid((string)$group->groupIdentifier()));
         $this->assertSame((string)$name, (string)$group->name());
-        $this->assertNull($group->companyIdentifier());
+        $this->assertNull($group->agencyIdentifier());
         $this->assertSame('', (string)$group->description());
         $this->assertSame([], $group->songIdentifiers());
         $this->assertNull($group->imageLink());

@@ -3,7 +3,7 @@
 namespace Businesses\Wiki\Group\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ImagePath;
-use Businesses\Wiki\Group\Domain\ValueObject\CompanyIdentifier;
+use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
@@ -14,7 +14,7 @@ class Group
     /**
      * @param GroupIdentifier $groupIdentifier
      * @param GroupName $name
-     * @param CompanyIdentifier|null $companyIdentifier
+     * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
      * @param ImagePath|null $imageLink
@@ -22,7 +22,7 @@ class Group
     public function __construct(
         private readonly GroupIdentifier $groupIdentifier,
         private GroupName                $name,
-        private ?CompanyIdentifier       $companyIdentifier,
+        private ?AgencyIdentifier        $agencyIdentifier,
         private Description              $description,
         private array                    $songIdentifiers,
         private ?ImagePath               $imageLink,
@@ -44,14 +44,14 @@ class Group
         $this->name = $name;
     }
 
-    public function companyIdentifier(): ?CompanyIdentifier
+    public function agencyIdentifier(): ?AgencyIdentifier
     {
-        return $this->companyIdentifier;
+        return $this->agencyIdentifier;
     }
 
-    public function setCompanyIdentifier(?CompanyIdentifier $companyIdentifier): void
+    public function setAgencyIdentifier(?AgencyIdentifier $agencyIdentifier): void
     {
-        $this->companyIdentifier = $companyIdentifier;
+        $this->agencyIdentifier = $agencyIdentifier;
     }
 
     public function description(): Description

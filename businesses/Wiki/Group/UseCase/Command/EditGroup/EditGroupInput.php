@@ -2,7 +2,7 @@
 
 namespace Businesses\Wiki\Group\UseCase\Command\EditGroup;
 
-use Businesses\Wiki\Group\Domain\ValueObject\CompanyIdentifier;
+use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
@@ -13,18 +13,18 @@ readonly class EditGroupInput implements EditGroupInputPort
     /**
      * @param GroupIdentifier $groupIdentifier
      * @param GroupName $name
-     * @param CompanyIdentifier $companyIdentifier
+     * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
      * @param string|null $base64EncodedImage
      */
     public function __construct(
-        private GroupIdentifier $groupIdentifier,
-        private GroupName $name,
-        private CompanyIdentifier $companyIdentifier,
-        private Description $description,
-        private array $songIdentifiers,
-        private ?string $base64EncodedImage,
+        private GroupIdentifier  $groupIdentifier,
+        private GroupName        $name,
+        private AgencyIdentifier $agencyIdentifier,
+        private Description      $description,
+        private array            $songIdentifiers,
+        private ?string          $base64EncodedImage,
     ) {
     }
 
@@ -38,9 +38,9 @@ readonly class EditGroupInput implements EditGroupInputPort
         return $this->name;
     }
 
-    public function companyIdentifier(): CompanyIdentifier
+    public function agencyIdentifier(): AgencyIdentifier
     {
-        return $this->companyIdentifier;
+        return $this->agencyIdentifier;
     }
 
     public function description(): Description

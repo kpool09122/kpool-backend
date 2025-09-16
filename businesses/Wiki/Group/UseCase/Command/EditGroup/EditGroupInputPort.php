@@ -2,7 +2,7 @@
 
 namespace Businesses\Wiki\Group\UseCase\Command\EditGroup;
 
-use Businesses\Wiki\Group\Domain\ValueObject\CompanyIdentifier;
+use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
@@ -14,7 +14,7 @@ interface EditGroupInputPort
 
     public function name(): GroupName;
 
-    public function companyIdentifier(): CompanyIdentifier;
+    public function agencyIdentifier(): AgencyIdentifier;
 
     public function description(): Description;
 
