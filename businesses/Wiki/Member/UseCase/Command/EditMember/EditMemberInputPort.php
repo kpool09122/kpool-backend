@@ -7,6 +7,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 interface EditMemberInputPort
 {
@@ -21,4 +22,6 @@ interface EditMemberInputPort
     public function career(): ?Career;
 
     public function base64EncodedImage(): ?string;
+
+    public function relevantVideoLinks(): RelevantVideoLinks;
 }

@@ -6,6 +6,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 interface CreateMemberInputPort
 {
@@ -18,4 +19,6 @@ interface CreateMemberInputPort
     public function career(): Career;
 
     public function base64EncodedImage(): ?string;
+
+    public function relevantVideoLinks(): RelevantVideoLinks;
 }

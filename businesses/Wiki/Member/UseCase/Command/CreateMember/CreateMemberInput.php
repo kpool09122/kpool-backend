@@ -6,15 +6,25 @@ use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 class CreateMemberInput implements CreateMemberInputPort
 {
+    /**
+     * @param MemberName $name
+     * @param GroupIdentifier|null $groupIdentifier
+     * @param Birthday|null $birthday
+     * @param Career $career
+     * @param string|null $base64EncodedImage
+     * @param RelevantVideoLinks $relevantVideoLinks
+     */
     public function __construct(
         private MemberName $name,
         private ?GroupIdentifier $groupIdentifier,
         private ?Birthday $birthday,
         private Career $career,
         private ?string $base64EncodedImage,
+        private RelevantVideoLinks $relevantVideoLinks,
     ) {
     }
 
@@ -41,5 +51,10 @@ class CreateMemberInput implements CreateMemberInputPort
     public function base64EncodedImage(): ?string
     {
         return $this->base64EncodedImage;
+    }
+
+    public function relevantVideoLinks(): RelevantVideoLinks
+    {
+        return $this->relevantVideoLinks;
     }
 }

@@ -36,6 +36,7 @@ readonly class EditMember implements EditMemberInterface
             $imageLink = $this->imageService->upload($input->base64EncodedImage());
             $member->setImageLink($imageLink);
         }
+        $member->setRelevantVideoLinks($input->relevantVideoLinks());
 
         $this->memberRepository->save($member);
 

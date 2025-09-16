@@ -10,7 +10,7 @@ use Businesses\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 class CreateMember implements CreateMemberInterface
 {
     public function __construct(
-        private MemberFactoryInterface    $memberFactory,
+        private MemberFactoryInterface $memberFactory,
         private MemberRepositoryInterface $memberRepository,
         private ImageServiceInterface $imageService,
     ) {
@@ -26,6 +26,7 @@ class CreateMember implements CreateMemberInterface
             $imageLink = $this->imageService->upload($input->base64EncodedImage());
             $member->setImageLink($imageLink);
         }
+        $member->setRelevantVideoLinks($input->relevantVideoLinks());
 
         $this->memberRepository->save($member);
 

@@ -7,8 +7,9 @@ use Businesses\Wiki\Member\Domain\Entity\Member;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
-class MemberFactory implements MemberFactoryInterface
+readonly class MemberFactory implements MemberFactoryInterface
 {
     public function __construct(
         private UlidGeneratorInterface $ulidGenerator,
@@ -25,6 +26,7 @@ class MemberFactory implements MemberFactoryInterface
             null,
             new Career(''),
             null,
+            new RelevantVideoLinks([]),
         );
     }
 }
