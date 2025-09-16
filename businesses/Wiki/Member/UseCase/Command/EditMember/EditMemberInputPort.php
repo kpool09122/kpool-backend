@@ -15,7 +15,10 @@ interface EditMemberInputPort
 
     public function name(): MemberName;
 
-    public function groupIdentifier(): ?GroupIdentifier;
+    /**
+     * @return GroupIdentifier[]
+     */
+    public function groupIdentifiers(): array;
 
     public function birthday(): ?Birthday;
 

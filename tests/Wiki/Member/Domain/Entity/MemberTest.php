@@ -28,7 +28,10 @@ class MemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -42,7 +45,7 @@ class MemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imagePath,
@@ -51,7 +54,7 @@ class MemberTest extends TestCase
         $this->assertSame((string)$memberIdentifier, (string)$member->memberIdentifier());
         $this->assertSame((string)$name, (string)$member->name());
         $this->assertSame((string)$birthday, (string)$member->birthday());
-        $this->assertSame((string)$groupIdentifier, (string)$member->groupIdentifier());
+        $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
         $this->assertSame((string)$career, (string)$member->career());
         $this->assertSame((string)$imagePath, (string)$member->imageLink());
         $this->assertSame([(string)$link1, (string)$link2, (string)$link3], $member->relevantVideoLinks()->toString());
@@ -67,7 +70,10 @@ class MemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -81,7 +87,7 @@ class MemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imagePath,
@@ -105,7 +111,10 @@ class MemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -119,21 +128,25 @@ class MemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imagePath,
             $relevantVideoLinks,
         );
-        $this->assertSame((string)$groupIdentifier, (string)$member->groupIdentifier());
+        $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
 
-        $newGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $member->setGroupIdentifier($newGroupIdentifier);
-        $this->assertNotSame((string)$groupIdentifier, (string)$member->groupIdentifier());
-        $this->assertSame((string)$newGroupIdentifier, (string)$member->groupIdentifier());
+        $newGroupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $member->setGroupIdentifiers($newGroupIdentifiers);
+        $this->assertNotSame($groupIdentifiers, $member->groupIdentifiers());
+        $this->assertSame($newGroupIdentifiers, $member->groupIdentifiers());
 
-        $member->setGroupIdentifier(null);
-        $this->assertNull($member->groupIdentifier());
+        $member->setGroupIdentifiers([]);
+        $this->assertEmpty($member->groupIdentifiers());
     }
 
     /**
@@ -146,7 +159,10 @@ class MemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -160,7 +176,7 @@ class MemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imagePath,
@@ -184,7 +200,10 @@ class MemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -198,7 +217,7 @@ class MemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imagePath,
@@ -226,7 +245,10 @@ class MemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -240,7 +262,7 @@ class MemberTest extends TestCase
         $member = new Member(
             $memberIdentifier,
             $name,
-            $groupIdentifier,
+            $groupIdentifiers,
             $birthday,
             $career,
             $imagePath,

@@ -11,10 +11,19 @@ use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 readonly class EditMemberInput implements EditMemberInputPort
 {
+    /**
+     * @param MemberIdentifier $memberIdentifier
+     * @param MemberName $name
+     * @param GroupIdentifier[] $groupIdentifiers
+     * @param Birthday|null $birthday
+     * @param Career $career
+     * @param string|null $base64EncodedImage
+     * @param RelevantVideoLinks $relevantVideoLinks
+     */
     public function __construct(
         private MemberIdentifier $memberIdentifier,
         private MemberName $name,
-        private ?GroupIdentifier $groupIdentifier,
+        private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
         private ?string $base64EncodedImage,
@@ -32,9 +41,12 @@ readonly class EditMemberInput implements EditMemberInputPort
         return $this->name;
     }
 
-    public function groupIdentifier(): ?GroupIdentifier
+    /**
+     * @return GroupIdentifier[]
+     */
+    public function groupIdentifiers(): array
     {
-        return $this->groupIdentifier;
+        return $this->groupIdentifiers;
     }
 
     public function birthday(): ?Birthday

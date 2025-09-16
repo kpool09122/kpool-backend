@@ -15,7 +15,7 @@ class Member
     /**
      * @param MemberIdentifier $memberIdentifier
      * @param MemberName $name
-     * @param GroupIdentifier|null $groupIdentifier
+     * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
      * @param ImagePath|null $imageLink
@@ -24,7 +24,7 @@ class Member
     public function __construct(
         private readonly MemberIdentifier $memberIdentifier,
         private MemberName $name,
-        private ?GroupIdentifier $groupIdentifier,
+        private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
         private ?ImagePath $imageLink,
@@ -47,14 +47,21 @@ class Member
         $this->name = $name;
     }
 
-    public function groupIdentifier(): ?GroupIdentifier
+    /**
+     * @return GroupIdentifier[]
+     */
+    public function groupIdentifiers(): array
     {
-        return $this->groupIdentifier;
+        return $this->groupIdentifiers;
     }
 
-    public function setGroupIdentifier(?GroupIdentifier $groupIdentifier): void
+    /**
+     * @param GroupIdentifier[] $groupIdentifiers
+     * @return void
+     */
+    public function setGroupIdentifiers(array $groupIdentifiers): void
     {
-        $this->groupIdentifier = $groupIdentifier;
+        $this->groupIdentifiers = $groupIdentifiers;
     }
 
     public function birthday(): ?Birthday

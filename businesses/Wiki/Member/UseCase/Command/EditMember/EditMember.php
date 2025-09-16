@@ -29,7 +29,7 @@ readonly class EditMember implements EditMemberInterface
         }
 
         $member->setName($input->name());
-        $member->setGroupIdentifier($input->groupIdentifier());
+        $member->setGroupIdentifiers($input->groupIdentifiers());
         $member->setBirthday($input->birthday());
         $member->setCareer($input->career());
         if ($input->base64EncodedImage()) {
