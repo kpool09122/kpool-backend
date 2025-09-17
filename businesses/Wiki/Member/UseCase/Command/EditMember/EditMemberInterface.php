@@ -9,8 +9,8 @@ interface EditMemberInterface
 {
     /**
      * @param EditMemberInputPort $input
-     * @return ?Member
+     * @return Member
      * @throws MemberNotFoundException
      */
-    public function process(EditMemberInputPort $input): ?Member;
+    public function process(EditMemberInputPort $input): Member;
 }

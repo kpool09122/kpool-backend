@@ -16,7 +16,7 @@ class CreateGroup implements CreateGroupInterface
     ) {
     }
 
-    public function process(CreateGroupInputPort $input): ?Group
+    public function process(CreateGroupInputPort $input): Group
     {
         $group = $this->groupFactory->create($input->name());
         $group->setAgencyIdentifier($input->agencyIdentifier());
@@ -29,6 +29,6 @@ class CreateGroup implements CreateGroupInterface
 
         $this->groupRepository->save($group);
 
-        return $this->groupRepository->findById($group->groupIdentifier());
+        return $group;
     }
 }

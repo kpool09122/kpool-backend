@@ -9,8 +9,8 @@ interface EditAgencyInterface
 {
     /**
      * @param EditAgencyInputPort $input
-     * @return Agency|null
+     * @return Agency
      * @throws AgencyNotFoundException
      */
-    public function process(EditAgencyInputPort $input): ?Agency;
+    public function process(EditAgencyInputPort $input): Agency;
 }

@@ -103,7 +103,7 @@ class EditMemberTest extends TestCase
             ->with($member)
             ->andReturn(null);
         $memberRepository->shouldReceive('findById')
-            ->twice()
+            ->once()
             ->with($memberIdentifier)
             ->andReturn($member);
 

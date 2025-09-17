@@ -86,10 +86,6 @@ class CreateAgencyTest extends TestCase
             ->once()
             ->with($agency)
             ->andReturn(null);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($agencyIdentifier)
-            ->andReturn($agency);
 
         $this->app->instance(AgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);

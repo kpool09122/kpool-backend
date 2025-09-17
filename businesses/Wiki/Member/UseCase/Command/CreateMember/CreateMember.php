@@ -16,7 +16,7 @@ class CreateMember implements CreateMemberInterface
     ) {
     }
 
-    public function process(CreateMemberInputPort $input): ?Member
+    public function process(CreateMemberInputPort $input): Member
     {
         $member = $this->memberFactory->create($input->name());
         $member->setGroupIdentifiers($input->groupIdentifiers());
@@ -30,6 +30,6 @@ class CreateMember implements CreateMemberInterface
 
         $this->memberRepository->save($member);
 
-        return $this->memberRepository->findById($member->memberIdentifier());
+        return $member;
     }
 }

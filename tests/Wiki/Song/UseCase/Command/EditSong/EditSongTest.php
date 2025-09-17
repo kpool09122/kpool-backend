@@ -101,7 +101,7 @@ class EditSongTest extends TestCase
             ->with($song)
             ->andReturn(null);
         $songRepository->shouldReceive('findById')
-            ->twice()
+            ->once()
             ->with($songIdentifier)
             ->andReturn($song);
 

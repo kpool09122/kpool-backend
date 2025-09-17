@@ -2,7 +2,6 @@
 
 namespace Tests\Wiki\Agency\Domain\ValueObject;
 
-use Businesses\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Businesses\Wiki\Agency\Domain\ValueObject\CEO;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -42,6 +41,6 @@ class CEOTest extends TestCase
     public function testExceedMaxChars(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new AgencyName(StrTestHelper::generateStr(AgencyName::MAX_LENGTH + 1));
+        new CEO(StrTestHelper::generateStr(CEO::MAX_LENGTH + 1));
     }
 }

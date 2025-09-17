@@ -30,7 +30,7 @@ class RelevantVideoLinks
     /**
      * @return string[]
      */
-    public function toString(): array
+    public function toStringArray(): array
     {
         if ($this->count() === 0) {
             return [];
@@ -49,7 +49,7 @@ class RelevantVideoLinks
      * @return RelevantVideoLinks
      * @throws ExceedMaxRelevantVideoLinksException
      */
-    public static function formArray(array $array): RelevantVideoLinks
+    public static function formStringArray(array $array): RelevantVideoLinks
     {
         if (count($array) === 0) {
             return new RelevantVideoLinks([]);

@@ -6,5 +6,5 @@ use Businesses\Wiki\Member\Domain\Entity\Member;
 
 interface CreateMemberInterface
 {
-    public function process(CreateMemberInputPort $input): ?Member;
+    public function process(CreateMemberInputPort $input): Member;
 }

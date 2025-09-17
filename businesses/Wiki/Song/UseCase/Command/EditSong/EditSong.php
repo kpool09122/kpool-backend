@@ -17,10 +17,10 @@ class EditSong implements EditSongInterface
 
     /**
      * @param EditSongInputPort $input
-     * @return Song|null
+     * @return Song
      * @throws SongNotFoundException
      */
-    public function process(EditSongInputPort $input): ?Song
+    public function process(EditSongInputPort $input): Song
     {
         $song = $this->songRepository->findById($input->songIdentifier());
 
@@ -46,6 +46,6 @@ class EditSong implements EditSongInterface
 
         $this->songRepository->save($song);
 
-        return $this->songRepository->findById($song->songIdentifier());
+        return $song;
     }
 }

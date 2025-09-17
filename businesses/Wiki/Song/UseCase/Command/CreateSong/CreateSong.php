@@ -16,7 +16,7 @@ readonly class CreateSong implements CreateSongInterface
     ) {
     }
 
-    public function process(CreateSongInputPort $input): ?Song
+    public function process(CreateSongInputPort $input): Song
     {
         $song = $this->songFactory->create($input->name());
         $song->setBelongIdentifiers($input->belongIdentifiers());
@@ -36,6 +36,6 @@ readonly class CreateSong implements CreateSongInterface
 
         $this->songRepository->save($song);
 
-        return $this->songRepository->findById($song->songIdentifier());
+        return $song;
     }
 }

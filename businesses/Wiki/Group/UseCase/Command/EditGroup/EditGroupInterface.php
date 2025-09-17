@@ -9,8 +9,8 @@ interface EditGroupInterface
 {
     /**
      * @param EditGroupInputPort $input
-     * @return Group|null
+     * @return Group
      * @throws GroupNotFoundException
      */
-    public function process(EditGroupInputPort $input): ?Group;
+    public function process(EditGroupInputPort $input): Group;
 }

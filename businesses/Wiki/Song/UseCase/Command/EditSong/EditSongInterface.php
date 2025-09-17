@@ -9,8 +9,8 @@ interface EditSongInterface
 {
     /**
      * @param EditSongInputPort $input
-     * @return Song|null
+     * @return Song
      * @throws SongNotFoundException
      */
-    public function process(EditSongInputPort $input): ?Song;
+    public function process(EditSongInputPort $input): Song;
 }

@@ -104,10 +104,6 @@ class CreateSongTest extends TestCase
             ->once()
             ->with($song)
             ->andReturn(null);
-        $songRepository->shouldReceive('findById')
-            ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
