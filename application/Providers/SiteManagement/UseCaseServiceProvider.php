@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Application\Providers\SiteManagement;
 
 use Businesses\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement\CreateAnnouncement;

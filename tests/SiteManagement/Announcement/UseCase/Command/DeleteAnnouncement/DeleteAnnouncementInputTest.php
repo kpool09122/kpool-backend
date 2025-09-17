@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\SiteManagement\Announcement\UseCase\Command\DeleteAnnouncement;
 
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;

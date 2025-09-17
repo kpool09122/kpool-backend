@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\Shared\ValueObject;
 
 use Businesses\Shared\ValueObject\Foundation\StringBaseValue;

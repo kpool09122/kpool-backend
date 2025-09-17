@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Application\Providers\SiteManagement;
 
 use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\Wiki\Member\UseCase\Command\CreateMember;
 
 use Businesses\Wiki\Member\Domain\Entity\Member;

@@ -35,5 +35,6 @@ return $config
             'keep_multiple_spaces_after_comma' => true,
         ],
         'single_trait_insert_per_statement' => true,
+        'declare_strict_types' => true,
     ])
     ->setFinder($finder); 

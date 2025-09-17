@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\Wiki\Group\Domain\Repository;
 
 use Businesses\Wiki\Group\Domain\Entity\Group;

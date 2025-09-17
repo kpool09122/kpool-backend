@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\Wiki\Song\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\SiteManagement\Announcement\UseCase\Query\GetAnnouncements;
 
 use Businesses\SiteManagement\Announcement\UseCase\Query\AnnouncementReadModel;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\Wiki\Group\UseCase\Query\GetGroups;
 
 use Businesses\Wiki\Group\UseCase\Query\GroupReadModel;

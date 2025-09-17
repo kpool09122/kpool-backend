@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Group\UseCase\Query;
 
 use Businesses\Wiki\Group\UseCase\Query\SongReadModel;

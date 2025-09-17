@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Member\UseCase\Command\EditMember;
 
 use Businesses\Shared\Service\ImageServiceInterface;

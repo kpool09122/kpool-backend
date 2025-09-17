@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Agency\Domain\ValueObject;
 
 use Businesses\Wiki\Agency\Domain\ValueObject\CEO;

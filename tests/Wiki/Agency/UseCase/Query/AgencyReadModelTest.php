@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Agency\UseCase\Query;
 
 use Businesses\Wiki\Agency\UseCase\Query\AgencyReadModel;

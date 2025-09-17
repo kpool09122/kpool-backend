@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\SiteManagement\Contact\Domain\ValueObject;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;

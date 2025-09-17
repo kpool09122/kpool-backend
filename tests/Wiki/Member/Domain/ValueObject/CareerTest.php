@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Member\Domain\ValueObject;
 
 use Businesses\Wiki\Member\Domain\ValueObject\Career;

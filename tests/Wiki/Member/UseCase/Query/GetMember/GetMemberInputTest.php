@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Member\UseCase\Query\GetMember;
 
 use Businesses\Shared\ValueObject\Translation;

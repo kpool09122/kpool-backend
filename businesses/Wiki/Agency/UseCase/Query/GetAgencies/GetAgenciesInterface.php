@@ -1,14 +1,16 @@
 <?php
 
-namespace Businesses\Wiki\Agency\UseCase\Query\GetAgencies;
+declare(strict_types=1);
 
-use Businesses\Wiki\Agency\UseCase\Query\AgencyReadModel;
+namespace Businesses\Wiki\Agency\UseCase\Query\GetAgencies;
 
 interface GetAgenciesInterface
 {
     /**
      * @param GetAgenciesInputPort $input
-     * @return list<AgencyReadModel>
+     * @param GetAgenciesOutputPort $output
+     * @return void
+     * @throws \DateMalformedStringException
      */
-    public function process(GetAgenciesInputPort $input): array;
+    public function process(GetAgenciesInputPort $input, GetAgenciesOutputPort $output): void;
 }

@@ -1,5 +1,5 @@
 # PHPUnit and Database Commands
-.PHONY: test test-no-db check db-up db-down db-restart db-logs db-shell wait-for-test-db
+.PHONY: test test-no-db check db-up db-down db-restart db-logs db-shell wait-for-test-db cs-fix phpstan
 
 PHPUNIT=./vendor/bin/phpunit
 
@@ -11,7 +11,11 @@ wait-for-test-db: ## Wait for testing database to be ready
 	@echo "Waiting for testing database to be ready..."
 	@sleep 5
 
-test: ## Run all PHPUnit tests (DB tests + non-DB tests). Usage: `make test [filter=TestClassName] [keepdb=1]`
+# Run code style fix, static analysis, and all tests in sequence
+check: cs-fix phpstan test ## Run code style fix, static analysis, and all tests
+
+# Run all PHPUnit tests (DB tests + non-DB tests). Usage: `make test [filter=TestClassName] [keepdb=1]`
+test:
 	docker-compose up -d testing_db
 	$(MAKE) wait-for-test-db
 	@set -e; \
@@ -19,19 +23,12 @@ test: ## Run all PHPUnit tests (DB tests + non-DB tests). Usage: `make test [fil
 	      docker-compose rm -v -f testing_db)" EXIT; \
 	$(call DOCKER_RUN, $(PHPUNIT) $(if $(filter),--filter=$(filter)) --coverage-html coverage-html)
 
-test-no-db: ## Run PHPUnit tests excluding 'useDb' group. Usage: `make test-no-db [filter=TestClassName]`
+# Run PHPUnit tests excluding 'useDb' group. Usage: `make test-no-db [filter=TestClassName]`
+test-no-db:
 	docker-compose stop testing_db 2>/dev/null || true
 	@set -e; \
 	trap "" EXIT; \
 	$(call DOCKER_RUN, $(PHPUNIT) $(if $(filter),--filter=$(filter)) --exclude-group useDb --coverage-html coverage-html)
-
-check: ## Run code style fix, static analysis, and all tests
-	@echo "Running code style fix..."
-	$(MAKE) cs-fix
-	@echo "Running static analysis..."
-	$(MAKE) phpstan
-	@echo "Running all tests..."
-	$(MAKE) test
 
 # PostgreSQL Database Commands (Testing)
 db-up: ## Start PostgreSQL testing service

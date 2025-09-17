@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Group\UseCase\Command\EditGroup;
 
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;

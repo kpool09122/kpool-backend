@@ -12,6 +12,7 @@
         <include>
             <directory>businesses</directory>
             <directory>application/Shared</directory>
+            <directory>application/Adapters</directory>
         </include>
     </source>
     <coverage>
