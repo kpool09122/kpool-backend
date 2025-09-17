@@ -7,6 +7,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 readonly class EditMemberInput implements EditMemberInputPort
@@ -14,6 +15,7 @@ readonly class EditMemberInput implements EditMemberInputPort
     /**
      * @param MemberIdentifier $memberIdentifier
      * @param MemberName $name
+     * @param RealName $realName
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
@@ -23,6 +25,7 @@ readonly class EditMemberInput implements EditMemberInputPort
     public function __construct(
         private MemberIdentifier $memberIdentifier,
         private MemberName $name,
+        private RealName $realName,
         private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
@@ -39,6 +42,11 @@ readonly class EditMemberInput implements EditMemberInputPort
     public function name(): MemberName
     {
         return $this->name;
+    }
+
+    public function realName(): RealName
+    {
+        return $this->realName;
     }
 
     /**

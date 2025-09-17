@@ -29,6 +29,7 @@ readonly class EditMember implements EditMemberInterface
         }
 
         $member->setName($input->name());
+        $member->setRealName($input->realName());
         $member->setGroupIdentifiers($input->groupIdentifiers());
         $member->setBirthday($input->birthday());
         $member->setCareer($input->career());

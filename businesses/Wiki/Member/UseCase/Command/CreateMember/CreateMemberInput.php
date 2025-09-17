@@ -7,6 +7,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 readonly class CreateMemberInput implements CreateMemberInputPort
@@ -14,6 +15,7 @@ readonly class CreateMemberInput implements CreateMemberInputPort
     /**
      * @param Translation $translation
      * @param MemberName $name
+     * @param RealName $realName
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
@@ -23,6 +25,7 @@ readonly class CreateMemberInput implements CreateMemberInputPort
     public function __construct(
         private Translation $translation,
         private MemberName $name,
+        private RealName $realName,
         private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
@@ -39,6 +42,11 @@ readonly class CreateMemberInput implements CreateMemberInputPort
     public function name(): MemberName
     {
         return $this->name;
+    }
+
+    public function realName(): RealName
+    {
+        return $this->realName;
     }
 
     /**

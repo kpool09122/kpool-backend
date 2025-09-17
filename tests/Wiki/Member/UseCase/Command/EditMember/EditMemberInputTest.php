@@ -9,6 +9,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMemberInput;
 use DateTimeImmutable;
@@ -27,6 +28,7 @@ class EditMemberInputTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
+        $realName = new RealName('손채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -45,6 +47,7 @@ class EditMemberInputTest extends TestCase
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
+            $realName,
             $groupIdentifiers,
             $birthday,
             $career,
@@ -53,6 +56,7 @@ class EditMemberInputTest extends TestCase
         );
         $this->assertSame((string)$memberIdentifier, (string)$input->memberIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
+        $this->assertSame((string)$realName, (string)$input->realName());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($birthday, $input->birthday());
         $this->assertSame($career, $input->career());

@@ -19,6 +19,7 @@ class MemberReadModelTest extends TestCase
     {
         $memberId = StrTestHelper::generateUlid();
         $name = '채영';
+        $realName = '손채영';
         $groupNames = ['TWICE', 'MISAMO'];
         $birthday = new DateTimeImmutable('1994-01-01');
         $career = '### **경력 소개 예시**
@@ -44,6 +45,7 @@ class MemberReadModelTest extends TestCase
         $readModel = new MemberReadModel(
             $memberId,
             $name,
+            $realName,
             $groupNames,
             $birthday,
             $career,
@@ -52,6 +54,7 @@ class MemberReadModelTest extends TestCase
         );
         $this->assertSame($memberId, $readModel->memberId());
         $this->assertSame($name, $readModel->name());
+        $this->assertSame($realName, $readModel->realName());
         $this->assertSame($groupNames, $readModel->groupNames());
         $this->assertSame($birthday, $readModel->birthday());
         $this->assertSame($career, $readModel->career());
@@ -60,6 +63,7 @@ class MemberReadModelTest extends TestCase
         $this->assertSame([
             'member_id' => $memberId,
             'name' => $name,
+            'real_name' => $realName,
             'group_name' => $groupNames,
             'birthday' => $birthday,
             'career' => $career,
