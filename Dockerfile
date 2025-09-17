@@ -3,9 +3,10 @@ FROM php:8.4-cli
 # 必要なパッケージのインストール
 RUN apt-get update && apt-get install -y \
     libzip-dev \
+    libpq-dev \
     zip \
     unzip \
-    && docker-php-ext-install zip
+    && docker-php-ext-install zip pdo pdo_pgsql
 
 # PCOVのインストール（軽量なコードカバレッジドライバー）
 RUN pecl install pcov \

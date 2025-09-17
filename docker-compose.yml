@@ -3,4 +3,36 @@ services:
     build: .
     volumes:
       - .:/var/www/html
-    working_dir: /var/www/html 
+    working_dir: /var/www/html
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=testing_db
+      - DB_PORT=5432
+      - DB_DATABASE=kpool
+      - DB_USERNAME=kpool
+      - DB_PASSWORD=secret
+    depends_on:
+      - testing_db
+    networks:
+      - kpool-network
+
+  testing_db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kpool
+      POSTGRES_USER: kpool
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - testing_db_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kpool-network
+
+volumes:
+  testing_db_data:
+
+networks:
+  kpool-network:
+    driver: bridge 
