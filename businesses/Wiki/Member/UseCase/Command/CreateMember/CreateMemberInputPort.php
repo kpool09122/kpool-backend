@@ -7,6 +7,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 interface CreateMemberInputPort
@@ -14,6 +15,8 @@ interface CreateMemberInputPort
     public function translation(): Translation;
 
     public function name(): MemberName;
+
+    public function realName(): RealName;
 
     /**
      * @return GroupIdentifier[]

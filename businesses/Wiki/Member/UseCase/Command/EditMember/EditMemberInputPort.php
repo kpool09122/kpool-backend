@@ -7,6 +7,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 interface EditMemberInputPort
@@ -14,6 +15,8 @@ interface EditMemberInputPort
     public function memberIdentifier(): MemberIdentifier;
 
     public function name(): MemberName;
+
+    public function realName(): RealName;
 
     /**
      * @return GroupIdentifier[]

@@ -14,6 +14,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMember;
 use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMemberInput;
@@ -57,6 +58,7 @@ class EditMemberTest extends TestCase
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
+        $realName = new RealName('손채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -75,6 +77,7 @@ class EditMemberTest extends TestCase
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
+            $realName,
             $groupIdentifiers,
             $birthday,
             $career,
@@ -93,6 +96,7 @@ class EditMemberTest extends TestCase
             $memberIdentifier,
             $translation,
             $name,
+            $realName,
             $groupIdentifiers,
             $birthday,
             $career,
@@ -117,6 +121,7 @@ class EditMemberTest extends TestCase
         $this->assertSame((string)$memberIdentifier, (string)$member->memberIdentifier());
         $this->assertSame($translation->value, $member->translation()->value);
         $this->assertSame((string)$name, (string)$member->name());
+        $this->assertSame((string)$realName, (string)$member->realName());
         $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
         $this->assertSame($birthday, $member->birthday());
         $this->assertSame((string)$career, (string)$member->career());
@@ -134,6 +139,7 @@ class EditMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $name = new MemberName('채영');
+        $realName = new RealName('손채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -152,6 +158,7 @@ class EditMemberTest extends TestCase
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
+            $realName,
             $groupIdentifiers,
             $birthday,
             $career,

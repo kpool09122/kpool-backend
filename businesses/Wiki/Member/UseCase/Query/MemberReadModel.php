@@ -9,6 +9,7 @@ readonly class MemberReadModel
     /**
      * @param string $memberId
      * @param string $name
+     * @param string $realName
      * @param string[] $groupNames
      * @param DateTimeImmutable $birthday
      * @param string $career
@@ -18,6 +19,7 @@ readonly class MemberReadModel
     public function __construct(
         private string $memberId,
         private string $name,
+        private string $realName,
         private array $groupNames,
         private DateTimeImmutable $birthday,
         private string $career,
@@ -34,6 +36,11 @@ readonly class MemberReadModel
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function realName(): string
+    {
+        return $this->realName;
     }
 
     /**
@@ -75,6 +82,7 @@ readonly class MemberReadModel
         return [
             'member_id' => $this->memberId,
             'name' => $this->name,
+            'real_name' => $this->realName,
             'group_name' => $this->groupNames,
             'birthday' => $this->birthday,
             'career' => $this->career,

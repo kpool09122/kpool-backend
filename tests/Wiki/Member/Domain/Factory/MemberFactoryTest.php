@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Member\Domain\Factory;
 
 use Businesses\Shared\ValueObject\Translation;
+use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Businesses\Wiki\Member\Domain\Factory\MemberFactory;
 use Businesses\Wiki\Member\Domain\Factory\MemberFactoryInterface;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
@@ -28,6 +29,7 @@ class MemberFactoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testCreate(): void
     {
@@ -37,6 +39,7 @@ class MemberFactoryTest extends TestCase
         $member = $memberFactory->create($translation, $name);
         $this->assertSame($translation->value, $member->translation()->value);
         $this->assertSame((string)$name, (string)$member->name());
+        $this->assertSame('', (string)$member->realName());
         $this->assertSame([], $member->groupIdentifiers());
         $this->assertNull($member->birthday());
         $this->assertSame('', (string)$member->career());

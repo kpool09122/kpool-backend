@@ -9,6 +9,7 @@ use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
+use Businesses\Wiki\Member\Domain\ValueObject\RealName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 class Member
@@ -26,6 +27,7 @@ class Member
         private readonly MemberIdentifier $memberIdentifier,
         private readonly Translation $translation,
         private MemberName $name,
+        private RealName $realName,
         private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
@@ -52,6 +54,16 @@ class Member
     public function setName(MemberName $name): void
     {
         $this->name = $name;
+    }
+
+    public function realName(): RealName
+    {
+        return $this->realName;
+    }
+
+    public function setRealName(RealName $realName): void
+    {
+        $this->realName = $realName;
     }
 
     /**
