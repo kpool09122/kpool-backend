@@ -2,6 +2,7 @@
 
 namespace Businesses\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
@@ -16,11 +17,17 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
      * @param PublishedDate $publishedDate
      */
     public function __construct(
+        private Translation $translation,
         private Category $category,
         private Title $title,
         private Content $content,
         private PublishedDate $publishedDate,
     ) {
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function category(): Category

@@ -14,7 +14,7 @@ readonly class EditAgencyInput implements EditAgencyInputPort
      * @param AgencyIdentifier $agencyIdentifier
      * @param AgencyName $name
      * @param CEO $CEO
-     * @param FoundedIn $foundedIn
+     * @param ?FoundedIn $foundedIn
      * @param Description $description
      */
     public function __construct(

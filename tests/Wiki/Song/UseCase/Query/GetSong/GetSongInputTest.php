@@ -2,6 +2,7 @@
 
 namespace Tests\Wiki\Song\UseCase\Query\GetSong;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Businesses\Wiki\Song\UseCase\Query\GetSong\GetSongInput;
 use Tests\Helper\StrTestHelper;
@@ -17,7 +18,9 @@ class GetSongInputTest extends TestCase
     public function test__construct(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $input = new GetSongInput($songIdentifier);
+        $translation = Translation::KOREAN;
+        $input = new GetSongInput($songIdentifier, $translation);
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
+        $this->assertSame($translation->value, $input->translation()->value);
     }
 }

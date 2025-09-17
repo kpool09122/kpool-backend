@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Agency\UseCase\Command\CreateAgency;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Agency\Domain\Entity\Agency;
 use Businesses\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Businesses\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
@@ -44,6 +45,7 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcess(): void
     {
+        $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -61,6 +63,7 @@ class CreateAgencyTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $input = new CreateAgencyInput(
+            $translation,
             $name,
             $CEO,
             $foundedIn,
@@ -70,6 +73,7 @@ class CreateAgencyTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $agency = new Agency(
             $agencyIdentifier,
+            $translation,
             $name,
             $CEO,
             $foundedIn,
@@ -78,7 +82,7 @@ class CreateAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($name)
+            ->with($translation, $name)
             ->andReturn($agency);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -92,6 +96,7 @@ class CreateAgencyTest extends TestCase
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $agency = $createAgency->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$agency->agencyIdentifier()));
+        $this->assertSame($translation->value, $agency->translation()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame((string)$CEO, (string)$agency->CEO());
         $this->assertSame($foundedIn->value(), $agency->foundedIn()->value());

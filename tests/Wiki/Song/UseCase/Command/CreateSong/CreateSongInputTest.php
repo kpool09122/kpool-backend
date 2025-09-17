@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Song\UseCase\Command\CreateSong;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Businesses\Wiki\Song\Domain\ValueObject\Composer;
 use Businesses\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -24,6 +25,7 @@ class CreateSongInputTest extends TestCase
     public function test__construct(): void
     {
         $name = new SongName('TT');
+        $translation = Translation::KOREAN;
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -35,6 +37,7 @@ class CreateSongInputTest extends TestCase
         $base64EncodedCoverImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $input = new CreateSongInput(
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -44,6 +47,7 @@ class CreateSongInputTest extends TestCase
             $base64EncodedCoverImage,
             $musicVideoLink
         );
+        $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame($belongIdentifiers, $input->belongIdentifiers());
         $this->assertSame((string)$lyricist, (string)$input->lyricist());

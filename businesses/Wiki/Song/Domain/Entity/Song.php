@@ -4,6 +4,7 @@ namespace Businesses\Wiki\Song\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Businesses\Wiki\Song\Domain\ValueObject\Composer;
 use Businesses\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -16,6 +17,7 @@ class Song
 {
     /**
      * @param SongIdentifier $songIdentifier
+     * @param Translation $translation
      * @param SongName $name
      * @param list<BelongIdentifier> $belongIdentifiers
      * @param Lyricist $lyricist
@@ -26,20 +28,26 @@ class Song
      */
     public function __construct(
         private readonly SongIdentifier $songIdentifier,
-        private SongName                $name,
-        private array                   $belongIdentifiers,
-        private Lyricist                $lyricist,
-        private Composer                $composer,
-        private ?ReleaseDate            $releaseDate,
-        private Overview                $overView,
-        private ?ImagePath              $coverImagePath,
-        private ?ExternalContentLink    $musicVideoLink,
+        private readonly Translation $translation,
+        private SongName $name,
+        private array $belongIdentifiers,
+        private Lyricist $lyricist,
+        private Composer $composer,
+        private ?ReleaseDate $releaseDate,
+        private Overview $overView,
+        private ?ImagePath $coverImagePath,
+        private ?ExternalContentLink $musicVideoLink,
     ) {
     }
 
     public function songIdentifier(): songIdentifier
     {
         return $this->songIdentifier;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): SongName

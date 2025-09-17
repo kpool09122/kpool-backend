@@ -25,14 +25,14 @@ readonly class EditSongInput implements EditSongInputPort
      * @param ?ExternalContentLink $musicVideoLink
      */
     public function __construct(
-        private SongIdentifier       $songIdentifier,
-        private SongName             $name,
-        private array                $belongIdentifiers,
-        private Lyricist             $lyricist,
-        private Composer             $composer,
-        private ?ReleaseDate         $releaseDate,
-        private Overview             $overview,
-        private ?string              $base64EncodedCoverImage,
+        private SongIdentifier $songIdentifier,
+        private SongName $name,
+        private array $belongIdentifiers,
+        private Lyricist $lyricist,
+        private Composer $composer,
+        private ?ReleaseDate $releaseDate,
+        private Overview $overview,
+        private ?string $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
     ) {
     }

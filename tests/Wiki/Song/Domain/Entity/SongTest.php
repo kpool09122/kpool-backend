@@ -4,6 +4,7 @@ namespace Tests\Wiki\Song\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\Entity\Song;
 use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Businesses\Wiki\Song\Domain\ValueObject\Composer;
@@ -26,6 +27,7 @@ class SongTest extends TestCase
     public function test__construct(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -39,6 +41,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -49,6 +52,7 @@ class SongTest extends TestCase
             $musicVideoLink,
         );
         $this->assertSame((string)$songIdentifier, (string)$song->songIdentifier());
+        $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertSame($belongIdentifiers, $song->belongIdentifiers());
         $this->assertSame((string)$lyricist, (string)$song->lyricist());
@@ -66,6 +70,7 @@ class SongTest extends TestCase
     public function testSetName(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -79,6 +84,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -104,6 +110,7 @@ class SongTest extends TestCase
     public function testSetBelongIdentifiers(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -117,6 +124,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -149,6 +157,7 @@ class SongTest extends TestCase
     public function testSetLyricist(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -162,6 +171,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -187,6 +197,7 @@ class SongTest extends TestCase
     public function testSetComposer(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -200,6 +211,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -225,6 +237,7 @@ class SongTest extends TestCase
     public function testSetReleaseDate(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -238,6 +251,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -263,6 +277,7 @@ class SongTest extends TestCase
     public function testSetOverView(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -276,6 +291,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -301,6 +317,7 @@ class SongTest extends TestCase
     public function testSetImageLink(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -314,6 +331,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -340,6 +358,7 @@ class SongTest extends TestCase
     public function testSetMusicVideoLink(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -353,6 +372,7 @@ class SongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,

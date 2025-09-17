@@ -2,16 +2,14 @@
 
 namespace Businesses\Wiki\Group\Domain\Factory;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\Entity\Group;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
 
 interface GroupFactoryInterface
 {
-    /**
-     * @param GroupName $name
-     * @return Group
-     */
     public function create(
-        GroupName          $name,
+        Translation $translation,
+        GroupName $name,
     ): Group;
 }

@@ -3,6 +3,7 @@
 namespace Tests\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Businesses\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
@@ -45,6 +46,7 @@ class CreateAnnouncementTest extends TestCase
      */
     public function testProcess(): void
     {
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -71,6 +73,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new CreateAnnouncementInput(
+            $translation,
             $category,
             $title,
             $content,
@@ -80,6 +83,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,
@@ -88,7 +92,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
         $announcementFactory->shouldReceive('create')
             ->once()
-            ->with($category, $title, $content, $publishedDate)
+            ->with($translation, $category, $title, $content, $publishedDate)
             ->andReturn($announcement);
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
@@ -102,6 +106,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
         $announcement = $createAnnouncement->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$announcement->announcementIdentifier()));
+        $this->assertSame($translation->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());

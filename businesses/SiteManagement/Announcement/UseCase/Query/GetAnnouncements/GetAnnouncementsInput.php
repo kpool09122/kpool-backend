@@ -2,6 +2,8 @@
 
 namespace Businesses\SiteManagement\Announcement\UseCase\Query\GetAnnouncements;
 
+use Businesses\Shared\ValueObject\Translation;
+
 readonly class GetAnnouncementsInput implements GetAnnouncementsInputPort
 {
     public function __construct(
@@ -9,6 +11,7 @@ readonly class GetAnnouncementsInput implements GetAnnouncementsInputPort
         private string $order,
         private string $sort,
         private string $searchWords,
+        private Translation $translation,
     ) {
     }
 
@@ -30,5 +33,10 @@ readonly class GetAnnouncementsInput implements GetAnnouncementsInputPort
     public function searchWords(): string
     {
         return $this->searchWords;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 }

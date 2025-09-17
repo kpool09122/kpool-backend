@@ -18,7 +18,10 @@ class CreateGroup implements CreateGroupInterface
 
     public function process(CreateGroupInputPort $input): Group
     {
-        $group = $this->groupFactory->create($input->name());
+        $group = $this->groupFactory->create(
+            $input->translation(),
+            $input->name(),
+        );
         $group->setAgencyIdentifier($input->agencyIdentifier());
         $group->setDescription($input->description());
         $group->setSongIdentifiers($input->songIdentifiers());

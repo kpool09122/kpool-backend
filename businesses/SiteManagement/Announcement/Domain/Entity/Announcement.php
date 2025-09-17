@@ -2,6 +2,7 @@
 
 namespace Businesses\SiteManagement\Announcement\Domain\Entity;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Content;
@@ -11,7 +12,8 @@ use Businesses\SiteManagement\Announcement\Domain\ValueObject\Title;
 class Announcement
 {
     public function __construct(
-        private AnnouncementIdentifier $announcementIdentifier,
+        private readonly AnnouncementIdentifier $announcementIdentifier,
+        private readonly Translation $translation,
         private Category $category,
         private Title $title,
         private Content $content,
@@ -22,6 +24,11 @@ class Announcement
     public function announcementIdentifier(): AnnouncementIdentifier
     {
         return $this->announcementIdentifier;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function category(): Category

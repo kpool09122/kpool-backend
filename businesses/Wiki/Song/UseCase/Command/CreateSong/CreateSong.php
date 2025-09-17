@@ -18,7 +18,7 @@ readonly class CreateSong implements CreateSongInterface
 
     public function process(CreateSongInputPort $input): Song
     {
-        $song = $this->songFactory->create($input->name());
+        $song = $this->songFactory->create($input->translation(), $input->name());
         $song->setBelongIdentifiers($input->belongIdentifiers());
         $song->setLyricist($input->lyricist());
         $song->setComposer($input->composer());

@@ -2,15 +2,17 @@
 
 namespace Businesses\Wiki\Member\UseCase\Command\CreateMember;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
 use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
-class CreateMemberInput implements CreateMemberInputPort
+readonly class CreateMemberInput implements CreateMemberInputPort
 {
     /**
+     * @param Translation $translation
      * @param MemberName $name
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
@@ -19,6 +21,7 @@ class CreateMemberInput implements CreateMemberInputPort
      * @param RelevantVideoLinks $relevantVideoLinks
      */
     public function __construct(
+        private Translation $translation,
         private MemberName $name,
         private array $groupIdentifiers,
         private ?Birthday $birthday,
@@ -26,6 +29,11 @@ class CreateMemberInput implements CreateMemberInputPort
         private ?string $base64EncodedImage,
         private RelevantVideoLinks $relevantVideoLinks,
     ) {
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): MemberName

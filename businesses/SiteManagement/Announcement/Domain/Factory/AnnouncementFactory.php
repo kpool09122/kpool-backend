@@ -3,6 +3,7 @@
 namespace Businesses\SiteManagement\Announcement\Domain\Factory;
 
 use Businesses\Shared\Service\Ulid\UlidGeneratorInterface;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -18,6 +19,7 @@ class AnnouncementFactory implements AnnouncementFactoryInterface
     }
 
     public function create(
+        Translation $translation,
         Category $category,
         Title $title,
         Content $content,
@@ -25,6 +27,7 @@ class AnnouncementFactory implements AnnouncementFactoryInterface
     ): Announcement {
         return new Announcement(
             new AnnouncementIdentifier($this->ulidGenerator->generate()),
+            $translation,
             $category,
             $title,
             $content,

@@ -2,6 +2,7 @@
 
 namespace Tests\SiteManagement\Announcement\UseCase\Query\GetAnnouncement;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Businesses\SiteManagement\Announcement\UseCase\Query\GetAnnouncement\GetAnnouncementInput;
 use Tests\Helper\StrTestHelper;
@@ -17,7 +18,9 @@ class GetAnnouncementInputTest extends TestCase
     public function test__construct(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $input = new GetAnnouncementInput($announcementIdentifier);
+        $translation = Translation::JAPANESE;
+        $input = new GetAnnouncementInput($announcementIdentifier, $translation);
         $this->assertSame((string)$announcementIdentifier, (string)$input->announcementIdentifier());
+        $this->assertSame($translation->value, $input->translation()->value);
     }
 }

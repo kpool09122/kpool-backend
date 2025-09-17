@@ -4,6 +4,7 @@ namespace Tests\Wiki\Group\UseCase\Command\EditGroup;
 
 use Businesses\Shared\Service\ImageServiceInterface;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\Entity\Group;
 use Businesses\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -49,6 +50,7 @@ class EditGroupTest extends TestCase
     public function testProcess(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -79,6 +81,7 @@ class EditGroupTest extends TestCase
 
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -101,6 +104,7 @@ class EditGroupTest extends TestCase
         $editGroup = $this->app->make(EditGroupInterface::class);
         $group = $editGroup->process($input);
         $this->assertSame((string)$groupIdentifier, (string)$group->groupIdentifier());
+        $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$companyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());

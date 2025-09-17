@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Member\UseCase\Command\CreateMember;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
@@ -24,6 +25,7 @@ class CreateMemberInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -41,6 +43,7 @@ class CreateMemberInputTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new CreateMemberInput(
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -48,6 +51,7 @@ class CreateMemberInputTest extends TestCase
             $base64EncodedImage,
             $relevantVideoLinks,
         );
+        $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($birthday, $input->birthday());

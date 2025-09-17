@@ -3,6 +3,7 @@
 namespace Tests\SiteManagement\Announcement\Domain\Factory;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;
 use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -36,6 +37,7 @@ class AnnouncementFactoryTest extends TestCase
     public function testCreate(): void
     {
         $category = Category::UPDATES;
+        $translation = Translation::JAPANESE;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
 K-popを愛するすべてのファンの皆さまに、もっと「推し活」を楽しんでいただくための新機能、**「グローバル投票」**が本日よりスタートしました！🎉
@@ -62,12 +64,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcementFactory = $this->app->make(AnnouncementFactoryInterface::class);
         $announcement = $announcementFactory->create(
+            $translation,
             $category,
             $title,
             $content,
             $publishedDate,
         );
         $this->assertTrue(UlidValidator::isValid((string)$announcement->announcementIdentifier()));
+        $this->assertSame($translation->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());

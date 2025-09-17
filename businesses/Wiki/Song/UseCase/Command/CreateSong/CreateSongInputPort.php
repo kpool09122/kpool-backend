@@ -3,6 +3,7 @@
 namespace Businesses\Wiki\Song\UseCase\Command\CreateSong;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Businesses\Wiki\Song\Domain\ValueObject\Composer;
 use Businesses\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -12,6 +13,8 @@ use Businesses\Wiki\Song\Domain\ValueObject\SongName;
 
 interface CreateSongInputPort
 {
+    public function translation(): Translation;
+
     public function name(): SongName;
 
     /**

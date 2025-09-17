@@ -2,6 +2,7 @@
 
 namespace Businesses\Wiki\Member\UseCase\Command\CreateMember;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
@@ -10,6 +11,8 @@ use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 
 interface CreateMemberInputPort
 {
+    public function translation(): Translation;
+
     public function name(): MemberName;
 
     /**

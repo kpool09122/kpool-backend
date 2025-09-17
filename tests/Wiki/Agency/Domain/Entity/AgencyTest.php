@@ -2,6 +2,7 @@
 
 namespace Tests\Wiki\Agency\Domain\Entity;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Agency\Domain\Entity\Agency;
 use Businesses\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -22,6 +23,7 @@ class AgencyTest extends TestCase
     public function test__construct(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -40,12 +42,14 @@ class AgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $agency = new Agency(
             $agencyIdentifier,
+            $translation,
             $name,
             $CEO,
             $foundedIn,
             $description,
         );
         $this->assertSame((string)$agencyIdentifier, (string)$agency->agencyIdentifier());
+        $this->assertSame($translation->value, $agency->translation()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame((string)$CEO, (string)$agency->CEO());
         $this->assertSame($foundedIn->value(), $agency->foundedIn()->value());
@@ -60,6 +64,7 @@ class AgencyTest extends TestCase
     public function testSetName(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -78,6 +83,7 @@ class AgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $agency = new Agency(
             $agencyIdentifier,
+            $translation,
             $name,
             $CEO,
             $foundedIn,
@@ -99,6 +105,7 @@ class AgencyTest extends TestCase
     public function testSetCEO(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -117,6 +124,7 @@ class AgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $agency = new Agency(
             $agencyIdentifier,
+            $translation,
             $name,
             $CEO,
             $foundedIn,
@@ -138,6 +146,7 @@ class AgencyTest extends TestCase
     public function testSetFoundedIn(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -156,6 +165,7 @@ class AgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $agency = new Agency(
             $agencyIdentifier,
+            $translation,
             $name,
             $CEO,
             $foundedIn,
@@ -177,6 +187,7 @@ class AgencyTest extends TestCase
     public function testSetDescription(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -195,6 +206,7 @@ class AgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $agency = new Agency(
             $agencyIdentifier,
+            $translation,
             $name,
             $CEO,
             $foundedIn,

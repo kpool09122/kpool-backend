@@ -2,6 +2,7 @@
 
 namespace Tests\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
@@ -19,6 +20,7 @@ class CreateAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -45,11 +47,13 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new CreateAnnouncementInput(
+            $translation,
             $category,
             $title,
             $content,
             $publishedDate,
         );
+        $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame($category->value, $input->category()->value);
         $this->assertSame((string)$title, (string)$input->title());
         $this->assertSame((string)$content, (string)$input->content());

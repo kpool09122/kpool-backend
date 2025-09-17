@@ -5,6 +5,7 @@ namespace Tests\Wiki\Member\UseCase\Command\EditMember;
 use Businesses\Shared\Service\ImageServiceInterface;
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\Entity\Member;
 use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Businesses\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
@@ -54,6 +55,7 @@ class EditMemberTest extends TestCase
     public function testProcess(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -89,6 +91,7 @@ class EditMemberTest extends TestCase
 
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -112,6 +115,7 @@ class EditMemberTest extends TestCase
         $editMember = $this->app->make(EditMemberInterface::class);
         $member = $editMember->process($input);
         $this->assertSame((string)$memberIdentifier, (string)$member->memberIdentifier());
+        $this->assertSame($translation->value, $member->translation()->value);
         $this->assertSame((string)$name, (string)$member->name());
         $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
         $this->assertSame($birthday, $member->birthday());

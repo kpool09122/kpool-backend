@@ -2,6 +2,8 @@
 
 namespace Businesses\Wiki\Member\UseCase\Query\GetMembers;
 
+use Businesses\Shared\ValueObject\Translation;
+
 readonly class GetMembersInput implements GetMembersInputPort
 {
     public function __construct(
@@ -9,6 +11,7 @@ readonly class GetMembersInput implements GetMembersInputPort
         private string $order,
         private string $sort,
         private string $searchWords,
+        private Translation $translation,
     ) {
     }
 
@@ -30,5 +33,10 @@ readonly class GetMembersInput implements GetMembersInputPort
     public function searchWords(): string
     {
         return $this->searchWords;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 }

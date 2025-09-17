@@ -2,6 +2,8 @@
 
 namespace Businesses\Wiki\Song\UseCase\Query\GetSongs;
 
+use Businesses\Shared\ValueObject\Translation;
+
 interface GetSongsInputPort
 {
     public function limit(): int;
@@ -11,4 +13,6 @@ interface GetSongsInputPort
     public function sort(): string;
 
     public function searchWords(): string;
+
+    public function translation(): Translation;
 }
