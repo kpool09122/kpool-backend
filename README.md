@@ -1,98 +1,87 @@
-# KPool Backend
+# kpool-backend
 
-PHPでの開発環境をDockerで構築したプロジェクトです。cs-fixer、phpstan、PHPUnitを使用してコード品質を保ちます。
+PHP Project with PHPUnit
 
-## 必要な環境
+## PostgreSQL Database Setup
 
-- Docker
-- Docker Compose
-- Make (オプション)
+### Environment Variables
 
-## セットアップ
-
-1. プロジェクトをクローンまたはダウンロード
-2. Dockerコンテナをビルドして起動
+Create a `.env` file in the project root with the following configuration:
 
 ```bash
-# Makeを使用する場合
-make build
-make up
-make install
+# Database Configuration (Testing)
+DB_CONNECTION=pgsql
+DB_HOST=testing_db
+DB_PORT=5432
+DB_DATABASE=kpool
+DB_USERNAME=kpool
+DB_PASSWORD=secret
 
-# 直接docker-composeを使用する場合
-docker-compose build
+# Application Environment
+APP_ENV=local
+APP_DEBUG=true
+APP_KEY=
+
+# Logging
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+```
+
+### Running with Docker
+
+1. Start the services:
+```bash
 docker-compose up -d
+```
+
+2. Install PHP dependencies:
+```bash
 docker-compose exec php composer install
 ```
 
-## 使用方法
-
-### 開発用コマンド
-
+3. Run tests:
 ```bash
-# コンテナのシェルにアクセス
-make shell
-
-# コードスタイルの修正
-make cs-fix
-
-# コードスタイルのチェック（修正なし）
-make cs-check
-
-# 静的解析の実行
-make phpstan
-
-# テストの実行
+# Run all tests (including database tests)
 make test
 
-# カバレッジ付きテストの実行
-make test-coverage
+# Run tests without database
+make test-no-db
 
-# 全チェックの一括実行（cs-fix + phpstan + test）
-make check
-
-# ヘルプの表示
-make help
+# Run only database tests
+make test-db
 ```
 
-### 直接composer scriptsを使用
+### Test Organization
 
-```bash
-docker-compose exec php composer cs-fix
-docker-compose exec php composer cs-check
-docker-compose exec php composer phpstan
-docker-compose exec php composer test
-docker-compose exec php composer test-coverage
+Tests are organized using PHPUnit groups:
+- **`@group useDb`**: Tests that require database connection
+- Tests without this annotation run without database
+
+Example:
+```php
+/**
+ * @group UseDb
+ */
+class DatabaseConnectionTest extends TestCase
+{
+    // Database tests here
+}
 ```
 
-## プロジェクト構造
+### Database Connection
 
-```
-kpool-backend/
-├── src/                    # アプリケーションコード
-├── tests/                  # テストコード
-│   ├── Unit/              # ユニットテスト
-│   └── Feature/           # 機能テスト
-├── vendor/                # Composer依存関係
-├── coverage/              # テストカバレッジレポート
-├── docker-compose.yml     # Docker Compose設定
-├── Dockerfile             # Docker設定
-├── composer.json          # PHP依存関係
-├── phpunit.xml           # PHPUnit設定
-├── phpstan.neon          # PHPStan設定
-├── .php-cs-fixer.php     # PHP CS Fixer設定
-└── Makefile              # 開発用コマンド
-```
+The project is configured to connect to PostgreSQL with the following features:
+- PostgreSQL 16 Alpine image
+- UUID and crypto extensions enabled
+- Separate test database configuration
+- Connection via PDO with PostgreSQL driver
 
-## 開発ツール
+### Manual Database Setup (if not using Docker)
 
-- **PHP CS Fixer**: コードスタイルの自動修正
-- **PHPStan**: 静的解析によるバグ検出
-- **PHPUnit**: ユニットテストとカバレッジ測定
+If you prefer to set up PostgreSQL manually:
 
-## クリーンアップ
-
-```bash
-# コンテナとボリュームの削除
-make clean
-```
+1. Install PostgreSQL 16
+2. Create database: `CREATE DATABASE kpool;`
+3. Create user: `CREATE USER kpool WITH PASSWORD 'secret';`
+4. Grant privileges: `GRANT ALL PRIVILEGES ON DATABASE kpool TO kpool;`
+5. Enable extensions: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
