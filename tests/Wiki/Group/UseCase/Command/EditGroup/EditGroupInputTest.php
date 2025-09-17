@@ -4,9 +4,10 @@ namespace Tests\Wiki\Group\UseCase\Command\EditGroup;
 
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
+use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
 use Businesses\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroupInput;
+use Businesses\Wiki\Group\UseCase\Command\EditGroup\EditGroupInput;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -19,6 +20,7 @@ class EditGroupInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -31,13 +33,15 @@ class EditGroupInputTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
-        $input = new CreateGroupInput(
+        $input = new EditGroupInput(
+            $groupIdentifier,
             $name,
             $companyIdentifier,
             $description,
             $songIndentifiers,
             $base64EncodedImage,
         );
+        $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$companyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame($description, $input->description());

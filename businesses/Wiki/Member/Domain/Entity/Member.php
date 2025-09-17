@@ -3,6 +3,7 @@
 namespace Businesses\Wiki\Member\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
@@ -23,6 +24,7 @@ class Member
      */
     public function __construct(
         private readonly MemberIdentifier $memberIdentifier,
+        private readonly Translation $translation,
         private MemberName $name,
         private array $groupIdentifiers,
         private ?Birthday $birthday,
@@ -35,6 +37,11 @@ class Member
     public function memberIdentifier(): MemberIdentifier
     {
         return $this->memberIdentifier;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): MemberName

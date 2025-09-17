@@ -18,7 +18,7 @@ class CreateMember implements CreateMemberInterface
 
     public function process(CreateMemberInputPort $input): Member
     {
-        $member = $this->memberFactory->create($input->name());
+        $member = $this->memberFactory->create($input->translation(), $input->name());
         $member->setGroupIdentifiers($input->groupIdentifiers());
         $member->setBirthday($input->birthday());
         $member->setCareer($input->career());

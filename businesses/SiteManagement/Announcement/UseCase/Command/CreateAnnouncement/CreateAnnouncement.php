@@ -17,6 +17,7 @@ class CreateAnnouncement implements CreateAnnouncementInterface
     public function process(CreateAnnouncementInputPort $input): Announcement
     {
         $announcement = $this->announcementFactory->create(
+            $input->translation(),
             $input->category(),
             $input->title(),
             $input->content(),

@@ -3,6 +3,7 @@
 namespace Businesses\Wiki\Song\UseCase\Command\CreateSong;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Businesses\Wiki\Song\Domain\ValueObject\Composer;
 use Businesses\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -13,6 +14,7 @@ use Businesses\Wiki\Song\Domain\ValueObject\SongName;
 readonly class CreateSongInput implements CreateSongInputPort
 {
     /**
+     * @param Translation $translation
      * @param SongName $name
      * @param list<BelongIdentifier> $belongIdentifiers
      * @param Lyricist $lyricist
@@ -23,6 +25,7 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param ?ExternalContentLink $musicVideoLink
      */
     public function __construct(
+        private Translation $translation,
         private SongName             $name,
         private array                $belongIdentifiers,
         private Lyricist             $lyricist,
@@ -32,6 +35,11 @@ readonly class CreateSongInput implements CreateSongInputPort
         private ?string              $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
     ) {
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): SongName

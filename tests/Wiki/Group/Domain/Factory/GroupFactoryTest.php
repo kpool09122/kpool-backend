@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Group\Domain\Factory;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\Factory\GroupFactory;
 use Businesses\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
@@ -31,10 +32,12 @@ class GroupFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $groupFactory = $this->app->make(GroupFactoryInterface::class);
-        $group = $groupFactory->create($name);
+        $group = $groupFactory->create($translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$group->groupIdentifier()));
+        $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertNull($group->agencyIdentifier());
         $this->assertSame('', (string)$group->description());

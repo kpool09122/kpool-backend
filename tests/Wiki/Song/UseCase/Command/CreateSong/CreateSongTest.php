@@ -6,6 +6,7 @@ use Businesses\Shared\Service\ImageServiceInterface;
 use Businesses\Shared\Service\Ulid\UlidValidator;
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\Entity\Song;
 use Businesses\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Businesses\Wiki\Song\Domain\Repository\SongRepositoryInterface;
@@ -52,6 +53,7 @@ class CreateSongTest extends TestCase
      */
     public function testProcess(): void
     {
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -64,6 +66,7 @@ class CreateSongTest extends TestCase
         $base64EncodedCoverImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $input = new CreateSongInput(
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -84,6 +87,7 @@ class CreateSongTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -96,7 +100,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($name)
+            ->with($translation, $name)
             ->andReturn($song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -111,6 +115,7 @@ class CreateSongTest extends TestCase
         $createSong = $this->app->make(CreateSongInterface::class);
         $song = $createSong->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
+        $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertSame($belongIdentifiers, $song->belongIdentifiers());
         $this->assertSame((string)$lyricist, (string)$song->lyricist());

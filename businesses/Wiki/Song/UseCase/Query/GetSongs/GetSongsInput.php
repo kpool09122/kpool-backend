@@ -2,6 +2,8 @@
 
 namespace Businesses\Wiki\Song\UseCase\Query\GetSongs;
 
+use Businesses\Shared\ValueObject\Translation;
+
 readonly class GetSongsInput implements GetSongsInputPort
 {
     public function __construct(
@@ -9,6 +11,7 @@ readonly class GetSongsInput implements GetSongsInputPort
         private string $order,
         private string $sort,
         private string $searchWords,
+        private Translation $translation,
     ) {
     }
 
@@ -30,5 +33,10 @@ readonly class GetSongsInput implements GetSongsInputPort
     public function searchWords(): string
     {
         return $this->searchWords;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 }

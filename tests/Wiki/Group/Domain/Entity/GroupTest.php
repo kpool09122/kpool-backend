@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Group\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\Entity\Group;
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
@@ -22,6 +23,7 @@ class GroupTest extends TestCase
     public function test__construct(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -36,6 +38,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -43,6 +46,7 @@ class GroupTest extends TestCase
             $imagePath,
         );
         $this->assertSame((string)$groupIdentifier, (string)$group->groupIdentifier());
+        $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$companyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
@@ -58,6 +62,7 @@ class GroupTest extends TestCase
     public function testSetName(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -72,6 +77,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -94,6 +100,7 @@ class GroupTest extends TestCase
     public function testSetCompanyIdentifier(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -108,6 +115,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -133,6 +141,7 @@ class GroupTest extends TestCase
     public function testSetDescription(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -147,6 +156,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -172,6 +182,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     public function testSetSongIdentifiers(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -186,6 +197,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -212,6 +224,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     public function testSetImageLink(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -226,6 +239,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,

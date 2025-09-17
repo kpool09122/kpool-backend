@@ -2,6 +2,7 @@
 
 namespace Tests\Wiki\Group\UseCase\Command\CreateGroup;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
@@ -19,6 +20,7 @@ class CreateGroupInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -32,12 +34,14 @@ class CreateGroupInputTest extends TestCase
         ];
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $input = new CreateGroupInput(
+            $translation,
             $name,
             $companyIdentifier,
             $description,
             $songIndentifiers,
             $base64EncodedImage,
         );
+        $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$companyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame($description, $input->description());

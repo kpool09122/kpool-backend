@@ -16,7 +16,10 @@ class CreateAgency implements CreateAgencyInterface
 
     public function process(CreateAgencyInputPort $input): Agency
     {
-        $agency = $this->agencyFactory->create($input->name());
+        $agency = $this->agencyFactory->create(
+            $input->translation(),
+            $input->name(),
+        );
         $agency->setCEO($input->CEO());
         if ($input->foundedIn()) {
             $agency->setFoundedIn($input->foundedIn());

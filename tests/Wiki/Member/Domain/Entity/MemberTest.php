@@ -4,6 +4,7 @@ namespace Tests\Wiki\Member\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\Entity\Member;
 use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
@@ -27,6 +28,7 @@ class MemberTest extends TestCase
     public function test__construct(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -44,6 +46,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -52,6 +55,7 @@ class MemberTest extends TestCase
             $relevantVideoLinks,
         );
         $this->assertSame((string)$memberIdentifier, (string)$member->memberIdentifier());
+        $this->assertSame($translation->value, $member->translation()->value);
         $this->assertSame((string)$name, (string)$member->name());
         $this->assertSame((string)$birthday, (string)$member->birthday());
         $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
@@ -69,6 +73,7 @@ class MemberTest extends TestCase
     public function testSetName(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -86,6 +91,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -110,6 +116,7 @@ class MemberTest extends TestCase
     public function testSetGroupIdentifier(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -127,6 +134,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -158,6 +166,7 @@ class MemberTest extends TestCase
     public function testSetBirthday(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -175,6 +184,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -199,6 +209,7 @@ class MemberTest extends TestCase
     public function testSetCareer(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -216,6 +227,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -244,6 +256,7 @@ class MemberTest extends TestCase
     public function testSetImageLink(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -261,6 +274,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,

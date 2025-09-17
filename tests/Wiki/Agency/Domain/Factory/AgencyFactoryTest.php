@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Agency\Domain\Factory;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Agency\Domain\Factory\AgencyFactory;
 use Businesses\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Businesses\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -32,9 +33,11 @@ class AgencyFactoryTest extends TestCase
     public function testCreate(): void
     {
         $name = new AgencyName('JYP엔터테인먼트');
+        $translation = Translation::KOREAN;
         $agencyFactory = $this->app->make(AgencyFactoryInterface::class);
-        $agency = $agencyFactory->create($name);
+        $agency = $agencyFactory->create($translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$agency->agencyIdentifier()));
+        $this->assertSame($translation->value, $agency->translation()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame('', (string)$agency->CEO());
         $this->assertNull($agency->foundedIn());

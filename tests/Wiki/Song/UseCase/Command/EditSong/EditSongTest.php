@@ -5,6 +5,7 @@ namespace Tests\Wiki\Song\UseCase\Command\EditSong;
 use Businesses\Shared\Service\ImageServiceInterface;
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\Entity\Song;
 use Businesses\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
@@ -53,6 +54,7 @@ class EditSongTest extends TestCase
     public function testProcess(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -85,6 +87,7 @@ class EditSongTest extends TestCase
 
         $song = new Song(
             $songIdentifier,
+            $translation,
             $name,
             $belongIdentifiers,
             $lyricist,
@@ -110,6 +113,7 @@ class EditSongTest extends TestCase
         $editSong = $this->app->make(EditSongInterface::class);
         $song = $editSong->process($input);
         $this->assertSame((string)$songIdentifier, (string)$song->songIdentifier());
+        $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertSame($belongIdentifiers, $song->belongIdentifiers());
         $this->assertSame((string)$lyricist, (string)$song->lyricist());

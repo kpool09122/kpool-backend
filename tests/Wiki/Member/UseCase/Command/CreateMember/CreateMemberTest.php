@@ -6,6 +6,7 @@ use Businesses\Shared\Service\ImageServiceInterface;
 use Businesses\Shared\Service\Ulid\UlidValidator;
 use Businesses\Shared\ValueObject\ExternalContentLink;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\Entity\Member;
 use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Businesses\Wiki\Member\Domain\Factory\MemberFactoryInterface;
@@ -53,6 +54,7 @@ class CreateMemberTest extends TestCase
      */
     public function testProcess(): void
     {
+        $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -70,6 +72,7 @@ class CreateMemberTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new CreateMemberInput(
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -88,6 +91,7 @@ class CreateMemberTest extends TestCase
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $member = new Member(
             $memberIdentifier,
+            $translation,
             $name,
             $groupIdentifiers,
             $birthday,
@@ -98,7 +102,7 @@ class CreateMemberTest extends TestCase
         $memberFactory = Mockery::mock(MemberFactoryInterface::class);
         $memberFactory->shouldReceive('create')
             ->once()
-            ->with($name)
+            ->with($translation, $name)
             ->andReturn($member);
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
@@ -113,6 +117,7 @@ class CreateMemberTest extends TestCase
         $createMember = $this->app->make(CreateMemberInterface::class);
         $member = $createMember->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$member->memberIdentifier()));
+        $this->assertSame($translation->value, $member->translation()->value);
         $this->assertSame((string)$name, (string)$member->name());
         $this->assertSame($groupIdentifiers, $member->groupIdentifiers());
         $this->assertSame($birthday, $member->birthday());

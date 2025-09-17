@@ -2,6 +2,7 @@
 
 namespace Businesses\Wiki\Agency\Domain\Entity;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Businesses\Wiki\Agency\Domain\ValueObject\CEO;
@@ -11,7 +12,8 @@ use Businesses\Wiki\Agency\Domain\ValueObject\FoundedIn;
 class Agency
 {
     public function __construct(
-        private AgencyIdentifier $agencyIdentifier,
+        private readonly AgencyIdentifier $agencyIdentifier,
+        private readonly Translation $translation,
         private AgencyName $name,
         private CEO $CEO,
         private ?FoundedIn $foundedIn,
@@ -22,6 +24,11 @@ class Agency
     public function agencyIdentifier(): AgencyIdentifier
     {
         return $this->agencyIdentifier;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): AgencyName

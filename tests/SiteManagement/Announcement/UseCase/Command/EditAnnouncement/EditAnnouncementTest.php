@@ -2,6 +2,7 @@
 
 namespace Tests\SiteManagement\Announcement\UseCase\Command\EditAnnouncement;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Businesses\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
@@ -46,6 +47,7 @@ class EditAnnouncementTest extends TestCase
     public function testProcess(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -81,6 +83,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,
@@ -101,6 +104,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
         $announcement = $updateAnnouncement->process($input);
         $this->assertSame((string)$announcementIdentifier, (string)$announcement->announcementIdentifier());
+        $this->assertSame($translation->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());

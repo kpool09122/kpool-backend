@@ -2,6 +2,7 @@
 
 namespace Businesses\Wiki\Group\UseCase\Command\CreateGroup;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
@@ -10,6 +11,7 @@ use Businesses\Wiki\Group\Domain\ValueObject\SongIdentifier;
 readonly class CreateGroupInput implements CreateGroupInputPort
 {
     /**
+     * @param Translation $translation
      * @param GroupName $name
      * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
@@ -17,12 +19,18 @@ readonly class CreateGroupInput implements CreateGroupInputPort
      * @param string|null $base64EncodedImage
      */
     public function __construct(
-        private GroupName        $name,
+        private Translation $translation,
+        private GroupName $name,
         private AgencyIdentifier $agencyIdentifier,
-        private Description      $description,
-        private array            $songIdentifiers,
-        private ?string          $base64EncodedImage,
+        private Description $description,
+        private array $songIdentifiers,
+        private ?string $base64EncodedImage,
     ) {
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): GroupName

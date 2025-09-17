@@ -5,6 +5,7 @@ namespace Tests\Wiki\Group\UseCase\Command\CreateGroup;
 use Businesses\Shared\Service\ImageServiceInterface;
 use Businesses\Shared\Service\Ulid\UlidValidator;
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\Entity\Group;
 use Businesses\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Businesses\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
@@ -48,6 +49,7 @@ class CreateGroupTest extends TestCase
      */
     public function testProcess(): void
     {
+        $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -61,6 +63,7 @@ class CreateGroupTest extends TestCase
         ];
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $input = new CreateGroupInput(
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -78,6 +81,7 @@ class CreateGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $group = new Group(
             $groupIdentifier,
+            $translation,
             $name,
             $companyIdentifier,
             $description,
@@ -87,7 +91,7 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($name)
+            ->with($translation, $name)
             ->andReturn($group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -102,6 +106,7 @@ class CreateGroupTest extends TestCase
         $createGroup = $this->app->make(CreateGroupInterface::class);
         $group = $createGroup->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$group->groupIdentifier()));
+        $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$companyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());

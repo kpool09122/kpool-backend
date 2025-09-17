@@ -3,6 +3,7 @@
 namespace Businesses\Wiki\Group\Domain\Entity;
 
 use Businesses\Shared\ValueObject\ImagePath;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Businesses\Wiki\Group\Domain\ValueObject\Description;
 use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
@@ -13,6 +14,7 @@ class Group
 {
     /**
      * @param GroupIdentifier $groupIdentifier
+     * @param Translation $translation
      * @param GroupName $name
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
@@ -21,17 +23,23 @@ class Group
      */
     public function __construct(
         private readonly GroupIdentifier $groupIdentifier,
-        private GroupName                $name,
-        private ?AgencyIdentifier        $agencyIdentifier,
-        private Description              $description,
-        private array                    $songIdentifiers,
-        private ?ImagePath               $imageLink,
+        private readonly Translation $translation,
+        private GroupName $name,
+        private ?AgencyIdentifier $agencyIdentifier,
+        private Description $description,
+        private array $songIdentifiers,
+        private ?ImagePath $imageLink,
     ) {
     }
 
     public function groupIdentifier(): GroupIdentifier
     {
         return $this->groupIdentifier;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
     }
 
     public function name(): GroupName

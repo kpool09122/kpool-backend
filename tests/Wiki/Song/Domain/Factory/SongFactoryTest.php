@@ -3,6 +3,7 @@
 namespace Tests\Wiki\Song\Domain\Factory;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Song\Domain\Factory\SongFactory;
 use Businesses\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Businesses\Wiki\Song\Domain\ValueObject\SongName;
@@ -31,10 +32,12 @@ class SongFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
+        $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $songFactory = $this->app->make(SongFactoryInterface::class);
-        $song = $songFactory->create($name);
+        $song = $songFactory->create($translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
+        $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertSame([], $song->belongIdentifiers());
         $this->assertSame('', (string)$song->lyricist());

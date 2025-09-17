@@ -2,6 +2,7 @@
 
 namespace Tests\Wiki\Member\UseCase\Query\GetMembers;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\UseCase\Query\GetMembers\GetMembersInput;
 use Tests\TestCase;
 
@@ -18,15 +19,18 @@ class GetMembersInputTest extends TestCase
         $order = 'id';
         $sort = 'desc';
         $searchWords = 'test';
+        $translation = Translation::KOREAN;
         $input = new GetMembersInput(
             $limit,
             $order,
             $sort,
             $searchWords,
+            $translation,
         );
         $this->assertSame($limit, $input->limit());
         $this->assertSame($order, $input->order());
         $this->assertSame($sort, $input->sort());
         $this->assertSame($searchWords, $input->searchWords());
+        $this->assertSame($translation->value, $input->translation()->value);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\SiteManagement\Announcement\Domain\Entity;
 
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -22,6 +23,7 @@ class AnnouncementTest extends TestCase
     public function test__construct(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -49,12 +51,14 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,
             $publishedDate,
         );
         $this->assertSame((string)$announcementIdentifier, (string)$announcement->announcementIdentifier());
+        $this->assertSame($translation->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());
@@ -69,6 +73,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     public function testSetCategory(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -96,6 +101,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,
@@ -117,6 +123,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     public function testSetTitle(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -144,6 +151,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,
@@ -165,6 +173,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     public function testSetFoundedIn(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -192,6 +201,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,
@@ -235,6 +245,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     public function testSetPublishedDate(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -262,6 +273,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcement = new Announcement(
             $announcementIdentifier,
+            $translation,
             $category,
             $title,
             $content,

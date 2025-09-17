@@ -3,6 +3,7 @@
 namespace Businesses\Wiki\Member\Domain\Factory;
 
 use Businesses\Shared\Service\Ulid\UlidGeneratorInterface;
+use Businesses\Shared\ValueObject\Translation;
 use Businesses\Wiki\Member\Domain\Entity\Member;
 use Businesses\Wiki\Member\Domain\ValueObject\Career;
 use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
@@ -17,10 +18,12 @@ readonly class MemberFactory implements MemberFactoryInterface
     }
 
     public function create(
+        Translation $translation,
         MemberName $name,
     ): Member {
         return new Member(
             new MemberIdentifier($this->ulidGenerator->generate()),
+            $translation,
             $name,
             [],
             null,
