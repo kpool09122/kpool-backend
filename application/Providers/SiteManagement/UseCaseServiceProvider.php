@@ -8,6 +8,8 @@ use Businesses\SiteManagement\Announcement\UseCase\Command\DeleteAnnouncement\De
 use Businesses\SiteManagement\Announcement\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInterface;
 use Businesses\SiteManagement\Announcement\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
 use Businesses\SiteManagement\Announcement\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
+use Businesses\SiteManagement\Contact\UseCase\Command\SubmitContact\SubmitContact;
+use Businesses\SiteManagement\Contact\UseCase\Command\SubmitContact\SubmitContactInterface;
 use Illuminate\Support\ServiceProvider;
 
 class UseCaseServiceProvider extends ServiceProvider
@@ -17,5 +19,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateAnnouncementInterface::class, CreateAnnouncement::class);
         $this->app->singleton(UpdateAnnouncementInterface::class, UpdateAnnouncement::class);
         $this->app->singleton(DeleteAnnouncementInterface::class, DeleteAnnouncement::class);
+        $this->app->singleton(SubmitContactInterface::class, SubmitContact::class);
     }
 }
