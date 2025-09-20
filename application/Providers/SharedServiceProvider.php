@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Application\Providers;
 
-use Application\Shared\Service\Ulid\UlidGenerator;
-use Businesses\Shared\Service\Ulid\UlidGeneratorInterface;
 use Illuminate\Support\ServiceProvider;
+use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Infrastructure\Service\Ulid\UlidGenerator;
 
 class SharedServiceProvider extends ServiceProvider
 {

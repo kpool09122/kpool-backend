@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Domain\Factory;
 
-use Businesses\Shared\Service\Ulid\UlidValidator;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Agency\Domain\Factory\AgencyFactory;
-use Businesses\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
-use Businesses\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Agency\Domain\Factory\AgencyFactory;
+use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Tests\TestCase;
 
 class AgencyFactoryTest extends TestCase

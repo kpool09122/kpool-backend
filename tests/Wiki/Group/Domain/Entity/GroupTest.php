@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Domain\Entity;
 
-use Businesses\Shared\ValueObject\ImagePath;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Group\Domain\Entity\Group;
-use Businesses\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
-use Businesses\Wiki\Group\Domain\ValueObject\Description;
-use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
-use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
-use Businesses\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Group\Domain\Entity\Group;
+use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\Description;
+use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
+use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

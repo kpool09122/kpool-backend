@@ -49,26 +49,12 @@ abstract class TestCase extends OrchestraTestCase
         if (in_array('useDb', $this->groups(), true)) {
             $this->useDb = true;
 
-            // Configure testing connection at runtime
-            $this->app['config']->set('database.default', 'testing');
-            $this->app['config']->set('database.connections.testing', [
-                'driver' => 'pgsql',
-                'host' => 'testing_db',
-                'port' => '5432',
-                'database' => 'kpool',
-                'username' => 'kpool',
-                'password' => 'secret',
-                'charset' => 'utf8',
-                'prefix' => '',
-                'prefix_indexes' => true,
-                'search_path' => 'public',
-                'sslmode' => 'prefer',
-            ]);
+            // Use the default connection from environment (e.g., pgsql in Docker)
 
             // Register migrations and run them once per process
             $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
             if (! RefreshDatabaseState::$migrated) {
-                $this->artisan('migrate', ['--database' => 'testing']);
+                $this->artisan('migrate');
                 RefreshDatabaseState::$migrated = true;
             }
 
@@ -99,7 +85,7 @@ abstract class TestCase extends OrchestraTestCase
      */
     protected function defineEnvironment($app): void
     {
-        // Intentionally left blank; DB is configured conditionally in setUp()
+        // Intentionally left blank; DB settings are provided via config and phpunit.xml env vars
     }
 
     /**

@@ -31,4 +31,8 @@ class Agency extends Model
         'founded_in',
         'description',
     ];
+
+    protected $casts = [
+        'founded_in' => 'date',
+    ];
 }

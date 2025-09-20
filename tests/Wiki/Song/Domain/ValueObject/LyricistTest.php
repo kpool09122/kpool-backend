@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Domain\ValueObject;
 
-use Businesses\Wiki\Song\Domain\ValueObject\Lyricist;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Tests\Helper\StrTestHelper;
 
 class LyricistTest extends TestCase

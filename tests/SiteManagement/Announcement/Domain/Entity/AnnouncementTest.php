@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Announcement\Domain\Entity;
 
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\SiteManagement\Announcement\Domain\Entity\Announcement;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Title;
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
+use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
+use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

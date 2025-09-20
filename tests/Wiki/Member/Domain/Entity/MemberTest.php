@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Member\Domain\Entity;
 
-use Businesses\Shared\ValueObject\ExternalContentLink;
-use Businesses\Shared\ValueObject\ImagePath;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Member\Domain\Entity\Member;
-use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
-use Businesses\Wiki\Member\Domain\ValueObject\Birthday;
-use Businesses\Wiki\Member\Domain\ValueObject\Career;
-use Businesses\Wiki\Member\Domain\ValueObject\GroupIdentifier;
-use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
-use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
-use Businesses\Wiki\Member\Domain\ValueObject\RealName;
-use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Member\Domain\Entity\Member;
+use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
+use Source\Wiki\Member\Domain\ValueObject\Birthday;
+use Source\Wiki\Member\Domain\ValueObject\Career;
+use Source\Wiki\Member\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
+use Source\Wiki\Member\Domain\ValueObject\MemberName;
+use Source\Wiki\Member\Domain\ValueObject\RealName;
+use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

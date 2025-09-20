@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Member\Domain\ValueObject;
 
-use Businesses\Shared\ValueObject\ExternalContentLink;
-use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
-use Businesses\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
+use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Tests\TestCase;
 
 class RelevantVideoLinksTest extends TestCase

@@ -2,13 +2,14 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->in([
-        __DIR__ . '/businesses',
+        __DIR__ . '/src',
         __DIR__ . '/application',
         __DIR__ . '/tests',
     ])
     ->exclude('vendor');
 
 $config = new PhpCsFixer\Config();
+
 return $config
     ->setRules([
         '@PSR12' => true,
@@ -37,4 +38,4 @@ return $config
         'single_trait_insert_per_statement' => true,
         'declare_strict_types' => true,
     ])
-    ->setFinder($finder); 
+    ->setFinder($finder);

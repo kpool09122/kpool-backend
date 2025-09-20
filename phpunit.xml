@@ -10,9 +10,8 @@
     </testsuites>
     <source>
         <include>
-            <directory>businesses</directory>
+            <directory>src</directory>
             <directory>application/Shared</directory>
-            <directory>application/Adapters</directory>
         </include>
     </source>
     <coverage>
@@ -22,4 +21,12 @@
             <clover outputFile="coverage/coverage.xml"/>
         </report>
     </coverage>
+    <php>
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_HOST" value="testing_db"/>
+        <env name="DB_PORT" value="5432"/>
+        <env name="DB_DATABASE" value="kpool"/>
+        <env name="DB_USERNAME" value="kpool"/>
+        <env name="DB_PASSWORD" value="secret"/>
+    </php>
 </phpunit>

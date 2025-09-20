@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Domain\Factory;
 
-use Businesses\Shared\Service\Ulid\UlidValidator;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Song\Domain\Factory\SongFactory;
-use Businesses\Wiki\Song\Domain\Factory\SongFactoryInterface;
-use Businesses\Wiki\Song\Domain\ValueObject\SongName;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Song\Domain\Factory\SongFactory;
+use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\TestCase;
 
 class SongFactoryTest extends TestCase

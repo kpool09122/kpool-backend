@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Member\Domain\ValueObject;
 
-use Businesses\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class MemberIdentifierTest extends TestCase

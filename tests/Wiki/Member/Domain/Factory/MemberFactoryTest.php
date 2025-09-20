@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Member\Domain\Factory;
 
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
-use Businesses\Wiki\Member\Domain\Factory\MemberFactory;
-use Businesses\Wiki\Member\Domain\Factory\MemberFactoryInterface;
-use Businesses\Wiki\Member\Domain\ValueObject\MemberName;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
+use Source\Wiki\Member\Domain\Factory\MemberFactory;
+use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
+use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Tests\TestCase;
 
 class MemberFactoryTest extends TestCase

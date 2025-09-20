@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Providers\SiteManagement;
 
-use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;
-use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
-use Businesses\SiteManagement\Contact\Domain\Factory\ContactFactory;
-use Businesses\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Illuminate\Support\ServiceProvider;
+use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;
+use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
+use Source\SiteManagement\Contact\Domain\Factory\ContactFactory;
+use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {
