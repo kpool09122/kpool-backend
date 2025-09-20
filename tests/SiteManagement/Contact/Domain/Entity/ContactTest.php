@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Domain\Entity;
 
-use Businesses\Shared\ValueObject\Email;
-use Businesses\SiteManagement\Contact\Domain\Entity\Contact;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\Category;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\ContactName;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\SiteManagement\Contact\Domain\Entity\Contact;
+use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

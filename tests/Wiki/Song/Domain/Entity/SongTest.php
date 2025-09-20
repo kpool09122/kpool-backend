@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Domain\Entity;
 
-use Businesses\Shared\ValueObject\ExternalContentLink;
-use Businesses\Shared\ValueObject\ImagePath;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Song\Domain\Entity\Song;
-use Businesses\Wiki\Song\Domain\ValueObject\BelongIdentifier;
-use Businesses\Wiki\Song\Domain\ValueObject\Composer;
-use Businesses\Wiki\Song\Domain\ValueObject\Lyricist;
-use Businesses\Wiki\Song\Domain\ValueObject\Overview;
-use Businesses\Wiki\Song\Domain\ValueObject\ReleaseDate;
-use Businesses\Wiki\Song\Domain\ValueObject\SongIdentifier;
-use Businesses\Wiki\Song\Domain\ValueObject\SongName;
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\Composer;
+use Source\Wiki\Song\Domain\ValueObject\Lyricist;
+use Source\Wiki\Song\Domain\ValueObject\Overview;
+use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
+use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

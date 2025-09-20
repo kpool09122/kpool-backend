@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Domain\Factory;
 
-use Businesses\Shared\Service\Ulid\UlidValidator;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Group\Domain\Factory\GroupFactory;
-use Businesses\Wiki\Group\Domain\Factory\GroupFactoryInterface;
-use Businesses\Wiki\Group\Domain\ValueObject\GroupName;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Group\Domain\Factory\GroupFactory;
+use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Tests\TestCase;
 
 class GroupFactoryTest extends TestCase

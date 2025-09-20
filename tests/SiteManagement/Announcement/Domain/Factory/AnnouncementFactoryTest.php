@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Announcement\Domain\Factory;
 
-use Businesses\Shared\Service\Ulid\UlidValidator;
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;
-use Businesses\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Category;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Content;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Title;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;
+use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
+use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Tests\TestCase;
 
 class AnnouncementFactoryTest extends TestCase

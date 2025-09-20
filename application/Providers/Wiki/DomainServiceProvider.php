@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Application\Providers\Wiki;
 
-use Application\Adapters\Wiki\Agency\Repository\AgencyRepository;
-use Businesses\Wiki\Agency\Domain\Factory\AgencyFactory;
-use Businesses\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
-use Businesses\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
-use Businesses\Wiki\Group\Domain\Factory\GroupFactory;
-use Businesses\Wiki\Group\Domain\Factory\GroupFactoryInterface;
-use Businesses\Wiki\Member\Domain\Factory\MemberFactory;
-use Businesses\Wiki\Member\Domain\Factory\MemberFactoryInterface;
-use Businesses\Wiki\Song\Domain\Factory\SongFactory;
-use Businesses\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Illuminate\Support\ServiceProvider;
+use Source\Wiki\Agency\Domain\Factory\AgencyFactory;
+use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Infrastracture\Adapters\Repository\AgencyRepository;
+use Source\Wiki\Group\Domain\Factory\GroupFactory;
+use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
+use Source\Wiki\Member\Domain\Factory\MemberFactory;
+use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\SongFactory;
+use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {

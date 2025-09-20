@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Domain\Entity;
 
-use Businesses\Shared\ValueObject\Translation;
-use Businesses\Wiki\Agency\Domain\Entity\Agency;
-use Businesses\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Businesses\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Businesses\Wiki\Agency\Domain\ValueObject\CEO;
-use Businesses\Wiki\Agency\Domain\ValueObject\Description;
-use Businesses\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Agency\Domain\Entity\Agency;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
+use Source\Wiki\Agency\Domain\ValueObject\CEO;
+use Source\Wiki\Agency\Domain\ValueObject\Description;
+use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Contact\Domain\Factory;
 
-use Businesses\Shared\Service\Ulid\UlidValidator;
-use Businesses\Shared\ValueObject\Email;
-use Businesses\SiteManagement\Contact\Domain\Factory\ContactFactory;
-use Businesses\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\Category;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\ContactName;
-use Businesses\SiteManagement\Contact\Domain\ValueObject\Content;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\SiteManagement\Contact\Domain\Factory\ContactFactory;
+use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
+use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Tests\TestCase;
 
 class ContactFactoryTest extends TestCase

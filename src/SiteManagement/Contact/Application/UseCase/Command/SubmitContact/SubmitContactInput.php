@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact;
+
+use Source\Shared\Domain\ValueObject\Email;
+use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+
+readonly class SubmitContactInput implements SubmitContactInputPort
+{
+    public function __construct(
+        private Category $category,
+        private ContactName $name,
+        private Email $email,
+        private Content $content,
+    ) {
+    }
+
+    public function category(): Category
+    {
+        return $this->category;
+    }
+
+    public function name(): ContactName
+    {
+        return $this->name;
+    }
+
+    public function email(): Email
+    {
+        return $this->email;
+    }
+
+    public function content(): Content
+    {
+        return $this->content;
+    }
+}

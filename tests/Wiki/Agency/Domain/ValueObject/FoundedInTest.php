@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Domain\ValueObject;
 
-use Businesses\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 
 class FoundedInTest extends TestCase
 {

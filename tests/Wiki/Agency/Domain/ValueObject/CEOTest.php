@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Domain\ValueObject;
 
-use Businesses\Wiki\Agency\Domain\ValueObject\CEO;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Tests\Helper\StrTestHelper;
 
 class CEOTest extends TestCase

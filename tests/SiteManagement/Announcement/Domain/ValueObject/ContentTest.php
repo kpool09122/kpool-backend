@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Announcement\Domain\ValueObject;
 
-use Businesses\SiteManagement\Announcement\Domain\ValueObject\Content;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Tests\Helper\StrTestHelper;
 
 class ContentTest extends TestCase

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Application\Providers\SiteManagement;
 
-use Businesses\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement\CreateAnnouncement;
-use Businesses\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement\CreateAnnouncementInterface;
-use Businesses\SiteManagement\Announcement\UseCase\Command\DeleteAnnouncement\DeleteAnnouncement;
-use Businesses\SiteManagement\Announcement\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInterface;
-use Businesses\SiteManagement\Announcement\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
-use Businesses\SiteManagement\Announcement\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
-use Businesses\SiteManagement\Contact\UseCase\Command\SubmitContact\SubmitContact;
-use Businesses\SiteManagement\Contact\UseCase\Command\SubmitContact\SubmitContactInterface;
 use Illuminate\Support\ServiceProvider;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncement;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncement;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
+use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {

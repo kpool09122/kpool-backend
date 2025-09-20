@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Domain\ValueObject;
 
-use Businesses\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class GroupIdentifierTest extends TestCase

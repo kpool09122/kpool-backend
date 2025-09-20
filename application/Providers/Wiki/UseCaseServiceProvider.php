@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace Application\Providers\Wiki;
 
-use Application\Adapters\Wiki\Agency\Query\GetAgencies;
-use Application\Adapters\Wiki\Agency\Query\GetAgency;
-use Businesses\Wiki\Agency\UseCase\Command\CreateAgency\CreateAgency;
-use Businesses\Wiki\Agency\UseCase\Command\CreateAgency\CreateAgencyInterface;
-use Businesses\Wiki\Agency\UseCase\Command\EditAgency\EditAgency;
-use Businesses\Wiki\Agency\UseCase\Command\EditAgency\EditAgencyInterface;
-use Businesses\Wiki\Agency\UseCase\Query\GetAgencies\GetAgenciesInterface;
-use Businesses\Wiki\Agency\UseCase\Query\GetAgency\GetAgencyInterface;
-use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroup;
-use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroupInterface;
-use Businesses\Wiki\Group\UseCase\Command\EditGroup\EditGroup;
-use Businesses\Wiki\Group\UseCase\Command\EditGroup\EditGroupInterface;
-use Businesses\Wiki\Member\UseCase\Command\CreateMember\CreateMember;
-use Businesses\Wiki\Member\UseCase\Command\CreateMember\CreateMemberInterface;
-use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMember;
-use Businesses\Wiki\Member\UseCase\Command\EditMember\EditMemberInterface;
-use Businesses\Wiki\Song\UseCase\Command\CreateSong\CreateSong;
-use Businesses\Wiki\Song\UseCase\Command\CreateSong\CreateSongInterface;
-use Businesses\Wiki\Song\UseCase\Command\EditSong\EditSong;
-use Businesses\Wiki\Song\UseCase\Command\EditSong\EditSongInterface;
 use Illuminate\Support\ServiceProvider;
+use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
+use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
+use Source\Wiki\Agency\Infrastracture\Adapters\GetAgencies;
+use Source\Wiki\Agency\Infrastracture\Adapters\GetAgency;
+use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroup;
+use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
+use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInterface;
+use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMember;
+use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMemberInterface;
+use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMember;
+use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMemberInterface;
+use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
+use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
+use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
