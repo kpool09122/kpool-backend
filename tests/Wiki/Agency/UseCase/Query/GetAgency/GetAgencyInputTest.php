@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Agency\UseCase\Query\GetAgency;
 
 use Businesses\Shared\ValueObject\Translation;

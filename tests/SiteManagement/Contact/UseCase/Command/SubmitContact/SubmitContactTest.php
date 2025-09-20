@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\SiteManagement\Contact\UseCase\Command\SubmitContact;
 
 use Businesses\Shared\ValueObject\Email;

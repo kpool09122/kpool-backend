@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\SiteManagement\Announcement\UseCase\Command\CreateAnnouncement;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;

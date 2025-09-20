@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Group\UseCase\Command\CreateGroup;
 
 use Businesses\Shared\Service\ImageServiceInterface;

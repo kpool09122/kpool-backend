@@ -1,11 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Application\Providers\Wiki;
 
+use Application\Adapters\Wiki\Agency\Query\GetAgencies;
+use Application\Adapters\Wiki\Agency\Query\GetAgency;
 use Businesses\Wiki\Agency\UseCase\Command\CreateAgency\CreateAgency;
 use Businesses\Wiki\Agency\UseCase\Command\CreateAgency\CreateAgencyInterface;
 use Businesses\Wiki\Agency\UseCase\Command\EditAgency\EditAgency;
 use Businesses\Wiki\Agency\UseCase\Command\EditAgency\EditAgencyInterface;
+use Businesses\Wiki\Agency\UseCase\Query\GetAgencies\GetAgenciesInterface;
+use Businesses\Wiki\Agency\UseCase\Query\GetAgency\GetAgencyInterface;
 use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroup;
 use Businesses\Wiki\Group\UseCase\Command\CreateGroup\CreateGroupInterface;
 use Businesses\Wiki\Group\UseCase\Command\EditGroup\EditGroup;
@@ -32,5 +38,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(EditSongInterface::class, EditSong::class);
         $this->app->singleton(CreateAgencyInterface::class, CreateAgency::class);
         $this->app->singleton(EditAgencyInterface::class, EditAgency::class);
+        $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
+        $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\SiteManagement\Contact\UseCase\Exception;
 
 use RuntimeException;

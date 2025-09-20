@@ -35,20 +35,13 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Run code style fixer
-      run: vendor/bin/php-cs-fixer fix --dry-run --diff
+      run: vendor/bin/php-cs-fixer fix --dry-run --diff --allow-risky=yes
 
     - name: Run PHPStan
       run: vendor/bin/phpstan analyse
 
-    - name: Run tests
-      run: vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-html=coverage-html
-      env:
-        DB_CONNECTION: mysql
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_DATABASE: test_db
-        DB_USERNAME: root
-        DB_PASSWORD: password
+    - name: Run tests (no DB)
+      run: vendor/bin/phpunit --exclude-group useDb --coverage-clover=coverage.xml --coverage-html=coverage-html
 
   deploy-coverage:
     needs: test

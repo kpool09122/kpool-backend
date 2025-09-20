@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Wiki\Group\UseCase\Query;
 
 use Businesses\Wiki\Group\UseCase\Query\GroupReadModel;
@@ -18,7 +20,7 @@ class GroupReadModelTest extends TestCase
     public function test__construct(): void
     {
         $groupId = StrTestHelper::generateUlid();
-        $name = '채영';
+        $name = 'TWICE';
         $agencyName = 'JYP엔터테인먼트';
         $description = '### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.

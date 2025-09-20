@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\SiteManagement\Announcement\UseCase\Query\GetAnnouncements;
 
 use Businesses\Shared\ValueObject\Translation;

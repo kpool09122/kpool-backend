@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Businesses\Wiki\Song\Domain\ValueObject;
 
 use Businesses\Shared\Service\Ulid\UlidValidator;

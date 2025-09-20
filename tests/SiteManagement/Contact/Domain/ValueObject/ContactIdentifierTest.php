@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\SiteManagement\Contact\Domain\ValueObject;
 
 use Businesses\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;

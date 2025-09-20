@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\SiteManagement\Announcement\Domain\ValueObject;
 
 use Businesses\SiteManagement\Announcement\Domain\ValueObject\Title;

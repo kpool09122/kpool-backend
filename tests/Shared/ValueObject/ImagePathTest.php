@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Shared\ValueObject;
 
 use Businesses\Shared\ValueObject\ImagePath;

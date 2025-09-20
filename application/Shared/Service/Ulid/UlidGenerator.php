@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Application\Shared\Service\Ulid;
 
 use Businesses\Shared\Service\Ulid\UlidGeneratorInterface;
