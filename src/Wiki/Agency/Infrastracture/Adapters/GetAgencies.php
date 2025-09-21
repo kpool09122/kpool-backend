@@ -35,16 +35,11 @@ class GetAgencies implements GetAgenciesInterface
         $agencyReadModels = [];
         foreach ($agencies->items() as $agency) {
             $foundedIn = null;
-            if ($agency->founded_in instanceof \Illuminate\Support\Carbon) {
-                $foundedIn = $agency->founded_in->toDateTimeImmutable();
-            } elseif (is_string($agency->founded_in) && $agency->founded_in !== '') {
-                $foundedIn = new \DateTimeImmutable($agency->founded_in);
-            }
             $agencyReadModels[] = new AgencyReadModel(
                 agencyId: $agency->id,
                 name: $agency->name,
                 CEO: $agency->CEO,
-                foundedIn: $foundedIn,
+                foundedIn: $agency->founded_in?->toDateTimeImmutable(),
                 description: $agency->description,
             );
         }

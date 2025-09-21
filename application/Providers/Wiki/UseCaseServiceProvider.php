@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Providers\Wiki;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControl;
+use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgency;
@@ -40,5 +42,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(EditAgencyInterface::class, EditAgency::class);
         $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
         $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
+        $this->app->singleton(ChangeAccessControlInterface::class, ChangeAccessControl::class);
     }
 }
