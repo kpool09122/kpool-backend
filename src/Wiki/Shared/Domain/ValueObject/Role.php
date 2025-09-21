@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Shared\Domain\ValueObject;
 
+use Source\Wiki\Shared\Domain\Entity\Actor;
+
 enum Role: string
 {
     case AGENCY_ACTOR = 'agency_actor';
@@ -62,7 +64,7 @@ enum Role: string
 
             if ($resource->type() === ResourceType::AGENCY) {
                 // 自分の事務所（agency）のみ
-                return $resource->id() === $actorAgencyId;
+                return $resource->agencyId() === $actorAgencyId;
             }
 
             if ($resource->type() === ResourceType::GROUP) {
