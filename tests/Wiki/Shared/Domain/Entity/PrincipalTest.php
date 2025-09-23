@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Shared\Domain\Entity;
 
-use Source\Wiki\Shared\Domain\Entity\Actor;
-use Source\Wiki\Shared\Domain\ValueObject\ActorIdentifier;
+use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ActorTest extends TestCase
+class PrincipalTest extends TestCase
 {
     /**
      * 正常系：正しくインスタンスが作成できること.
@@ -19,7 +19,7 @@ class ActorTest extends TestCase
      */
     public function test__construct(): void
     {
-        $actorIdentifier = new ActorIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $role = Role::AGENCY_ACTOR;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [
@@ -27,29 +27,29 @@ class ActorTest extends TestCase
             StrTestHelper::generateUlid(),
         ];
         $memberId = StrTestHelper::generateUlid();
-        $actor = new Actor(
-            $actorIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             $role,
             $agencyId,
             $groupIds,
             $memberId,
         );
-        $this->assertSame((string)$actorIdentifier, (string)$actor->actorIdentifier());
-        $this->assertSame($role->value, $actor->role()->value);
-        $this->assertSame($agencyId, $actor->agencyId());
-        $this->assertSame($groupIds, $actor->groupIds());
-        $this->assertSame($memberId, $actor->memberId());
+        $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
+        $this->assertSame($role->value, $principal->role()->value);
+        $this->assertSame($agencyId, $principal->agencyId());
+        $this->assertSame($groupIds, $principal->groupIds());
+        $this->assertSame($memberId, $principal->memberId());
 
-        $actor = new Actor(
-            $actorIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             $role,
             null,
             [],
             null,
         );
-        $this->assertNull($actor->agencyId());
-        $this->assertEmpty($actor->groupIds());
-        $this->assertNull($actor->memberId());
+        $this->assertNull($principal->agencyId());
+        $this->assertEmpty($principal->groupIds());
+        $this->assertNull($principal->memberId());
     }
 
     /**
@@ -59,7 +59,7 @@ class ActorTest extends TestCase
      */
     public function testSetRole(): void
     {
-        $actorIdentifier = new ActorIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $role = Role::AGENCY_ACTOR;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [
@@ -67,18 +67,18 @@ class ActorTest extends TestCase
             StrTestHelper::generateUlid(),
         ];
         $memberId = StrTestHelper::generateUlid();
-        $actor = new Actor(
-            $actorIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             $role,
             $agencyId,
             $groupIds,
             $memberId,
         );
-        $this->assertSame($role, $actor->role());
+        $this->assertSame($role, $principal->role());
 
         $newRole = Role::ADMINISTRATOR;
-        $actor->setRole($newRole);
-        $this->assertNotSame($role, $actor->role());
-        $this->assertSame($newRole, $actor->role());
+        $principal->setRole($newRole);
+        $this->assertNotSame($role, $principal->role());
+        $this->assertSame($newRole, $principal->role());
     }
 }

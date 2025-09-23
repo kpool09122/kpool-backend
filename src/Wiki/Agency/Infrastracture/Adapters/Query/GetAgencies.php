@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Infrastracture\Adapters;
+namespace Source\Wiki\Agency\Infrastracture\Adapters\Query;
 
 use Application\Models\Wiki\Agency;
 use Source\Shared\Infrastructure\Trait\WhereLike;
@@ -34,7 +34,6 @@ class GetAgencies implements GetAgenciesInterface
         $agencies = $query->paginate($input->limit());
         $agencyReadModels = [];
         foreach ($agencies->items() as $agency) {
-            $foundedIn = null;
             $agencyReadModels[] = new AgencyReadModel(
                 agencyId: $agency->id,
                 name: $agency->name,

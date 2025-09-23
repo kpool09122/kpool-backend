@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\EditAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
-use Source\Wiki\Agency\Domain\Entity\Agency;
+use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 
 class EditAgency implements EditAgencyInterface
@@ -17,12 +17,12 @@ class EditAgency implements EditAgencyInterface
 
     /**
      * @param EditAgencyInputPort $input
-     * @return Agency
+     * @return DraftAgency
      * @throws AgencyNotFoundException
      */
-    public function process(EditAgencyInputPort $input): Agency
+    public function process(EditAgencyInputPort $input): DraftAgency
     {
-        $agency = $this->agencyRepository->findById($input->agencyIdentifier());
+        $agency = $this->agencyRepository->findDraftById($input->agencyIdentifier());
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
@@ -35,7 +35,7 @@ class EditAgency implements EditAgencyInterface
         }
         $agency->setDescription($input->description());
 
-        $this->agencyRepository->save($agency);
+        $this->agencyRepository->saveDraft($agency);
 
         return $agency;
     }

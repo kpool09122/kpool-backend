@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl;
 
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInput;
-use Source\Wiki\Shared\Domain\ValueObject\ActorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -20,15 +20,15 @@ class ChangeAccessControlInputTest extends TestCase
     public function test__construct(): void
     {
         $holdingRole = Role::ADMINISTRATOR;
-        $actorIdentifier = new ActorIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $targetRole = Role::MEMBER_ACTOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,
-            $actorIdentifier,
+            $principalIdentifier,
             $targetRole,
         );
         $this->assertSame($holdingRole, $input->holdingRole());
-        $this->assertSame((string)$actorIdentifier, (string)$input->actorIdentifier());
+        $this->assertSame((string)$principalIdentifier, (string)$input->principalIdentifier());
         $this->assertSame($targetRole, $input->targetRole());
     }
 }

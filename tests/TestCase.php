@@ -49,12 +49,12 @@ abstract class TestCase extends OrchestraTestCase
         if (in_array('useDb', $this->groups(), true)) {
             $this->useDb = true;
 
-            // Use the default connection from environment (e.g., pgsql in Docker)
-
-            // Register migrations and run them once per process
-            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+            // Run migrations once per process without Testbench's auto-rollback machinery
             if (! RefreshDatabaseState::$migrated) {
-                $this->artisan('migrate');
+                $this->artisan('migrate:fresh', [
+                    '--path' => realpath(__DIR__ . '/../database/migrations'),
+                    '--realpath' => true,
+                ]);
                 RefreshDatabaseState::$migrated = true;
             }
 

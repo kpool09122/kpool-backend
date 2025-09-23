@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Shared\Domain\ValueObject;
 
-use Source\Wiki\Shared\Domain\Entity\Actor;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 
 enum Role: string
 {
@@ -33,7 +33,7 @@ enum Role: string
     /**
      * 権限判定（スコープチェック含む）
      */
-    public function can(Action $action, ResourceIdentifier $resource, Actor $actor): bool
+    public function can(Action $action, ResourceIdentifier $resource, Principal $principal): bool
     {
         // 管理者は全許可
         if ($this === self::ADMINISTRATOR) {
@@ -57,24 +57,24 @@ enum Role: string
         // Agency actor のスコープチェック
         // 要件: Agency actor も「自分のところに所属するグループと、そのメンバー、歌」しか承認・翻訳できない
         if ($this === self::AGENCY_ACTOR && ($action === Action::APPROVE || $action === Action::TRANSLATE)) {
-            $actorAgencyId = $actor->agencyId();
-            if ($actorAgencyId === null) {
+            $principalAgencyId = $principal->agencyId();
+            if ($principalAgencyId === null) {
                 return false;
             }
 
             if ($resource->type() === ResourceType::AGENCY) {
                 // 自分の事務所（agency）のみ
-                return $resource->agencyId() === $actorAgencyId;
+                return $resource->agencyId() === $principalAgencyId;
             }
 
             if ($resource->type() === ResourceType::GROUP) {
                 // group の agencyId が一致している必要がある
-                return $resource->agencyId() !== null && $resource->agencyId() === $actorAgencyId;
+                return $resource->agencyId() !== null && $resource->agencyId() === $principalAgencyId;
             }
 
             if (in_array($resource->type(), [ResourceType::MEMBER, ResourceType::SONG], true)) {
                 // member/song は属する group の所属 agency（resource の agencyId）で判定
-                return $resource->agencyId() !== null && $resource->agencyId() === $actorAgencyId;
+                return $resource->agencyId() !== null && $resource->agencyId() === $principalAgencyId;
             }
         }
 
@@ -82,7 +82,7 @@ enum Role: string
         if ($this === self::GROUP_ACTOR && ($action === Action::APPROVE || $action === Action::TRANSLATE)) {
             // Group リソースの承認 -> resource の id が actor の所属グループに含まれるか
             if ($resource->type() === ResourceType::GROUP) {
-                return in_array($resource->id(), $actor->groupIds(), true);
+                return in_array($resource->id(), $principal->groupIds(), true);
             }
 
             // Member または Song の承認 -> resource の groupIds と actor の所属グループが交差するか
@@ -92,7 +92,7 @@ enum Role: string
                     return false;
                 }
 
-                return count(array_intersect($resourceGroupIds, $actor->groupIds())) > 0;
+                return count(array_intersect($resourceGroupIds, $principal->groupIds())) > 0;
             }
 
             // Group actor は Agency を承認できない
@@ -107,7 +107,7 @@ enum Role: string
                     return false;
                 }
 
-                return count(array_intersect($resourceGroupIds, $actor->groupIds())) > 0;
+                return count(array_intersect($resourceGroupIds, $principal->groupIds())) > 0;
             }
         }
 

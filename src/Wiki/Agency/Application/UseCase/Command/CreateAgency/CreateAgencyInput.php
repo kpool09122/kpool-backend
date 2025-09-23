@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
 readonly class CreateAgencyInput implements CreateAgencyInputPort
 {
     /**
+     * @param ?AgencyIdentifier $publishedAgencyIdentifier
      * @param Translation $translation
      * @param AgencyName $name
      * @param CEO $CEO
@@ -20,12 +23,24 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
      * @param Description $description
      */
     public function __construct(
+        private ?AgencyIdentifier $publishedAgencyIdentifier,
+        private EditorIdentifier $editorIdentifier,
         private Translation $translation,
         private AgencyName $name,
         private CEO $CEO,
         private ?FoundedIn $foundedIn,
         private Description $description,
     ) {
+    }
+
+    public function publishedAgencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->publishedAgencyIdentifier;
+    }
+
+    public function editorIdentifier(): EditorIdentifier
+    {
+        return $this->editorIdentifier;
     }
 
     public function translation(): Translation

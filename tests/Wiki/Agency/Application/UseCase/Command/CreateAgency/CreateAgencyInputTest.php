@@ -7,9 +7,12 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInput;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class CreateAgencyInputTest extends TestCase
@@ -21,6 +24,8 @@ class CreateAgencyInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $name = new AgencyName('JYP엔터테인먼트');
         $translation = Translation::KOREAN;
         $CEO = new CEO('J.Y. Park');
@@ -39,12 +44,16 @@ class CreateAgencyInputTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
         $input = new CreateAgencyInput(
+            $publishedAgencyIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $CEO,
             $foundedIn,
             $description,
         );
+        $this->assertSame((string)$publishedAgencyIdentifier, (string)$input->publishedAgencyIdentifier());
+        $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
         $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$CEO, (string)$input->CEO());

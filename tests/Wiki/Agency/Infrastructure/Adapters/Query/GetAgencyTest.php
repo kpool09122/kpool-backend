@@ -12,7 +12,7 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Infrastracture\Adapters\GetAgency;
+use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgency;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

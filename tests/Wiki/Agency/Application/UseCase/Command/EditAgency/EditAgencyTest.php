@@ -12,13 +12,15 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInterface;
-use Source\Wiki\Agency\Domain\Entity\Agency;
+use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -49,6 +51,8 @@ class EditAgencyTest extends TestCase
     public function testProcess(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
@@ -74,21 +78,25 @@ class EditAgencyTest extends TestCase
             $description,
         );
 
-        $agency = new Agency(
+        $status = ApprovalStatus::Pending;
+        $agency = new DraftAgency(
             $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $CEO,
             $foundedIn,
             $description,
+            $status,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('save')
+        $agencyRepository->shouldReceive('saveDraft')
             ->once()
             ->with($agency)
             ->andReturn(null);
-        $agencyRepository->shouldReceive('findById')
+        $agencyRepository->shouldReceive('findDraftById')
             ->once()
             ->with($agencyIdentifier)
             ->andReturn($agency);
@@ -97,11 +105,13 @@ class EditAgencyTest extends TestCase
         $editAgency = $this->app->make(EditAgencyInterface::class);
         $agency = $editAgency->process($input);
         $this->assertSame((string)$agencyIdentifier, (string)$agency->agencyIdentifier());
+        $this->assertSame((string)$publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
         $this->assertSame($translation->value, $agency->translation()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame((string)$CEO, (string)$agency->CEO());
         $this->assertSame($foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$description, (string)$agency->description());
+        $this->assertSame($status, $agency->status());
     }
 
     /**
@@ -110,7 +120,7 @@ class EditAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    public function testWhenNotFoundGroup(): void
+    public function testWhenNotFoundAgency(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name = new AgencyName('JYP엔터테인먼트');
@@ -138,7 +148,7 @@ class EditAgencyTest extends TestCase
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
+        $agencyRepository->shouldReceive('findDraftById')
             ->once()
             ->with($agencyIdentifier)
             ->andReturn(null);

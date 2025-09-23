@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Shared\Domain\Entity;
 
-use Source\Wiki\Shared\Domain\ValueObject\ActorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 
-class Actor
+class Principal
 {
     /**
-     * @param ActorIdentifier $actorIdentifier
+     * @param PrincipalIdentifier $principalIdentifier
      * @param Role $role
      * @param string|null $agencyId
      * @param string[] $groupIds
      * @param string|null $memberId
      */
     public function __construct(
-        private readonly ActorIdentifier $actorIdentifier,
-        private Role $role,
-        private readonly ?string $agencyId,
-        private readonly array $groupIds,
-        private readonly ?string $memberId,
+        private readonly PrincipalIdentifier $principalIdentifier,
+        private Role                         $role,
+        private readonly ?string             $agencyId,
+        private readonly array               $groupIds,
+        private readonly ?string             $memberId,
     ) {
     }
 
-    public function actorIdentifier(): ActorIdentifier
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->actorIdentifier;
+        return $this->principalIdentifier;
     }
 
     public function role(): Role
