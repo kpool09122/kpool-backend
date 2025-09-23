@@ -7,14 +7,24 @@ namespace Application\Providers\Wiki;
 use Illuminate\Support\ServiceProvider;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControl;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\ApproveUpdatedAgency\ApproveUpdatedAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\ApproveUpdatedAgency\ApproveUpdatedAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency\RejectUpdatedAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency\RejectUpdatedAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\SubmitUpdatedAgency\SubmitUpdatedAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\SubmitUpdatedAgency\SubmitUpdatedAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
-use Source\Wiki\Agency\Infrastracture\Adapters\GetAgencies;
-use Source\Wiki\Agency\Infrastracture\Adapters\GetAgency;
+use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgencies;
+use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgency;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
@@ -43,5 +53,11 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
         $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
         $this->app->singleton(ChangeAccessControlInterface::class, ChangeAccessControl::class);
+        $this->app->singleton(SubmitUpdatedAgencyInterface::class, SubmitUpdatedAgency::class);
+        $this->app->singleton(ApproveUpdatedAgencyInterface::class, ApproveUpdatedAgency::class);
+        $this->app->singleton(RejectUpdatedAgencyInterface::class, RejectUpdatedAgency::class);
+        $this->app->singleton(PublishAgencyInterface::class, PublishAgency::class);
+        $this->app->singleton(TranslateAgencyInterface::class, TranslateAgency::class);
+
     }
 }

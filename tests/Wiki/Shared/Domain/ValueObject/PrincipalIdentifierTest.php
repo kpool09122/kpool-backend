@@ -6,10 +6,10 @@ namespace Tests\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Shared\Domain\ValueObject\ActorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
-class ActorIdentifierTest extends TestCase
+class PrincipalIdentifierTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,8 +19,8 @@ class ActorIdentifierTest extends TestCase
     public function test__construct(): void
     {
         $ulid = StrTestHelper::generateUlid();
-        $agencyIdentifier = new ActorIdentifier($ulid);
-        $this->assertSame($ulid, (string)$agencyIdentifier);
+        $principalIdentifier = new PrincipalIdentifier($ulid);
+        $this->assertSame($ulid, (string)$principalIdentifier);
     }
 
     /**
@@ -32,6 +32,6 @@ class ActorIdentifierTest extends TestCase
     {
         $ulid = 'invalid-ulid';
         $this->expectException(InvalidArgumentException::class);
-        new ActorIdentifier($ulid);
+        new PrincipalIdentifier($ulid);
     }
 }

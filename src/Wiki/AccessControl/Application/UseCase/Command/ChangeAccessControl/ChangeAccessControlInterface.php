@@ -6,15 +6,15 @@ namespace Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessCont
 
 use Source\Wiki\AccessControl\Application\Exception\ActorNotFoundException;
 use Source\Wiki\AccessControl\Application\Exception\UnauthorizedChangingACException;
-use Source\Wiki\Shared\Domain\Entity\Actor;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 
 interface ChangeAccessControlInterface
 {
     /**
      * @param ChangeAccessControlInputPort $input
-     * @return Actor
+     * @return Principal
      * @throws UnauthorizedChangingACException
      * @throws ActorNotFoundException
      */
-    public function process(ChangeAccessControlInputPort $input): Actor;
+    public function process(ChangeAccessControlInputPort $input): Principal;
 }

@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class ActorIdentifier extends StringBaseValue
+class PrincipalIdentifier extends StringBaseValue
 {
     public function __construct(
         protected string $id,

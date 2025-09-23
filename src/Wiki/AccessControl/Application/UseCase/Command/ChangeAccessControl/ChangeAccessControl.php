@@ -6,39 +6,39 @@ namespace Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessCont
 
 use Source\Wiki\AccessControl\Application\Exception\ActorNotFoundException;
 use Source\Wiki\AccessControl\Application\Exception\UnauthorizedChangingACException;
-use Source\Wiki\AccessControl\Domain\Repository\ActorRepositoryInterface;
-use Source\Wiki\Shared\Domain\Entity\Actor;
+use Source\Wiki\AccessControl\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 
 class ChangeAccessControl implements ChangeAccessControlInterface
 {
     public function __construct(
-        private ActorRepositoryInterface $actorRepository,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
     /**
      * @param ChangeAccessControlInputPort $input
-     * @return Actor
+     * @return Principal
      * @throws UnauthorizedChangingACException
      * @throws ActorNotFoundException
      */
-    public function process(ChangeAccessControlInputPort $input): Actor
+    public function process(ChangeAccessControlInputPort $input): Principal
     {
         if ($input->holdingRole() !== Role::ADMINISTRATOR) {
             throw new UnauthorizedChangingACException();
         }
 
-        $actor = $this->actorRepository->findById($input->actorIdentifier());
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
 
-        if ($actor === null) {
+        if ($principal === null) {
             throw new ActorNotFoundException();
         }
 
-        $actor->setRole($input->targetRole());
+        $principal->setRole($input->targetRole());
 
-        $this->actorRepository->save($actor);
+        $this->principalRepository->save($principal);
 
-        return $actor;
+        return $principal;
     }
 }

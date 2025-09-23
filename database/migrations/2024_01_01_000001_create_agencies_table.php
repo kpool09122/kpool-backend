@@ -11,13 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('agencies', function (Blueprint $table) {
+        Schema::create('agencies', static function (Blueprint $table) {
             $table->string('id', 26)->primary()->comment('事務所ID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('CEO', 32)->comment('CEO名')->default('');
             $table->date('founded_in')->nullable()->comment('設立年');
             $table->text('description')->comment('概要')->default('');
+            $table->timestamps();
+        });
+
+        Schema::create('agencies_pending', static function (Blueprint $table) {
+            $table->string('id', 26)->primary()->comment('事務所ID');
+            $table->string('published_id', 26)->nullable()->comment('公開済み事務所ID');
+            $table->string('editor_id', 26)->comment('編集者ID');
+            $table->string('translation', 8)->comment('翻訳言語');
+            $table->string('name', 32)->comment('事務所名');
+            $table->string('CEO', 32)->comment('CEO名')->default('');
+            $table->date('founded_in')->nullable()->comment('設立年');
+            $table->text('description')->comment('概要')->default('');
+            $table->text('status')->comment('公開ステータス');
             $table->timestamps();
         });
     }
@@ -28,5 +41,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('agencies');
+        Schema::dropIfExists('agencies_pending');
     }
 }; 

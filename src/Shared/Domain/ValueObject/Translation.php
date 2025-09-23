@@ -8,6 +8,14 @@ enum Translation: string
 {
     case JAPANESE = 'ja';
     case KOREAN = 'ko';
-    case TAIWANESE = 'zh-tw';
     case ENGLISH = 'en';
+
+    /**
+     * @param Translation $excluded
+     * @return Translation[]
+     */
+    public static function allExcept(self $excluded): array
+    {
+        return array_values(array_filter(self::cases(), static fn (self $case): bool => $case !== $excluded));
+    }
 }

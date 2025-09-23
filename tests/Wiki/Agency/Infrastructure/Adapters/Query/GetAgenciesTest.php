@@ -12,7 +12,7 @@ use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesOutput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Infrastracture\Adapters\GetAgencies;
+use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgencies;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,14 +40,14 @@ class GetAgenciesTest extends TestCase
      */
     public function testProcess(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::JAPANESE;
         $name = 'JYPエンターテイメント';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         DB::table('agencies')->upsert([
-            'id' => (string)$agencyIdentifer,
+            'id' => (string)$agencyIdentifier,
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,

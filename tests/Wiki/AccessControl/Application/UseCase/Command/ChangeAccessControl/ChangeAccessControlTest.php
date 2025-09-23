@@ -11,9 +11,9 @@ use Source\Wiki\AccessControl\Application\Exception\UnauthorizedChangingACExcept
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControl;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInput;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInterface;
-use Source\Wiki\AccessControl\Domain\Repository\ActorRepositoryInterface;
-use Source\Wiki\Shared\Domain\Entity\Actor;
-use Source\Wiki\Shared\Domain\ValueObject\ActorIdentifier;
+use Source\Wiki\AccessControl\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -29,8 +29,8 @@ class ChangeAccessControlTest extends TestCase
     public function test__construct(): void
     {
         // TODO: 各実装クラス作ったら削除する
-        $actorRepository = Mockery::mock(ActorRepositoryInterface::class);
-        $this->app->instance(ActorRepositoryInterface::class, $actorRepository);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $changeAccessControl = $this->app->make(ChangeAccessControlInterface::class);
         $this->assertInstanceOf(ChangeAccessControl::class, $changeAccessControl);
     }
@@ -45,42 +45,42 @@ class ChangeAccessControlTest extends TestCase
     public function testProcess(): void
     {
         $holdingRole = Role::ADMINISTRATOR;
-        $actorIdentifier = new ActorIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $oldRole = Role::COLLABORATOR;
         $targetRole = Role::ADMINISTRATOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,
-            $actorIdentifier,
+            $principalIdentifier,
             $targetRole,
         );
 
-        $actor = new Actor(
-            $actorIdentifier,
+        $principal = new Principal(
+            $principalIdentifier,
             $oldRole,
             null,
             [],
             null,
         );
 
-        $actorRepository = Mockery::mock(ActorRepositoryInterface::class);
-        $actorRepository->shouldReceive('findById')
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($actorIdentifier)
-            ->andReturn($actor);
-        $actorRepository->shouldReceive('save')
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+        $principalRepository->shouldReceive('save')
             ->once()
-            ->with($actor)
+            ->with($principal)
             ->andReturn(null);
 
-        $this->app->instance(ActorRepositoryInterface::class, $actorRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $changeAccessControl = $this->app->make(ChangeAccessControlInterface::class);
-        $actor = $changeAccessControl->process($input);
+        $principal = $changeAccessControl->process($input);
 
-        $this->assertSame((string)$actorIdentifier, (string)$actor->actorIdentifier());
-        $this->assertSame($targetRole, $actor->role());
-        $this->assertNull($actor->agencyId());
-        $this->assertEmpty($actor->groupIds());
-        $this->assertNull($actor->memberId());
+        $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
+        $this->assertSame($targetRole, $principal->role());
+        $this->assertNull($principal->agencyId());
+        $this->assertEmpty($principal->groupIds());
+        $this->assertNull($principal->memberId());
     }
 
     /**
@@ -93,16 +93,16 @@ class ChangeAccessControlTest extends TestCase
     public function testUnauthorizedActor(): void
     {
         $holdingRole = Role::COLLABORATOR;
-        $actorIdentifier = new ActorIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $targetRole = Role::ADMINISTRATOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,
-            $actorIdentifier,
+            $principalIdentifier,
             $targetRole,
         );
-        $actorRepository = Mockery::mock(ActorRepositoryInterface::class);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
 
-        $this->app->instance(ActorRepositoryInterface::class, $actorRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $changeAccessControl = $this->app->make(ChangeAccessControlInterface::class);
 
         $this->expectException(UnauthorizedChangingACException::class);
@@ -118,21 +118,21 @@ class ChangeAccessControlTest extends TestCase
     public function testWhenNotFoundActor(): void
     {
         $holdingRole = Role::ADMINISTRATOR;
-        $actorIdentifier = new ActorIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $targetRole = Role::ADMINISTRATOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,
-            $actorIdentifier,
+            $principalIdentifier,
             $targetRole,
         );
 
-        $actorRepository = Mockery::mock(ActorRepositoryInterface::class);
-        $actorRepository->shouldReceive('findById')
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($actorIdentifier)
+            ->with($principalIdentifier)
             ->andReturn(null);
 
-        $this->app->instance(ActorRepositoryInterface::class, $actorRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $changeAccessControl = $this->app->make(ChangeAccessControlInterface::class);
 
         $this->expectException(ActorNotFoundException::class);

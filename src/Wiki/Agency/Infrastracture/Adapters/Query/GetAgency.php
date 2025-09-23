@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Infrastracture\Adapters;
+namespace Source\Wiki\Agency\Infrastracture\Adapters\Query;
 
 use Application\Models\Wiki\Agency;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
