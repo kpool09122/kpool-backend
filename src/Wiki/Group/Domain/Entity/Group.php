@@ -59,7 +59,7 @@ class Group
         return $this->agencyIdentifier;
     }
 
-    public function setAgencyIdentifier(?AgencyIdentifier $agencyIdentifier): void
+    public function setAgencyIdentifier(AgencyIdentifier $agencyIdentifier): void
     {
         $this->agencyIdentifier = $agencyIdentifier;
     }

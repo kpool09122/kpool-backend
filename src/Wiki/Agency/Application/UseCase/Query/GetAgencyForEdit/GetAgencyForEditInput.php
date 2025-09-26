@@ -11,7 +11,7 @@ class GetAgencyForEditInput implements GetAgencyForEditInputPort
 {
     public function __construct(
         private AgencyIdentifier $agencyIdentifier,
-        private Translation $translation,
+        private Translation      $translation,
     ) {
     }
 

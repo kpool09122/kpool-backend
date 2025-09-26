@@ -95,7 +95,7 @@ class GroupTest extends TestCase
     }
 
     /**
-     * 正常系：CompanyIdentifierのsetterが正しく動作すること(null許容).
+     * 正常系：CompanyIdentifierのsetterが正しく動作すること.
      *
      * @return void
      */
@@ -130,9 +130,6 @@ class GroupTest extends TestCase
         $group->setAgencyIdentifier($newCompanyIdentifier);
         $this->assertNotSame((string)$companyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$newCompanyIdentifier, (string)$group->agencyIdentifier());
-
-        $group->setAgencyIdentifier(null);
-        $this->assertNull($group->agencyIdentifier());
     }
 
     /**

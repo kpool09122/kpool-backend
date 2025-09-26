@@ -11,7 +11,7 @@ class GetAgencyInput implements GetAgencyInputPort
 {
     public function __construct(
         private AgencyIdentifier $agencyIdentifier,
-        private Translation $translation,
+        private Translation      $translation,
     ) {
     }
 

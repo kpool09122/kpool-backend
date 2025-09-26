@@ -38,8 +38,8 @@ class SubmitUpdatedAgencyTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $editAgency = $this->app->make(SubmitUpdatedAgencyInterface::class);
-        $this->assertInstanceOf(SubmitUpdatedAgency::class, $editAgency);
+        $submitUpdatedAgency = $this->app->make(SubmitUpdatedAgencyInterface::class);
+        $this->assertInstanceOf(SubmitUpdatedAgency::class, $submitUpdatedAgency);
     }
 
     /**

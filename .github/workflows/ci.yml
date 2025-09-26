@@ -42,25 +42,3 @@ jobs:
 
     - name: Run tests (no DB)
       run: vendor/bin/phpunit --exclude-group useDb --coverage-clover=coverage.xml --coverage-html=coverage-html
-
-  deploy-coverage:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download coverage artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: coverage-html
-        path: coverage-html
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./coverage-html
-        destination_dir: coverage

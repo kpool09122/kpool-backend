@@ -9,7 +9,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 readonly class TranslateAgencyInput implements TranslateAgencyInputPort
 {
     public function __construct(
-        private AgencyIdentifier $agencyIdentifier,
+        private AgencyIdentifier  $agencyIdentifier,
         private ?AgencyIdentifier $publishedAgencyIdentifier,
     ) {
     }

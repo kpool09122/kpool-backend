@@ -24,9 +24,11 @@ class CreateAgency implements CreateAgencyInterface
             $input->translation(),
             $input->name(),
         );
-        $publishedAgency = $this->agencyRepository->findById($input->publishedAgencyIdentifier());
-        if ($publishedAgency) {
-            $agency->setPublishedAgencyIdentifier($publishedAgency->agencyIdentifier());
+        if ($input->publishedAgencyIdentifier()) {
+            $publishedAgency = $this->agencyRepository->findById($input->publishedAgencyIdentifier());
+            if ($publishedAgency) {
+                $agency->setPublishedAgencyIdentifier($publishedAgency->agencyIdentifier());
+            }
         }
         $agency->setCEO($input->CEO());
         if ($input->foundedIn()) {

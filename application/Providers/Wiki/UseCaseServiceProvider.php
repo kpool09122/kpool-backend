@@ -25,10 +25,20 @@ use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterfac
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
 use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgencies;
 use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgency;
+use Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup\ApproveUpdatedGroup;
+use Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup\ApproveUpdatedGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroup;
+use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup\RejectUpdatedGroup;
+use Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup\RejectUpdatedGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroup;
+use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
+use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMember;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMemberInterface;
 use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMember;
@@ -58,6 +68,11 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectUpdatedAgencyInterface::class, RejectUpdatedAgency::class);
         $this->app->singleton(PublishAgencyInterface::class, PublishAgency::class);
         $this->app->singleton(TranslateAgencyInterface::class, TranslateAgency::class);
+        $this->app->singleton(SubmitUpdatedGroupInterface::class, SubmitUpdatedGroup::class);
+        $this->app->singleton(ApproveUpdatedGroupInterface::class, ApproveUpdatedGroup::class);
+        $this->app->singleton(RejectUpdatedGroupInterface::class, RejectUpdatedGroup::class);
+        $this->app->singleton(PublishGroupInterface::class, PublishGroup::class);
+        $this->app->singleton(TranslateGroupInterface::class, TranslateGroup::class);
 
     }
 }

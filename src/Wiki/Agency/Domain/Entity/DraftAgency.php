@@ -16,15 +16,15 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 class DraftAgency
 {
     public function __construct(
-        private readonly AgencyIdentifier $agencyIdentifier,
-        private ?AgencyIdentifier $publishedAgencyIdentifier,
+        private readonly AgencyIdentifier  $agencyIdentifier,
+        private ?AgencyIdentifier          $publishedAgencyIdentifier,
         private readonly EditorIdentifier $editorIdentifier,
-        private readonly Translation $translation,
-        private AgencyName $name,
-        private CEO $CEO,
-        private ?FoundedIn $foundedIn,
-        private Description $description,
-        private ApprovalStatus $status,
+        private readonly Translation      $translation,
+        private AgencyName                $name,
+        private CEO                       $CEO,
+        private ?FoundedIn                $foundedIn,
+        private Description               $description,
+        private ApprovalStatus            $status,
     ) {
     }
 
@@ -38,14 +38,14 @@ class DraftAgency
         return $this->publishedAgencyIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
-    {
-        return $this->editorIdentifier;
-    }
-
     public function setPublishedAgencyIdentifier(AgencyIdentifier $agencyIdentifier): void
     {
         $this->publishedAgencyIdentifier = $agencyIdentifier;
+    }
+
+    public function editorIdentifier(): EditorIdentifier
+    {
+        return $this->editorIdentifier;
     }
 
     public function translation(): Translation

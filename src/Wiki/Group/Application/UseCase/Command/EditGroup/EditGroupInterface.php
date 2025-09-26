@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Application\UseCase\Command\EditGroup;
 
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Domain\Entity\Group;
+use Source\Wiki\Group\Domain\Entity\DraftGroup;
 
 interface EditGroupInterface
 {
     /**
      * @param EditGroupInputPort $input
-     * @return Group
+     * @return DraftGroup
      * @throws GroupNotFoundException
      */
-    public function process(EditGroupInputPort $input): Group;
+    public function process(EditGroupInputPort $input): DraftGroup;
 }

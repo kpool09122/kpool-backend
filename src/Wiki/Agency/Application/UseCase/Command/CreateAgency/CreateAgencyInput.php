@@ -25,11 +25,11 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
     public function __construct(
         private ?AgencyIdentifier $publishedAgencyIdentifier,
         private EditorIdentifier $editorIdentifier,
-        private Translation $translation,
-        private AgencyName $name,
-        private CEO $CEO,
-        private ?FoundedIn $foundedIn,
-        private Description $description,
+        private Translation      $translation,
+        private AgencyName       $name,
+        private CEO              $CEO,
+        private ?FoundedIn       $foundedIn,
+        private Description      $description,
     ) {
     }
 
