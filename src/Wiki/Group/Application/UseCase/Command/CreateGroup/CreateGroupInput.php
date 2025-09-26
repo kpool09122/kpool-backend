@@ -7,20 +7,26 @@ namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
+use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
 readonly class CreateGroupInput implements CreateGroupInputPort
 {
     /**
+     * @param EditorIdentifier $editorIdentifier
+     * @param GroupIdentifier|null $publishedGroupIdentifier
      * @param Translation $translation
      * @param GroupName $name
      * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
-     * @param list<SongIdentifier> $songIdentifiers
+     * @param SongIdentifier[] $songIdentifiers
      * @param string|null $base64EncodedImage
      */
     public function __construct(
+        private EditorIdentifier $editorIdentifier,
+        private ?GroupIdentifier $publishedGroupIdentifier,
         private Translation $translation,
         private GroupName $name,
         private AgencyIdentifier $agencyIdentifier,
@@ -28,6 +34,16 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         private array $songIdentifiers,
         private ?string $base64EncodedImage,
     ) {
+    }
+
+    public function editorIdentifier(): EditorIdentifier
+    {
+        return $this->editorIdentifier;
+    }
+
+    public function publishedGroupIdentifier(): ?GroupIdentifier
+    {
+        return $this->publishedGroupIdentifier;
     }
 
     public function translation(): Translation

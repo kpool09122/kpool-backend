@@ -9,7 +9,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 readonly class ApproveUpdatedAgencyInput implements ApproveUpdatedAgencyInputPort
 {
     public function __construct(
-        private AgencyIdentifier $agencyIdentifier,
+        private AgencyIdentifier  $agencyIdentifier,
         private ?AgencyIdentifier $publishedAgencyIdentifier,
     ) {
     }
@@ -19,7 +19,7 @@ readonly class ApproveUpdatedAgencyInput implements ApproveUpdatedAgencyInputPor
         return $this->agencyIdentifier;
     }
 
-    public function publishedAgencyIdentifier(): AgencyIdentifier
+    public function publishedAgencyIdentifier(): ?AgencyIdentifier
     {
         return $this->publishedAgencyIdentifier;
     }

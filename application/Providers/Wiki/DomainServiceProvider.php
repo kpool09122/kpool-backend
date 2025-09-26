@@ -11,6 +11,8 @@ use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactory;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Infrastracture\Adapters\Repository\AgencyRepository;
+use Source\Wiki\Group\Domain\Factory\DraftGroupFactory;
+use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupFactory;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Member\Domain\Factory\MemberFactory;
@@ -28,5 +30,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AgencyFactoryInterface::class, AgencyFactory::class);
         $this->app->singleton(DraftAgencyFactoryInterface::class, DraftAgencyFactory::class);
         $this->app->singleton(AgencyRepositoryInterface::class, AgencyRepository::class);
+        $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
     }
 }

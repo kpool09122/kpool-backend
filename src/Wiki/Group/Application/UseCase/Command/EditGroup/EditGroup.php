@@ -6,7 +6,7 @@ namespace Source\Wiki\Group\Application\UseCase\Command\EditGroup;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Domain\Entity\Group;
+use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 
 class EditGroup implements EditGroupInterface
@@ -19,12 +19,12 @@ class EditGroup implements EditGroupInterface
 
     /**
      * @param EditGroupInputPort $input
-     * @return Group
+     * @return DraftGroup
      * @throws GroupNotFoundException
      */
-    public function process(EditGroupInputPort $input): Group
+    public function process(EditGroupInputPort $input): DraftGroup
     {
-        $group = $this->groupRepository->findById($input->groupIdentifier());
+        $group = $this->groupRepository->findDraftById($input->groupIdentifier());
 
         if ($group === null) {
             throw new GroupNotFoundException();
@@ -39,7 +39,7 @@ class EditGroup implements EditGroupInterface
             $group->setImageLink($imageLink);
         }
 
-        $this->groupRepository->save($group);
+        $this->groupRepository->saveDraft($group);
 
         return $group;
     }

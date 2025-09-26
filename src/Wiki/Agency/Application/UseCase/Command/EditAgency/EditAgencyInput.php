@@ -21,10 +21,10 @@ readonly class EditAgencyInput implements EditAgencyInputPort
      */
     public function __construct(
         private AgencyIdentifier $agencyIdentifier,
-        private AgencyName $name,
-        private CEO $CEO,
-        private ?FoundedIn $foundedIn,
-        private Description $description,
+        private AgencyName      $name,
+        private CEO             $CEO,
+        private ?FoundedIn      $foundedIn,
+        private Description     $description,
     ) {
     }
 

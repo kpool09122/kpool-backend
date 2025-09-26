@@ -15,11 +15,11 @@ class Agency
 {
     public function __construct(
         private readonly AgencyIdentifier $agencyIdentifier,
-        private readonly Translation $translation,
-        private AgencyName $name,
-        private CEO $CEO,
-        private ?FoundedIn $foundedIn,
-        private Description $description,
+        private readonly Translation     $translation,
+        private AgencyName               $name,
+        private CEO                      $CEO,
+        private ?FoundedIn               $foundedIn,
+        private Description              $description,
     ) {
     }
 

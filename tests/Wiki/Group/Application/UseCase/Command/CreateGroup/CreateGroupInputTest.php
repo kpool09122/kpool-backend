@@ -8,8 +8,10 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
+use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -22,6 +24,8 @@ class CreateGroupInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -36,6 +40,8 @@ class CreateGroupInputTest extends TestCase
         ];
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $input = new CreateGroupInput(
+            $editorIdentifier,
+            $publishedGroupIdentifier,
             $translation,
             $name,
             $companyIdentifier,
@@ -43,6 +49,8 @@ class CreateGroupInputTest extends TestCase
             $songIndentifiers,
             $base64EncodedImage,
         );
+        $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
+        $this->assertSame((string)$publishedGroupIdentifier, (string)$input->publishedGroupIdentifier());
         $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$companyIdentifier, (string)$input->agencyIdentifier());

@@ -9,7 +9,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 readonly class SubmitUpdatedAgencyInput implements SubmitUpdatedAgencyInputPort
 {
     public function __construct(
-        private AgencyIdentifier    $agencyIdentifier,
+        private AgencyIdentifier $agencyIdentifier,
     ) {
     }
 

@@ -13,13 +13,15 @@ use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInput;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInterface;
-use Source\Wiki\Group\Domain\Entity\Group;
+use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -81,22 +83,28 @@ class EditGroupTest extends TestCase
             ->with($base64EncodedImage)
             ->andReturn($imagePath);
 
-        $group = new Group(
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $group = new DraftGroup(
             $groupIdentifier,
+            $publishedGroupIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
             $imagePath,
+            $status,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('save')
+        $groupRepository->shouldReceive('saveDraft')
             ->once()
             ->with($group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findById')
+        $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($groupIdentifier)
             ->andReturn($group);
@@ -106,12 +114,15 @@ class EditGroupTest extends TestCase
         $editGroup = $this->app->make(EditGroupInterface::class);
         $group = $editGroup->process($input);
         $this->assertSame((string)$groupIdentifier, (string)$group->groupIdentifier());
+        $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
+        $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
         $this->assertSame($songIdentifiers, $group->songIdentifiers());
         $this->assertSame((string)$imagePath, (string)$group->imageLink());
+        $this->assertSame($status, $group->status());
     }
 
     /**
@@ -145,7 +156,7 @@ class EditGroupTest extends TestCase
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
+        $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($groupIdentifier)
             ->andReturn(null);
