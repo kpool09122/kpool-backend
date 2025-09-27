@@ -39,10 +39,20 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdat
 use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
+use Source\Wiki\Member\Application\UseCase\Command\ApproveUpdatedMember\ApproveUpdatedMember;
+use Source\Wiki\Member\Application\UseCase\Command\ApproveUpdatedMember\ApproveUpdatedMemberInterface;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMember;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMemberInterface;
 use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMember;
 use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMemberInterface;
+use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMember;
+use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMemberInterface;
+use Source\Wiki\Member\Application\UseCase\Command\RejectUpdatedMember\RejectUpdatedMember;
+use Source\Wiki\Member\Application\UseCase\Command\RejectUpdatedMember\RejectUpdatedMemberInterface;
+use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpdatedMember;
+use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpdatedMemberInterface;
+use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMember;
+use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMemberInterface;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
@@ -73,6 +83,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectUpdatedGroupInterface::class, RejectUpdatedGroup::class);
         $this->app->singleton(PublishGroupInterface::class, PublishGroup::class);
         $this->app->singleton(TranslateGroupInterface::class, TranslateGroup::class);
-
+        $this->app->singleton(SubmitUpdatedMemberInterface::class, SubmitUpdatedMember::class);
+        $this->app->singleton(ApproveUpdatedMemberInterface::class, ApproveUpdatedMember::class);
+        $this->app->singleton(RejectUpdatedMemberInterface::class, RejectUpdatedMember::class);
+        $this->app->singleton(PublishMemberInterface::class, PublishMember::class);
+        $this->app->singleton(TranslateMemberInterface::class, TranslateMember::class);
     }
 }

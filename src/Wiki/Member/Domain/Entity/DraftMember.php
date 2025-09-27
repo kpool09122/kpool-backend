@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\CreateMember;
+namespace Source\Wiki\Member\Domain\Entity;
 
+use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Member\Domain\ValueObject\Birthday;
 use Source\Wiki\Member\Domain\ValueObject\Career;
@@ -12,11 +13,13 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
-readonly class CreateMemberInput implements CreateMemberInputPort
+class DraftMember
 {
     /**
+     * @param MemberIdentifier $memberIdentifier
      * @param MemberIdentifier|null $publishedMemberIdentifier
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
@@ -25,26 +28,39 @@ readonly class CreateMemberInput implements CreateMemberInputPort
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
-     * @param string|null $base64EncodedImage
+     * @param ImagePath|null $imageLink
      * @param RelevantVideoLinks $relevantVideoLinks
+     * @param ApprovalStatus $status
      */
     public function __construct(
+        private readonly MemberIdentifier $memberIdentifier,
         private ?MemberIdentifier $publishedMemberIdentifier,
-        private EditorIdentifier $editorIdentifier,
-        private Translation $translation,
+        private readonly EditorIdentifier $editorIdentifier,
+        private readonly Translation $translation,
         private MemberName $name,
         private RealName $realName,
         private array $groupIdentifiers,
         private ?Birthday $birthday,
         private Career $career,
-        private ?string $base64EncodedImage,
+        private ?ImagePath $imageLink,
         private RelevantVideoLinks $relevantVideoLinks,
+        private ApprovalStatus $status,
     ) {
+    }
+
+    public function memberIdentifier(): MemberIdentifier
+    {
+        return $this->memberIdentifier;
     }
 
     public function publishedMemberIdentifier(): ?MemberIdentifier
     {
         return $this->publishedMemberIdentifier;
+    }
+
+    public function setPublishedMemberIdentifier(MemberIdentifier $memberIdentifier): void
+    {
+        $this->publishedMemberIdentifier = $memberIdentifier;
     }
 
     public function editorIdentifier(): EditorIdentifier
@@ -62,9 +78,19 @@ readonly class CreateMemberInput implements CreateMemberInputPort
         return $this->name;
     }
 
+    public function setName(MemberName $name): void
+    {
+        $this->name = $name;
+    }
+
     public function realName(): RealName
     {
         return $this->realName;
+    }
+
+    public function setRealName(RealName $realName): void
+    {
+        $this->realName = $realName;
     }
 
     /**
@@ -75,9 +101,23 @@ readonly class CreateMemberInput implements CreateMemberInputPort
         return $this->groupIdentifiers;
     }
 
+    /**
+     * @param GroupIdentifier[] $groupIdentifiers
+     * @return void
+     */
+    public function setGroupIdentifiers(array $groupIdentifiers): void
+    {
+        $this->groupIdentifiers = $groupIdentifiers;
+    }
+
     public function birthday(): ?Birthday
     {
         return $this->birthday;
+    }
+
+    public function setBirthday(?Birthday $birthday): void
+    {
+        $this->birthday = $birthday;
     }
 
     public function career(): Career
@@ -85,13 +125,45 @@ readonly class CreateMemberInput implements CreateMemberInputPort
         return $this->career;
     }
 
-    public function base64EncodedImage(): ?string
+    public function setCareer(Career $career): void
     {
-        return $this->base64EncodedImage;
+        $this->career = $career;
     }
 
+    public function imageLink(): ?ImagePath
+    {
+        return $this->imageLink;
+    }
+
+    public function setImageLink(?ImagePath $imageLink): void
+    {
+        $this->imageLink = $imageLink;
+    }
+
+    /**
+     * @return RelevantVideoLinks
+     */
     public function relevantVideoLinks(): RelevantVideoLinks
     {
         return $this->relevantVideoLinks;
+    }
+
+    /**
+     * @param RelevantVideoLinks $relevantVideoLinks
+     * @return void
+     */
+    public function setRelevantVideoLinks(RelevantVideoLinks $relevantVideoLinks): void
+    {
+        $this->relevantVideoLinks = $relevantVideoLinks;
+    }
+
+    public function status(): ApprovalStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ApprovalStatus $status): void
+    {
+        $this->status = $status;
     }
 }

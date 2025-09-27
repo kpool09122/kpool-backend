@@ -12,9 +12,11 @@ use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\ValueObject\Birthday;
 use Source\Wiki\Member\Domain\ValueObject\Career;
 use Source\Wiki\Member\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -28,6 +30,8 @@ class CreateMemberInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $realName = new RealName('손채영');
@@ -47,6 +51,8 @@ class CreateMemberInputTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new CreateMemberInput(
+            $publishedMemberIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $realName,
@@ -56,6 +62,8 @@ class CreateMemberInputTest extends TestCase
             $base64EncodedImage,
             $relevantVideoLinks,
         );
+        $this->assertSame((string)$publishedMemberIdentifier, (string)$input->publishedMemberIdentifier());
+        $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
         $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$realName, (string)$input->realName());

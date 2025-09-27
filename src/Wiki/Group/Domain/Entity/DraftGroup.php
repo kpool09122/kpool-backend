@@ -18,12 +18,15 @@ class DraftGroup
 {
     /**
      * @param GroupIdentifier $groupIdentifier
+     * @param GroupIdentifier|null $publishedGroupIdentifier
+     * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param GroupName $name
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param list<SongIdentifier> $songIdentifiers
+     * @param SongIdentifier[] $songIdentifiers
      * @param ImagePath|null $imageLink
+     * @param ApprovalStatus $status
      */
     public function __construct(
         private readonly GroupIdentifier $groupIdentifier,
