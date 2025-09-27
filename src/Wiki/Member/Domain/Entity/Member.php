@@ -18,7 +18,9 @@ class Member
 {
     /**
      * @param MemberIdentifier $memberIdentifier
+     * @param Translation $translation
      * @param MemberName $name
+     * @param RealName $realName
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career

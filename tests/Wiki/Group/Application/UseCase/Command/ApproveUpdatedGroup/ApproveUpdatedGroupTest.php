@@ -122,7 +122,7 @@ class ApproveUpdatedGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      */
-    public function testWhenNotFoundAgency(): void
+    public function testWhenNotFoundGroup(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());

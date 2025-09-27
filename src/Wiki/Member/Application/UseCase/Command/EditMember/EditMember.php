@@ -6,7 +6,7 @@ namespace Source\Wiki\Member\Application\UseCase\Command\EditMember;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
-use Source\Wiki\Member\Domain\Entity\Member;
+use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 
 readonly class EditMember implements EditMemberInterface
@@ -19,12 +19,12 @@ readonly class EditMember implements EditMemberInterface
 
     /**
      * @param EditMemberInputPort $input
-     * @return Member
+     * @return DraftMember
      * @throws MemberNotFoundException
      */
-    public function process(EditMemberInputPort $input): Member
+    public function process(EditMemberInputPort $input): DraftMember
     {
-        $member = $this->memberRepository->findById($input->memberIdentifier());
+        $member = $this->memberRepository->findDraftById($input->memberIdentifier());
 
         if ($member === null) {
             throw new MemberNotFoundException();
@@ -41,7 +41,7 @@ readonly class EditMember implements EditMemberInterface
         }
         $member->setRelevantVideoLinks($input->relevantVideoLinks());
 
-        $this->memberRepository->save($member);
+        $this->memberRepository->saveDraft($member);
 
         return $member;
     }

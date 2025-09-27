@@ -15,9 +15,10 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMember;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMemberInput;
 use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMemberInterface;
+use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
-use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
+use Source\Wiki\Member\Domain\Factory\DraftMemberFactoryInterface;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Member\Domain\ValueObject\Birthday;
 use Source\Wiki\Member\Domain\ValueObject\Career;
@@ -26,6 +27,8 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -57,6 +60,8 @@ class CreateMemberTest extends TestCase
      */
     public function testProcess(): void
     {
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $realName = new RealName('손채영');
@@ -76,6 +81,8 @@ class CreateMemberTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
         $input = new CreateMemberInput(
+            $publishedMemberIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $realName,
@@ -94,8 +101,24 @@ class CreateMemberTest extends TestCase
             ->andReturn($imageLink);
 
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
-        $member = new Member(
+        $status = ApprovalStatus::Pending;
+        $member = new DraftMember(
             $memberIdentifier,
+            $publishedMemberIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $publishedMember = new Member(
+            $publishedMemberIdentifier,
             $translation,
             $name,
             $realName,
@@ -105,24 +128,31 @@ class CreateMemberTest extends TestCase
             $imageLink,
             $relevantVideoLinks,
         );
-        $memberFactory = Mockery::mock(MemberFactoryInterface::class);
+
+        $memberFactory = Mockery::mock(DraftMemberFactoryInterface::class);
         $memberFactory->shouldReceive('create')
             ->once()
-            ->with($translation, $name)
+            ->with($editorIdentifier, $translation, $name)
             ->andReturn($member);
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
-        $memberRepository->shouldReceive('save')
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($publishedMemberIdentifier)
+            ->andReturn($publishedMember);
+        $memberRepository->shouldReceive('saveDraft')
             ->once()
             ->with($member)
             ->andReturn(null);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(MemberFactoryInterface::class, $memberFactory);
+        $this->app->instance(DraftMemberFactoryInterface::class, $memberFactory);
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
         $createMember = $this->app->make(CreateMemberInterface::class);
         $member = $createMember->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$member->memberIdentifier()));
+        $this->assertSame((string)$publishedMemberIdentifier, (string)$member->publishedMemberIdentifier());
+        $this->assertSame((string)$editorIdentifier, (string)$member->editorIdentifier());
         $this->assertSame($translation->value, $member->translation()->value);
         $this->assertSame((string)$name, (string)$member->name());
         $this->assertSame((string)$realName, (string)$member->realName());
@@ -130,5 +160,7 @@ class CreateMemberTest extends TestCase
         $this->assertSame($birthday, $member->birthday());
         $this->assertSame((string)$career, (string)$member->career());
         $this->assertSame((string)$imageLink, (string)$member->imageLink());
+        $this->assertSame($relevantVideoLinks->toStringArray(), $member->relevantVideoLinks()->toStringArray());
+        $this->assertSame($status, $member->status());
     }
 }
