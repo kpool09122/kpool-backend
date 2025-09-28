@@ -12,11 +12,14 @@ use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
+use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
-use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -55,6 +58,8 @@ class CreateSongTest extends TestCase
      */
     public function testProcess(): void
     {
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
@@ -68,6 +73,8 @@ class CreateSongTest extends TestCase
         $base64EncodedCoverImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $input = new CreateSongInput(
+            $publishedSongIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $belongIdentifiers,
@@ -87,8 +94,11 @@ class CreateSongTest extends TestCase
             ->andReturn($coverImagePath);
 
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
+        $status = ApprovalStatus::Pending;
+        $song = new DraftSong(
             $songIdentifier,
+            $publishedSongIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $belongIdentifiers,
@@ -97,26 +107,47 @@ class CreateSongTest extends TestCase
             $releaseDate,
             $overView,
             $coverImagePath,
-            $musicVideoLink
+            $musicVideoLink,
+            $status,
         );
-        $songFactory = Mockery::mock(SongFactoryInterface::class);
+
+        $publishedSong = new Song(
+            $publishedSongIdentifier,
+            $translation,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $coverImagePath,
+            $musicVideoLink,
+        );
+
+        $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($translation, $name)
+            ->with($editorIdentifier, $translation, $name)
             ->andReturn($song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('save')
+        $songRepository->shouldReceive('saveDraft')
             ->once()
             ->with($song)
             ->andReturn(null);
+        $songRepository->shouldReceive('findById')
+            ->once()
+            ->with($publishedSongIdentifier)
+            ->andReturn($publishedSong);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(SongFactoryInterface::class, $songFactory);
+        $this->app->instance(DraftSongFactoryInterface::class, $songFactory);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $createSong = $this->app->make(CreateSongInterface::class);
         $song = $createSong->process($input);
         $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
+        $this->assertSame((string)$publishedSongIdentifier, (string)$song->publishedSongIdentifier());
+        $this->assertSame((string)$editorIdentifier, (string)$song->editorIdentifier());
         $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertSame($belongIdentifiers, $song->belongIdentifiers());
@@ -126,5 +157,6 @@ class CreateSongTest extends TestCase
         $this->assertSame((string)$overView, (string)$song->overView());
         $this->assertSame((string)$coverImagePath, (string)$song->coverImagePath());
         $this->assertSame((string)$musicVideoLink, (string)$song->musicVideoLink());
+        $this->assertSame($status, $song->status());
     }
 }

@@ -7,12 +7,14 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\CreateSong;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInput;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
+use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -26,6 +28,8 @@ class CreateSongInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $name = new SongName('TT');
         $translation = Translation::KOREAN;
         $belongIdentifiers = [
@@ -39,6 +43,8 @@ class CreateSongInputTest extends TestCase
         $base64EncodedCoverImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $input = new CreateSongInput(
+            $publishedSongIdentifier,
+            $editorIdentifier,
             $translation,
             $name,
             $belongIdentifiers,
@@ -47,8 +53,10 @@ class CreateSongInputTest extends TestCase
             $releaseDate,
             $overView,
             $base64EncodedCoverImage,
-            $musicVideoLink
+            $musicVideoLink,
         );
+        $this->assertSame((string)$publishedSongIdentifier, (string)$input->publishedSongIdentifier());
+        $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
         $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame($belongIdentifiers, $input->belongIdentifiers());

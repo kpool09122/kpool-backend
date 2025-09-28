@@ -7,6 +7,8 @@ namespace Source\Wiki\Song\Domain\Entity;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -15,22 +17,27 @@ use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 
-class Song
+class DraftSong
 {
     /**
      * @param SongIdentifier $songIdentifier
+     * @param SongIdentifier|null $publishedSongIdentifier
+     * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param SongName $name
-     * @param list<BelongIdentifier> $belongIdentifiers
+     * @param BelongIdentifier[] $belongIdentifiers
      * @param Lyricist $lyricist
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
      * @param ImagePath|null $coverImagePath
-     * @param ?ExternalContentLink $musicVideoLink
+     * @param ExternalContentLink|null $musicVideoLink
+     * @param ApprovalStatus $status
      */
     public function __construct(
         private readonly SongIdentifier $songIdentifier,
+        private ?SongIdentifier $publishedSongIdentifier,
+        private EditorIdentifier $editorIdentifier,
         private readonly Translation $translation,
         private SongName $name,
         private array $belongIdentifiers,
@@ -40,12 +47,28 @@ class Song
         private Overview $overView,
         private ?ImagePath $coverImagePath,
         private ?ExternalContentLink $musicVideoLink,
+        private ApprovalStatus $status,
     ) {
     }
 
     public function songIdentifier(): songIdentifier
     {
         return $this->songIdentifier;
+    }
+
+    public function publishedSongIdentifier(): ?SongIdentifier
+    {
+        return $this->publishedSongIdentifier;
+    }
+
+    public function setPublishedSongIdentifier(SongIdentifier $songIdentifier): void
+    {
+        $this->publishedSongIdentifier = $songIdentifier;
+    }
+
+    public function editorIdentifier(): EditorIdentifier
+    {
+        return $this->editorIdentifier;
     }
 
     public function translation(): Translation
@@ -138,5 +161,15 @@ class Song
     public function setMusicVideoLink(ExternalContentLink $musicVideoLink): void
     {
         $this->musicVideoLink = $musicVideoLink;
+    }
+
+    public function status(): ApprovalStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ApprovalStatus $status): void
+    {
+        $this->status = $status;
     }
 }

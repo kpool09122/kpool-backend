@@ -19,6 +19,8 @@ use Source\Wiki\Member\Domain\Factory\DraftMemberFactory;
 use Source\Wiki\Member\Domain\Factory\DraftMemberFactoryInterface;
 use Source\Wiki\Member\Domain\Factory\MemberFactory;
 use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
+use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 
@@ -34,5 +36,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AgencyRepositoryInterface::class, AgencyRepository::class);
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
         $this->app->singleton(DraftMemberFactoryInterface::class, DraftMemberFactory::class);
+        $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
     }
 }

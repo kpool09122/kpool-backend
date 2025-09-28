@@ -63,7 +63,7 @@ class SubmitUpdatedMemberTest extends TestCase
         $name = new MemberName('채영');
         $realName = new RealName('손채영');
         $groupIdentifiers = [
-            new \Source\Wiki\Member\Domain\ValueObject\GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
             new GroupIdentifier(StrTestHelper::generateUlid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
@@ -150,6 +150,7 @@ class SubmitUpdatedMemberTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
+     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testInvalidStatus(): void
     {
@@ -158,7 +159,7 @@ class SubmitUpdatedMemberTest extends TestCase
         $name = new MemberName('채영');
         $realName = new RealName('손채영');
         $groupIdentifiers = [
-            new \Source\Wiki\Member\Domain\ValueObject\GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
             new GroupIdentifier(StrTestHelper::generateUlid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));

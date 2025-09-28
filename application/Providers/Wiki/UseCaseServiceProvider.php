@@ -53,10 +53,20 @@ use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpd
 use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpdatedMemberInterface;
 use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMember;
 use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMemberInterface;
+use Source\Wiki\Song\Application\UseCase\Command\ApproveUpdatedSong\ApproveUpdatedSong;
+use Source\Wiki\Song\Application\UseCase\Command\ApproveUpdatedSong\ApproveUpdatedSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSong;
+use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong\RejectUpdatedSong;
+use Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong\RejectUpdatedSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\SubmitUpdatedSong\SubmitUpdatedSong;
+use Source\Wiki\Song\Application\UseCase\Command\SubmitUpdatedSong\SubmitUpdatedSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSong;
+use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -88,5 +98,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectUpdatedMemberInterface::class, RejectUpdatedMember::class);
         $this->app->singleton(PublishMemberInterface::class, PublishMember::class);
         $this->app->singleton(TranslateMemberInterface::class, TranslateMember::class);
+        $this->app->singleton(SubmitUpdatedSongInterface::class, SubmitUpdatedSong::class);
+        $this->app->singleton(ApproveUpdatedSongInterface::class, ApproveUpdatedSong::class);
+        $this->app->singleton(RejectUpdatedSongInterface::class, RejectUpdatedSong::class);
+        $this->app->singleton(PublishSongInterface::class, PublishSong::class);
+        $this->app->singleton(TranslateSongInterface::class, TranslateSong::class);
     }
 }

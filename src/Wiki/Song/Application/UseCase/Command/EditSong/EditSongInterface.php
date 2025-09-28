@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\Entity\DraftSong;
 
 interface EditSongInterface
 {
     /**
      * @param EditSongInputPort $input
-     * @return Song
+     * @return DraftSong
      * @throws SongNotFoundException
      */
-    public function process(EditSongInputPort $input): Song;
+    public function process(EditSongInputPort $input): DraftSong;
 }
