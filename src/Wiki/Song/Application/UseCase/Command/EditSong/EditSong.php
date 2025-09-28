@@ -6,7 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
 class EditSong implements EditSongInterface
@@ -19,12 +19,12 @@ class EditSong implements EditSongInterface
 
     /**
      * @param EditSongInputPort $input
-     * @return Song
+     * @return DraftSong
      * @throws SongNotFoundException
      */
-    public function process(EditSongInputPort $input): Song
+    public function process(EditSongInputPort $input): DraftSong
     {
-        $song = $this->songRepository->findById($input->songIdentifier());
+        $song = $this->songRepository->findDraftById($input->songIdentifier());
 
         if ($song === null) {
             throw new SongNotFoundException();
@@ -46,7 +46,7 @@ class EditSong implements EditSongInterface
             $song->setMusicVideoLink($input->musicVideoLink());
         }
 
-        $this->songRepository->save($song);
+        $this->songRepository->saveDraft($song);
 
         return $song;
     }

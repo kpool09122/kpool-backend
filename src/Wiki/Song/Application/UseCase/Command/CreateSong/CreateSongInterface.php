@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
-use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\Entity\DraftSong;
 
 interface CreateSongInterface
 {
-    public function process(CreateSongInputPort $input): Song;
+    public function process(CreateSongInputPort $input): DraftSong;
 }

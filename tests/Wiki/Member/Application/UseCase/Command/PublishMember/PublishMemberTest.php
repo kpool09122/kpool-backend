@@ -291,7 +291,7 @@ class PublishMemberTest extends TestCase
      * @throws InvalidStatusException
      * @throws ExceedMaxRelevantVideoLinksException
      */
-    public function testWhenNotFoundAgency(): void
+    public function testWhenNotFoundSong(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
@@ -385,7 +385,7 @@ class PublishMemberTest extends TestCase
     }
 
     /**
-     * 異常系：承認済みだが、翻訳が反映されていない承認済みの事務所がある場合、例外がスローされること.
+     * 異常系：承認済みだが、翻訳が反映されていない承認済みのメンバーがいる場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -393,7 +393,7 @@ class PublishMemberTest extends TestCase
      * @throws InvalidStatusException
      * @throws ExceedMaxRelevantVideoLinksException
      */
-    public function testHasApprovedButNotTranslatedAgency(): void
+    public function testHasApprovedButNotTranslatedMember(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());

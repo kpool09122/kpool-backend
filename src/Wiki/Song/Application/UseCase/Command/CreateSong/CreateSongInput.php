@@ -6,16 +6,20 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
+use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 
 readonly class CreateSongInput implements CreateSongInputPort
 {
     /**
+     * @param SongIdentifier|null $publishedSongIdentifier
+     * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param SongName $name
      * @param list<BelongIdentifier> $belongIdentifiers
@@ -27,6 +31,8 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param ?ExternalContentLink $musicVideoLink
      */
     public function __construct(
+        private ?SongIdentifier $publishedSongIdentifier,
+        private EditorIdentifier $editorIdentifier,
         private Translation $translation,
         private SongName             $name,
         private array                $belongIdentifiers,
@@ -37,6 +43,16 @@ readonly class CreateSongInput implements CreateSongInputPort
         private ?string              $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
     ) {
+    }
+
+    public function publishedSongIdentifier(): ?SongIdentifier
+    {
+        return $this->publishedSongIdentifier;
+    }
+
+    public function editorIdentifier(): EditorIdentifier
+    {
+        return $this->editorIdentifier;
     }
 
     public function translation(): Translation
