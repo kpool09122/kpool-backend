@@ -11,7 +11,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
-use Source\Wiki\Member\Application\Service\MemberServiceInterface;
+use Source\Wiki\Member\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMember;
 use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMemberInput;
 use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMemberInterface;
@@ -28,6 +28,7 @@ use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,8 +42,8 @@ class TranslateMemberTest extends TestCase
      */
     public function test__construct(): void
     {
-        $memberService = Mockery::mock(MemberServiceInterface::class);
-        $this->app->instance(MemberServiceInterface::class, $memberService);
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
         $translateMember = $this->app->make(TranslateMemberInterface::class);
@@ -91,6 +92,7 @@ class TranslateMemberTest extends TestCase
 
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -126,6 +128,7 @@ TWICEのメンバーとして、チェヨンは数多くのヒット曲に参加
         $jaMember = new DraftMember(
             $jaMemberIdentifier,
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editorIdentifier,
             $japanese,
             $jaName,
@@ -163,6 +166,7 @@ Recently, she has also begun activities as a solo artist, further broadening her
         $enMember = new DraftMember(
             $enMemberIdentifier,
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editorIdentifier,
             $english,
             $enName,
@@ -189,17 +193,17 @@ Recently, she has also begun activities as a solo artist, further broadening her
             ->once()
             ->andReturn(null);
 
-        $memberService = Mockery::mock(MemberServiceInterface::class);
-        $memberService->shouldReceive('translateMember')
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateMember')
             ->with($member, $english)
             ->once()
             ->andReturn($enMember);
-        $memberService->shouldReceive('translateMember')
+        $translationService->shouldReceive('translateMember')
             ->with($member, $japanese)
             ->once()
             ->andReturn($jaMember);
 
-        $this->app->instance(MemberServiceInterface::class, $memberService);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
         $translateMember = $this->app->make(TranslateMemberInterface::class);
         $members = $translateMember->process($input);
@@ -227,9 +231,9 @@ Recently, she has also begun activities as a solo artist, further broadening her
             ->once()
             ->andReturn(null);
 
-        $memberService = Mockery::mock(MemberServiceInterface::class);
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app->instance(MemberServiceInterface::class, $memberService);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
 
         $this->expectException(MemberNotFoundException::class);

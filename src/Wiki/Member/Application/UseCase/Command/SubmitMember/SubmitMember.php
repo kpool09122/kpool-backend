@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember;
+namespace Source\Wiki\Member\Application\UseCase\Command\SubmitMember;
 
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
@@ -10,7 +10,7 @@ use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 
-readonly class SubmitUpdatedMember implements SubmitUpdatedMemberInterface
+readonly class SubmitMember implements SubmitMemberInterface
 {
     public function __construct(
         private MemberRepositoryInterface $memberRepository,
@@ -18,12 +18,12 @@ readonly class SubmitUpdatedMember implements SubmitUpdatedMemberInterface
     }
 
     /**
-     * @param SubmitUpdatedMemberInputPort $input
+     * @param SubmitMemberInputPort $input
      * @return DraftMember
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(SubmitUpdatedMemberInputPort $input): DraftMember
+    public function process(SubmitMemberInputPort $input): DraftMember
     {
         $member = $this->memberRepository->findDraftById($input->memberIdentifier());
 

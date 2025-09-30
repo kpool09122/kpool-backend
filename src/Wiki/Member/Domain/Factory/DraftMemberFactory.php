@@ -15,6 +15,7 @@ use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 readonly class DraftMemberFactory implements DraftMemberFactoryInterface
 {
@@ -27,6 +28,7 @@ readonly class DraftMemberFactory implements DraftMemberFactoryInterface
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param MemberName $name
+     * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftMember
      * @throws ExceedMaxRelevantVideoLinksException
      */
@@ -34,10 +36,12 @@ readonly class DraftMemberFactory implements DraftMemberFactoryInterface
         EditorIdentifier $editorIdentifier,
         Translation $translation,
         MemberName $name,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftMember {
         return new DraftMember(
             new MemberIdentifier($this->ulidGenerator->generate()),
             null,
+            $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
             $translation,
             $name,

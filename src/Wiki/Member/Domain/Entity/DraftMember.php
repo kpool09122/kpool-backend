@@ -15,12 +15,14 @@ use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class DraftMember
 {
     /**
      * @param MemberIdentifier $memberIdentifier
      * @param MemberIdentifier|null $publishedMemberIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param MemberName $name
@@ -35,6 +37,7 @@ class DraftMember
     public function __construct(
         private readonly MemberIdentifier $memberIdentifier,
         private ?MemberIdentifier $publishedMemberIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly EditorIdentifier $editorIdentifier,
         private readonly Translation $translation,
         private MemberName $name,
@@ -61,6 +64,11 @@ class DraftMember
     public function setPublishedMemberIdentifier(MemberIdentifier $memberIdentifier): void
     {
         $this->publishedMemberIdentifier = $memberIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function editorIdentifier(): EditorIdentifier

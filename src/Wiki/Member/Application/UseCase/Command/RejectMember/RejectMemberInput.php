@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\RejectUpdatedMember;
+namespace Source\Wiki\Member\Application\UseCase\Command\RejectMember;
 
 use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 
-readonly class RejectUpdatedMemberInput implements RejectUpdatedMemberInputPort
+readonly class RejectMemberInput implements RejectMemberInputPort
 {
     public function __construct(
         private MemberIdentifier  $memberIdentifier,

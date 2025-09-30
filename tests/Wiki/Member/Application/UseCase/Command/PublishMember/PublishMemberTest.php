@@ -12,7 +12,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Member\Application\Exception\ExistsApprovedButNotTranslatedMemberException;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
-use Source\Wiki\Member\Application\Service\MemberServiceInterface;
 use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMember;
 use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMemberInput;
 use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMemberInterface;
@@ -21,6 +20,7 @@ use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
+use Source\Wiki\Member\Domain\Service\MemberServiceInterface;
 use Source\Wiki\Member\Domain\ValueObject\Birthday;
 use Source\Wiki\Member\Domain\ValueObject\Career;
 use Source\Wiki\Member\Domain\ValueObject\GroupIdentifier;
@@ -31,6 +31,7 @@ use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -68,6 +69,7 @@ class PublishMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
@@ -96,6 +98,7 @@ class PublishMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -127,6 +130,7 @@ class PublishMemberTest extends TestCase
         $exRelevantVideoLinks = new RelevantVideoLinks([$link4, $link5]);
         $publishedMember = new Member(
             $publishedMemberIdentifier,
+            $translationSetIdentifier,
             $translation,
             $exName,
             $exRealName,
@@ -158,7 +162,7 @@ class PublishMemberTest extends TestCase
         $memberService = Mockery::mock(MemberServiceInterface::class);
         $memberService->shouldReceive('existsApprovedButNotTranslatedMember')
             ->once()
-            ->with($memberIdentifier, $publishedMemberIdentifier)
+            ->with($translationSetIdentifier, $memberIdentifier)
             ->andReturn(false);
 
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
@@ -189,6 +193,7 @@ class PublishMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
@@ -217,6 +222,7 @@ class PublishMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             null,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -231,6 +237,7 @@ class PublishMemberTest extends TestCase
 
         $createdMember = new Member(
             $publishedMemberIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             new RealName(''),
@@ -258,13 +265,13 @@ class PublishMemberTest extends TestCase
         $memberFactory = Mockery::mock(MemberFactoryInterface::class);
         $memberFactory->shouldReceive('create')
             ->once()
-            ->with($translation, $name)
+            ->with($translationSetIdentifier, $translation, $name)
             ->andReturn($createdMember);
 
         $memberService = Mockery::mock(MemberServiceInterface::class);
         $memberService->shouldReceive('existsApprovedButNotTranslatedMember')
             ->once()
-            ->with($memberIdentifier, $publishedMemberIdentifier)
+            ->with($translationSetIdentifier, $memberIdentifier)
             ->andReturn(false);
 
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
@@ -328,6 +335,7 @@ class PublishMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
@@ -356,6 +364,7 @@ class PublishMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -397,6 +406,7 @@ class PublishMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
@@ -425,6 +435,7 @@ class PublishMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -446,7 +457,7 @@ class PublishMemberTest extends TestCase
         $memberService = Mockery::mock(MemberServiceInterface::class);
         $memberService->shouldReceive('existsApprovedButNotTranslatedMember')
             ->once()
-            ->with($memberIdentifier, $publishedMemberIdentifier)
+            ->with($translationSetIdentifier, $memberIdentifier)
             ->andReturn(true);
 
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
@@ -469,6 +480,7 @@ class PublishMemberTest extends TestCase
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
@@ -497,6 +509,7 @@ class PublishMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -522,7 +535,7 @@ class PublishMemberTest extends TestCase
         $memberService = Mockery::mock(MemberServiceInterface::class);
         $memberService->shouldReceive('existsApprovedButNotTranslatedMember')
             ->once()
-            ->with($memberIdentifier, $publishedMemberIdentifier)
+            ->with($translationSetIdentifier, $memberIdentifier)
             ->andReturn(false);
 
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);

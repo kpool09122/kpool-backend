@@ -17,6 +17,7 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -50,6 +51,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -98,6 +100,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -143,6 +146,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -188,6 +192,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -240,6 +245,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -285,6 +291,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -334,6 +341,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,
@@ -380,6 +388,7 @@ class MemberTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $member = new Member(
             $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             $name,
             $realName,

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\ApproveUpdatedMember;
+namespace Source\Wiki\Member\Application\UseCase\Command\ApproveMember;
 
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 
-interface ApproveUpdatedMemberInterface
+interface ApproveMemberInterface
 {
     /**
-     * @param ApproveUpdatedMemberInputPort $input
+     * @param ApproveMemberInputPort $input
      * @return DraftMember
      * @throws MemberNotFoundException
      * @throws ExistsApprovedButNotTranslatedGroupException
      * @throws InvalidStatusException
      */
-    public function process(ApproveUpdatedMemberInputPort $input): DraftMember;
+    public function process(ApproveMemberInputPort $input): DraftMember;
 }

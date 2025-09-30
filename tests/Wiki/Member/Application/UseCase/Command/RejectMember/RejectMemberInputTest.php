@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Member\Application\UseCase\Command\ApproveUpdatedMember;
+namespace Tests\Wiki\Member\Application\UseCase\Command\RejectMember;
 
-use Source\Wiki\Member\Application\UseCase\Command\ApproveUpdatedMember\ApproveUpdatedMemberInput;
+use Source\Wiki\Member\Application\UseCase\Command\RejectMember\RejectMemberInput;
 use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ApproveUpdatedMemberInputTest extends TestCase
+class RejectMemberInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,12 +19,9 @@ class ApproveUpdatedMemberInputTest extends TestCase
     public function test__construct(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
-        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
-        $input = new ApproveUpdatedMemberInput(
+        $input = new RejectMemberInput(
             $memberIdentifier,
-            $publishedMemberIdentifier,
         );
         $this->assertSame((string)$memberIdentifier, (string)$input->memberIdentifier());
-        $this->assertSame((string)$publishedMemberIdentifier, (string)$input->publishedMemberIdentifier());
     }
 }

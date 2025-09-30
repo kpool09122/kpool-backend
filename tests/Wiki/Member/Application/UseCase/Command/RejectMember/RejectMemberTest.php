@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember;
+namespace Tests\Wiki\Member\Application\UseCase\Command\RejectMember;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -11,12 +11,13 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
-use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpdatedMember;
-use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpdatedMemberInput;
-use Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember\SubmitUpdatedMemberInterface;
+use Source\Wiki\Member\Application\UseCase\Command\RejectMember\RejectMember;
+use Source\Wiki\Member\Application\UseCase\Command\RejectMember\RejectMemberInput;
+use Source\Wiki\Member\Application\UseCase\Command\RejectMember\RejectMemberInterface;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
+use Source\Wiki\Member\Domain\Service\MemberServiceInterface;
 use Source\Wiki\Member\Domain\ValueObject\Birthday;
 use Source\Wiki\Member\Domain\ValueObject\Career;
 use Source\Wiki\Member\Domain\ValueObject\GroupIdentifier;
@@ -27,10 +28,11 @@ use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class SubmitUpdatedMemberTest extends TestCase
+class RejectMemberTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -43,12 +45,12 @@ class SubmitUpdatedMemberTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
-        $submitUpdatedMember = $this->app->make(SubmitUpdatedMemberInterface::class);
-        $this->assertInstanceOf(SubmitUpdatedMember::class, $submitUpdatedMember);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $this->assertInstanceOf(RejectMember::class, $rejectMember);
     }
 
     /**
-     * 正常系：正しく下書きステータスが変更されること.
+     * 正常系：正しく下書きが拒否されること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -59,6 +61,8 @@ class SubmitUpdatedMemberTest extends TestCase
     public function testProcess(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $realName = new RealName('손채영');
@@ -77,17 +81,15 @@ class SubmitUpdatedMemberTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
-
-        $input = new SubmitUpdatedMemberInput(
+        $input = new RejectMemberInput(
             $memberIdentifier,
         );
 
-        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
+        $status = ApprovalStatus::UnderReview;
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editorIdentifier,
             $translation,
             $name,
@@ -111,23 +113,23 @@ class SubmitUpdatedMemberTest extends TestCase
             ->andReturn($member);
 
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
-        $submitUpdatedMember = $this->app->make(SubmitUpdatedMemberInterface::class);
-        $member = $submitUpdatedMember->process($input);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $member = $rejectMember->process($input);
         $this->assertNotSame($status, $member->status());
-        $this->assertSame(ApprovalStatus::UnderReview, $member->status());
+        $this->assertSame(ApprovalStatus::Rejected, $member->status());
     }
 
     /**
-     * 異常系：指定したIDに紐づくGroupが存在しない場合、例外がスローされること.
+     * 異常系：指定したIDに紐づくMemberが存在しない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      */
-    public function testWhenNotFoundAgency(): void
+    public function testWhenNotFoundMember(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
-        $input = new SubmitUpdatedMemberInput(
+        $input = new RejectMemberInput(
             $memberIdentifier,
         );
 
@@ -137,15 +139,18 @@ class SubmitUpdatedMemberTest extends TestCase
             ->with($memberIdentifier)
             ->andReturn(null);
 
+        $memberService = Mockery::mock(MemberServiceInterface::class);
+
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(MemberServiceInterface::class, $memberService);
 
         $this->expectException(MemberNotFoundException::class);
-        $submitUpdatedMember = $this->app->make(SubmitUpdatedMemberInterface::class);
-        $submitUpdatedMember->process($input);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $rejectMember->process($input);
     }
 
     /**
-     * 異常系：承認ステータスがPendingかRejected以外の場合、例外がスローされること.
+     * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -155,6 +160,8 @@ class SubmitUpdatedMemberTest extends TestCase
     public function testInvalidStatus(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new MemberName('채영');
         $realName = new RealName('손채영');
@@ -173,17 +180,15 @@ class SubmitUpdatedMemberTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
-
-        $input = new SubmitUpdatedMemberInput(
+        $input = new RejectMemberInput(
             $memberIdentifier,
         );
 
-        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Approved;
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editorIdentifier,
             $translation,
             $name,
@@ -205,7 +210,7 @@ class SubmitUpdatedMemberTest extends TestCase
         $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
 
         $this->expectException(InvalidStatusException::class);
-        $submitUpdatedMember = $this->app->make(SubmitUpdatedMemberInterface::class);
-        $submitUpdatedMember->process($input);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $rejectMember->process($input);
     }
 }

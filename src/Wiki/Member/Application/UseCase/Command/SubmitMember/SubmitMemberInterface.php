@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\SubmitUpdatedMember;
+namespace Source\Wiki\Member\Application\UseCase\Command\SubmitMember;
 
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 
-interface SubmitUpdatedMemberInterface
+interface SubmitMemberInterface
 {
     /**
-     * @param SubmitUpdatedMemberInputPort $input
+     * @param SubmitMemberInputPort $input
      * @return DraftMember
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(SubmitUpdatedMemberInputPort $input): DraftMember;
+    public function process(SubmitMemberInputPort $input): DraftMember;
 }

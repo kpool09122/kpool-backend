@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\RejectUpdatedMember;
+namespace Source\Wiki\Member\Application\UseCase\Command\RejectMember;
 
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 
-interface RejectUpdatedMemberInterface
+interface RejectMemberInterface
 {
     /**
-     * @param RejectUpdatedMemberInputPort $input
+     * @param RejectMemberInputPort $input
      * @return DraftMember
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(RejectUpdatedMemberInputPort $input): DraftMember;
+    public function process(RejectMemberInputPort $input): DraftMember;
 }

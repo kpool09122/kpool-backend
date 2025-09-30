@@ -19,6 +19,7 @@ use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -56,6 +57,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -113,6 +115,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -164,6 +167,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -215,6 +219,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -266,6 +271,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -324,6 +330,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -375,6 +382,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -430,6 +438,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -482,6 +491,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,
@@ -536,6 +546,7 @@ class DraftMemberTest extends TestCase
         $member = new DraftMember(
             $memberIdentifier,
             $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $editIdentifier,
             $translation,
             $name,

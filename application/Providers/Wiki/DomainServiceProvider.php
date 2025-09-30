@@ -19,6 +19,8 @@ use Source\Wiki\Member\Domain\Factory\DraftMemberFactory;
 use Source\Wiki\Member\Domain\Factory\DraftMemberFactoryInterface;
 use Source\Wiki\Member\Domain\Factory\MemberFactory;
 use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
+use Source\Wiki\Member\Domain\Service\MemberService;
+use Source\Wiki\Member\Domain\Service\MemberServiceInterface;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
@@ -29,6 +31,7 @@ class DomainServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(MemberFactoryInterface::class, MemberFactory::class);
+        $this->app->singleton(MemberServiceInterface::class, MemberService::class);
         $this->app->singleton(GroupFactoryInterface::class, GroupFactory::class);
         $this->app->singleton(SongFactoryInterface::class, SongFactory::class);
         $this->app->singleton(AgencyFactoryInterface::class, AgencyFactory::class);

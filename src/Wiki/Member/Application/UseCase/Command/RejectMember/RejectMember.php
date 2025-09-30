@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Member\Application\UseCase\Command\RejectUpdatedMember;
+namespace Source\Wiki\Member\Application\UseCase\Command\RejectMember;
 
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
@@ -10,7 +10,7 @@ use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 
-class RejectUpdatedMember implements RejectUpdatedMemberInterface
+class RejectMember implements RejectMemberInterface
 {
     public function __construct(
         private MemberRepositoryInterface $memberRepository,
@@ -18,12 +18,12 @@ class RejectUpdatedMember implements RejectUpdatedMemberInterface
     }
 
     /**
-     * @param RejectUpdatedMemberInputPort $input
+     * @param RejectMemberInputPort $input
      * @return DraftMember
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(RejectUpdatedMemberInputPort $input): DraftMember
+    public function process(RejectMemberInputPort $input): DraftMember
     {
         $member = $this->memberRepository->findDraftById($input->memberIdentifier());
 
