@@ -15,6 +15,8 @@ use Source\Wiki\Group\Domain\Factory\DraftGroupFactory;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupFactory;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
+use Source\Wiki\Group\Domain\Service\GroupService;
+use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Member\Domain\Factory\DraftMemberFactory;
 use Source\Wiki\Member\Domain\Factory\DraftMemberFactoryInterface;
 use Source\Wiki\Member\Domain\Factory\MemberFactory;
@@ -33,6 +35,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(MemberFactoryInterface::class, MemberFactory::class);
         $this->app->singleton(MemberServiceInterface::class, MemberService::class);
         $this->app->singleton(GroupFactoryInterface::class, GroupFactory::class);
+        $this->app->singleton(GroupServiceInterface::class, GroupService::class);
         $this->app->singleton(SongFactoryInterface::class, SongFactory::class);
         $this->app->singleton(AgencyFactoryInterface::class, AgencyFactory::class);
         $this->app->singleton(DraftAgencyFactoryInterface::class, DraftAgencyFactory::class);

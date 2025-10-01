@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup;
+namespace Source\Wiki\Group\Application\UseCase\Command\SubmitGroup;
 
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 
-readonly class RejectUpdatedGroupInput implements RejectUpdatedGroupInputPort
+readonly class SubmitGroupInput implements SubmitGroupInputPort
 {
     public function __construct(
-        private GroupIdentifier  $groupIdentifier,
+        private GroupIdentifier $groupIdentifier,
     ) {
     }
 

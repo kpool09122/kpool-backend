@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup;
+namespace Tests\Wiki\Group\Application\UseCase\Command\SubmitGroup;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroup;
-use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroupInput;
-use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
+use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInput;
+use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -22,10 +22,11 @@ use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class SubmitUpdatedGroupTest extends TestCase
+class SubmitGroupTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -38,8 +39,8 @@ class SubmitUpdatedGroupTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
-        $submitUpdatedGroup = $this->app->make(SubmitUpdatedGroupInterface::class);
-        $this->assertInstanceOf(SubmitUpdatedGroup::class, $submitUpdatedGroup);
+        $submitGroup = $this->app->make(SubmitGroupInterface::class);
+        $this->assertInstanceOf(SubmitGroup::class, $submitGroup);
     }
 
     /**
@@ -54,6 +55,7 @@ class SubmitUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -68,7 +70,7 @@ class SubmitUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new SubmitUpdatedGroupInput(
+        $input = new SubmitGroupInput(
             $groupIdentifier,
         );
 
@@ -76,6 +78,7 @@ class SubmitUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -97,8 +100,8 @@ class SubmitUpdatedGroupTest extends TestCase
             ->andReturn($group);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
-        $submitUpdatedGroup = $this->app->make(SubmitUpdatedGroupInterface::class);
-        $group = $submitUpdatedGroup->process($input);
+        $submitGroup = $this->app->make(SubmitGroupInterface::class);
+        $group = $submitGroup->process($input);
         $this->assertNotSame($status, $group->status());
         $this->assertSame(ApprovalStatus::UnderReview, $group->status());
     }
@@ -113,7 +116,7 @@ class SubmitUpdatedGroupTest extends TestCase
     public function testWhenNotFoundAgency(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $input = new SubmitUpdatedGroupInput(
+        $input = new SubmitGroupInput(
             $groupIdentifier,
         );
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -124,8 +127,8 @@ class SubmitUpdatedGroupTest extends TestCase
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->expectException(GroupNotFoundException::class);
-        $submitUpdatedGroup = $this->app->make(SubmitUpdatedGroupInterface::class);
-        $submitUpdatedGroup->process($input);
+        $submitGroup = $this->app->make(SubmitGroupInterface::class);
+        $submitGroup->process($input);
     }
 
     /**
@@ -139,6 +142,7 @@ class SubmitUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -153,7 +157,7 @@ class SubmitUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new SubmitUpdatedGroupInput(
+        $input = new SubmitGroupInput(
             $groupIdentifier,
         );
 
@@ -161,6 +165,7 @@ class SubmitUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -179,7 +184,7 @@ class SubmitUpdatedGroupTest extends TestCase
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->expectException(InvalidStatusException::class);
-        $submitUpdatedGroup = $this->app->make(SubmitUpdatedGroupInterface::class);
-        $submitUpdatedGroup->process($input);
+        $submitGroup = $this->app->make(SubmitGroupInterface::class);
+        $submitGroup->process($input);
     }
 }

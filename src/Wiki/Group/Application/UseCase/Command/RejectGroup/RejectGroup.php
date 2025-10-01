@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup;
+namespace Source\Wiki\Group\Application\UseCase\Command\RejectGroup;
 
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
@@ -10,7 +10,7 @@ use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 
-class RejectUpdatedGroup implements RejectUpdatedGroupInterface
+class RejectGroup implements RejectGroupInterface
 {
     public function __construct(
         private GroupRepositoryInterface $groupRepository,
@@ -18,12 +18,12 @@ class RejectUpdatedGroup implements RejectUpdatedGroupInterface
     }
 
     /**
-     * @param RejectUpdatedGroupInputPort $input
+     * @param RejectGroupInputPort $input
      * @return DraftGroup
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(RejectUpdatedGroupInputPort $input): DraftGroup
+    public function process(RejectGroupInputPort $input): DraftGroup
     {
         $group = $this->groupRepository->findDraftById($input->groupIdentifier());
 

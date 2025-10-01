@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup;
+namespace Tests\Wiki\Group\Application\UseCase\Command\RejectGroup;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup\RejectUpdatedGroup;
-use Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup\RejectUpdatedGroupInput;
-use Source\Wiki\Group\Application\UseCase\Command\RejectUpdatedGroup\RejectUpdatedGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroup;
+use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroupInput;
+use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroupInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -22,10 +22,11 @@ use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class RejectUpdatedGroupTest extends TestCase
+class RejectGroupTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -38,8 +39,8 @@ class RejectUpdatedGroupTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
-        $rejectUpdatedGroup = $this->app->make(RejectUpdatedGroupInterface::class);
-        $this->assertInstanceOf(RejectUpdatedGroup::class, $rejectUpdatedGroup);
+        $rejectGroup = $this->app->make(RejectGroupInterface::class);
+        $this->assertInstanceOf(RejectGroup::class, $rejectGroup);
     }
 
     /**
@@ -54,6 +55,7 @@ class RejectUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -68,7 +70,7 @@ class RejectUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new RejectUpdatedGroupInput(
+        $input = new RejectGroupInput(
             $groupIdentifier,
         );
 
@@ -76,6 +78,7 @@ class RejectUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -97,8 +100,8 @@ class RejectUpdatedGroupTest extends TestCase
             ->andReturn($group);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
-        $rejectUpdatedGroup = $this->app->make(RejectUpdatedGroupInterface::class);
-        $group = $rejectUpdatedGroup->process($input);
+        $rejectGroup = $this->app->make(RejectGroupInterface::class);
+        $group = $rejectGroup->process($input);
         $this->assertNotSame($status, $group->status());
         $this->assertSame(ApprovalStatus::Rejected, $group->status());
     }
@@ -113,7 +116,7 @@ class RejectUpdatedGroupTest extends TestCase
     public function testWhenNotFoundAgency(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $input = new RejectUpdatedGroupInput(
+        $input = new RejectGroupInput(
             $groupIdentifier,
         );
 
@@ -126,8 +129,8 @@ class RejectUpdatedGroupTest extends TestCase
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
         $this->expectException(GroupNotFoundException::class);
-        $rejectUpdatedGroup = $this->app->make(RejectUpdatedGroupInterface::class);
-        $rejectUpdatedGroup->process($input);
+        $rejectGroup = $this->app->make(RejectGroupInterface::class);
+        $rejectGroup->process($input);
     }
 
     /**
@@ -141,6 +144,7 @@ class RejectUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -155,7 +159,7 @@ class RejectUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new RejectUpdatedGroupInput(
+        $input = new RejectGroupInput(
             $groupIdentifier,
         );
 
@@ -163,6 +167,7 @@ class RejectUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -182,7 +187,7 @@ class RejectUpdatedGroupTest extends TestCase
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
         $this->expectException(InvalidStatusException::class);
-        $rejectUpdatedGroup = $this->app->make(RejectUpdatedGroupInterface::class);
-        $rejectUpdatedGroup->process($input);
+        $rejectGroup = $this->app->make(RejectGroupInterface::class);
+        $rejectGroup->process($input);
     }
 }

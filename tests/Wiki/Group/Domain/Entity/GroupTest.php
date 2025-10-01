@@ -12,6 +12,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -25,6 +26,7 @@ class GroupTest extends TestCase
     public function test__construct(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -40,6 +42,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $companyIdentifier,
@@ -48,6 +51,7 @@ class GroupTest extends TestCase
             $imagePath,
         );
         $this->assertSame((string)$groupIdentifier, (string)$group->groupIdentifier());
+        $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$companyIdentifier, (string)$group->agencyIdentifier());
@@ -64,6 +68,7 @@ class GroupTest extends TestCase
     public function testSetName(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -79,6 +84,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $companyIdentifier,
@@ -102,6 +108,7 @@ class GroupTest extends TestCase
     public function testSetCompanyIdentifier(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -117,6 +124,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $companyIdentifier,
@@ -140,6 +148,7 @@ class GroupTest extends TestCase
     public function testSetDescription(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -155,6 +164,7 @@ class GroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $companyIdentifier,
@@ -181,6 +191,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     public function testSetSongIdentifiers(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -196,6 +207,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $companyIdentifier,
@@ -223,6 +235,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     public function testSetImageLink(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -238,6 +251,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $companyIdentifier,

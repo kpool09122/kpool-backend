@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup;
+namespace Tests\Wiki\Group\Application\UseCase\Command\ApproveGroup;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
@@ -10,12 +10,12 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Application\Service\GroupServiceInterface;
-use Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup\ApproveUpdatedGroup;
-use Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup\ApproveUpdatedGroupInput;
-use Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup\ApproveUpdatedGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroup;
+use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroupInput;
+use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroupInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
@@ -24,10 +24,11 @@ use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ApproveUpdatedGroupTest extends TestCase
+class ApproveGroupTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -42,8 +43,8 @@ class ApproveUpdatedGroupTest extends TestCase
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $this->app->instance(GroupServiceInterface::class, $groupService);
-        $approveUpdatedGroup = $this->app->make(ApproveUpdatedGroupInterface::class);
-        $this->assertInstanceOf(ApproveUpdatedGroup::class, $approveUpdatedGroup);
+        $approveGroup = $this->app->make(ApproveGroupInterface::class);
+        $this->assertInstanceOf(ApproveGroup::class, $approveGroup);
     }
 
     /**
@@ -58,6 +59,7 @@ class ApproveUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -72,7 +74,7 @@ class ApproveUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new ApproveUpdatedGroupInput(
+        $input = new ApproveGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
         );
@@ -81,6 +83,7 @@ class ApproveUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -104,13 +107,13 @@ class ApproveUpdatedGroupTest extends TestCase
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
             ->once()
-            ->with($groupIdentifier, $publishedGroupIdentifier)
+            ->with($translationSetIdentifier, $groupIdentifier)
             ->andReturn(false);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
-        $approveUpdatedGroup = $this->app->make(ApproveUpdatedGroupInterface::class);
-        $group = $approveUpdatedGroup->process($input);
+        $approveGroup = $this->app->make(ApproveGroupInterface::class);
+        $group = $approveGroup->process($input);
         $this->assertNotSame($status, $group->status());
         $this->assertSame(ApprovalStatus::Approved, $group->status());
     }
@@ -126,7 +129,7 @@ class ApproveUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $input = new ApproveUpdatedGroupInput(
+        $input = new ApproveGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
         );
@@ -142,8 +145,8 @@ class ApproveUpdatedGroupTest extends TestCase
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->expectException(GroupNotFoundException::class);
-        $approveUpdatedGroup = $this->app->make(ApproveUpdatedGroupInterface::class);
-        $approveUpdatedGroup->process($input);
+        $approveGroup = $this->app->make(ApproveGroupInterface::class);
+        $approveGroup->process($input);
     }
 
     /**
@@ -157,6 +160,7 @@ class ApproveUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -171,7 +175,7 @@ class ApproveUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new ApproveUpdatedGroupInput(
+        $input = new ApproveGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
         );
@@ -180,6 +184,7 @@ class ApproveUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -202,8 +207,8 @@ class ApproveUpdatedGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
 
         $this->expectException(InvalidStatusException::class);
-        $approveUpdatedGroup = $this->app->make(ApproveUpdatedGroupInterface::class);
-        $approveUpdatedGroup->process($input);
+        $approveGroup = $this->app->make(ApproveGroupInterface::class);
+        $approveGroup->process($input);
     }
 
     /**
@@ -218,6 +223,7 @@ class ApproveUpdatedGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -232,7 +238,7 @@ class ApproveUpdatedGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/before.webp');
-        $input = new ApproveUpdatedGroupInput(
+        $input = new ApproveGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
         );
@@ -241,6 +247,7 @@ class ApproveUpdatedGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -260,14 +267,14 @@ class ApproveUpdatedGroupTest extends TestCase
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
             ->once()
-            ->with($groupIdentifier, $publishedGroupIdentifier)
+            ->with($translationSetIdentifier, $groupIdentifier)
             ->andReturn(true);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
 
         $this->expectException(ExistsApprovedButNotTranslatedGroupException::class);
-        $approveUpdatedGroup = $this->app->make(ApproveUpdatedGroupInterface::class);
-        $approveUpdatedGroup->process($input);
+        $approveGroup = $this->app->make(ApproveGroupInterface::class);
+        $approveGroup->process($input);
     }
 }

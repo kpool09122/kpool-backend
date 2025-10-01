@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup;
+namespace Tests\Wiki\Group\Application\UseCase\Command\SubmitGroup;
 
-use Source\Wiki\Group\Application\UseCase\Command\SubmitUpdatedGroup\SubmitUpdatedGroupInput;
+use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class SubmitUpdatedGroupInputTest extends TestCase
+class SubmitGroupInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,7 +19,7 @@ class SubmitUpdatedGroupInputTest extends TestCase
     public function test__construct(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $input = new SubmitUpdatedGroupInput(
+        $input = new SubmitGroupInput(
             $groupIdentifier,
         );
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());

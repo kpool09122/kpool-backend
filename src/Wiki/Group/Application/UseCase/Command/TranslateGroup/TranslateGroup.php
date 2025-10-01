@@ -6,7 +6,7 @@ namespace Source\Wiki\Group\Application\UseCase\Command\TranslateGroup;
 
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Application\Service\GroupServiceInterface;
+use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 
@@ -14,7 +14,7 @@ class TranslateGroup implements TranslateGroupInterface
 {
     public function __construct(
         private GroupRepositoryInterface $groupRepository,
-        private GroupServiceInterface    $groupService,
+        private TranslationServiceInterface $translationService,
     ) {
     }
 
@@ -35,7 +35,8 @@ class TranslateGroup implements TranslateGroupInterface
 
         $groupDrafts = [];
         foreach ($translations as $translation) {
-            $groupDraft = $this->groupService->translateGroup($group, $translation);
+            // 外部翻訳サービスを使って翻訳
+            $groupDraft = $this->translationService->translateGroup($group, $translation);
             $groupDrafts[] = $groupDraft;
             $this->groupRepository->saveDraft($groupDraft);
         }

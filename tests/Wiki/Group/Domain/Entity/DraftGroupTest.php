@@ -14,6 +14,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -28,6 +29,7 @@ class DraftGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -46,6 +48,7 @@ class DraftGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -57,6 +60,7 @@ class DraftGroupTest extends TestCase
         );
         $this->assertSame((string)$groupIdentifier, (string)$group->groupIdentifier());
         $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
+        $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
@@ -76,6 +80,7 @@ class DraftGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -94,6 +99,7 @@ class DraftGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -120,6 +126,7 @@ class DraftGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -138,6 +145,7 @@ class DraftGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -164,6 +172,7 @@ class DraftGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -182,6 +191,7 @@ class DraftGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -208,6 +218,7 @@ class DraftGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -226,6 +237,7 @@ class DraftGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -255,6 +267,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -273,6 +286,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -303,6 +317,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -321,6 +336,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -348,6 +364,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -366,6 +383,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,

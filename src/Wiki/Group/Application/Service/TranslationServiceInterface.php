@@ -7,17 +7,18 @@ namespace Source\Wiki\Group\Application\Service;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 
-interface GroupServiceInterface
+interface TranslationServiceInterface
 {
-    public function existsApprovedButNotTranslatedGroup(
-        GroupIdentifier $groupIdentifier,
-        GroupIdentifier $publishedGroupIdentifier,
-    ): bool;
-
+    /**
+     * 外部翻訳サービスを使ってGroupを翻訳しDraftGroupを作成
+     *
+     * @param Group $group
+     * @param Translation $translation
+     * @return DraftGroup
+     */
     public function translateGroup(
-        Group  $group,
+        Group $group,
         Translation $translation,
     ): DraftGroup;
 }

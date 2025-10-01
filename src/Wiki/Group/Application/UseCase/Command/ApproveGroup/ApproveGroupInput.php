@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup;
+namespace Source\Wiki\Group\Application\UseCase\Command\ApproveGroup;
 
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 
-readonly class ApproveUpdatedGroupInput implements ApproveUpdatedGroupInputPort
+readonly class ApproveGroupInput implements ApproveGroupInputPort
 {
     public function __construct(
         private GroupIdentifier  $groupIdentifier,

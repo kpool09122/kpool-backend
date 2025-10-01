@@ -9,7 +9,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Application\Service\GroupServiceInterface;
+use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInput;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
@@ -23,6 +23,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,8 +37,8 @@ class TranslateGroupTest extends TestCase
      */
     public function test__construct(): void
     {
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -55,6 +56,7 @@ class TranslateGroupTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -75,6 +77,7 @@ class TranslateGroupTest extends TestCase
 
         $group = new Group(
             $groupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $agencyIdentifier,
@@ -100,6 +103,7 @@ TWICE（トゥワイス）は、2015年に韓国のサバイバルオーディ�
         $jaGroup = new DraftGroup(
             $jaGroupIdentifier,
             $groupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $japanese,
             $jaName,
@@ -127,6 +131,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $enGroup = new DraftGroup(
             $enGroupIdentifier,
             $groupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $english,
             $enName,
@@ -151,17 +156,17 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             ->once()
             ->andReturn(null);
 
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupService->shouldReceive('translateGroup')
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateGroup')
             ->with($group, $english)
             ->once()
             ->andReturn($enGroup);
-        $groupService->shouldReceive('translateGroup')
+        $translationService->shouldReceive('translateGroup')
             ->with($group, $japanese)
             ->once()
             ->andReturn($jaGroup);
 
-        $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
@@ -189,9 +194,9 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             ->once()
             ->andReturn(null);
 
-        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
         $this->expectException(GroupNotFoundException::class);

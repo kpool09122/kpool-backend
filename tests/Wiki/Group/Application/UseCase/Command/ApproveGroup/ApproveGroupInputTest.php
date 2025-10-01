@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup;
+namespace Tests\Wiki\Group\Application\UseCase\Command\ApproveGroup;
 
-use Source\Wiki\Group\Application\UseCase\Command\ApproveUpdatedGroup\ApproveUpdatedGroupInput;
+use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ApproveUpdatedGroupInputTest extends TestCase
+class ApproveGroupInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -20,7 +20,7 @@ class ApproveUpdatedGroupInputTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $input = new ApproveUpdatedGroupInput(
+        $input = new ApproveGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
         );
