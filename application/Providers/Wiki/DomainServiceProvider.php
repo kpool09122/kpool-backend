@@ -10,6 +10,8 @@ use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactory;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Service\AgencyService;
+use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Infrastracture\Adapters\Repository\AgencyRepository;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactory;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
@@ -41,6 +43,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(SongFactoryInterface::class, SongFactory::class);
         $this->app->singleton(SongServiceInterface::class, SongService::class);
         $this->app->singleton(AgencyFactoryInterface::class, AgencyFactory::class);
+        $this->app->singleton(AgencyServiceInterface::class, AgencyService::class);
         $this->app->singleton(DraftAgencyFactoryInterface::class, DraftAgencyFactory::class);
         $this->app->singleton(AgencyRepositoryInterface::class, AgencyRepository::class);
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);

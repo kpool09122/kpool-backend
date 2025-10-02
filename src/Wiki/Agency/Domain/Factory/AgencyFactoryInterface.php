@@ -7,10 +7,12 @@ namespace Source\Wiki\Agency\Domain\Factory;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface AgencyFactoryInterface
 {
     public function create(
+        TranslationSetIdentifier $translationSetIdentifier,
         Translation $translation,
         AgencyName $agencyName,
     ): Agency;

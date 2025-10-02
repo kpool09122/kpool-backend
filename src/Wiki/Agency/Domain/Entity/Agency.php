@@ -10,11 +10,13 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class Agency
 {
     public function __construct(
         private readonly AgencyIdentifier $agencyIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Translation     $translation,
         private AgencyName               $name,
         private CEO                      $CEO,
@@ -26,6 +28,11 @@ class Agency
     public function agencyIdentifier(): AgencyIdentifier
     {
         return $this->agencyIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function translation(): Translation

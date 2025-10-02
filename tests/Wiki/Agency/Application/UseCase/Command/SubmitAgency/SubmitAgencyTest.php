@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency;
+namespace Tests\Wiki\Agency\Application\UseCase\Command\SubmitAgency;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
-use Source\Wiki\Agency\Application\Service\AgencyServiceInterface;
-use Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency\RejectUpdatedAgency;
-use Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency\RejectUpdatedAgencyInput;
-use Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency\RejectUpdatedAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency\SubmitAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency\SubmitAgencyInput;
+use Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency\SubmitAgencyInterface;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -23,10 +22,11 @@ use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class RejectUpdatedAgencyTest extends TestCase
+class SubmitAgencyTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -39,8 +39,8 @@ class RejectUpdatedAgencyTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $rejectUpdatedAgency = $this->app->make(RejectUpdatedAgencyInterface::class);
-        $this->assertInstanceOf(RejectUpdatedAgency::class, $rejectUpdatedAgency);
+        $submitAgency = $this->app->make(SubmitAgencyInterface::class);
+        $this->assertInstanceOf(SubmitAgency::class, $submitAgency);
     }
 
     /**
@@ -55,6 +55,7 @@ class RejectUpdatedAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -73,14 +74,15 @@ class RejectUpdatedAgencyTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-        $input = new RejectUpdatedAgencyInput(
+        $input = new SubmitAgencyInput(
             $agencyIdentifier,
         );
 
-        $status = ApprovalStatus::UnderReview;
+        $status = ApprovalStatus::Pending;
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -101,10 +103,10 @@ class RejectUpdatedAgencyTest extends TestCase
             ->andReturn($agency);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $rejectUpdatedAgency = $this->app->make(RejectUpdatedAgencyInterface::class);
-        $agency = $rejectUpdatedAgency->process($input);
+        $submitAgency = $this->app->make(SubmitAgencyInterface::class);
+        $agency = $submitAgency->process($input);
         $this->assertNotSame($status, $agency->status());
-        $this->assertSame(ApprovalStatus::Rejected, $agency->status());
+        $this->assertSame(ApprovalStatus::UnderReview, $agency->status());
     }
 
     /**
@@ -117,7 +119,7 @@ class RejectUpdatedAgencyTest extends TestCase
     public function testWhenNotFoundAgency(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $input = new RejectUpdatedAgencyInput(
+        $input = new SubmitAgencyInput(
             $agencyIdentifier,
         );
 
@@ -129,12 +131,12 @@ class RejectUpdatedAgencyTest extends TestCase
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->expectException(AgencyNotFoundException::class);
-        $approveUpdatedAgency = $this->app->make(RejectUpdatedAgencyInterface::class);
-        $approveUpdatedAgency->process($input);
+        $submitAgency = $this->app->make(SubmitAgencyInterface::class);
+        $submitAgency->process($input);
     }
 
     /**
-     * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
+     * 異常系：承認ステータスがPendingかRejected以外の場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -144,6 +146,7 @@ class RejectUpdatedAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -162,7 +165,7 @@ class RejectUpdatedAgencyTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-        $input = new RejectUpdatedAgencyInput(
+        $input = new SubmitAgencyInput(
             $agencyIdentifier,
         );
 
@@ -170,6 +173,7 @@ class RejectUpdatedAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -185,12 +189,9 @@ class RejectUpdatedAgencyTest extends TestCase
             ->with($agencyIdentifier)
             ->andReturn($agency);
 
-        $agencyService = Mockery::mock(AgencyServiceInterface::class);
-
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->expectException(InvalidStatusException::class);
-        $approveUpdatedAgency = $this->app->make(RejectUpdatedAgencyInterface::class);
-        $approveUpdatedAgency->process($input);
+        $submitAgency = $this->app->make(SubmitAgencyInterface::class);
+        $submitAgency->process($input);
     }
 }

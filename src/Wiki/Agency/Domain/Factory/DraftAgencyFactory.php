@@ -13,6 +13,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class DraftAgencyFactory implements DraftAgencyFactoryInterface
 {
@@ -25,10 +26,12 @@ class DraftAgencyFactory implements DraftAgencyFactoryInterface
         EditorIdentifier $editorIdentifier,
         Translation $translation,
         AgencyName $agencyName,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftAgency {
         return new DraftAgency(
             new AgencyIdentifier($this->ulidGenerator->generate()),
             null,
+            $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
             $translation,
             $agencyName,

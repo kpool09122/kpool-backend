@@ -10,7 +10,6 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
-use Source\Wiki\Agency\Application\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInterface;
@@ -18,6 +17,7 @@ use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
@@ -26,6 +26,7 @@ use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -62,6 +63,7 @@ class PublishAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -89,6 +91,7 @@ class PublishAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -104,6 +107,7 @@ class PublishAgencyTest extends TestCase
         $exDescription = new Description('HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 산업의 혁신\'**을 목표로 하는 라이프스타일 플랫폼 기업이라는 점입니다. BTS의 세계적인 성공을 기반으로 2021년에 현재의 사명으로 변경했습니다.');
         $publishedAgency = new Agency(
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $translation,
             $exName,
             $exCEO,
@@ -132,7 +136,7 @@ class PublishAgencyTest extends TestCase
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
         $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
             ->once()
-            ->with($agencyIdentifier, $publishedAgencyIdentifier)
+            ->with($translationSetIdentifier, $agencyIdentifier)
             ->andReturn(false);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
@@ -159,6 +163,7 @@ class PublishAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -186,6 +191,7 @@ class PublishAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             null,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -197,6 +203,7 @@ class PublishAgencyTest extends TestCase
 
         $createdAgency = new Agency(
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             new CEO(''),
@@ -221,13 +228,13 @@ class PublishAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($translation, $name)
+            ->with($translationSetIdentifier, $translation, $name)
             ->andReturn($createdAgency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
         $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
             ->once()
-            ->with($agencyIdentifier, $publishedAgencyIdentifier)
+            ->with($translationSetIdentifier, $agencyIdentifier)
             ->andReturn(false);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
@@ -285,6 +292,7 @@ class PublishAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -312,6 +320,7 @@ class PublishAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -349,6 +358,7 @@ class PublishAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -376,6 +386,7 @@ class PublishAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -394,7 +405,7 @@ class PublishAgencyTest extends TestCase
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
         $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
             ->once()
-            ->with($agencyIdentifier, $publishedAgencyIdentifier)
+            ->with($translationSetIdentifier, $agencyIdentifier)
             ->andReturn(true);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
@@ -415,6 +426,7 @@ class PublishAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -442,6 +454,7 @@ class PublishAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -464,7 +477,7 @@ class PublishAgencyTest extends TestCase
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
         $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
             ->once()
-            ->with($agencyIdentifier, $publishedAgencyIdentifier)
+            ->with($translationSetIdentifier, $agencyIdentifier)
             ->andReturn(false);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);

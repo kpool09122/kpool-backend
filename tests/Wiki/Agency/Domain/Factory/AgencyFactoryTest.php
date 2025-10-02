@@ -10,6 +10,8 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactory;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AgencyFactoryTest extends TestCase
@@ -36,9 +38,11 @@ class AgencyFactoryTest extends TestCase
     {
         $name = new AgencyName('JYP엔터테인먼트');
         $translation = Translation::KOREAN;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $agencyFactory = $this->app->make(AgencyFactoryInterface::class);
-        $agency = $agencyFactory->create($translation, $name);
+        $agency = $agencyFactory->create($translationSetIdentifier, $translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$agency->agencyIdentifier()));
+        $this->assertSame((string)$translationSetIdentifier, (string)$agency->translationSetIdentifier());
         $this->assertSame($translation->value, $agency->translation()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame('', (string)$agency->CEO());

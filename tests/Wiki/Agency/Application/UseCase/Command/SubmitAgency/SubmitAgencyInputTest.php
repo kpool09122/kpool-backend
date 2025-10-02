@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency;
+namespace Tests\Wiki\Agency\Application\UseCase\Command\SubmitAgency;
 
-use Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency\RejectUpdatedAgencyInput;
+use Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency\SubmitAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class RejectUpdatedAgencyInputTest extends TestCase
+class SubmitAgencyInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,7 +19,7 @@ class RejectUpdatedAgencyInputTest extends TestCase
     public function test__construct(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $input = new RejectUpdatedAgencyInput(
+        $input = new SubmitAgencyInput(
             $agencyIdentifier,
         );
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());

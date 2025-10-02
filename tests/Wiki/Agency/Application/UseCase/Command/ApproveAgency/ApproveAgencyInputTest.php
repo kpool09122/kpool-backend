@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Agency\Application\UseCase\Command\ApproveUpdatedAgency;
+namespace Tests\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
-use Source\Wiki\Agency\Application\UseCase\Command\ApproveUpdatedAgency\ApproveUpdatedAgencyInput;
+use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ApproveUpdatedAgencyInputTest extends TestCase
+class ApproveAgencyInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -20,7 +20,7 @@ class ApproveUpdatedAgencyInputTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $input = new ApproveUpdatedAgencyInput(
+        $input = new ApproveAgencyInput(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
         );

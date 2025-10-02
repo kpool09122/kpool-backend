@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('agencies', static function (Blueprint $table) {
             $table->string('id', 26)->primary()->comment('事務所ID');
+            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('CEO', 32)->comment('CEO名')->default('');
@@ -24,6 +25,7 @@ return new class extends Migration
         Schema::create('agencies_pending', static function (Blueprint $table) {
             $table->string('id', 26)->primary()->comment('事務所ID');
             $table->string('published_id', 26)->nullable()->comment('公開済み事務所ID');
+            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
             $table->string('editor_id', 26)->comment('編集者ID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency;
+namespace Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 
-readonly class RejectUpdatedAgencyInput implements RejectUpdatedAgencyInputPort
+readonly class SubmitAgencyInput implements SubmitAgencyInputPort
 {
     public function __construct(
         private AgencyIdentifier $agencyIdentifier,

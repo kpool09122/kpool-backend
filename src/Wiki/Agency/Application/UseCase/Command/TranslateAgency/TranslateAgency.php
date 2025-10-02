@@ -6,7 +6,7 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
-use Source\Wiki\Agency\Application\Service\AgencyServiceInterface;
+use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 
@@ -14,7 +14,7 @@ class TranslateAgency implements TranslateAgencyInterface
 {
     public function __construct(
         private AgencyRepositoryInterface $agencyRepository,
-        private AgencyServiceInterface $agencyService,
+        private TranslationServiceInterface $translationService,
     ) {
     }
 
@@ -35,7 +35,7 @@ class TranslateAgency implements TranslateAgencyInterface
 
         $agencyDrafts = [];
         foreach ($translations as $translation) {
-            $agencyDraft = $this->agencyService->translateAgency($agency, $translation);
+            $agencyDraft = $this->translationService->translateAgency($agency, $translation);
             $agencyDrafts[] = $agencyDraft;
             $this->agencyRepository->saveDraft($agencyDraft);
         }

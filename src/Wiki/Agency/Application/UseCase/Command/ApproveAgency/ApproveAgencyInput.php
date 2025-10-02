@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveUpdatedAgency;
+namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 
-readonly class ApproveUpdatedAgencyInput implements ApproveUpdatedAgencyInputPort
+readonly class ApproveAgencyInput implements ApproveAgencyInputPort
 {
     public function __construct(
         private AgencyIdentifier  $agencyIdentifier,

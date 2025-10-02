@@ -7,6 +7,7 @@ namespace Source\Wiki\Agency\Domain\Repository;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface AgencyRepositoryInterface
 {
@@ -19,4 +20,12 @@ interface AgencyRepositoryInterface
     public function deleteDraft(DraftAgency $agency): void;
 
     public function save(Agency $agency): void;
+
+    /**
+     * @param TranslationSetIdentifier $translationSetIdentifier
+     * @return DraftAgency[]
+     */
+    public function findDraftsByTranslationSet(
+        TranslationSetIdentifier $translationSetIdentifier,
+    ): array;
 }

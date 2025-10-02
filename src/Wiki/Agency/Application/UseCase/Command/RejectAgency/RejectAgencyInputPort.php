@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Application\UseCase\Command\RejectUpdatedAgency;
+namespace Source\Wiki\Agency\Application\UseCase\Command\RejectAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 
-interface RejectUpdatedAgencyInputPort
+interface RejectAgencyInputPort
 {
     public function agencyIdentifier(): AgencyIdentifier;
 }

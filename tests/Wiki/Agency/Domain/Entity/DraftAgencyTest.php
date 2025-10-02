@@ -14,6 +14,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -28,6 +29,7 @@ class DraftAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -50,6 +52,7 @@ class DraftAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -78,6 +81,7 @@ class DraftAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -100,6 +104,7 @@ class DraftAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -125,6 +130,7 @@ class DraftAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -147,6 +153,7 @@ class DraftAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -172,6 +179,7 @@ class DraftAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -194,6 +202,7 @@ class DraftAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -219,6 +228,7 @@ class DraftAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -241,6 +251,7 @@ class DraftAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -266,6 +277,7 @@ class DraftAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -288,6 +300,7 @@ class DraftAgencyTest extends TestCase
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -316,6 +329,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -338,6 +352,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,

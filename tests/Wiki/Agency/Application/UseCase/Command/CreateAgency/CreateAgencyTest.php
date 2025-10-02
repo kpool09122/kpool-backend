@@ -23,6 +23,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -81,10 +82,12 @@ class CreateAgencyTest extends TestCase
         );
 
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
         $agency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -95,6 +98,7 @@ class CreateAgencyTest extends TestCase
         );
         $publishedAgency = new Agency(
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $CEO,
