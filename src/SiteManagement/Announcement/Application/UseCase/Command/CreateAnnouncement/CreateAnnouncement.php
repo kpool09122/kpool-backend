@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
-use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
+use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
+use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 
 class CreateAnnouncement implements CreateAnnouncementInterface
 {
     public function __construct(
-        private AnnouncementFactoryInterface $announcementFactory,
+        private DraftAnnouncementFactoryInterface $draftAnnouncementFactory,
         private AnnouncementRepositoryInterface $announcementRepository,
     ) {
     }
 
-    public function process(CreateAnnouncementInputPort $input): Announcement
+    public function process(CreateAnnouncementInputPort $input): DraftAnnouncement
     {
-        $announcement = $this->announcementFactory->create(
+        $draftAnnouncement = $this->draftAnnouncementFactory->create(
+            $input->translationSetIdentifier(),
             $input->translation(),
             $input->category(),
             $input->title(),
@@ -26,8 +27,8 @@ class CreateAnnouncement implements CreateAnnouncementInterface
             $input->publishedDate(),
         );
 
-        $this->announcementRepository->save($announcement);
+        $this->announcementRepository->saveDraft($draftAnnouncement);
 
-        return $announcement;
+        return $draftAnnouncement;
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Member\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface MemberRepositoryInterface
 {

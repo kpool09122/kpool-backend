@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\ValueObject\Birthday;
@@ -17,7 +18,6 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

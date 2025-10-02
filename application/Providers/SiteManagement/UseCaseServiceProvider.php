@@ -9,6 +9,10 @@ use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnounc
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncementInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncement;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncementInterface;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncement;
+use Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement\TranslateAnnouncementInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
@@ -22,5 +26,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(UpdateAnnouncementInterface::class, UpdateAnnouncement::class);
         $this->app->singleton(DeleteAnnouncementInterface::class, DeleteAnnouncement::class);
         $this->app->singleton(SubmitContactInterface::class, SubmitContact::class);
+        $this->app->singleton(TranslateAnnouncementInterface::class, TranslateAnnouncement::class);
+        $this->app->singleton(PublishAnnouncementInterface::class, PublishAnnouncement::class);
     }
 }

@@ -8,11 +8,12 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInput;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
-use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
+use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -49,6 +50,7 @@ class EditAnnouncementTest extends TestCase
     public function testProcess(): void
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -83,8 +85,9 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $publishedDate,
         );
 
-        $announcement = new Announcement(
+        $announcement = new DraftAnnouncement(
             $announcementIdentifier,
+            $translationSetIdentifier,
             $translation,
             $category,
             $title,
@@ -93,11 +96,11 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $announcementRepository->shouldReceive('save')
+        $announcementRepository->shouldReceive('saveDraft')
             ->once()
             ->with($announcement)
             ->andReturn(null);
-        $announcementRepository->shouldReceive('findById')
+        $announcementRepository->shouldReceive('findDraftById')
             ->once()
             ->with($announcementIdentifier)
             ->andReturn($announcement);
@@ -156,7 +159,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
 
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $announcementRepository->shouldReceive('findById')
+        $announcementRepository->shouldReceive('findDraftById')
             ->once()
             ->with($announcementIdentifier)
             ->andReturn(null);

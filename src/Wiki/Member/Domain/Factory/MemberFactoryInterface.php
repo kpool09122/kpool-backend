@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\Member\Domain\Factory;
 
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface MemberFactoryInterface
 {

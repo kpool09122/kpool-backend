@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
@@ -24,7 +25,6 @@ use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

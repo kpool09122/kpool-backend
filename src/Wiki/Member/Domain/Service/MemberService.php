@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Member\Domain\Service;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class MemberService implements MemberServiceInterface
 {

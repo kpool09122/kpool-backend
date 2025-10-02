@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\Repository;
 
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
