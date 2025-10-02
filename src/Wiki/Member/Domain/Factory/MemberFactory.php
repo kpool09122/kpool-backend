@@ -13,6 +13,7 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 readonly class MemberFactory implements MemberFactoryInterface
 {
@@ -22,17 +23,20 @@ readonly class MemberFactory implements MemberFactoryInterface
     }
 
     /**
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Translation $translation
      * @param MemberName $name
      * @return Member
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
+        TranslationSetIdentifier $translationSetIdentifier,
         Translation $translation,
         MemberName $name,
     ): Member {
         return new Member(
             new MemberIdentifier($this->ulidGenerator->generate()),
+            $translationSetIdentifier,
             $translation,
             $name,
             new RealName(''),

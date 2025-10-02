@@ -11,11 +11,13 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class Group
 {
     /**
      * @param GroupIdentifier $groupIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Translation $translation
      * @param GroupName $name
      * @param AgencyIdentifier|null $agencyIdentifier
@@ -25,6 +27,7 @@ class Group
      */
     public function __construct(
         private readonly GroupIdentifier $groupIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Translation $translation,
         private GroupName $name,
         private ?AgencyIdentifier $agencyIdentifier,
@@ -37,6 +40,11 @@ class Group
     public function groupIdentifier(): GroupIdentifier
     {
         return $this->groupIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function translation(): Translation

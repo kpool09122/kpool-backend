@@ -7,6 +7,7 @@ namespace Source\Wiki\Member\Domain\Repository;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface MemberRepositoryInterface
 {
@@ -19,4 +20,12 @@ interface MemberRepositoryInterface
     public function saveDraft(DraftMember $member): void;
 
     public function deleteDraft(DraftMember $member): void;
+
+    /**
+     * @param TranslationSetIdentifier $translationSetIdentifier
+     * @return DraftMember[]
+     */
+    public function findDraftsByTranslationSet(
+        TranslationSetIdentifier $translationSetIdentifier,
+    ): array;
 }

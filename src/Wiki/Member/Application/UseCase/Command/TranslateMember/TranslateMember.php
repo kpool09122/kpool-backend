@@ -6,7 +6,7 @@ namespace Source\Wiki\Member\Application\UseCase\Command\TranslateMember;
 
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
-use Source\Wiki\Member\Application\Service\MemberServiceInterface;
+use Source\Wiki\Member\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 
@@ -14,7 +14,7 @@ class TranslateMember implements TranslateMemberInterface
 {
     public function __construct(
         private MemberRepositoryInterface $memberRepository,
-        private MemberServiceInterface    $memberService,
+        private TranslationServiceInterface $translationService,
     ) {
     }
 
@@ -35,7 +35,8 @@ class TranslateMember implements TranslateMemberInterface
 
         $memberDrafts = [];
         foreach ($translations as $translation) {
-            $memberDraft = $this->memberService->translateMember($member, $translation);
+            // 外部翻訳サービスを使って翻訳
+            $memberDraft = $this->translationService->translateMember($member, $translation);
             $memberDrafts[] = $memberDraft;
             $this->memberRepository->saveDraft($memberDraft);
         }

@@ -12,6 +12,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 readonly class DraftGroupFactory implements DraftGroupFactoryInterface
 {
@@ -20,14 +21,23 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
     ) {
     }
 
+    /**
+     * @param EditorIdentifier $editorIdentifier
+     * @param Translation $translation
+     * @param GroupName $name
+     * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
+     * @return DraftGroup
+     */
     public function create(
         EditorIdentifier $editorIdentifier,
         Translation $translation,
         GroupName $name,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftGroup {
         return new DraftGroup(
             new GroupIdentifier($this->ulidGenerator->generate()),
             null,
+            $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
             $translation,
             $name,

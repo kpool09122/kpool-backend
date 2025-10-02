@@ -13,12 +13,14 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class DraftGroup
 {
     /**
      * @param GroupIdentifier $groupIdentifier
      * @param GroupIdentifier|null $publishedGroupIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param GroupName $name
@@ -31,6 +33,7 @@ class DraftGroup
     public function __construct(
         private readonly GroupIdentifier $groupIdentifier,
         private ?GroupIdentifier $publishedGroupIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly EditorIdentifier $editorIdentifier,
         private readonly Translation $translation,
         private GroupName $name,
@@ -55,6 +58,11 @@ class DraftGroup
     public function setPublishedGroupIdentifier(GroupIdentifier $groupIdentifier): void
     {
         $this->publishedGroupIdentifier = $groupIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function editorIdentifier(): EditorIdentifier

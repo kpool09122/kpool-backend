@@ -12,12 +12,14 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class DraftAgency
 {
     public function __construct(
         private readonly AgencyIdentifier  $agencyIdentifier,
         private ?AgencyIdentifier          $publishedAgencyIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly EditorIdentifier $editorIdentifier,
         private readonly Translation      $translation,
         private AgencyName                $name,
@@ -41,6 +43,11 @@ class DraftAgency
     public function setPublishedAgencyIdentifier(AgencyIdentifier $agencyIdentifier): void
     {
         $this->publishedAgencyIdentifier = $agencyIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function editorIdentifier(): EditorIdentifier

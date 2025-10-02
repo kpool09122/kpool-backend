@@ -8,12 +8,21 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface DraftGroupFactoryInterface
 {
+    /**
+     * @param EditorIdentifier $editorIdentifier
+     * @param Translation $translation
+     * @param GroupName $name
+     * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
+     * @return DraftGroup
+     */
     public function create(
         EditorIdentifier $editorIdentifier,
         Translation $translation,
         GroupName $name,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftGroup;
 }

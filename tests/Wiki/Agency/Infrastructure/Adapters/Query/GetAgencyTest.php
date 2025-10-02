@@ -61,6 +61,7 @@ class GetAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         DB::table('agencies')->upsert([
             'id' => (string) $agencyIdentifer,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,

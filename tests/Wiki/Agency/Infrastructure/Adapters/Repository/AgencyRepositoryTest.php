@@ -18,6 +18,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -52,6 +53,7 @@ class AgencyRepositoryTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         DB::table('agencies')->upsert([
             'id' => $id,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation,
             'name' => $name,
             'CEO' => $CEO,
@@ -119,6 +121,7 @@ class AgencyRepositoryTest extends TestCase
         DB::table('agencies_pending')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'editor_id' => $editorId,
             'translation' => $translation,
             'name' => $name,
@@ -190,6 +193,7 @@ class AgencyRepositoryTest extends TestCase
         $agency = new DraftAgency(
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier($editorId),
             $translation,
             new AgencyName($name),
@@ -249,6 +253,7 @@ class AgencyRepositoryTest extends TestCase
         DB::table('agencies_pending')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'editor_id' => $editorId,
             'translation' => $translation,
             'name' => $name,
@@ -273,6 +278,7 @@ class AgencyRepositoryTest extends TestCase
         $agency = new DraftAgency(
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier($editorId),
             $translation,
             new AgencyName($name),
@@ -328,6 +334,7 @@ class AgencyRepositoryTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         $agency = new Agency(
             new AgencyIdentifier($id),
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $translation,
             new AgencyName($name),
             new CEO($CEO),
@@ -347,5 +354,119 @@ class AgencyRepositoryTest extends TestCase
             'founded_in' => $founded_in,
             'description' => $description,
         ]);
+    }
+
+    /**
+     * 正常系：同じ翻訳セットIDを持つ下書き情報が取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @group useDb
+     */
+    public function testFindDraftsByTranslationSet(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+
+        // 同じ翻訳セットの韓国語版
+        $id1 = StrTestHelper::generateUlid();
+        $publishedId1 = StrTestHelper::generateUlid();
+        $editorId1 = StrTestHelper::generateUlid();
+        $translation1 = Translation::KOREAN;
+        $name1 = 'JYP엔터테인먼트';
+        $CEO1 = 'J.Y. Park';
+        $founded_in1 = new DateTimeImmutable('1997-04-25');
+        $description1 = 'JYP엔터테인먼트에 대한 설명입니다.';
+        $status1 = ApprovalStatus::Pending;
+
+        DB::table('agencies_pending')->upsert([
+            'id' => $id1,
+            'published_id' => $publishedId1,
+            'translation_set_identifier' => (string)$translationSetIdentifier,
+            'editor_id' => $editorId1,
+            'translation' => $translation1,
+            'name' => $name1,
+            'CEO' => $CEO1,
+            'founded_in' => $founded_in1,
+            'description' => $description1,
+            'status' => $status1->value,
+        ], 'id');
+
+        // 同じ翻訳セットの日本語版
+        $id2 = StrTestHelper::generateUlid();
+        $publishedId2 = StrTestHelper::generateUlid();
+        $editorId2 = StrTestHelper::generateUlid();
+        $translation2 = Translation::JAPANESE;
+        $name2 = 'JYPエンターテイメント';
+        $CEO2 = 'J.Y. Park';
+        $founded_in2 = new DateTimeImmutable('1997-04-25');
+        $description2 = 'JYPエンターテイメントに関する説明です。';
+        $status2 = ApprovalStatus::Approved;
+
+        DB::table('agencies_pending')->upsert([
+            'id' => $id2,
+            'published_id' => $publishedId2,
+            'translation_set_identifier' => (string)$translationSetIdentifier,
+            'editor_id' => $editorId2,
+            'translation' => $translation2,
+            'name' => $name2,
+            'CEO' => $CEO2,
+            'founded_in' => $founded_in2,
+            'description' => $description2,
+            'status' => $status2->value,
+        ], 'id');
+
+        // 異なる翻訳セットのデータ（取得されないはず）
+        $id3 = StrTestHelper::generateUlid();
+        $publishedId3 = StrTestHelper::generateUlid();
+        $editorId3 = StrTestHelper::generateUlid();
+        $translation3 = Translation::KOREAN;
+        $differentTranslationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+
+        DB::table('agencies_pending')->upsert([
+            'id' => $id3,
+            'published_id' => $publishedId3,
+            'translation_set_identifier' => (string)$differentTranslationSetIdentifier,
+            'editor_id' => $editorId3,
+            'translation' => $translation3,
+            'name' => 'HYBE',
+            'CEO' => '박지원',
+            'founded_in' => new DateTimeImmutable('2005-02-01'),
+            'description' => 'HYBEに関する説明です。',
+            'status' => ApprovalStatus::Pending->value,
+        ], 'id');
+
+        $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
+        $agencies = $agencyRepository->findDraftsByTranslationSet($translationSetIdentifier);
+
+        // 2件取得できること
+        $this->assertCount(2, $agencies);
+
+        // 取得したデータの検証
+        $agencyIds = array_map(fn ($agency) => (string)$agency->agencyIdentifier(), $agencies);
+        $this->assertContains($id1, $agencyIds);
+        $this->assertContains($id2, $agencyIds);
+        $this->assertNotContains($id3, $agencyIds);
+
+        // 各エージェンシーの翻訳セットIDが一致していること
+        foreach ($agencies as $agency) {
+            $this->assertSame((string)$translationSetIdentifier, (string)$agency->translationSetIdentifier());
+        }
+    }
+
+    /**
+     * 正常系：該当する翻訳セットIDの下書き情報が存在しない場合、空の配列が返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @group useDb
+     */
+    public function testFindDraftsByTranslationSetWhenNoAgencies(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
+        $agencies = $agencyRepository->findDraftsByTranslationSet($translationSetIdentifier);
+
+        $this->assertIsArray($agencies);
+        $this->assertEmpty($agencies);
     }
 }

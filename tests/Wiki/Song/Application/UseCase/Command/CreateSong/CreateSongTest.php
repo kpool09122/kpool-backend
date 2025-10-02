@@ -14,6 +14,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
@@ -95,9 +96,11 @@ class CreateSongTest extends TestCase
 
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -113,6 +116,7 @@ class CreateSongTest extends TestCase
 
         $publishedSong = new Song(
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $belongIdentifiers,

@@ -6,7 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\TranslateSong;
 
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Application\Service\SongServiceInterface;
+use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
@@ -14,7 +14,7 @@ class TranslateSong implements TranslateSongInterface
 {
     public function __construct(
         private SongRepositoryInterface $songRepository,
-        private SongServiceInterface    $songService,
+        private TranslationServiceInterface $translationService,
     ) {
     }
 
@@ -35,7 +35,8 @@ class TranslateSong implements TranslateSongInterface
 
         $songDrafts = [];
         foreach ($translations as $translation) {
-            $songDraft = $this->songService->translateSong($song, $translation);
+            // 外部翻訳サービスを使って翻訳
+            $songDraft = $this->translationService->translateSong($song, $translation);
             $songDrafts[] = $songDraft;
             $this->songRepository->saveDraft($songDraft);
         }

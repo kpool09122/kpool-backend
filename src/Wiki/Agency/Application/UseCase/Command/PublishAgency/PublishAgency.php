@@ -6,10 +6,10 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\PublishAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
-use Source\Wiki\Agency\Application\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 
@@ -41,16 +41,13 @@ class PublishAgency implements PublishAgencyInterface
             throw new InvalidStatusException();
         }
 
-
-        if ($input->publishedAgencyIdentifier()) {
-            if ($this->agencyService->existsApprovedButNotTranslatedAgency(
-                $input->agencyIdentifier(),
-                $input->publishedAgencyIdentifier(),
-            )) {
-                throw new ExistsApprovedButNotTranslatedAgencyException();
-            }
+        // 同じ翻訳セットの別版で承認済みがあるかチェック
+        if ($this->agencyService->existsApprovedButNotTranslatedAgency(
+            $agency->translationSetIdentifier(),
+            $agency->agencyIdentifier(),
+        )) {
+            throw new ExistsApprovedButNotTranslatedAgencyException();
         }
-
 
         if ($agency->publishedAgencyIdentifier()) {
             $publishedAgency = $this->agencyRepository->findById($input->publishedAgencyIdentifier());
@@ -60,6 +57,7 @@ class PublishAgency implements PublishAgencyInterface
             $publishedAgency->setName($agency->name());
         } else {
             $publishedAgency = $this->agencyFactory->create(
+                $agency->translationSetIdentifier(),
                 $agency->translation(),
                 $agency->name(),
             );

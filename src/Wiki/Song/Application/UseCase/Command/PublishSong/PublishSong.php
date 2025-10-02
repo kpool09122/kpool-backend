@@ -8,10 +8,10 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Application\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 
 class PublishSong implements PublishSongInterface
 {
@@ -41,14 +41,12 @@ class PublishSong implements PublishSongInterface
             throw new InvalidStatusException();
         }
 
-
-        if ($input->publishedSongIdentifier()) {
-            if ($this->songService->existsApprovedButNotTranslatedSong(
-                $input->songIdentifier(),
-                $input->publishedSongIdentifier(),
-            )) {
-                throw new ExistsApprovedButNotTranslatedSongException();
-            }
+        // 同じ翻訳セットの別版で承認済みがあるかチェック
+        if ($this->songService->existsApprovedButNotTranslatedSong(
+            $song->translationSetIdentifier(),
+            $song->songIdentifier(),
+        )) {
+            throw new ExistsApprovedButNotTranslatedSongException();
         }
 
         if ($song->publishedSongIdentifier()) {
@@ -59,6 +57,7 @@ class PublishSong implements PublishSongInterface
             $publishedSong->setName($song->name());
         } else {
             $publishedSong = $this->songFactory->create(
+                $song->translationSetIdentifier(),
                 $song->translation(),
                 $song->name(),
             );

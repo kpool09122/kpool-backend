@@ -12,6 +12,7 @@ use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,6 +45,7 @@ class DraftGroupFactoryTest extends TestCase
         $group = $groupFactory->create($editorIdentifier, $translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$group->groupIdentifier()));
         $this->assertNull($group->publishedGroupIdentifier());
+        $this->assertTrue(UlidValidator::isValid((string)$group->translationSetIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
@@ -52,5 +54,9 @@ class DraftGroupFactoryTest extends TestCase
         $this->assertSame([], $group->songIdentifiers());
         $this->assertNull($group->imageLink());
         $this->assertSame(ApprovalStatus::Pending, $group->status());
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $group = $groupFactory->create($editorIdentifier, $translation, $name, $translationSetIdentifier);
+        $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
     }
 }

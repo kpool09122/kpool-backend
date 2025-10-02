@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
-use Source\Wiki\Group\Application\Service\GroupServiceInterface;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroup;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInput;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInterface;
@@ -18,6 +17,7 @@ use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
@@ -26,6 +26,7 @@ use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -62,6 +63,7 @@ class PublishGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -85,6 +87,7 @@ class PublishGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -111,6 +114,7 @@ class PublishGroupTest extends TestCase
         $exImagePath = new ImagePath('/resources/public/images/after.webp');
         $publishedGroup = new Group(
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $exName,
             $exAgencyIdentifier,
@@ -140,7 +144,7 @@ class PublishGroupTest extends TestCase
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
             ->once()
-            ->with($groupIdentifier, $publishedGroupIdentifier)
+            ->with($translationSetIdentifier, $groupIdentifier)
             ->andReturn(false);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -168,6 +172,7 @@ class PublishGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -191,6 +196,7 @@ class PublishGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             null,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -203,6 +209,7 @@ class PublishGroupTest extends TestCase
 
         $createdGroup = new Group(
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             null,
@@ -228,13 +235,13 @@ class PublishGroupTest extends TestCase
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($translation, $name)
+            ->with($translationSetIdentifier, $translation, $name)
             ->andReturn($createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
             ->once()
-            ->with($groupIdentifier, $publishedGroupIdentifier)
+            ->with($translationSetIdentifier, $groupIdentifier)
             ->andReturn(false);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -244,6 +251,7 @@ class PublishGroupTest extends TestCase
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
         $this->assertSame($translation->value, $publishedGroup->translation()->value);
+        $this->assertSame((string)$translationSetIdentifier, (string)$publishedGroup->translationSetIdentifier());
         $this->assertSame((string)$agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$description, (string)$publishedGroup->description());
@@ -294,6 +302,7 @@ class PublishGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -317,6 +326,7 @@ class PublishGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -355,6 +365,7 @@ class PublishGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -378,6 +389,7 @@ class PublishGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -397,7 +409,7 @@ class PublishGroupTest extends TestCase
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
             ->once()
-            ->with($groupIdentifier, $publishedGroupIdentifier)
+            ->with($translationSetIdentifier, $groupIdentifier)
             ->andReturn(true);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -418,6 +430,7 @@ class PublishGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
@@ -441,6 +454,7 @@ class PublishGroupTest extends TestCase
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -464,7 +478,7 @@ class PublishGroupTest extends TestCase
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
             ->once()
-            ->with($groupIdentifier, $publishedGroupIdentifier)
+            ->with($translationSetIdentifier, $groupIdentifier)
             ->andReturn(false);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);

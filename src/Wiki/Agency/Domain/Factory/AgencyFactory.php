@@ -11,6 +11,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class AgencyFactory implements AgencyFactoryInterface
 {
@@ -20,11 +21,13 @@ class AgencyFactory implements AgencyFactoryInterface
     }
 
     public function create(
+        TranslationSetIdentifier $translationSetIdentifier,
         Translation $translation,
         AgencyName $agencyName,
     ): Agency {
         return new Agency(
             new AgencyIdentifier($this->ulidGenerator->generate()),
+            $translationSetIdentifier,
             $translation,
             $agencyName,
             new CEO(''),

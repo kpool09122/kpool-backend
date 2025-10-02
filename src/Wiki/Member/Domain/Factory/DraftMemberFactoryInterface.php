@@ -9,6 +9,7 @@ use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface DraftMemberFactoryInterface
 {
@@ -16,6 +17,7 @@ interface DraftMemberFactoryInterface
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param MemberName $name
+     * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftMember
      * @throws ExceedMaxRelevantVideoLinksException
      */
@@ -23,5 +25,6 @@ interface DraftMemberFactoryInterface
         EditorIdentifier $editorIdentifier,
         Translation $translation,
         MemberName $name,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftMember;
 }

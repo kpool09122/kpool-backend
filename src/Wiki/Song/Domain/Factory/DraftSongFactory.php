@@ -8,6 +8,7 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Infrastructure\Service\Ulid\UlidGenerator;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -26,10 +27,12 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
         EditorIdentifier $editorIdentifier,
         Translation $translation,
         SongName $name,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftSong {
         return new DraftSong(
             new SongIdentifier($this->ulidGenerator->generate()),
             null,
+            $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
             $translation,
             $name,

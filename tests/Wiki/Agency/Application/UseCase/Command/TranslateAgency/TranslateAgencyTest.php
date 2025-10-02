@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
-use Source\Wiki\Agency\Application\Service\AgencyServiceInterface;
+use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInterface;
@@ -23,6 +23,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,8 +37,8 @@ class TranslateAgencyTest extends TestCase
      */
     public function test__construct(): void
     {
-        $agencyService = Mockery::mock(AgencyServiceInterface::class);
-        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $agencyService = Mockery::mock(TranslationServiceInterface::class);
+        $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $this->assertInstanceOf(TranslateAgency::class, $translateAgency);
     }
@@ -53,6 +54,7 @@ class TranslateAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -79,6 +81,7 @@ class TranslateAgencyTest extends TestCase
 
         $agency = new Agency(
             $agencyIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $CEO,
@@ -104,6 +107,7 @@ NMIXX
         $jaAgency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $japanese,
             $jaName,
@@ -131,6 +135,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
         $enAgency = new DraftAgency(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $english,
             $enName,
@@ -154,7 +159,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             ->once()
             ->andReturn(null);
 
-        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyService = Mockery::mock(TranslationServiceInterface::class);
         $agencyService->shouldReceive('translateAgency')
             ->with($agency, $english)
             ->once()
@@ -164,7 +169,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             ->once()
             ->andReturn($jaAgency);
 
-        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $agencies = $translateAgency->process($input);
@@ -194,9 +199,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
             ->once()
             ->andReturn(null);
 
-        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->expectException(AgencyNotFoundException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);

@@ -12,8 +12,9 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Application\Service\SongServiceInterface;
+use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSong;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
@@ -40,8 +41,8 @@ class TranslateSongTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $this->app->instance(SongServiceInterface::class, $songService);
+        $songService = Mockery::mock(TranslationServiceInterface::class);
+        $this->app->instance(TranslationServiceInterface::class, $songService);
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -76,8 +77,10 @@ class TranslateSongTest extends TestCase
             $songIdentifier,
         );
 
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new Song(
             $songIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             $belongIdentifiers,
@@ -106,6 +109,7 @@ class TranslateSongTest extends TestCase
         $jaSong = new DraftSong(
             $jaSongIdentifier,
             $songIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $japanese,
             $jaName,
@@ -136,6 +140,7 @@ class TranslateSongTest extends TestCase
         $enSong = new DraftSong(
             $enSongIdentifier,
             $songIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $english,
             $enName,
@@ -163,17 +168,17 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songService->shouldReceive('translateSong')
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateSong')
             ->with($song, $english)
             ->once()
             ->andReturn($enSong);
-        $songService->shouldReceive('translateSong')
+        $translationService->shouldReceive('translateSong')
             ->with($song, $japanese)
             ->once()
             ->andReturn($jaSong);
 
-        $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
@@ -201,9 +206,9 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $songService = Mockery::mock(SongServiceInterface::class);
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
 
-        $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
         $this->expectException(SongNotFoundException::class);

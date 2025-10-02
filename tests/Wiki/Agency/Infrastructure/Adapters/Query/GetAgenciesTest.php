@@ -48,6 +48,7 @@ class GetAgenciesTest extends TestCase
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifier,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,
@@ -61,6 +62,7 @@ class GetAgenciesTest extends TestCase
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name2,
             'CEO' => $CEO2,
@@ -108,6 +110,7 @@ class GetAgenciesTest extends TestCase
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,
@@ -121,6 +124,7 @@ class GetAgenciesTest extends TestCase
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name2,
             'CEO' => $CEO2,
@@ -167,6 +171,7 @@ class GetAgenciesTest extends TestCase
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,
@@ -180,6 +185,7 @@ class GetAgenciesTest extends TestCase
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name2,
             'CEO' => $CEO2,
@@ -226,6 +232,7 @@ class GetAgenciesTest extends TestCase
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,
@@ -239,6 +246,7 @@ class GetAgenciesTest extends TestCase
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name2,
             'CEO' => $CEO2,
@@ -297,6 +305,7 @@ class GetAgenciesTest extends TestCase
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation->value,
             'name' => $name,
             'CEO' => $CEO,
@@ -311,6 +320,7 @@ class GetAgenciesTest extends TestCase
         $description2 = 'HYBE는 단순한 연예 기획사를 넘어, 음악을 기반으로 한 다양한 사업을 전개하는 \'엔터테인먼트 라이프스타일 플랫폼 기업\'입니다.';
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
             'translation' => $translation2->value,
             'name' => $name2,
             'CEO' => $CEO2,

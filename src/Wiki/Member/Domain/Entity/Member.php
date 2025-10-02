@@ -13,11 +13,13 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class Member
 {
     /**
      * @param MemberIdentifier $memberIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Translation $translation
      * @param MemberName $name
      * @param RealName $realName
@@ -29,6 +31,7 @@ class Member
      */
     public function __construct(
         private readonly MemberIdentifier $memberIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Translation $translation,
         private MemberName $name,
         private RealName $realName,
@@ -43,6 +46,11 @@ class Member
     public function memberIdentifier(): MemberIdentifier
     {
         return $this->memberIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function translation(): Translation

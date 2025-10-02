@@ -17,6 +17,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class AgencyRepository implements AgencyRepositoryInterface
 {
@@ -32,6 +33,7 @@ class AgencyRepository implements AgencyRepositoryInterface
 
         return new Agency(
             new AgencyIdentifier($agencyModel->id),
+            new TranslationSetIdentifier($agencyModel->translation_set_identifier),
             Translation::from($agencyModel->translation),
             new AgencyName($agencyModel->name),
             new CEO($agencyModel->CEO),
@@ -53,6 +55,7 @@ class AgencyRepository implements AgencyRepositoryInterface
         return new DraftAgency(
             new AgencyIdentifier($agencyModel->id),
             $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
+            $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
             new EditorIdentifier($agencyModel->editor_id),
             Translation::from($agencyModel->translation),
             new AgencyName($agencyModel->name),
@@ -73,6 +76,7 @@ class AgencyRepository implements AgencyRepositoryInterface
             ],
             [
                 'published_id' => (string)$agency->publishedAgencyIdentifier(),
+                'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
                 'name' => $agency->name(),
                 'CEO' => $agency->CEO(),
                 'founded_in' => $agency->foundedIn(),
@@ -97,11 +101,35 @@ class AgencyRepository implements AgencyRepositoryInterface
                 'translation' => $agency->translation()->value,
             ],
             [
+                'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
                 'name' => $agency->name(),
                 'CEO' => $agency->CEO(),
                 'founded_in' => $agency->foundedIn(),
                 'description' => $agency->description(),
             ]
         );
+    }
+
+    public function findDraftsByTranslationSet(
+        TranslationSetIdentifier $translationSetIdentifier,
+    ): array {
+        $agencyModels = AgencyChangeRequest::query()
+            ->where('translation_set_identifier', (string)$translationSetIdentifier)
+            ->get();
+
+        return $agencyModels->map(function ($agencyModel) {
+            return new DraftAgency(
+                new AgencyIdentifier($agencyModel->id),
+                $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
+                $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
+                new EditorIdentifier($agencyModel->editor_id),
+                Translation::from($agencyModel->translation),
+                new AgencyName($agencyModel->name),
+                new CEO($agencyModel->CEO),
+                $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
+                new Description($agencyModel->description),
+                ApprovalStatus::from($agencyModel->status),
+            );
+        })->toArray();
     }
 }

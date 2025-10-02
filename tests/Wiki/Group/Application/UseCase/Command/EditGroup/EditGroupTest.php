@@ -22,6 +22,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -84,11 +85,13 @@ class EditGroupTest extends TestCase
             ->andReturn($imagePath);
 
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -115,6 +118,7 @@ class EditGroupTest extends TestCase
         $group = $editGroup->process($input);
         $this->assertSame((string)$groupIdentifier, (string)$group->groupIdentifier());
         $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
+        $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());

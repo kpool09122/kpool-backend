@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInput;
@@ -92,9 +93,11 @@ class EditSongTest extends TestCase
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,

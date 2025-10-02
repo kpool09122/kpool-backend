@@ -10,6 +10,8 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Group\Domain\Factory\GroupFactory;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class GroupFactoryTest extends TestCase
@@ -34,11 +36,13 @@ class GroupFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new GroupName('TWICE');
         $groupFactory = $this->app->make(GroupFactoryInterface::class);
-        $group = $groupFactory->create($translation, $name);
+        $group = $groupFactory->create($translationSetIdentifier, $translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$group->groupIdentifier()));
+        $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame($translation->value, $group->translation()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertNull($group->agencyIdentifier());
