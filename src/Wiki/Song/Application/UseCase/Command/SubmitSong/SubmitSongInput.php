@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong;
+namespace Source\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 
-readonly class RejectUpdatedSongInput implements RejectUpdatedSongInputPort
+readonly class SubmitSongInput implements SubmitSongInputPort
 {
     public function __construct(
         private SongIdentifier $songIdentifier,

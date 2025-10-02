@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Song\Application\UseCase\Command\SubmitUpdatedSong;
+namespace Source\Wiki\Song\Application\UseCase\Command\RejectSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 
-interface SubmitUpdatedSongInterface
+interface RejectSongInterface
 {
     /**
-     * @param SubmitUpdatedSongInputPort $input
+     * @param RejectSongInputPort $input
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(SubmitUpdatedSongInputPort $input): DraftSong;
+    public function process(RejectSongInputPort $input): DraftSong;
 }

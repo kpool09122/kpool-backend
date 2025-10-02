@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong;
+namespace Source\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -10,7 +10,7 @@ use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
-class RejectUpdatedSong implements RejectUpdatedSongInterface
+readonly class SubmitSong implements SubmitSongInterface
 {
     public function __construct(
         private SongRepositoryInterface $songRepository,
@@ -18,12 +18,12 @@ class RejectUpdatedSong implements RejectUpdatedSongInterface
     }
 
     /**
-     * @param RejectUpdatedSongInputPort $input
+     * @param SubmitSongInputPort $input
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      */
-    public function process(RejectUpdatedSongInputPort $input): DraftSong
+    public function process(SubmitSongInputPort $input): DraftSong
     {
         $song = $this->songRepository->findDraftById($input->songIdentifier());
 
@@ -31,11 +31,12 @@ class RejectUpdatedSong implements RejectUpdatedSongInterface
             throw new SongNotFoundException();
         }
 
-        if ($song->status() !== ApprovalStatus::UnderReview) {
+        if ($song->status() !== ApprovalStatus::Pending
+        && $song->status() !== ApprovalStatus::Rejected) {
             throw new InvalidStatusException();
         }
 
-        $song->setStatus(ApprovalStatus::Rejected);
+        $song->setStatus(ApprovalStatus::UnderReview);
 
         $this->songRepository->saveDraft($song);
 

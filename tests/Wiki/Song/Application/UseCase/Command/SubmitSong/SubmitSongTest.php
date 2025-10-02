@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong;
+namespace Tests\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -13,10 +13,11 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong\RejectUpdatedSong;
-use Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong\RejectUpdatedSongInput;
-use Source\Wiki\Song\Application\UseCase\Command\RejectUpdatedSong\RejectUpdatedSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSong;
+use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSongInput;
+use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
@@ -29,7 +30,7 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class RejectUpdatedSongTest extends TestCase
+class SubmitSongTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -42,12 +43,12 @@ class RejectUpdatedSongTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
-        $rejectUpdatedSong = $this->app->make(RejectUpdatedSongInterface::class);
-        $this->assertInstanceOf(RejectUpdatedSong::class, $rejectUpdatedSong);
+        $submitSong = $this->app->make(SubmitSongInterface::class);
+        $this->assertInstanceOf(SubmitSong::class, $submitSong);
     }
 
     /**
-     * 正常系：正しく下書きが拒否されること.
+     * 正常系：正しく下書きステータスが変更されること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -57,8 +58,6 @@ class RejectUpdatedSongTest extends TestCase
     public function testProcess(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
@@ -71,14 +70,19 @@ class RejectUpdatedSongTest extends TestCase
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
         $coverImagePath = new ImagePath('/resources/public/images/before.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $input = new RejectUpdatedSongInput(
+
+        $input = new SubmitSongInput(
             $songIdentifier,
         );
 
-        $status = ApprovalStatus::UnderReview;
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -103,10 +107,10 @@ class RejectUpdatedSongTest extends TestCase
             ->andReturn($song);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
-        $rejectUpdatedSong = $this->app->make(RejectUpdatedSongInterface::class);
-        $song = $rejectUpdatedSong->process($input);
+        $submitSong = $this->app->make(SubmitSongInterface::class);
+        $song = $submitSong->process($input);
         $this->assertNotSame($status, $song->status());
-        $this->assertSame(ApprovalStatus::Rejected, $song->status());
+        $this->assertSame(ApprovalStatus::UnderReview, $song->status());
     }
 
     /**
@@ -116,10 +120,10 @@ class RejectUpdatedSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      */
-    public function testWhenNotFoundMember(): void
+    public function testWhenNotFoundAgency(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $input = new RejectUpdatedSongInput(
+        $input = new SubmitSongInput(
             $songIdentifier,
         );
 
@@ -132,12 +136,12 @@ class RejectUpdatedSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
         $this->expectException(SongNotFoundException::class);
-        $rejectUpdatedSong = $this->app->make(RejectUpdatedSongInterface::class);
-        $rejectUpdatedSong->process($input);
+        $submitSong = $this->app->make(SubmitSongInterface::class);
+        $submitSong->process($input);
     }
 
     /**
-     * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
+     * 異常系：承認ステータスがPendingかRejected以外の場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -146,8 +150,6 @@ class RejectUpdatedSongTest extends TestCase
     public function testInvalidStatus(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [
@@ -160,14 +162,19 @@ class RejectUpdatedSongTest extends TestCase
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
         $coverImagePath = new ImagePath('/resources/public/images/before.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $input = new RejectUpdatedSongInput(
+
+        $input = new SubmitSongInput(
             $songIdentifier,
         );
 
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Approved;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -190,7 +197,7 @@ class RejectUpdatedSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
         $this->expectException(InvalidStatusException::class);
-        $rejectUpdatedSong = $this->app->make(RejectUpdatedSongInterface::class);
-        $rejectUpdatedSong->process($input);
+        $submitSong = $this->app->make(SubmitSongInterface::class);
+        $submitSong->process($input);
     }
 }

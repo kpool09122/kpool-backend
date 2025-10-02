@@ -13,9 +13,9 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
-use Source\Wiki\Song\Application\Service\SongServiceInterface;
 use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSong;
 use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSongInterface;
@@ -23,6 +23,7 @@ use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -83,9 +84,11 @@ class PublishSongTest extends TestCase
         );
 
         $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -112,6 +115,7 @@ class PublishSongTest extends TestCase
         $exMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
         $publishedSong = new Song(
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $translation,
             $exName,
             $exBelongIdentifiers,
@@ -144,7 +148,7 @@ class PublishSongTest extends TestCase
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($songIdentifier, $publishedSongIdentifier)
+            ->with($translationSetIdentifier, $songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -194,9 +198,11 @@ class PublishSongTest extends TestCase
         );
 
         $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             null,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -212,6 +218,7 @@ class PublishSongTest extends TestCase
 
         $createdSong = new Song(
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $translation,
             $name,
             [],
@@ -240,13 +247,13 @@ class PublishSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($translation, $name)
+            ->with($translationSetIdentifier, $translation, $name)
             ->andReturn($createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($songIdentifier, $publishedSongIdentifier)
+            ->with($translationSetIdentifier, $songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongFactoryInterface::class, $songFactory);
@@ -328,9 +335,11 @@ class PublishSongTest extends TestCase
         );
 
         $status = ApprovalStatus::Approved;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -391,9 +400,11 @@ class PublishSongTest extends TestCase
         );
 
         $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -416,7 +427,7 @@ class PublishSongTest extends TestCase
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($songIdentifier, $publishedSongIdentifier)
+            ->with($translationSetIdentifier, $songIdentifier)
             ->andReturn(true);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -457,9 +468,11 @@ class PublishSongTest extends TestCase
         );
 
         $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -486,7 +499,7 @@ class PublishSongTest extends TestCase
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($songIdentifier, $publishedSongIdentifier)
+            ->with($translationSetIdentifier, $songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);

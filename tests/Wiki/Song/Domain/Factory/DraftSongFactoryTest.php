@@ -44,6 +44,7 @@ class DraftSongFactoryTest extends TestCase
         $song = $songFactory->create($editorIdentifier, $translation, $name);
         $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
         $this->assertNull($song->publishedSongIdentifier());
+        $this->assertTrue(UlidValidator::isValid((string)$song->translationSetIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$song->editorIdentifier());
         $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());

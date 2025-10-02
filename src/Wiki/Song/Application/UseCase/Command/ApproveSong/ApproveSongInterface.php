@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Song\Application\UseCase\Command\ApproveUpdatedSong;
+namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 
-interface ApproveUpdatedSongInterface
+interface ApproveSongInterface
 {
     /**
-     * @param ApproveUpdatedSongInputPort $input
+     * @param ApproveSongInputPort $input
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws ExistsApprovedButNotTranslatedSongException
      * @throws InvalidStatusException
      */
-    public function process(ApproveUpdatedSongInputPort $input): DraftSong;
+    public function process(ApproveSongInputPort $input): DraftSong;
 }

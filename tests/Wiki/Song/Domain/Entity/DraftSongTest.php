@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -46,9 +47,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -63,6 +66,7 @@ class DraftSongTest extends TestCase
         );
         $this->assertSame((string)$songIdentifier, (string)$song->songIdentifier());
         $this->assertSame((string)$publishedSongIdentifier, (string)$song->publishedSongIdentifier());
+        $this->assertSame((string)$translationSetIdentifier, (string)$song->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$song->editorIdentifier());
         $this->assertSame($translation->value, $song->translation()->value);
         $this->assertSame((string)$name, (string)$song->name());
@@ -98,9 +102,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -144,9 +150,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -190,9 +198,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -243,9 +253,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -289,9 +301,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -335,9 +349,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -381,9 +397,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -427,9 +445,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -474,9 +494,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
@@ -521,9 +543,11 @@ class DraftSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
+            $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,

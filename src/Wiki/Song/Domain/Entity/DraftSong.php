@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -22,6 +23,7 @@ class DraftSong
     /**
      * @param SongIdentifier $songIdentifier
      * @param SongIdentifier|null $publishedSongIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param SongName $name
@@ -37,6 +39,7 @@ class DraftSong
     public function __construct(
         private readonly SongIdentifier $songIdentifier,
         private ?SongIdentifier $publishedSongIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private EditorIdentifier $editorIdentifier,
         private readonly Translation $translation,
         private SongName $name,
@@ -64,6 +67,11 @@ class DraftSong
     public function setPublishedSongIdentifier(SongIdentifier $songIdentifier): void
     {
         $this->publishedSongIdentifier = $songIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function editorIdentifier(): EditorIdentifier

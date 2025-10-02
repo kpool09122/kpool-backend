@@ -7,6 +7,7 @@ namespace Source\Wiki\Song\Domain\Entity;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -19,6 +20,7 @@ class Song
 {
     /**
      * @param SongIdentifier $songIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Translation $translation
      * @param SongName $name
      * @param list<BelongIdentifier> $belongIdentifiers
@@ -31,6 +33,7 @@ class Song
      */
     public function __construct(
         private readonly SongIdentifier $songIdentifier,
+        private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Translation $translation,
         private SongName $name,
         private array $belongIdentifiers,
@@ -46,6 +49,11 @@ class Song
     public function songIdentifier(): songIdentifier
     {
         return $this->songIdentifier;
+    }
+
+    public function translationSetIdentifier(): TranslationSetIdentifier
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function translation(): Translation

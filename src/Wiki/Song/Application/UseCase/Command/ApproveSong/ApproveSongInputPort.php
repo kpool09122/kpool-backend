@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Song\Application\UseCase\Command\ApproveUpdatedSong;
+namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 
-interface ApproveUpdatedSongInputPort
+interface ApproveSongInputPort
 {
     public function songIdentifier(): SongIdentifier;
 

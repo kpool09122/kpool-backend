@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Song\Application\UseCase\Command\ApproveUpdatedSong;
+namespace Tests\Wiki\Song\Application\UseCase\Command\RejectSong;
 
-use Source\Wiki\Song\Application\UseCase\Command\ApproveUpdatedSong\ApproveUpdatedSongInput;
+use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSongInput;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class ApproveUpdatedSongInputTest extends TestCase
+class RejectSongInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,12 +19,9 @@ class ApproveUpdatedSongInputTest extends TestCase
     public function test__construct(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $input = new ApproveUpdatedSongInput(
+        $input = new RejectSongInput(
             $songIdentifier,
-            $publishedSongIdentifier,
         );
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
-        $this->assertSame((string)$publishedSongIdentifier, (string)$input->publishedSongIdentifier());
     }
 }
