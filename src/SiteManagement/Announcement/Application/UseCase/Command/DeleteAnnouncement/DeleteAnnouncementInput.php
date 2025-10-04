@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement;
 
-use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 readonly class DeleteAnnouncementInput implements DeleteAnnouncementInputPort
 {
     public function __construct(
-        private AnnouncementIdentifier $announcementIdentifier,
+        private TranslationSetIdentifier $translationSetIdentifier,
     ) {
     }
 
-    public function announcementIdentifier(): AnnouncementIdentifier
+    public function translationSetIdentifier(): TranslationSetIdentifier
     {
-        return $this->announcementIdentifier;
+        return $this->translationSetIdentifier;
     }
 }

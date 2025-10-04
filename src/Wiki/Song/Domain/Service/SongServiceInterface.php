@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\Service;
 
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 
 interface SongServiceInterface

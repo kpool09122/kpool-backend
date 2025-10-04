@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Service;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class AgencyService implements AgencyServiceInterface
 {

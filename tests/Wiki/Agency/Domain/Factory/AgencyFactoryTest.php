@@ -7,10 +7,10 @@ namespace Tests\Wiki\Agency\Domain\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactory;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

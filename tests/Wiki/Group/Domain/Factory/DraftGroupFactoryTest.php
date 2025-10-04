@@ -7,12 +7,12 @@ namespace Tests\Wiki\Group\Domain\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactory;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

@@ -8,12 +8,14 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactory;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AnnouncementFactoryTest extends TestCase
@@ -38,6 +40,7 @@ class AnnouncementFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $category = Category::UPDATES;
         $translation = Translation::JAPANESE;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -66,6 +69,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $announcementFactory = $this->app->make(AnnouncementFactoryInterface::class);
         $announcement = $announcementFactory->create(
+            $translationSetIdentifier,
             $translation,
             $category,
             $title,

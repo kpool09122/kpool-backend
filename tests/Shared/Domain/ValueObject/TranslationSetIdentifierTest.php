@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Shared\Domain\ValueObject;
+namespace Tests\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class TranslationSetIdentifierTest extends TestCase

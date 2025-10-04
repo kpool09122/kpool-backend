@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement;
 
-use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 
@@ -17,19 +16,18 @@ class DeleteAnnouncement implements DeleteAnnouncementInterface
 
     /**
      * @param DeleteAnnouncementInputPort $input
-     * @return Announcement
-     * @throws AnnouncementNotFoundException
+     * @return Announcement[]
      */
-    public function process(DeleteAnnouncementInputPort $input): Announcement
+    public function process(DeleteAnnouncementInputPort $input): array
     {
-        $announcement = $this->announcementRepository->findById($input->announcementIdentifier());
+        $announcements = $this->announcementRepository->findByTranslationSetIdentifier($input->translationSetIdentifier());
 
-        if ($announcement === null) {
-            throw new AnnouncementNotFoundException();
+        $deletedAnnouncements = [];
+        foreach ($announcements as $announcement) {
+            $this->announcementRepository->delete($announcement);
+            $deletedAnnouncements[] = $announcement;
         }
 
-        $this->announcementRepository->delete($announcement);
-
-        return $announcement;
+        return $deletedAnnouncements;
     }
 }

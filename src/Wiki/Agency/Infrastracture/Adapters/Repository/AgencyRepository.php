@@ -7,6 +7,7 @@ namespace Source\Wiki\Agency\Infrastracture\Adapters\Repository;
 use Application\Models\Wiki\Agency as AgencyModel;
 use Application\Models\Wiki\AgencyChangeRequest;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
@@ -17,7 +18,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 class AgencyRepository implements AgencyRepositoryInterface
 {

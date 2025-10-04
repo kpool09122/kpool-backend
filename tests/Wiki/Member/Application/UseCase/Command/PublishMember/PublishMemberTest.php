@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Member\Application\Exception\ExistsApprovedButNotTranslatedMemberException;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMember;
@@ -31,7 +32,6 @@ use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

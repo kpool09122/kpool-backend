@@ -7,7 +7,7 @@ namespace Tests\Wiki\Song\Domain\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Translation;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongName;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 interface AgencyRepositoryInterface
 {

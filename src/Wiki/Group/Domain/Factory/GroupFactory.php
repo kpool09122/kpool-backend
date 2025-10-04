@@ -6,11 +6,11 @@ namespace Source\Wiki\Group\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Shared\Domain\ValueObject\TranslationSetIdentifier;
 
 readonly class GroupFactory implements GroupFactoryInterface
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement;
 
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
-use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
+use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 
 class UpdateAnnouncement implements UpdateAnnouncementInterface
@@ -17,12 +17,12 @@ class UpdateAnnouncement implements UpdateAnnouncementInterface
 
     /**
      * @param UpdateAnnouncementInputPort $input
-     * @return Announcement
+     * @return DraftAnnouncement
      * @throws AnnouncementNotFoundException
      */
-    public function process(UpdateAnnouncementInputPort $input): Announcement
+    public function process(UpdateAnnouncementInputPort $input): DraftAnnouncement
     {
-        $announcement = $this->announcementRepository->findById($input->announcementIdentifier());
+        $announcement = $this->announcementRepository->findDraftById($input->announcementIdentifier());
 
         if ($announcement === null) {
             throw new AnnouncementNotFoundException();
@@ -32,7 +32,7 @@ class UpdateAnnouncement implements UpdateAnnouncementInterface
         $announcement->setTitle($input->title());
         $announcement->setContent($input->content());
         $announcement->setPublishedDate($input->publishedDate());
-        $this->announcementRepository->save($announcement);
+        $this->announcementRepository->saveDraft($announcement);
 
         return $announcement;
     }
