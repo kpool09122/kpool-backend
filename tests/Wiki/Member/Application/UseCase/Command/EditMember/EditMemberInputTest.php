@@ -15,6 +15,9 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -46,6 +49,10 @@ class EditMemberInputTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new EditMemberInput(
             $memberIdentifier,
             $name,
@@ -55,6 +62,7 @@ class EditMemberInputTest extends TestCase
             $career,
             $base64EncodedImage,
             $relevantVideoLinks,
+            $principal,
         );
         $this->assertSame((string)$memberIdentifier, (string)$input->memberIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
@@ -63,5 +71,6 @@ class EditMemberInputTest extends TestCase
         $this->assertSame($birthday, $input->birthday());
         $this->assertSame($career, $input->career());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
+        $this->assertSame($principal, $input->principal());
     }
 }

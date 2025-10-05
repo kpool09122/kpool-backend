@@ -9,6 +9,10 @@ use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Member\Domain\Factory\DraftMemberFactoryInterface;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class CreateMember implements CreateMemberInterface
 {
@@ -23,9 +27,25 @@ class CreateMember implements CreateMemberInterface
      * @param CreateMemberInputPort $input
      * @return DraftMember
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
      */
     public function process(CreateMemberInputPort $input): DraftMember
     {
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($groupIdentifier) => (string) $groupIdentifier,
+            $input->groupIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::MEMBER,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
+        }
+
         $member = $this->memberFactory->create(
             $input->editorIdentifier(),
             $input->translation(),

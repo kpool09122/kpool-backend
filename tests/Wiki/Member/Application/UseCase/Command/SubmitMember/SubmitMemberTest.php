@@ -25,9 +25,13 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -55,6 +59,7 @@ class SubmitMemberTest extends TestCase
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testProcess(): void
@@ -79,8 +84,12 @@ class SubmitMemberTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new SubmitMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
@@ -125,12 +134,18 @@ class SubmitMemberTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testWhenNotFoundAgency(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new SubmitMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
@@ -152,6 +167,7 @@ class SubmitMemberTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
+     * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testInvalidStatus(): void
@@ -176,8 +192,12 @@ class SubmitMemberTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new SubmitMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
@@ -210,5 +230,261 @@ class SubmitMemberTest extends TestCase
         $this->expectException(InvalidStatusException::class);
         $submitMember = $this->app->make(SubmitMemberInterface::class);
         $submitMember->process($input);
+    }
+
+    /**
+     * 正常系：COLLABORATORがMemberを提出できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithCollaborator(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+
+        $input = new SubmitMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            $editorIdentifier,
+            Translation::KOREAN,
+            new MemberName('채영'),
+            new RealName('손채영'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('1994-01-01')),
+            new Career('career'),
+            new ImagePath('/resources/public/images/before.webp'),
+            new RelevantVideoLinks([]),
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $submitMember = $this->app->make(SubmitMemberInterface::class);
+        $result = $submitMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
+    }
+
+    /**
+     * 正常系：AGENCY_ACTORがMemberを提出できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithAgencyActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $agencyId = StrTestHelper::generateUlid();
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+
+        $input = new SubmitMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            $editorIdentifier,
+            Translation::KOREAN,
+            new MemberName('채영'),
+            new RealName('손채영'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('1994-01-01')),
+            new Career('career'),
+            new ImagePath('/resources/public/images/before.webp'),
+            new RelevantVideoLinks([]),
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $submitMember = $this->app->make(SubmitMemberInterface::class);
+        $result = $submitMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
+    }
+
+    /**
+     * 正常系：GROUP_ACTORがMemberを提出できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithGroupActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId),
+        ];
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
+
+        $input = new SubmitMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            $editorIdentifier,
+            Translation::KOREAN,
+            new MemberName('채영'),
+            new RealName('손채영'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('1994-01-01')),
+            new Career('career'),
+            new ImagePath('/resources/public/images/before.webp'),
+            new RelevantVideoLinks([]),
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $submitMember = $this->app->make(SubmitMemberInterface::class);
+        $result = $submitMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
+    }
+
+    /**
+     * 正常系：MEMBER_ACTORがMemberを提出できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithMemberActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId),
+        ];
+        $memberId = StrTestHelper::generateUlid();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$groupId], $memberId);
+
+        $input = new SubmitMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            $editorIdentifier,
+            Translation::KOREAN,
+            new MemberName('채영'),
+            new RealName('손채영'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('1994-01-01')),
+            new Career('career'),
+            new ImagePath('/resources/public/images/before.webp'),
+            new RelevantVideoLinks([]),
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $submitMember = $this->app->make(SubmitMemberInterface::class);
+        $result = $submitMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
     }
 }

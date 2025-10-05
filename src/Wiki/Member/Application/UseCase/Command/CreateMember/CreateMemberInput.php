@@ -12,6 +12,7 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
 readonly class CreateMemberInput implements CreateMemberInputPort
@@ -27,6 +28,7 @@ readonly class CreateMemberInput implements CreateMemberInputPort
      * @param Career $career
      * @param string|null $base64EncodedImage
      * @param RelevantVideoLinks $relevantVideoLinks
+     * @param Principal $principal
      */
     public function __construct(
         private ?MemberIdentifier $publishedMemberIdentifier,
@@ -39,6 +41,7 @@ readonly class CreateMemberInput implements CreateMemberInputPort
         private Career $career,
         private ?string $base64EncodedImage,
         private RelevantVideoLinks $relevantVideoLinks,
+        private Principal $principal,
     ) {
     }
 
@@ -93,5 +96,10 @@ readonly class CreateMemberInput implements CreateMemberInputPort
     public function relevantVideoLinks(): RelevantVideoLinks
     {
         return $this->relevantVideoLinks;
+    }
+
+    public function principal(): Principal
+    {
+        return $this->principal;
     }
 }

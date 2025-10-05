@@ -8,6 +8,7 @@ use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupE
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface ApproveMemberInterface
 {
@@ -17,6 +18,7 @@ interface ApproveMemberInterface
      * @throws MemberNotFoundException
      * @throws ExistsApprovedButNotTranslatedGroupException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(ApproveMemberInputPort $input): DraftMember;
 }
