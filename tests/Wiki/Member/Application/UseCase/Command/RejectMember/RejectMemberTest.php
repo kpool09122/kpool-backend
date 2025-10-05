@@ -26,9 +26,13 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -56,6 +60,7 @@ class RejectMemberTest extends TestCase
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testProcess(): void
@@ -81,8 +86,13 @@ class RejectMemberTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new RejectMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -125,12 +135,18 @@ class RejectMemberTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testWhenNotFoundMember(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new RejectMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
@@ -155,6 +171,7 @@ class RejectMemberTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
+     * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testInvalidStatus(): void
@@ -180,8 +197,13 @@ class RejectMemberTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new RejectMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::Approved;
@@ -212,5 +234,466 @@ class RejectMemberTest extends TestCase
         $this->expectException(InvalidStatusException::class);
         $rejectMember = $this->app->make(RejectMemberInterface::class);
         $rejectMember->process($input);
+    }
+
+    /**
+     * 異常系：拒否権限がないロール（Collaborator）の場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testUnauthorizedRole(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new MemberName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+
+        $input = new RejectMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $rejectMember->process($input);
+    }
+
+    /**
+     * 正常系：ADMINISTRATORがメンバーを拒否できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithAdministrator(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new MemberName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
+        $input = new RejectMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $result = $rejectMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::Rejected, $result->status());
+    }
+
+    /**
+     * 異常系：GROUP_ACTORが自分の所属していないグループのメンバーを拒否しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testUnauthorizedGroupScope(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new MemberName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherGroupId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], null);
+
+        $input = new RejectMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $rejectMember->process($input);
+    }
+
+    /**
+     * 正常系：GROUP_ACTORが自分の所属するグループのメンバーを拒否できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testAuthorizedGroupActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new MemberName('채영');
+        $realName = new RealName('손채영');
+        $groupId1 = StrTestHelper::generateUlid();
+        $groupId2 = StrTestHelper::generateUlid();
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId1),
+            new GroupIdentifier($groupId2),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId1], null);
+
+        $input = new RejectMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $result = $rejectMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::Rejected, $result->status());
+    }
+
+    /**
+     * 異常系：MEMBER_ACTORが自分の所属していないグループのメンバーを拒否しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testUnauthorizedMemberScope(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new MemberName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherGroupId = StrTestHelper::generateUlid();
+        $memberId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$anotherGroupId], $memberId);
+
+        $input = new RejectMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $rejectMember->process($input);
+    }
+
+    /**
+     * 正常系：MEMBER_ACTORが自分の所属するグループのメンバーを拒否できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testAuthorizedMemberActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $publishedMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new MemberName('채영');
+        $realName = new RealName('손채영');
+        $groupId1 = StrTestHelper::generateUlid();
+        $groupId2 = StrTestHelper::generateUlid();
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId1),
+            new GroupIdentifier($groupId2),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $memberId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$groupId1], $memberId);
+
+        $input = new RejectMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $member = new DraftMember(
+            $memberIdentifier,
+            $publishedMemberIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($member)
+            ->andReturn(null);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+
+        $rejectMember = $this->app->make(RejectMemberInterface::class);
+        $result = $rejectMember->process($input);
+
+        $this->assertInstanceOf(DraftMember::class, $result);
+        $this->assertSame(ApprovalStatus::Rejected, $result->status());
     }
 }
