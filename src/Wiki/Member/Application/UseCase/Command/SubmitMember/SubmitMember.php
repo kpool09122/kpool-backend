@@ -8,7 +8,11 @@ use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class SubmitMember implements SubmitMemberInterface
 {
@@ -22,6 +26,7 @@ readonly class SubmitMember implements SubmitMemberInterface
      * @return DraftMember
      * @throws MemberNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(SubmitMemberInputPort $input): DraftMember
     {
@@ -29,6 +34,22 @@ readonly class SubmitMember implements SubmitMemberInterface
 
         if ($member === null) {
             throw new MemberNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($groupIdentifier) => (string) $groupIdentifier,
+            $member->groupIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::MEMBER,
+            agencyId: null,
+            groupIds: $groupIds,
+            memberId: (string) $member->memberIdentifier(),
+        );
+
+        if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         if ($member->status() !== ApprovalStatus::Pending
