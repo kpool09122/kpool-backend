@@ -27,8 +27,12 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -57,6 +61,7 @@ class TranslateMemberTest extends TestCase
      * @throws BindingResolutionException
      * @throws MemberNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
      */
     public function testProcess(): void
     {
@@ -86,8 +91,12 @@ class TranslateMemberTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new TranslateMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $member = new Member(
@@ -221,8 +230,13 @@ Recently, she has also begun activities as a solo artist, further broadening her
     public function testWhenMemberNotFound(): void
     {
         $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new TranslateMemberInput(
             $memberIdentifier,
+            $principal,
         );
 
         $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
@@ -239,5 +253,484 @@ Recently, she has also begun activities as a solo artist, further broadening her
         $this->expectException(MemberNotFoundException::class);
         $translateMember = $this->app->make(TranslateMemberInterface::class);
         $translateMember->process($input);
+    }
+
+    /**
+     * 異常系：承認権限がないロール（Collaborator）の場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     */
+    public function testUnauthorizedRole(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+
+        $input = new TranslateMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+
+        $member = new Member(
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new MemberName('Test Member'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $this->expectException(UnauthorizedException::class);
+        $translateMember = $this->app->make(TranslateMemberInterface::class);
+        $translateMember->process($input);
+    }
+
+    /**
+     * 正常系：ADMINISTRATORがメンバーを翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithAdministrator(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
+        $input = new TranslateMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+
+        $member = new Member(
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new MemberName('Test Member'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $enMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $enMember = new DraftMember(
+            $enMemberIdentifier,
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::ENGLISH,
+            new MemberName('Test Member EN'),
+            new RealName('Test Real Name EN'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career EN'),
+            new ImagePath('/test_en.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $koMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $koMember = new DraftMember(
+            $koMemberIdentifier,
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::KOREAN,
+            new MemberName('Test Member KO'),
+            new RealName('Test Real Name KO'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career KO'),
+            new ImagePath('/test_ko.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($enMember)
+            ->andReturn(null);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($koMember)
+            ->andReturn(null);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateMember')
+            ->once()
+            ->with($member, Translation::ENGLISH)
+            ->andReturn($enMember);
+        $translationService->shouldReceive('translateMember')
+            ->once()
+            ->with($member, Translation::KOREAN)
+            ->andReturn($koMember);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $translateMember = $this->app->make(TranslateMemberInterface::class);
+        $result = $translateMember->process($input);
+
+        $this->assertCount(2, $result);
+    }
+
+    /**
+     * 異常系：GROUP_ACTORが自分の所属していないグループのメンバーを翻訳しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     */
+    public function testUnauthorizedGroupScope(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherGroupId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], null);
+
+        $input = new TranslateMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId),
+        ];
+
+        $member = new Member(
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new MemberName('Test Member'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $this->expectException(UnauthorizedException::class);
+        $translateMember = $this->app->make(TranslateMemberInterface::class);
+        $translateMember->process($input);
+    }
+
+    /**
+     * 正常系：GROUP_ACTORが自分の所属するグループのメンバーを翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testAuthorizedGroupActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
+
+        $input = new TranslateMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId),
+        ];
+
+        $member = new Member(
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new MemberName('Test Member'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $enMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $enMember = new DraftMember(
+            $enMemberIdentifier,
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::ENGLISH,
+            new MemberName('Test Member EN'),
+            new RealName('Test Real Name EN'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career EN'),
+            new ImagePath('/test_en.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $koMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $koMember = new DraftMember(
+            $koMemberIdentifier,
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::KOREAN,
+            new MemberName('Test Member KO'),
+            new RealName('Test Real Name KO'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career KO'),
+            new ImagePath('/test_ko.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($enMember)
+            ->andReturn(null);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($koMember)
+            ->andReturn(null);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateMember')
+            ->once()
+            ->with($member, Translation::ENGLISH)
+            ->andReturn($enMember);
+        $translationService->shouldReceive('translateMember')
+            ->once()
+            ->with($member, Translation::KOREAN)
+            ->andReturn($koMember);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $translateMember = $this->app->make(TranslateMemberInterface::class);
+        $result = $translateMember->process($input);
+
+        $this->assertCount(2, $result);
+    }
+
+    /**
+     * 異常系：MEMBER_ACTORが自分の所属していないグループのメンバーを翻訳しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     */
+    public function testUnauthorizedMemberScope(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherGroupId = StrTestHelper::generateUlid();
+        $memberId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$anotherGroupId], $memberId);
+
+        $input = new TranslateMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId),
+        ];
+
+        $member = new Member(
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new MemberName('Test Member'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $this->expectException(UnauthorizedException::class);
+        $translateMember = $this->app->make(TranslateMemberInterface::class);
+        $translateMember->process($input);
+    }
+
+    /**
+     * 正常系：MEMBER_ACTORが自分の所属するグループのメンバーを翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws MemberNotFoundException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testAuthorizedMemberActor(): void
+    {
+        $memberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $memberId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$groupId], $memberId);
+
+        $input = new TranslateMemberInput(
+            $memberIdentifier,
+            $principal,
+        );
+
+        $groupIdentifiers = [
+            new GroupIdentifier($groupId),
+        ];
+
+        $member = new Member(
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new MemberName('Test Member'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $enMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $enMember = new DraftMember(
+            $enMemberIdentifier,
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::ENGLISH,
+            new MemberName('Test Member EN'),
+            new RealName('Test Real Name EN'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career EN'),
+            new ImagePath('/test_en.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $koMemberIdentifier = new MemberIdentifier(StrTestHelper::generateUlid());
+        $koMember = new DraftMember(
+            $koMemberIdentifier,
+            $memberIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::KOREAN,
+            new MemberName('Test Member KO'),
+            new RealName('Test Real Name KO'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career KO'),
+            new ImagePath('/test_ko.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $memberRepository = Mockery::mock(MemberRepositoryInterface::class);
+        $memberRepository->shouldReceive('findById')
+            ->once()
+            ->with($memberIdentifier)
+            ->andReturn($member);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($enMember)
+            ->andReturn(null);
+        $memberRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($koMember)
+            ->andReturn(null);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateMember')
+            ->once()
+            ->with($member, Translation::ENGLISH)
+            ->andReturn($enMember);
+        $translationService->shouldReceive('translateMember')
+            ->once()
+            ->with($member, Translation::KOREAN)
+            ->andReturn($koMember);
+
+        $this->app->instance(MemberRepositoryInterface::class, $memberRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $translateMember = $this->app->make(TranslateMemberInterface::class);
+        $result = $translateMember->process($input);
+
+        $this->assertCount(2, $result);
     }
 }
