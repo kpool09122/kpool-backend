@@ -80,13 +80,8 @@ enum Role: string
 
         // 要件: Group actor は「自身に紐づく Group と、その Group に紐づく Member/Song のみ承認・却下・翻訳・公開可能」
         if ($this === self::GROUP_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
-            // Group リソースの承認・却下・翻訳・公開 -> resource の id が actor の所属グループに含まれるか
-            if ($resource->type() === ResourceType::GROUP) {
-                return in_array($resource->id(), $principal->groupIds(), true);
-            }
-
-            // Member または Song の承認・却下・翻訳・公開 -> resource の groupIds と actor の所属グループが交差するか
-            if (in_array($resource->type(), [ResourceType::MEMBER, ResourceType::SONG], true)) {
+            // Group, Member, Song の承認・却下・翻訳・公開 -> resource の groupIds と actor の所属グループが交差するか
+            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::MEMBER, ResourceType::SONG], true)) {
                 $resourceGroupIds = $resource->groupIds();
                 if (empty($resourceGroupIds)) {
                     return false;

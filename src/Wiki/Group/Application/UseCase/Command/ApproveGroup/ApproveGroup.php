@@ -47,7 +47,6 @@ class ApproveGroup implements ApproveGroupInterface
         $principal = $input->principal();
         $resource = new ResourceIdentifier(
             type: ResourceType::GROUP,
-            id: (string) $group->groupIdentifier(),
             agencyId: $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
             groupIds: [(string) $group->groupIdentifier()],
         );

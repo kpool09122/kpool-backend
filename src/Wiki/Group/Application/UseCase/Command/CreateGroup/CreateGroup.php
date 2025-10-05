@@ -8,6 +8,10 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class CreateGroup implements CreateGroupInterface
 {
@@ -18,8 +22,24 @@ class CreateGroup implements CreateGroupInterface
     ) {
     }
 
+    /**
+     * @param CreateGroupInputPort $input
+     * @return DraftGroup
+     * @throws UnauthorizedException
+     */
     public function process(CreateGroupInputPort $input): DraftGroup
     {
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::GROUP,
+            agencyId: (string) $input->agencyIdentifier(),
+            groupIds: [],
+        );
+
+        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
+        }
+
         $group = $this->groupFactory->create(
             $input->editorIdentifier(),
             $input->translation(),
