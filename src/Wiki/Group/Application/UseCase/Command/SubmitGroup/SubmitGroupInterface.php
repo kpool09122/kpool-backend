@@ -7,6 +7,7 @@ namespace Source\Wiki\Group\Application\UseCase\Command\SubmitGroup;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface SubmitGroupInterface
 {
@@ -15,6 +16,7 @@ interface SubmitGroupInterface
      * @return DraftGroup
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(SubmitGroupInputPort $input): DraftGroup;
 }
