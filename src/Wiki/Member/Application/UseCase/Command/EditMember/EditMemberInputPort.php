@@ -11,6 +11,7 @@ use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
 use Source\Wiki\Member\Domain\ValueObject\MemberName;
 use Source\Wiki\Member\Domain\ValueObject\RealName;
 use Source\Wiki\Member\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 
 interface EditMemberInputPort
 {
@@ -32,4 +33,6 @@ interface EditMemberInputPort
     public function base64EncodedImage(): ?string;
 
     public function relevantVideoLinks(): RelevantVideoLinks;
+
+    public function principal(): Principal;
 }

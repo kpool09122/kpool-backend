@@ -8,6 +8,10 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class EditMember implements EditMemberInterface
 {
@@ -21,6 +25,7 @@ readonly class EditMember implements EditMemberInterface
      * @param EditMemberInputPort $input
      * @return DraftMember
      * @throws MemberNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(EditMemberInputPort $input): DraftMember
     {
@@ -28,6 +33,22 @@ readonly class EditMember implements EditMemberInterface
 
         if ($member === null) {
             throw new MemberNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($groupIdentifier) => (string) $groupIdentifier,
+            $member->groupIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::MEMBER,
+            agencyId: null,
+            groupIds: $groupIds,
+            memberId: (string) $member->memberIdentifier(),
+        );
+
+        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $member->setName($input->name());
