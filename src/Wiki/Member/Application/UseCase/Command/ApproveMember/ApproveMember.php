@@ -11,7 +11,11 @@ use Source\Wiki\Member\Domain\Entity\DraftMember;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Member\Domain\Service\MemberServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class ApproveMember implements ApproveMemberInterface
 {
@@ -27,6 +31,7 @@ class ApproveMember implements ApproveMemberInterface
      * @throws MemberNotFoundException
      * @throws ExistsApprovedButNotTranslatedGroupException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(ApproveMemberInputPort $input): DraftMember
     {
@@ -34,6 +39,23 @@ class ApproveMember implements ApproveMemberInterface
 
         if ($member === null) {
             throw new MemberNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($groupIdentifier) => (string) $groupIdentifier,
+            $member->groupIdentifiers()
+        );
+        // FIXME: agencyId も取得できるようにリファクタリングする
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::MEMBER,
+            agencyId: null,
+            groupIds: $groupIds,
+            memberId: (string) $member->memberIdentifier(),
+        );
+
+        if (! $principal->role()->can(Action::APPROVE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         if ($member->status() !== ApprovalStatus::UnderReview) {

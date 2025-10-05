@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Member\Application\UseCase\Command\ApproveMember;
 
 use Source\Wiki\Member\Domain\ValueObject\MemberIdentifier;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 
 readonly class ApproveMemberInput implements ApproveMemberInputPort
 {
     public function __construct(
         private MemberIdentifier  $memberIdentifier,
         private ?MemberIdentifier $publishedMemberIdentifier,
+        private Principal         $principal,
     ) {
     }
 
@@ -22,5 +24,10 @@ readonly class ApproveMemberInput implements ApproveMemberInputPort
     public function publishedMemberIdentifier(): ?MemberIdentifier
     {
         return $this->publishedMemberIdentifier;
+    }
+
+    public function principal(): Principal
+    {
+        return $this->principal;
     }
 }
