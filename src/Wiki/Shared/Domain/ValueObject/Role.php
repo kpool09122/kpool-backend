@@ -21,10 +21,10 @@ enum Role: string
     public function allowedActionsFor(ResourceType $resource): array
     {
         return match($this) {
-            self::AGENCY_ACTOR, self::ADMINISTRATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::TRANSLATE],
+            self::AGENCY_ACTOR, self::ADMINISTRATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
             self::GROUP_ACTOR, self::MEMBER_ACTOR => match($resource) {
                 ResourceType::AGENCY => [Action::CREATE, Action::EDIT, Action::SUBMIT],
-                default => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::TRANSLATE],
+                default => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
             },
             self::COLLABORATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT],
         };
@@ -55,8 +55,8 @@ enum Role: string
         }
 
         // Agency actor のスコープチェック
-        // 要件: Agency actor も「自分のところに所属するグループと、そのメンバー、歌」しか承認・翻訳できない
-        if ($this === self::AGENCY_ACTOR && ($action === Action::APPROVE || $action === Action::TRANSLATE)) {
+        // 要件: Agency actor も「自分のところに所属するグループと、そのメンバー、歌」しか承認・却下・翻訳・公開できない
+        if ($this === self::AGENCY_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
             $principalAgencyId = $principal->agencyId();
             if ($principalAgencyId === null) {
                 return false;
@@ -78,15 +78,10 @@ enum Role: string
             }
         }
 
-        // 要件: Group actor は「自身に紐づく Group と、その Group に紐づく Member/Song のみ承認可能」
-        if ($this === self::GROUP_ACTOR && ($action === Action::APPROVE || $action === Action::TRANSLATE)) {
-            // Group リソースの承認 -> resource の id が actor の所属グループに含まれるか
-            if ($resource->type() === ResourceType::GROUP) {
-                return in_array($resource->id(), $principal->groupIds(), true);
-            }
-
-            // Member または Song の承認 -> resource の groupIds と actor の所属グループが交差するか
-            if (in_array($resource->type(), [ResourceType::MEMBER, ResourceType::SONG], true)) {
+        // 要件: Group actor は「自身に紐づく Group と、その Group に紐づく Member/Song のみ承認・却下・翻訳・公開可能」
+        if ($this === self::GROUP_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
+            // Group, Member, Song の承認・却下・翻訳・公開 -> resource の groupIds と actor の所属グループが交差するか
+            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::MEMBER, ResourceType::SONG], true)) {
                 $resourceGroupIds = $resource->groupIds();
                 if (empty($resourceGroupIds)) {
                     return false;
@@ -95,12 +90,12 @@ enum Role: string
                 return count(array_intersect($resourceGroupIds, $principal->groupIds())) > 0;
             }
 
-            // Group actor は Agency を承認できない
+            // Group actor は Agency を承認・却下・翻訳・公開できない
             return false;
         }
 
-        // Member actor の場合、もし承認スコープを「自分の所属グループ内のみ」としたければ同様にチェック可能
-        if ($this === self::MEMBER_ACTOR && ($action === Action::APPROVE || $action === Action::TRANSLATE)) {
+        // Member actor の場合、もし承認・却下・翻訳・公開スコープを「自分の所属グループ内のみ」としたければ同様にチェック可能
+        if ($this === self::MEMBER_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
             if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::MEMBER, ResourceType::SONG], true)) {
                 $resourceGroupIds = $resource->groupIds();
                 if (empty($resourceGroupIds)) {
@@ -111,7 +106,7 @@ enum Role: string
             }
         }
 
-        // Collaborator 等は追加のスコープ条件なし（承認権がないためここまで来ない）
+        // Collaborator 等は追加のスコープ条件なし（承認・却下・翻訳・公開権がないためここまで来ない）
         return true;
     }
 }

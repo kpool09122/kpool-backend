@@ -8,6 +8,10 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class EditGroup implements EditGroupInterface
 {
@@ -21,6 +25,7 @@ class EditGroup implements EditGroupInterface
      * @param EditGroupInputPort $input
      * @return DraftGroup
      * @throws GroupNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(EditGroupInputPort $input): DraftGroup
     {
@@ -28,6 +33,17 @@ class EditGroup implements EditGroupInterface
 
         if ($group === null) {
             throw new GroupNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::GROUP,
+            agencyId: $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
+            groupIds: [(string) $group->groupIdentifier()],
+        );
+
+        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $group->setName($input->name());

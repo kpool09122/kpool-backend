@@ -10,5 +10,7 @@ enum Action: string
     case EDIT = 'edit';
     case SUBMIT = 'submit';
     case APPROVE = 'approve';
+    case REJECT = 'reject';
     case TRANSLATE = 'translate';
+    case PUBLISH = 'publish';
 }

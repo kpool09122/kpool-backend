@@ -11,29 +11,22 @@ final readonly class ResourceIdentifier
 {
     /**
      * @param ResourceType $type
-     * @param string $id
      * @param string|null $agencyId
      * @param string[] $groupIds
      * @param string|null $memberId
      */
     public function __construct(
         private ResourceType $type,
-        private string $id,
         private ?string $agencyId = null,
         private array $groupIds = [],
         private ?string $memberId = null,
     ) {
-        $this->validate($id, $agencyId, $this->groupIds, $memberId);
+        $this->validate($agencyId, $this->groupIds, $memberId);
     }
 
     public function type(): ResourceType
     {
         return $this->type;
-    }
-
-    public function id(): string
-    {
-        return $this->id;
     }
 
     public function agencyId(): ?string
@@ -55,22 +48,16 @@ final readonly class ResourceIdentifier
     }
 
     /**
-     * @param string $id
      * @param string|null $agencyId
      * @param string[] $groupIds
      * @param string|null $memberId
      * @return void
      */
     public function validate(
-        string $id,
         ?string $agencyId,
         array $groupIds,
         ?string $memberId,
     ): void {
-        if (! UlidValidator::isValid($id)) {
-            throw new InvalidArgumentException('Id is invalid.');
-        }
-
         if ($agencyId !== null && ! UlidValidator::isValid($agencyId)) {
             throw new InvalidArgumentException('Agency id is invalid.');
         }

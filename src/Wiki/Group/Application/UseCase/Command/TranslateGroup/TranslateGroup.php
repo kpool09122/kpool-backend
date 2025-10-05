@@ -9,6 +9,10 @@ use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class TranslateGroup implements TranslateGroupInterface
 {
@@ -22,6 +26,7 @@ class TranslateGroup implements TranslateGroupInterface
      * @param TranslateGroupInputPort $input
      * @return DraftGroup[]
      * @throws GroupNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(TranslateGroupInputPort $input): array
     {
@@ -29,6 +34,17 @@ class TranslateGroup implements TranslateGroupInterface
 
         if ($group === null) {
             throw new GroupNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::GROUP,
+            agencyId: $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
+            groupIds: [(string) $group->groupIdentifier()],
+        );
+
+        if (! $principal->role()->can(Action::TRANSLATE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $translations = Translation::allExcept($group->translation());

@@ -8,6 +8,7 @@ use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupE
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface RejectGroupInterface
 {
@@ -17,6 +18,7 @@ interface RejectGroupInterface
      * @throws GroupNotFoundException
      * @throws ExistsApprovedButNotTranslatedGroupException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(RejectGroupInputPort $input): DraftGroup;
 }
