@@ -25,12 +25,12 @@ class RoleTest extends TestCase
         $this->assertSame($allActions, Role::ADMINISTRATOR->allowedActionsFor(ResourceType::AGENCY));
         $this->assertSame($allActions, Role::AGENCY_ACTOR->allowedActionsFor(ResourceType::GROUP));
 
-        // Group / Member actor は Agency のみ承認・却下・翻訳・公開不可、その他は許可
+        // Group / Talent actor は Agency のみ承認・却下・翻訳・公開不可、その他は許可
         $basicActions = [Action::CREATE, Action::EDIT, Action::SUBMIT];
         $this->assertSame($basicActions, Role::GROUP_ACTOR->allowedActionsFor(ResourceType::AGENCY));
         $this->assertSame($allActions, Role::GROUP_ACTOR->allowedActionsFor(ResourceType::GROUP));
-        $this->assertSame($basicActions, Role::MEMBER_ACTOR->allowedActionsFor(ResourceType::AGENCY));
-        $this->assertSame($allActions, Role::MEMBER_ACTOR->allowedActionsFor(ResourceType::SONG));
+        $this->assertSame($basicActions, Role::TALENT_ACTOR->allowedActionsFor(ResourceType::AGENCY));
+        $this->assertSame($allActions, Role::TALENT_ACTOR->allowedActionsFor(ResourceType::SONG));
 
         // Collaborator は基本アクションのみ
         $this->assertSame($basicActions, Role::COLLABORATOR->allowedActionsFor(ResourceType::AGENCY));
@@ -82,18 +82,18 @@ class RoleTest extends TestCase
         $this->assertFalse(Role::AGENCY_ACTOR->can(Action::APPROVE, $groupOtherAgency, $principal));
         $this->assertFalse(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $groupOtherAgency, $principal));
 
-        // Member（agencyId で判定）
+        // Talent（agencyId で判定）
         $g1 = StrTestHelper::generateUlid();
         $g2 = StrTestHelper::generateUlid();
-        $memberInAgency = new ResourceIdentifier(ResourceType::MEMBER, $agencyId, [$g1, $g2]);
-        $memberNoAgency = new ResourceIdentifier(ResourceType::MEMBER, null, [$g1]);
-        $memberOtherAgency = new ResourceIdentifier(ResourceType::MEMBER, StrTestHelper::generateUlid(), [$g2]);
-        $this->assertTrue(Role::AGENCY_ACTOR->can(Action::APPROVE, $memberInAgency, $principal));
-        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::APPROVE, $memberNoAgency, $principal));
-        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::APPROVE, $memberOtherAgency, $principal));
-        $this->assertTrue(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $memberInAgency, $principal));
-        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $memberNoAgency, $principal));
-        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $memberOtherAgency, $principal));
+        $talentInAgency = new ResourceIdentifier(ResourceType::TALENT, $agencyId, [$g1, $g2]);
+        $talentNoAgency = new ResourceIdentifier(ResourceType::TALENT, null, [$g1]);
+        $talentOtherAgency = new ResourceIdentifier(ResourceType::TALENT, StrTestHelper::generateUlid(), [$g2]);
+        $this->assertTrue(Role::AGENCY_ACTOR->can(Action::APPROVE, $talentInAgency, $principal));
+        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::APPROVE, $talentNoAgency, $principal));
+        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::APPROVE, $talentOtherAgency, $principal));
+        $this->assertTrue(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $talentInAgency, $principal));
+        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $talentNoAgency, $principal));
+        $this->assertFalse(Role::AGENCY_ACTOR->can(Action::TRANSLATE, $talentOtherAgency, $principal));
 
         // Song（agencyId で判定）
         $songInAgency = new ResourceIdentifier(ResourceType::SONG, $agencyId, [$g1]);
@@ -124,25 +124,25 @@ class RoleTest extends TestCase
     }
 
     /**
-     * 正常系：Group actor は Member/Song の承認/翻訳で groupIds の交差をチェックする.
+     * 正常系：Group actor は Talent/Song の承認/翻訳で groupIds の交差をチェックする.
      */
-    public function testCanGroupActorApproveMemberOrSongRequiresMatchingGroupIds(): void
+    public function testCanGroupActorApproveTalentOrSongRequiresMatchingGroupIds(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
         $anotherGroupId = StrTestHelper::generateUlid();
         $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
 
-        $memberInGroup = new ResourceIdentifier(ResourceType::MEMBER, null, [$groupId]);
-        $memberNoGroup = new ResourceIdentifier(ResourceType::MEMBER);
-        $memberOtherGroup = new ResourceIdentifier(ResourceType::MEMBER, null, [$anotherGroupId]);
+        $talentInGroup = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId]);
+        $talentNoGroup = new ResourceIdentifier(ResourceType::TALENT);
+        $talentOtherGroup = new ResourceIdentifier(ResourceType::TALENT, null, [$anotherGroupId]);
 
-        $this->assertTrue(Role::GROUP_ACTOR->can(Action::APPROVE, $memberInGroup, $principal));
-        $this->assertFalse(Role::GROUP_ACTOR->can(Action::APPROVE, $memberNoGroup, $principal));
-        $this->assertFalse(Role::GROUP_ACTOR->can(Action::APPROVE, $memberOtherGroup, $principal));
-        $this->assertTrue(Role::GROUP_ACTOR->can(Action::TRANSLATE, $memberInGroup, $principal));
-        $this->assertFalse(Role::GROUP_ACTOR->can(Action::TRANSLATE, $memberNoGroup, $principal));
-        $this->assertFalse(Role::GROUP_ACTOR->can(Action::TRANSLATE, $memberOtherGroup, $principal));
+        $this->assertTrue(Role::GROUP_ACTOR->can(Action::APPROVE, $talentInGroup, $principal));
+        $this->assertFalse(Role::GROUP_ACTOR->can(Action::APPROVE, $talentNoGroup, $principal));
+        $this->assertFalse(Role::GROUP_ACTOR->can(Action::APPROVE, $talentOtherGroup, $principal));
+        $this->assertTrue(Role::GROUP_ACTOR->can(Action::TRANSLATE, $talentInGroup, $principal));
+        $this->assertFalse(Role::GROUP_ACTOR->can(Action::TRANSLATE, $talentNoGroup, $principal));
+        $this->assertFalse(Role::GROUP_ACTOR->can(Action::TRANSLATE, $talentOtherGroup, $principal));
 
         $songInGroup = new ResourceIdentifier(ResourceType::SONG, null, [$groupId]);
         $songOtherGroup = new ResourceIdentifier(ResourceType::SONG, null, [$anotherGroupId]);
@@ -178,32 +178,32 @@ class RoleTest extends TestCase
     }
 
     /**
-     * 正常系：Member actor は自分の所属グループ内のリソースのみ承認/翻訳可能.
+     * 正常系：Talent actor は自分の所属グループ内のリソースのみ承認/翻訳可能.
      */
-    public function testCanMemberActorScopeChecksGroupId(): void
+    public function testCanTalentActorScopeChecksGroupId(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$groupId], StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], StrTestHelper::generateUlid());
 
         // MEMBER リソース
-        $memberInGroup = new ResourceIdentifier(ResourceType::MEMBER, null, [$groupId]);
-        $memberNoGroup = new ResourceIdentifier(ResourceType::MEMBER, null, []);
-        $memberOtherGroup = new ResourceIdentifier(ResourceType::MEMBER, null, [StrTestHelper::generateUlid()]);
-        $this->assertTrue(Role::MEMBER_ACTOR->can(Action::APPROVE, $memberInGroup, $principal));
-        $this->assertFalse(Role::MEMBER_ACTOR->can(Action::APPROVE, $memberNoGroup, $principal));
-        $this->assertFalse(Role::MEMBER_ACTOR->can(Action::APPROVE, $memberOtherGroup, $principal));
-        $this->assertTrue(Role::MEMBER_ACTOR->can(Action::TRANSLATE, $memberInGroup, $principal));
-        $this->assertFalse(Role::MEMBER_ACTOR->can(Action::APPROVE, $memberNoGroup, $principal));
-        $this->assertFalse(Role::MEMBER_ACTOR->can(Action::TRANSLATE, $memberOtherGroup, $principal));
+        $talentInGroup = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId]);
+        $talentNoGroup = new ResourceIdentifier(ResourceType::TALENT, null, []);
+        $talentOtherGroup = new ResourceIdentifier(ResourceType::TALENT, null, [StrTestHelper::generateUlid()]);
+        $this->assertTrue(Role::TALENT_ACTOR->can(Action::APPROVE, $talentInGroup, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $talentNoGroup, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $talentOtherGroup, $principal));
+        $this->assertTrue(Role::TALENT_ACTOR->can(Action::TRANSLATE, $talentInGroup, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $talentNoGroup, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::TRANSLATE, $talentOtherGroup, $principal));
 
         // GROUP リソース（groupIds の交差でチェック）
         $groupOwned = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
         $groupNotOwned = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUlid()]);
-        $this->assertTrue(Role::MEMBER_ACTOR->can(Action::APPROVE, $groupOwned, $principal));
-        $this->assertFalse(Role::MEMBER_ACTOR->can(Action::APPROVE, $groupNotOwned, $principal));
-        $this->assertTrue(Role::MEMBER_ACTOR->can(Action::TRANSLATE, $groupOwned, $principal));
-        $this->assertFalse(Role::MEMBER_ACTOR->can(Action::TRANSLATE, $groupNotOwned, $principal));
+        $this->assertTrue(Role::TALENT_ACTOR->can(Action::APPROVE, $groupOwned, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $groupNotOwned, $principal));
+        $this->assertTrue(Role::TALENT_ACTOR->can(Action::TRANSLATE, $groupOwned, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::TRANSLATE, $groupNotOwned, $principal));
     }
 
     /**

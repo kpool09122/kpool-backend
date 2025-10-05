@@ -422,7 +422,7 @@ class EditGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [(string) $groupIdentifier], $memberId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $groupIdentifier], $memberId);
 
         $input = new EditGroupInput(
             $groupIdentifier,

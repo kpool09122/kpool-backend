@@ -19,25 +19,25 @@ use Source\Wiki\Group\Domain\Factory\GroupFactory;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupService;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
-use Source\Wiki\Member\Domain\Factory\DraftMemberFactory;
-use Source\Wiki\Member\Domain\Factory\DraftMemberFactoryInterface;
-use Source\Wiki\Member\Domain\Factory\MemberFactory;
-use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
-use Source\Wiki\Member\Domain\Service\MemberService;
-use Source\Wiki\Member\Domain\Service\MemberServiceInterface;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
+use Source\Wiki\Talent\Domain\Factory\DraftTalentFactory;
+use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Factory\TalentFactory;
+use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Service\TalentService;
+use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(MemberFactoryInterface::class, MemberFactory::class);
-        $this->app->singleton(MemberServiceInterface::class, MemberService::class);
+        $this->app->singleton(TalentFactoryInterface::class, TalentFactory::class);
+        $this->app->singleton(TalentServiceInterface::class, TalentService::class);
         $this->app->singleton(GroupFactoryInterface::class, GroupFactory::class);
         $this->app->singleton(GroupServiceInterface::class, GroupService::class);
         $this->app->singleton(SongFactoryInterface::class, SongFactory::class);
@@ -47,7 +47,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftAgencyFactoryInterface::class, DraftAgencyFactory::class);
         $this->app->singleton(AgencyRepositoryInterface::class, AgencyRepository::class);
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
-        $this->app->singleton(DraftMemberFactoryInterface::class, DraftMemberFactory::class);
+        $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
     }
 }

@@ -10,7 +10,7 @@ enum Role: string
 {
     case AGENCY_ACTOR = 'agency_actor';
     case GROUP_ACTOR = 'group_actor';
-    case MEMBER_ACTOR = 'member_actor';
+    case TALENT_ACTOR = 'talent_actor';
     case COLLABORATOR = 'collaborator';
     case ADMINISTRATOR = 'administrator';
 
@@ -22,7 +22,7 @@ enum Role: string
     {
         return match($this) {
             self::AGENCY_ACTOR, self::ADMINISTRATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
-            self::GROUP_ACTOR, self::MEMBER_ACTOR => match($resource) {
+            self::GROUP_ACTOR, self::TALENT_ACTOR => match($resource) {
                 ResourceType::AGENCY => [Action::CREATE, Action::EDIT, Action::SUBMIT],
                 default => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
             },
@@ -72,16 +72,16 @@ enum Role: string
                 return $resource->agencyId() !== null && $resource->agencyId() === $principalAgencyId;
             }
 
-            if (in_array($resource->type(), [ResourceType::MEMBER, ResourceType::SONG], true)) {
-                // member/song は属する group の所属 agency（resource の agencyId）で判定
+            if (in_array($resource->type(), [ResourceType::TALENT, ResourceType::SONG], true)) {
+                // talent/song は属する group の所属 agency（resource の agencyId）で判定
                 return $resource->agencyId() !== null && $resource->agencyId() === $principalAgencyId;
             }
         }
 
-        // 要件: Group actor は「自身に紐づく Group と、その Group に紐づく Member/Song のみ承認・却下・翻訳・公開可能」
+        // 要件: Group actor は「自身に紐づく Group と、その Group に紐づく Talent/Song のみ承認・却下・翻訳・公開可能」
         if ($this === self::GROUP_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
-            // Group, Member, Song の承認・却下・翻訳・公開 -> resource の groupIds と actor の所属グループが交差するか
-            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::MEMBER, ResourceType::SONG], true)) {
+            // Group, Talent, Song の承認・却下・翻訳・公開 -> resource の groupIds と actor の所属グループが交差するか
+            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG], true)) {
                 $resourceGroupIds = $resource->groupIds();
                 if (empty($resourceGroupIds)) {
                     return false;
@@ -94,9 +94,9 @@ enum Role: string
             return false;
         }
 
-        // Member actor の場合、もし承認・却下・翻訳・公開スコープを「自分の所属グループ内のみ」としたければ同様にチェック可能
-        if ($this === self::MEMBER_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
-            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::MEMBER, ResourceType::SONG], true)) {
+        // Talent actor の場合、もし承認・却下・翻訳・公開スコープを「自分の所属グループ内のみ」としたければ同様にチェック可能
+        if ($this === self::TALENT_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
+            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG], true)) {
                 $resourceGroupIds = $resource->groupIds();
                 if (empty($resourceGroupIds)) {
                     return false;

@@ -39,20 +39,6 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
-use Source\Wiki\Member\Application\UseCase\Command\ApproveMember\ApproveMember;
-use Source\Wiki\Member\Application\UseCase\Command\ApproveMember\ApproveMemberInterface;
-use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMember;
-use Source\Wiki\Member\Application\UseCase\Command\CreateMember\CreateMemberInterface;
-use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMember;
-use Source\Wiki\Member\Application\UseCase\Command\EditMember\EditMemberInterface;
-use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMember;
-use Source\Wiki\Member\Application\UseCase\Command\PublishMember\PublishMemberInterface;
-use Source\Wiki\Member\Application\UseCase\Command\RejectMember\RejectMember;
-use Source\Wiki\Member\Application\UseCase\Command\RejectMember\RejectMemberInterface;
-use Source\Wiki\Member\Application\UseCase\Command\SubmitMember\SubmitMember;
-use Source\Wiki\Member\Application\UseCase\Command\SubmitMember\SubmitMemberInterface;
-use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMember;
-use Source\Wiki\Member\Application\UseCase\Command\TranslateMember\TranslateMemberInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
@@ -67,13 +53,27 @@ use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSong;
 use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSong;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\PublishTalent\PublishTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\PublishTalent\PublishTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\RejectTalent\RejectTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\RejectTalent\RejectTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalentInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(CreateMemberInterface::class, CreateMember::class);
-        $this->app->singleton(EditMemberInterface::class, EditMember::class);
+        $this->app->singleton(CreateTalentInterface::class, CreateTalent::class);
+        $this->app->singleton(EditTalentInterface::class, EditTalent::class);
         $this->app->singleton(CreateGroupInterface::class, CreateGroup::class);
         $this->app->singleton(EditGroupInterface::class, EditGroup::class);
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
@@ -93,11 +93,11 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectGroupInterface::class, RejectGroup::class);
         $this->app->singleton(PublishGroupInterface::class, PublishGroup::class);
         $this->app->singleton(TranslateGroupInterface::class, TranslateGroup::class);
-        $this->app->singleton(SubmitMemberInterface::class, SubmitMember::class);
-        $this->app->singleton(ApproveMemberInterface::class, ApproveMember::class);
-        $this->app->singleton(RejectMemberInterface::class, RejectMember::class);
-        $this->app->singleton(PublishMemberInterface::class, PublishMember::class);
-        $this->app->singleton(TranslateMemberInterface::class, TranslateMember::class);
+        $this->app->singleton(SubmitTalentInterface::class, SubmitTalent::class);
+        $this->app->singleton(ApproveTalentInterface::class, ApproveTalent::class);
+        $this->app->singleton(RejectTalentInterface::class, RejectTalent::class);
+        $this->app->singleton(PublishTalentInterface::class, PublishTalent::class);
+        $this->app->singleton(TranslateTalentInterface::class, TranslateTalent::class);
         $this->app->singleton(SubmitSongInterface::class, SubmitSong::class);
         $this->app->singleton(ApproveSongInterface::class, ApproveSong::class);
         $this->app->singleton(RejectSongInterface::class, RejectSong::class);
