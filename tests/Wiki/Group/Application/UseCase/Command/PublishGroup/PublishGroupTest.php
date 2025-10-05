@@ -24,9 +24,13 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -58,6 +62,7 @@ class PublishGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testProcessWhenAlreadyPublished(): void
     {
@@ -78,9 +83,14 @@ class PublishGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new PublishGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -167,6 +177,7 @@ class PublishGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testProcessForTheFirstTime(): void
     {
@@ -187,9 +198,14 @@ class PublishGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new PublishGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -270,9 +286,14 @@ class PublishGroupTest extends TestCase
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new PublishGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $principal,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -317,9 +338,14 @@ class PublishGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new PublishGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::Approved;
@@ -360,6 +386,7 @@ class PublishGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testHasApprovedButNotTranslatedAgency(): void
     {
@@ -380,9 +407,14 @@ class PublishGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new PublishGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -425,6 +457,7 @@ class PublishGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testWhenNotFoundPublishedAgency(): void
     {
@@ -445,9 +478,14 @@ class PublishGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new PublishGroupInput(
             $groupIdentifier,
             $publishedGroupIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -487,5 +525,623 @@ class PublishGroupTest extends TestCase
         $this->expectException(GroupNotFoundException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
+    }
+
+    /**
+     * 異常系：承認権限がないロール（Collaborator）の場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedRole(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $publishGroup->process($input);
+    }
+
+    /**
+     * 正常系：ADMINISTRATORがGroupを公開できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithAdministrator(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            null,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $createdGroup = new Group(
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            null,
+            new Description(''),
+            [],
+            null,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+        $groupRepository->shouldReceive('save')
+            ->once()
+            ->with($createdGroup)
+            ->andReturn(null);
+        $groupRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($group)
+            ->andReturn(null);
+
+        $groupFactory = Mockery::mock(GroupFactoryInterface::class);
+        $groupFactory->shouldReceive('create')
+            ->once()
+            ->with($translationSetIdentifier, $translation, $name)
+            ->andReturn($createdGroup);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
+            ->once()
+            ->with($translationSetIdentifier, $groupIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupFactoryInterface::class, $groupFactory);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $result = $publishGroup->process($input);
+
+        $this->assertInstanceOf(Group::class, $result);
+    }
+
+    /**
+     * 異常系：AGENCY_ACTORが他の事務所のグループを公開しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedAgencyScope(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherAgencyId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], null);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $publishGroup->process($input);
+    }
+
+    /**
+     * 正常系：AGENCY_ACTORが自分の事務所に所属するグループを公開できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testAuthorizedAgencyActor(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $agencyId = StrTestHelper::generateUlid();
+        $agencyIdentifier = new AgencyIdentifier($agencyId);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            null,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $createdGroup = new Group(
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            null,
+            new Description(''),
+            [],
+            null,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+        $groupRepository->shouldReceive('save')
+            ->once()
+            ->with($createdGroup)
+            ->andReturn(null);
+        $groupRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($group)
+            ->andReturn(null);
+
+        $groupFactory = Mockery::mock(GroupFactoryInterface::class);
+        $groupFactory->shouldReceive('create')
+            ->once()
+            ->with($translationSetIdentifier, $translation, $name)
+            ->andReturn($createdGroup);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
+            ->once()
+            ->with($translationSetIdentifier, $groupIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupFactoryInterface::class, $groupFactory);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $result = $publishGroup->process($input);
+
+        $this->assertInstanceOf(Group::class, $result);
+    }
+
+    /**
+     * 異常系：GROUP_ACTORが自分の所属していないグループを公開しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedGroupScope(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherGroupId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], null);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $publishGroup->process($input);
+    }
+
+    /**
+     * 正常系：GROUP_ACTORが自分の所属するグループを公開できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testAuthorizedGroupActor(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $groupIdentifier], null);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            null,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $createdGroup = new Group(
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            null,
+            new Description(''),
+            [],
+            null,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+        $groupRepository->shouldReceive('save')
+            ->once()
+            ->with($createdGroup)
+            ->andReturn(null);
+        $groupRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($group)
+            ->andReturn(null);
+
+        $groupFactory = Mockery::mock(GroupFactoryInterface::class);
+        $groupFactory->shouldReceive('create')
+            ->once()
+            ->with($translationSetIdentifier, $translation, $name)
+            ->andReturn($createdGroup);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
+            ->once()
+            ->with($translationSetIdentifier, $groupIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupFactoryInterface::class, $groupFactory);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $result = $publishGroup->process($input);
+
+        $this->assertInstanceOf(Group::class, $result);
+    }
+
+    /**
+     * 異常系：MEMBER_ACTORが自分の所属していないグループを公開しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedMemberScope(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherGroupId = StrTestHelper::generateUlid();
+        $memberId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [$anotherGroupId], $memberId);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $publishGroup->process($input);
+    }
+
+    /**
+     * 正常系：MEMBER_ACTORが自分の所属するグループを公開できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testAuthorizedMemberActor(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $memberId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::MEMBER_ACTOR, null, [(string) $groupIdentifier], $memberId);
+
+        $input = new PublishGroupInput(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $status = ApprovalStatus::UnderReview;
+
+        $group = new DraftGroup(
+            $groupIdentifier,
+            null,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $createdGroup = new Group(
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            null,
+            new Description(''),
+            [],
+            null,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+        $groupRepository->shouldReceive('save')
+            ->once()
+            ->with($createdGroup)
+            ->andReturn(null);
+        $groupRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($group)
+            ->andReturn(null);
+
+        $groupFactory = Mockery::mock(GroupFactoryInterface::class);
+        $groupFactory->shouldReceive('create')
+            ->once()
+            ->with($translationSetIdentifier, $translation, $name)
+            ->andReturn($createdGroup);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
+            ->once()
+            ->with($translationSetIdentifier, $groupIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupFactoryInterface::class, $groupFactory);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $result = $publishGroup->process($input);
+
+        $this->assertInstanceOf(Group::class, $result);
     }
 }

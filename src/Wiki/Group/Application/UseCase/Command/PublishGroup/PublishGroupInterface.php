@@ -8,6 +8,7 @@ use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupE
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface PublishGroupInterface
 {
@@ -17,6 +18,7 @@ interface PublishGroupInterface
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedGroupException
+     * @throws UnauthorizedException
      */
     public function process(PublishGroupInputPort $input): Group;
 }
