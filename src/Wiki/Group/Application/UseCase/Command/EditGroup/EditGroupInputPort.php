@@ -9,6 +9,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 
 interface EditGroupInputPort
 {
@@ -26,4 +27,6 @@ interface EditGroupInputPort
     public function songIdentifiers(): array;
 
     public function base64EncodedImage(): ?string;
+
+    public function principal(): Principal;
 }

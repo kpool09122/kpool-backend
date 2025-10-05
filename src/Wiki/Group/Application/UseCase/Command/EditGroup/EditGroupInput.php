@@ -9,6 +9,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 
 readonly class EditGroupInput implements EditGroupInputPort
 {
@@ -19,6 +20,7 @@ readonly class EditGroupInput implements EditGroupInputPort
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
      * @param string|null $base64EncodedImage
+     * @param Principal $principal
      */
     public function __construct(
         private GroupIdentifier  $groupIdentifier,
@@ -27,6 +29,7 @@ readonly class EditGroupInput implements EditGroupInputPort
         private Description      $description,
         private array            $songIdentifiers,
         private ?string          $base64EncodedImage,
+        private Principal        $principal,
     ) {
     }
 
@@ -61,5 +64,10 @@ readonly class EditGroupInput implements EditGroupInputPort
     public function base64EncodedImage(): ?string
     {
         return $this->base64EncodedImage;
+    }
+
+    public function principal(): Principal
+    {
+        return $this->principal;
     }
 }
