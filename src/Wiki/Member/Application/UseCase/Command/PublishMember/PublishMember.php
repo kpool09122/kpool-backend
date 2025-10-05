@@ -12,7 +12,11 @@ use Source\Wiki\Member\Domain\Factory\MemberFactoryInterface;
 use Source\Wiki\Member\Domain\Repository\MemberRepositoryInterface;
 use Source\Wiki\Member\Domain\Service\MemberServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class PublishMember implements PublishMemberInterface
 {
@@ -30,6 +34,7 @@ class PublishMember implements PublishMemberInterface
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedMemberException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
      */
     public function process(PublishMemberInputPort $input): Member
     {
@@ -37,6 +42,22 @@ class PublishMember implements PublishMemberInterface
 
         if ($member === null) {
             throw new MemberNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($groupIdentifier) => (string) $groupIdentifier,
+            $member->groupIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::MEMBER,
+            agencyId: null,
+            groupIds: $groupIds,
+            memberId: (string) $member->memberIdentifier(),
+        );
+
+        if (! $principal->role()->can(Action::PUBLISH, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         if ($member->status() !== ApprovalStatus::UnderReview) {

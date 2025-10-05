@@ -9,6 +9,7 @@ use Source\Wiki\Member\Application\Exception\MemberNotFoundException;
 use Source\Wiki\Member\Domain\Entity\Member;
 use Source\Wiki\Member\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface PublishMemberInterface
 {
@@ -19,6 +20,7 @@ interface PublishMemberInterface
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedMemberException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
      */
     public function process(PublishMemberInputPort $input): Member;
 }
