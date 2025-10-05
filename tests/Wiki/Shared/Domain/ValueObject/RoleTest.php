@@ -21,11 +21,11 @@ class RoleTest extends TestCase
     public function testAllowedActionsFor(): void
     {
         // Administrator / Agency actor は全アクション許可
-        $allActions = [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::TRANSLATE];
+        $allActions = [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH];
         $this->assertSame($allActions, Role::ADMINISTRATOR->allowedActionsFor(ResourceType::AGENCY));
         $this->assertSame($allActions, Role::AGENCY_ACTOR->allowedActionsFor(ResourceType::GROUP));
 
-        // Group / Member actor は Agency のみ承認・翻訳不可、その他は許可
+        // Group / Member actor は Agency のみ承認・却下・翻訳・公開不可、その他は許可
         $basicActions = [Action::CREATE, Action::EDIT, Action::SUBMIT];
         $this->assertSame($basicActions, Role::GROUP_ACTOR->allowedActionsFor(ResourceType::AGENCY));
         $this->assertSame($allActions, Role::GROUP_ACTOR->allowedActionsFor(ResourceType::GROUP));
@@ -46,7 +46,7 @@ class RoleTest extends TestCase
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
         $resource = new ResourceIdentifier(ResourceType::AGENCY, StrTestHelper::generateUlid());
 
-        foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::TRANSLATE] as $action) {
+        foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
             $this->assertTrue(Role::ADMINISTRATOR->can($action, $resource, $principal));
         }
     }
