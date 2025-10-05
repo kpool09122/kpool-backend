@@ -8,6 +8,6 @@ enum ResourceType: string
 {
     case AGENCY = 'agency';
     case GROUP = 'group';
-    case MEMBER = 'member';
+    case TALENT = 'talent';
     case SONG = 'song';
 }
