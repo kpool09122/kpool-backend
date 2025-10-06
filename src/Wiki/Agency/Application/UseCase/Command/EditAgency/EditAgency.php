@@ -7,6 +7,10 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\EditAgency;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class EditAgency implements EditAgencyInterface
 {
@@ -19,6 +23,7 @@ class EditAgency implements EditAgencyInterface
      * @param EditAgencyInputPort $input
      * @return DraftAgency
      * @throws AgencyNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(EditAgencyInputPort $input): DraftAgency
     {
@@ -26,6 +31,17 @@ class EditAgency implements EditAgencyInterface
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::AGENCY,
+            agencyId: (string) $agency->agencyIdentifier(),
+            groupIds: [],
+        );
+
+        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $agency->setName($input->name());
