@@ -7,6 +7,10 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class CreateAgency implements CreateAgencyInterface
 {
@@ -16,8 +20,23 @@ class CreateAgency implements CreateAgencyInterface
     ) {
     }
 
+    /**
+     * @param CreateAgencyInputPort $input
+     * @return DraftAgency
+     * @throws UnauthorizedException
+     */
     public function process(CreateAgencyInputPort $input): DraftAgency
     {
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::AGENCY,
+            agencyId: null,
+            groupIds: [],
+        );
+
+        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
+        }
 
         $agency = $this->agencyFactory->create(
             $input->editorIdentifier(),
