@@ -10,7 +10,11 @@ use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class ApproveAgency implements ApproveAgencyInterface
 {
@@ -26,6 +30,7 @@ class ApproveAgency implements ApproveAgencyInterface
      * @throws AgencyNotFoundException
      * @throws ExistsApprovedButNotTranslatedAgencyException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(ApproveAgencyInputPort $input): DraftAgency
     {
@@ -33,6 +38,17 @@ class ApproveAgency implements ApproveAgencyInterface
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::AGENCY,
+            agencyId: (string) $agency->agencyIdentifier(),
+            groupIds: [],
+        );
+
+        if (! $principal->role()->can(Action::APPROVE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         if ($agency->status() !== ApprovalStatus::UnderReview) {

@@ -22,9 +22,13 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -54,6 +58,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testProcess(): void
     {
@@ -78,9 +83,14 @@ class ApproveAgencyTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new ApproveAgencyInput(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -132,9 +142,14 @@ class ApproveAgencyTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new ApproveAgencyInput(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $principal,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -158,6 +173,7 @@ class ApproveAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
+     * @throws UnauthorizedException
      */
     public function testInvalidStatus(): void
     {
@@ -182,9 +198,14 @@ class ApproveAgencyTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new ApproveAgencyInput(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::Approved;
@@ -223,6 +244,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function testHasApprovedButNotTranslatedAgency(): void
     {
@@ -247,9 +269,14 @@ class ApproveAgencyTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
         $input = new ApproveAgencyInput(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
+            $principal,
         );
 
         $status = ApprovalStatus::UnderReview;
@@ -282,6 +309,388 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $this->expectException(ExistsApprovedButNotTranslatedAgencyException::class);
+        $approveAgency->process($input);
+    }
+
+    /**
+     * 異常系：承認権限がないロール（Collaborator）の場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedRole(): void
+    {
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+
+        $input = new ApproveAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $agency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($agencyIdentifier)
+            ->andReturn($agency);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+
+        $this->expectException(UnauthorizedException::class);
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
+        $approveAgency->process($input);
+    }
+
+    /**
+     * 正常系：ADMINISTRATORが事務所を承認できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithAdministrator(): void
+    {
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+
+        $input = new ApproveAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $agency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($agencyIdentifier)
+            ->andReturn($agency);
+        $agencyRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($agency)
+            ->andReturn(null);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
+            ->once()
+            ->with($translationSetIdentifier, $agencyIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
+        $result = $approveAgency->process($input);
+
+        $this->assertInstanceOf(DraftAgency::class, $result);
+        $this->assertSame(ApprovalStatus::Approved, $result->status());
+    }
+
+    /**
+     * 異常系：AGENCY_ACTORが他の事務所を承認しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedAgencyScope(): void
+    {
+        $agencyId = StrTestHelper::generateUlid();
+        $agencyIdentifier = new AgencyIdentifier($agencyId);
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherAgencyId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], null);
+
+        $input = new ApproveAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $agency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($agencyIdentifier)
+            ->andReturn($agency);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+
+        $this->expectException(UnauthorizedException::class);
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
+        $approveAgency->process($input);
+    }
+
+    /**
+     * 正常系：AGENCY_ACTORが自分の事務所を承認できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithAgencyActor(): void
+    {
+        $agencyId = StrTestHelper::generateUlid();
+        $agencyIdentifier = new AgencyIdentifier($agencyId);
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+
+        $input = new ApproveAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $agency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($agencyIdentifier)
+            ->andReturn($agency);
+        $agencyRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($agency)
+            ->andReturn(null);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
+            ->once()
+            ->with($translationSetIdentifier, $agencyIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
+        $result = $approveAgency->process($input);
+
+        $this->assertInstanceOf(DraftAgency::class, $result);
+        $this->assertSame(ApprovalStatus::Approved, $result->status());
+    }
+
+    /**
+     * 異常系：GROUP_ACTORが事務所を承認しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedGroupActor(): void
+    {
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
+
+        $input = new ApproveAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $agency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($agencyIdentifier)
+            ->andReturn($agency);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+
+        $this->expectException(UnauthorizedException::class);
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
+        $approveAgency->process($input);
+    }
+
+    /**
+     * 異常系：TALENT_ACTORが事務所を承認しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedTalentActor(): void
+    {
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $groupId = StrTestHelper::generateUlid();
+        $talentId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], $talentId);
+
+        $input = new ApproveAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $agency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($agencyIdentifier)
+            ->andReturn($agency);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+
+        $this->expectException(UnauthorizedException::class);
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $approveAgency->process($input);
     }
 }

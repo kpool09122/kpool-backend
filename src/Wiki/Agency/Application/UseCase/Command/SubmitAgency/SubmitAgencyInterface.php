@@ -7,6 +7,7 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface SubmitAgencyInterface
 {
@@ -15,6 +16,7 @@ interface SubmitAgencyInterface
      * @return DraftAgency
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(SubmitAgencyInputPort $input): DraftAgency;
 }

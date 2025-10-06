@@ -8,6 +8,7 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface ApproveAgencyInterface
 {
@@ -17,6 +18,7 @@ interface ApproveAgencyInterface
      * @throws AgencyNotFoundException
      * @throws ExistsApprovedButNotTranslatedAgencyException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(ApproveAgencyInputPort $input): DraftAgency;
 }

@@ -11,7 +11,11 @@ use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 class PublishAgency implements PublishAgencyInterface
 {
@@ -28,6 +32,7 @@ class PublishAgency implements PublishAgencyInterface
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedAgencyException
+     * @throws UnauthorizedException
      */
     public function process(PublishAgencyInputPort $input): Agency
     {
@@ -39,6 +44,17 @@ class PublishAgency implements PublishAgencyInterface
 
         if ($agency->status() !== ApprovalStatus::UnderReview) {
             throw new InvalidStatusException();
+        }
+
+        $principal = $input->principal();
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::AGENCY,
+            agencyId: (string) $agency->agencyIdentifier(),
+            groupIds: [],
+        );
+
+        if (! $principal->role()->can(Action::PUBLISH, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         // 同じ翻訳セットの別版で承認済みがあるかチェック
