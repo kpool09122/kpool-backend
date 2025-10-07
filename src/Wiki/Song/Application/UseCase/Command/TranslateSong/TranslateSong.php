@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\TranslateSong;
 
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -22,6 +26,7 @@ class TranslateSong implements TranslateSongInterface
      * @param TranslateSongInputPort $input
      * @return DraftSong[]
      * @throws SongNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(TranslateSongInputPort $input): array
     {
@@ -29,6 +34,21 @@ class TranslateSong implements TranslateSongInterface
 
         if ($song === null) {
             throw new SongNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($belongIdentifier) => (string) $belongIdentifier,
+            $song->belongIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::SONG,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::TRANSLATE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $translations = Translation::allExcept($song->translation());
