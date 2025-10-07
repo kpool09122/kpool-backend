@@ -11,8 +11,10 @@ enum Role: string
     case AGENCY_ACTOR = 'agency_actor';
     case GROUP_ACTOR = 'group_actor';
     case TALENT_ACTOR = 'talent_actor';
+    case SUPER_COLLABORATOR = 'super_collaborator';
     case COLLABORATOR = 'collaborator';
     case ADMINISTRATOR = 'administrator';
+    case NONE = 'none';
 
     /**
      * リソースタイプごとの基本許可（スコープは別チェックで扱う）
@@ -21,12 +23,13 @@ enum Role: string
     public function allowedActionsFor(ResourceType $resource): array
     {
         return match($this) {
-            self::AGENCY_ACTOR, self::ADMINISTRATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+            self::AGENCY_ACTOR, self::ADMINISTRATOR, self::SUPER_COLLABORATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
             self::GROUP_ACTOR, self::TALENT_ACTOR => match($resource) {
                 ResourceType::AGENCY => [Action::CREATE, Action::EDIT, Action::SUBMIT],
                 default => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
             },
             self::COLLABORATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT],
+            self::NONE => [],
         };
     }
 
@@ -35,9 +38,15 @@ enum Role: string
      */
     public function can(Action $action, ResourceIdentifier $resource, Principal $principal): bool
     {
-        // 管理者は全許可
-        if ($this === self::ADMINISTRATOR) {
+        // 管理者とスーパーコラボレーターは全許可
+        if ($this === self::ADMINISTRATOR ||
+            $this === self::SUPER_COLLABORATOR) {
             return true;
+        }
+
+        //　ロールなしはすべて否認
+        if ($this === self::NONE) {
+            return false;
         }
 
         // 基本的なアクション許可を確認

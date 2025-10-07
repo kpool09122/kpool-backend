@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
@@ -18,8 +22,28 @@ readonly class CreateSong implements CreateSongInterface
     ) {
     }
 
+    /**
+     * @param CreateSongInputPort $input
+     * @return DraftSong
+     * @throws UnauthorizedException
+     */
     public function process(CreateSongInputPort $input): DraftSong
     {
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($belongIdentifier) => (string) $belongIdentifier,
+            $input->belongIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::SONG,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
+        }
+
         $song = $this->songFactory->create(
             $input->editorIdentifier(),
             $input->translation(),
