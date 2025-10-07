@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -25,6 +26,7 @@ readonly class EditSongInput implements EditSongInputPort
      * @param Overview $overview
      * @param ?string $base64EncodedCoverImage
      * @param ?ExternalContentLink $musicVideoLink
+     * @param Principal $principal
      */
     public function __construct(
         private SongIdentifier $songIdentifier,
@@ -36,6 +38,7 @@ readonly class EditSongInput implements EditSongInputPort
         private Overview $overview,
         private ?string $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
+        private Principal $principal,
     ) {
     }
 
@@ -85,5 +88,10 @@ readonly class EditSongInput implements EditSongInputPort
     public function musicVideoLink(): ?ExternalContentLink
     {
         return $this->musicVideoLink;
+    }
+
+    public function principal(): Principal
+    {
+        return $this->principal;
     }
 }

@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -26,6 +30,7 @@ class ApproveSong implements ApproveSongInterface
      * @throws SongNotFoundException
      * @throws ExistsApprovedButNotTranslatedSongException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(ApproveSongInputPort $input): DraftSong
     {
@@ -37,6 +42,21 @@ class ApproveSong implements ApproveSongInterface
 
         if ($song->status() !== ApprovalStatus::UnderReview) {
             throw new InvalidStatusException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($belongIdentifier) => (string) $belongIdentifier,
+            $song->belongIdentifiers()
+        );
+        $resource = new ResourceIdentifier(
+            type: ResourceType::SONG,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::APPROVE, $resource, $principal)) {
+            throw new UnauthorizedException();
         }
 
         // 同じ翻訳セットの別版で承認済みがあるかチェック

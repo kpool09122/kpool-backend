@@ -6,6 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -41,4 +42,6 @@ interface CreateSongInputPort
     public function base64EncodedCoverImage(): ?string;
 
     public function musicVideoLink(): ?ExternalContentLink;
+
+    public function principal(): Principal;
 }

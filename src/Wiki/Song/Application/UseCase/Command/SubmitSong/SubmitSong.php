@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
@@ -22,6 +26,7 @@ readonly class SubmitSong implements SubmitSongInterface
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(SubmitSongInputPort $input): DraftSong
     {
@@ -29,6 +34,21 @@ readonly class SubmitSong implements SubmitSongInterface
 
         if ($song === null) {
             throw new SongNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($belongIdentifier) => (string) $belongIdentifier,
+            $song->belongIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::SONG,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         if ($song->status() !== ApprovalStatus::Pending

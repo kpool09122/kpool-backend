@@ -6,6 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -29,6 +30,7 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param Overview $overview
      * @param ?string $base64EncodedCoverImage
      * @param ?ExternalContentLink $musicVideoLink
+     * @param Principal $principal
      */
     public function __construct(
         private ?SongIdentifier $publishedSongIdentifier,
@@ -42,6 +44,7 @@ readonly class CreateSongInput implements CreateSongInputPort
         private Overview             $overview,
         private ?string              $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
+        private Principal            $principal,
     ) {
     }
 
@@ -101,5 +104,10 @@ readonly class CreateSongInput implements CreateSongInputPort
     public function musicVideoLink(): ?ExternalContentLink
     {
         return $this->musicVideoLink;
+    }
+
+    public function principal(): Principal
+    {
+        return $this->principal;
     }
 }

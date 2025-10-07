@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
@@ -21,6 +25,7 @@ class EditSong implements EditSongInterface
      * @param EditSongInputPort $input
      * @return DraftSong
      * @throws SongNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(EditSongInputPort $input): DraftSong
     {
@@ -28,6 +33,21 @@ class EditSong implements EditSongInterface
 
         if ($song === null) {
             throw new SongNotFoundException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($belongIdentifier) => (string) $belongIdentifier,
+            $song->belongIdentifiers()
+        );
+        $resourceIdentifier = new ResourceIdentifier(
+            type: ResourceType::SONG,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $song->setName($input->name());

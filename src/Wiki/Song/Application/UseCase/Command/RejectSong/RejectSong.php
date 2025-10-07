@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\RejectSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
@@ -22,6 +26,7 @@ class RejectSong implements RejectSongInterface
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(RejectSongInputPort $input): DraftSong
     {
@@ -33,6 +38,21 @@ class RejectSong implements RejectSongInterface
 
         if ($song->status() !== ApprovalStatus::UnderReview) {
             throw new InvalidStatusException();
+        }
+
+        $principal = $input->principal();
+        $groupIds = array_map(
+            fn ($belongIdentifier) => (string) $belongIdentifier,
+            $song->belongIdentifiers()
+        );
+        $resource = new ResourceIdentifier(
+            type: ResourceType::SONG,
+            agencyId: null,
+            groupIds: $groupIds,
+        );
+
+        if (! $principal->role()->can(Action::REJECT, $resource, $principal)) {
+            throw new UnauthorizedException();
         }
 
         $song->setStatus(ApprovalStatus::Rejected);
