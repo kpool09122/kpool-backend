@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 
@@ -15,6 +16,7 @@ interface SubmitSongInterface
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
      */
     public function process(SubmitSongInputPort $input): DraftSong;
 }
