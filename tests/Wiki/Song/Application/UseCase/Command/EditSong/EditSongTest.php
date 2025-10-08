@@ -539,4 +539,160 @@ class EditSongTest extends TestCase
 
         $this->assertInstanceOf(DraftSong::class, $result);
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORが曲を編集できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $name = new SongName('TT');
+        $belongIdentifier = new BelongIdentifier(StrTestHelper::generateUlid());
+        $belongIdentifiers = [$belongIdentifier];
+        $lyricist = new Lyricist('블랙아이드필승');
+        $composer = new Composer('Sam Lewis');
+        $releaseDate = null;
+        $overView = new Overview('Test Overview');
+        $base64EncodedCoverImage = null;
+        $musicVideoLink = null;
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new EditSongInput(
+            $songIdentifier,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $base64EncodedCoverImage,
+            $musicVideoLink,
+            $principal,
+        );
+
+        $translation = Translation::KOREAN;
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
+        $song = new DraftSong(
+            $songIdentifier,
+            $publishedSongIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $coverImagePath,
+            $musicVideoLink,
+            $status,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($songIdentifier)
+            ->andReturn($song);
+        $songRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($song)
+            ->andReturn(null);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+
+        $editSong = $this->app->make(EditSongInterface::class);
+        $result = $editSong->process($input);
+
+        $this->assertInstanceOf(DraftSong::class, $result);
+    }
+
+    /**
+     * 異常系：NONEロールが曲を編集しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     */
+    public function testProcessWithNoneRole(): void
+    {
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $name = new SongName('TT');
+        $belongIdentifier = new BelongIdentifier(StrTestHelper::generateUlid());
+        $belongIdentifiers = [$belongIdentifier];
+        $lyricist = new Lyricist('블랙아이드필승');
+        $composer = new Composer('Sam Lewis');
+        $releaseDate = null;
+        $overView = new Overview('Test Overview');
+        $base64EncodedCoverImage = null;
+        $musicVideoLink = null;
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new EditSongInput(
+            $songIdentifier,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $base64EncodedCoverImage,
+            $musicVideoLink,
+            $principal,
+        );
+
+        $translation = Translation::KOREAN;
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
+        $song = new DraftSong(
+            $songIdentifier,
+            $publishedSongIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $coverImagePath,
+            $musicVideoLink,
+            $status,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($songIdentifier)
+            ->andReturn($song);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $editSong = $this->app->make(EditSongInterface::class);
+        $editSong->process($input);
+    }
 }

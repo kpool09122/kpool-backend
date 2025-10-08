@@ -11,7 +11,7 @@ enum Role: string
     case AGENCY_ACTOR = 'agency_actor';
     case GROUP_ACTOR = 'group_actor';
     case TALENT_ACTOR = 'talent_actor';
-    case SUPER_COLLABORATOR = 'super_collaborator';
+    case SENIOR_COLLABORATOR = 'senior_collaborator';
     case COLLABORATOR = 'collaborator';
     case ADMINISTRATOR = 'administrator';
     case NONE = 'none';
@@ -23,7 +23,7 @@ enum Role: string
     public function allowedActionsFor(ResourceType $resource): array
     {
         return match($this) {
-            self::AGENCY_ACTOR, self::ADMINISTRATOR, self::SUPER_COLLABORATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+            self::AGENCY_ACTOR, self::ADMINISTRATOR, self::SENIOR_COLLABORATOR => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
             self::GROUP_ACTOR, self::TALENT_ACTOR => match($resource) {
                 ResourceType::AGENCY => [Action::CREATE, Action::EDIT, Action::SUBMIT],
                 default => [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
@@ -40,7 +40,7 @@ enum Role: string
     {
         // 管理者とスーパーコラボレーターは全許可
         if ($this === self::ADMINISTRATOR ||
-            $this === self::SUPER_COLLABORATOR) {
+            $this === self::SENIOR_COLLABORATOR) {
             return true;
         }
 

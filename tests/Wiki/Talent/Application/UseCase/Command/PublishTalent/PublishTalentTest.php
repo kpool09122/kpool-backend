@@ -1006,4 +1006,174 @@ class PublishTalentTest extends TestCase
 
         $this->assertInstanceOf(Talent::class, $result);
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORがメンバーを公開できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new TalentName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('経歴');
+        $imagePath = new ImagePath('/resources/public/images/before.webp');
+        $relevantVideoLinks = new RelevantVideoLinks([]);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new PublishTalentInput(
+            $talentIdentifier,
+            $publishedTalentIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $talent = new DraftTalent(
+            $talentIdentifier,
+            null,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imagePath,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $createdTalent = new Talent(
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            new RealName(''),
+            [],
+            null,
+            new Career(''),
+            null,
+            new RelevantVideoLinks([]),
+        );
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($talentIdentifier)
+            ->andReturn($talent);
+        $talentRepository->shouldReceive('save')
+            ->once()
+            ->with($createdTalent)
+            ->andReturn(null);
+        $talentRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $talentFactory = Mockery::mock(TalentFactoryInterface::class);
+        $talentFactory->shouldReceive('create')
+            ->once()
+            ->with($translationSetIdentifier, $translation, $name)
+            ->andReturn($createdTalent);
+
+        $talentService = Mockery::mock(TalentServiceInterface::class);
+        $talentService->shouldReceive('existsApprovedButNotTranslatedTalent')
+            ->once()
+            ->with($translationSetIdentifier, $talentIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentFactoryInterface::class, $talentFactory);
+        $this->app->instance(TalentServiceInterface::class, $talentService);
+
+        $publishTalent = $this->app->make(PublishTalentInterface::class);
+        $result = $publishTalent->process($input);
+
+        $this->assertInstanceOf(Talent::class, $result);
+    }
+
+    /**
+     * 異常系：NONEロールがメンバーを公開しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws InvalidStatusException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testUnauthorizedNoneRole(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new TalentName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('経歴');
+        $imagePath = new ImagePath('/resources/public/images/before.webp');
+        $relevantVideoLinks = new RelevantVideoLinks([]);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new PublishTalentInput(
+            $talentIdentifier,
+            $publishedTalentIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $talent = new DraftTalent(
+            $talentIdentifier,
+            null,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imagePath,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($talentIdentifier)
+            ->andReturn($talent);
+
+        $talentService = Mockery::mock(TalentServiceInterface::class);
+
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentServiceInterface::class, $talentService);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishTalent = $this->app->make(PublishTalentInterface::class);
+        $publishTalent->process($input);
+    }
 }
