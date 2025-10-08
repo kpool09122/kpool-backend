@@ -696,4 +696,143 @@ class RejectTalentTest extends TestCase
         $this->assertInstanceOf(DraftTalent::class, $result);
         $this->assertSame(ApprovalStatus::Rejected, $result->status());
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORがメンバーを却下できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new TalentName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### 経歴');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new RejectTalentInput(
+            $talentIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $talent = new DraftTalent(
+            $talentIdentifier,
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($talentIdentifier)
+            ->andReturn($talent);
+        $talentRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+
+        $rejectTalent = $this->app->make(RejectTalentInterface::class);
+        $result = $rejectTalent->process($input);
+
+        $this->assertInstanceOf(DraftTalent::class, $result);
+        $this->assertSame(ApprovalStatus::Rejected, $result->status());
+    }
+
+    /**
+     * 異常系：NONEロールがメンバーを却下しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws InvalidStatusException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testUnauthorizedNoneRole(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new TalentName('채영');
+        $realName = new RealName('손채영');
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### 経歴');
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new RejectTalentInput(
+            $talentIdentifier,
+            $principal,
+        );
+
+        $status = ApprovalStatus::UnderReview;
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $talent = new DraftTalent(
+            $talentIdentifier,
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($talentIdentifier)
+            ->andReturn($talent);
+
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $rejectTalent = $this->app->make(RejectTalentInterface::class);
+        $rejectTalent->process($input);
+    }
 }

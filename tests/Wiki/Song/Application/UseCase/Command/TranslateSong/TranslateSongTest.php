@@ -730,4 +730,179 @@ class TranslateSongTest extends TestCase
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORが曲を翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new TranslateSongInput(
+            $songIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new SongName('TT');
+        $belongIdentifiers = [
+            new BelongIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $lyricist = new Lyricist('블랙아이드필승');
+        $composer = new Composer('Sam Lewis');
+        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
+        $overView = new Overview('Overview');
+        $coverImagePath = new ImagePath('/resources/public/images/before.webp');
+        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $song = new Song(
+            $songIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $coverImagePath,
+            $musicVideoLink,
+        );
+
+        $jaSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $japanese = Translation::JAPANESE;
+        $jaSong = new DraftSong(
+            $jaSongIdentifier,
+            $songIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $japanese,
+            new SongName('TT'),
+            $belongIdentifiers,
+            new Lyricist('블랙아이드필승'),
+            new Composer('Sam Lewis'),
+            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
+            new Overview('Overview'),
+            new ImagePath('/resources/public/images/before.webp'),
+            new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ'),
+            ApprovalStatus::Pending,
+        );
+
+        $enSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $english = Translation::ENGLISH;
+        $enSong = new DraftSong(
+            $enSongIdentifier,
+            $songIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $english,
+            new SongName('TT'),
+            $belongIdentifiers,
+            new Lyricist('블랙아이드필승'),
+            new Composer('Sam Lewis'),
+            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
+            new Overview('Overview'),
+            new ImagePath('/resources/public/images/before.webp'),
+            new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ'),
+            ApprovalStatus::Pending,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findById')
+            ->with($songIdentifier)
+            ->once()
+            ->andReturn($song);
+        $songRepository->shouldReceive('saveDraft')
+            ->with($enSong)
+            ->once()
+            ->andReturn(null);
+        $songRepository->shouldReceive('saveDraft')
+            ->with($jaSong)
+            ->once()
+            ->andReturn(null);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateSong')
+            ->with($song, $english)
+            ->once()
+            ->andReturn($enSong);
+        $translationService->shouldReceive('translateSong')
+            ->with($song, $japanese)
+            ->once()
+            ->andReturn($jaSong);
+
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $translateSong = $this->app->make(TranslateSongInterface::class);
+        $songs = $translateSong->process($input);
+        $this->assertCount(2, $songs);
+    }
+
+    /**
+     * 異常系：NONEロールが曲を翻訳しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     */
+    public function testUnauthorizedNoneRole(): void
+    {
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new TranslateSongInput(
+            $songIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new SongName('TT');
+        $belongIdentifiers = [
+            new BelongIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $lyricist = new Lyricist('블랙아이드필승');
+        $composer = new Composer('Sam Lewis');
+        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
+        $overView = new Overview('Overview');
+        $coverImagePath = new ImagePath('/resources/public/images/before.webp');
+        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $song = new Song(
+            $songIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $coverImagePath,
+            $musicVideoLink,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findById')
+            ->with($songIdentifier)
+            ->once()
+            ->andReturn($song);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $translateSong = $this->app->make(TranslateSongInterface::class);
+        $translateSong->process($input);
+    }
 }

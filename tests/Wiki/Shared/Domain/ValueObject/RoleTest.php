@@ -219,4 +219,55 @@ class RoleTest extends TestCase
         $this->assertFalse(Role::COLLABORATOR->can(Action::TRANSLATE, $group, $principal));
         $this->assertTrue(Role::COLLABORATOR->can(Action::EDIT, $group, $principal));
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORは常にtrueを返すこと.
+     */
+    public function testCanSeniorCollaboratorAlwaysTrue(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+
+        foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
+            $this->assertTrue(Role::SENIOR_COLLABORATOR->can($action, $resource, $principal));
+        }
+    }
+
+    /**
+     * 異常系：NONEは常にfalseを返すこと.
+     */
+    public function testCanNoneAlwaysFalse(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+
+        foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
+            $this->assertFalse(Role::NONE->can($action, $resource, $principal));
+        }
+    }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORがallowedActionsForで全アクション許可を返すこと.
+     */
+    public function testAllowedActionsForSeniorCollaborator(): void
+    {
+        $allActions = [Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH];
+        $this->assertSame($allActions, Role::SENIOR_COLLABORATOR->allowedActionsFor(ResourceType::AGENCY));
+        $this->assertSame($allActions, Role::SENIOR_COLLABORATOR->allowedActionsFor(ResourceType::GROUP));
+        $this->assertSame($allActions, Role::SENIOR_COLLABORATOR->allowedActionsFor(ResourceType::TALENT));
+        $this->assertSame($allActions, Role::SENIOR_COLLABORATOR->allowedActionsFor(ResourceType::SONG));
+    }
+
+    /**
+     * 正常系：NONEがallowedActionsForで空配列を返すこと.
+     */
+    public function testAllowedActionsForNone(): void
+    {
+        $this->assertSame([], Role::NONE->allowedActionsFor(ResourceType::AGENCY));
+        $this->assertSame([], Role::NONE->allowedActionsFor(ResourceType::GROUP));
+        $this->assertSame([], Role::NONE->allowedActionsFor(ResourceType::TALENT));
+        $this->assertSame([], Role::NONE->allowedActionsFor(ResourceType::SONG));
+    }
 }

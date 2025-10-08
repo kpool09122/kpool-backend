@@ -888,4 +888,173 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $this->assertInstanceOf(DraftGroup::class, $groups[0]);
         $this->assertInstanceOf(DraftGroup::class, $groups[1]);
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORがグループを翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new TranslateGroupInput(
+            $groupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('### TWICE');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $group = new Group(
+            $groupIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+        );
+
+        $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $japanese = Translation::JAPANESE;
+        $jaName = new GroupName('TWICE');
+        $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $jaDescription = new Description('### TWICE');
+        $jaSongIdentifiers = [];
+        $jaImagePath = new ImagePath('/resources/public/images/ja.webp');
+        $jaGroup = new DraftGroup(
+            $jaGroupIdentifier,
+            $groupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $japanese,
+            $jaName,
+            $jaAgencyIdentifier,
+            $jaDescription,
+            $jaSongIdentifiers,
+            $jaImagePath,
+            ApprovalStatus::Pending,
+        );
+
+        $enGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $english = Translation::ENGLISH;
+        $enName = new GroupName('TWICE');
+        $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $enDescription = new Description('### TWICE');
+        $enSongIdentifiers = [];
+        $enImagePath = new ImagePath('/resources/public/images/en.webp');
+        $enGroup = new DraftGroup(
+            $enGroupIdentifier,
+            $groupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $english,
+            $enName,
+            $enAgencyIdentifier,
+            $enDescription,
+            $enSongIdentifiers,
+            $enImagePath,
+            ApprovalStatus::Pending,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
+            ->with($groupIdentifier)
+            ->once()
+            ->andReturn($group);
+        $groupRepository->shouldReceive('saveDraft')
+            ->with($enGroup)
+            ->once()
+            ->andReturn(null);
+        $groupRepository->shouldReceive('saveDraft')
+            ->with($jaGroup)
+            ->once()
+            ->andReturn(null);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateGroup')
+            ->with($group, $english)
+            ->once()
+            ->andReturn($enGroup);
+        $translationService->shouldReceive('translateGroup')
+            ->with($group, $japanese)
+            ->once()
+            ->andReturn($jaGroup);
+
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $translateGroup = $this->app->make(TranslateGroupInterface::class);
+        $groups = $translateGroup->process($input);
+
+        $this->assertCount(2, $groups);
+        $this->assertInstanceOf(DraftGroup::class, $groups[0]);
+        $this->assertInstanceOf(DraftGroup::class, $groups[1]);
+    }
+
+    /**
+     * 異常系：NONEロールがグループを翻訳しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     */
+    public function testUnauthorizedNoneRole(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new TranslateGroupInput(
+            $groupIdentifier,
+            $principal,
+        );
+
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('### TWICE');
+        $songIdentifiers = [];
+        $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $group = new Group(
+            $groupIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
+            ->with($groupIdentifier)
+            ->once()
+            ->andReturn($group);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(UnauthorizedException::class);
+        $translateGroup = $this->app->make(TranslateGroupInterface::class);
+        $translateGroup->process($input);
+    }
 }

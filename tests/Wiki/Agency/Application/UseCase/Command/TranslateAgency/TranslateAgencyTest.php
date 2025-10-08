@@ -658,4 +658,163 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $this->assertInstanceOf(DraftAgency::class, $result[0]);
         $this->assertInstanceOf(DraftAgency::class, $result[1]);
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORが事務所を翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new TranslateAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $agency = new Agency(
+            $agencyIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+        );
+
+        $japanese = Translation::JAPANESE;
+        $jaName = new AgencyName('JYPエンターテインメント');
+        $jaCEO = new CEO('J.Y. Park');
+        $jaDescription = new Description('### JYPエンターテインメント');
+        $jaAgency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $japanese,
+            $jaName,
+            $jaCEO,
+            $foundedIn,
+            $jaDescription,
+            ApprovalStatus::Pending
+        );
+
+        $english = Translation::ENGLISH;
+        $enName = new AgencyName('JYP Entertainment');
+        $enCEO = new CEO('J.Y. Park');
+        $enDescription = new Description('### JYP Entertainment');
+        $enAgency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $english,
+            $enName,
+            $enCEO,
+            $foundedIn,
+            $enDescription,
+            ApprovalStatus::Pending
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->with($agencyIdentifier)
+            ->once()
+            ->andReturn($agency);
+        $agencyRepository->shouldReceive('saveDraft')
+            ->with($enAgency)
+            ->once()
+            ->andReturn(null);
+        $agencyRepository->shouldReceive('saveDraft')
+            ->with($jaAgency)
+            ->once()
+            ->andReturn(null);
+
+        $agencyService = Mockery::mock(TranslationServiceInterface::class);
+        $agencyService->shouldReceive('translateAgency')
+            ->with($agency, $english)
+            ->once()
+            ->andReturn($enAgency);
+        $agencyService->shouldReceive('translateAgency')
+            ->with($agency, $japanese)
+            ->once()
+            ->andReturn($jaAgency);
+
+        $this->app->instance(TranslationServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $translateAgency = $this->app->make(TranslateAgencyInterface::class);
+        $result = $translateAgency->process($input);
+
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf(DraftAgency::class, $result[0]);
+        $this->assertInstanceOf(DraftAgency::class, $result[1]);
+    }
+
+    /**
+     * 異常系：NONEロールが事務所を翻訳しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     */
+    public function testUnauthorizedNoneRole(): void
+    {
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new AgencyName('JYP엔터테인먼트');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new TranslateAgencyInput(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $principal,
+        );
+
+        $agency = new Agency(
+            $agencyIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->with($agencyIdentifier)
+            ->once()
+            ->andReturn($agency);
+
+        $agencyService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(TranslationServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->expectException(UnauthorizedException::class);
+        $translateAgency = $this->app->make(TranslateAgencyInterface::class);
+        $translateAgency->process($input);
+    }
 }

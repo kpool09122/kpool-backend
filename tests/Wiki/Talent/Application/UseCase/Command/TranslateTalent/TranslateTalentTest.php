@@ -733,4 +733,160 @@ Recently, she has also begun activities as a solo artist, further broadening her
 
         $this->assertCount(2, $result);
     }
+
+    /**
+     * 正常系：SENIOR_COLLABORATORがメンバーを翻訳できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testProcessWithSeniorCollaborator(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+
+        $input = new TranslateTalentInput(
+            $talentIdentifier,
+            $principal,
+        );
+
+        $talent = new Talent(
+            $talentIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new TalentName('Test Talent'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $enTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $enTalent = new DraftTalent(
+            $enTalentIdentifier,
+            $talentIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::ENGLISH,
+            new TalentName('Test Talent EN'),
+            new RealName('Test Real Name EN'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career EN'),
+            new ImagePath('/test_en.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $koTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $koTalent = new DraftTalent(
+            $koTalentIdentifier,
+            $talentIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUlid()),
+            Translation::KOREAN,
+            new TalentName('Test Talent KO'),
+            new RealName('Test Real Name KO'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career KO'),
+            new ImagePath('/test_ko.webp'),
+            new RelevantVideoLinks([]),
+            ApprovalStatus::Pending,
+        );
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findById')
+            ->once()
+            ->with($talentIdentifier)
+            ->andReturn($talent);
+        $talentRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($enTalent)
+            ->andReturn(null);
+        $talentRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($koTalent)
+            ->andReturn(null);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateTalent')
+            ->once()
+            ->with($talent, Translation::ENGLISH)
+            ->andReturn($enTalent);
+        $translationService->shouldReceive('translateTalent')
+            ->once()
+            ->with($talent, Translation::KOREAN)
+            ->andReturn($koTalent);
+
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $translateTalent = $this->app->make(TranslateTalentInterface::class);
+        $result = $translateTalent->process($input);
+
+        $this->assertCount(2, $result);
+    }
+
+    /**
+     * 異常系：NONEロールがメンバーを翻訳しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testUnauthorizedNoneRole(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+
+        $input = new TranslateTalentInput(
+            $talentIdentifier,
+            $principal,
+        );
+
+        $talent = new Talent(
+            $talentIdentifier,
+            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            Translation::JAPANESE,
+            new TalentName('Test Talent'),
+            new RealName('Test Real Name'),
+            $groupIdentifiers,
+            new Birthday(new DateTimeImmutable('2000-01-01')),
+            new Career('Test career'),
+            new ImagePath('/test.webp'),
+            new RelevantVideoLinks([]),
+        );
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findById')
+            ->once()
+            ->with($talentIdentifier)
+            ->andReturn($talent);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $this->expectException(UnauthorizedException::class);
+        $translateTalent = $this->app->make(TranslateTalentInterface::class);
+        $translateTalent->process($input);
+    }
 }
