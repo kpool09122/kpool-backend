@@ -7,6 +7,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -23,6 +24,7 @@ readonly class CreateTalentInput implements CreateTalentInputPort
      * @param Translation $translation
      * @param TalentName $name
      * @param RealName $realName
+     * @param ?AgencyIdentifier $agencyIdentifier
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
@@ -36,6 +38,7 @@ readonly class CreateTalentInput implements CreateTalentInputPort
         private Translation        $translation,
         private TalentName         $name,
         private RealName           $realName,
+        private ?AgencyIdentifier   $agencyIdentifier,
         private array              $groupIdentifiers,
         private ?Birthday          $birthday,
         private Career             $career,
@@ -68,6 +71,11 @@ readonly class CreateTalentInput implements CreateTalentInputPort
     public function realName(): RealName
     {
         return $this->realName;
+    }
+
+    public function agencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->agencyIdentifier;
     }
 
     /**

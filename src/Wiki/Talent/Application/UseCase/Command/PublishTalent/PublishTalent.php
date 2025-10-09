@@ -18,7 +18,7 @@ use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 
-class PublishTalent implements PublishTalentInterface
+readonly class PublishTalent implements PublishTalentInterface
 {
     public function __construct(
         private TalentRepositoryInterface $talentRepository,
@@ -51,7 +51,7 @@ class PublishTalent implements PublishTalentInterface
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::TALENT,
-            agencyId: null,
+            agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentId: (string) $talent->talentIdentifier(),
         );

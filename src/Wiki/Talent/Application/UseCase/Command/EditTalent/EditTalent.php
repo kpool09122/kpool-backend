@@ -37,12 +37,12 @@ readonly class EditTalent implements EditTalentInterface
 
         $principal = $input->principal();
         $groupIds = array_map(
-            fn ($groupIdentifier) => (string) $groupIdentifier,
+            static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::TALENT,
-            agencyId: null,
+            agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentId: (string) $talent->talentIdentifier(),
         );
@@ -53,6 +53,9 @@ readonly class EditTalent implements EditTalentInterface
 
         $talent->setName($input->name());
         $talent->setRealName($input->realName());
+        if ($input->agencyIdentifier()) {
+            $talent->setAgencyIdentifier($input->agencyIdentifier());
+        }
         $talent->setGroupIdentifiers($input->groupIdentifiers());
         $talent->setBirthday($input->birthday());
         $talent->setCareer($input->career());

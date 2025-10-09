@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -27,6 +28,7 @@ class DraftTalent
      * @param Translation $translation
      * @param TalentName $name
      * @param RealName $realName
+     * @param ?AgencyIdentifier $agencyIdentifier
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
@@ -42,6 +44,7 @@ class DraftTalent
         private readonly Translation              $translation,
         private TalentName                        $name,
         private RealName                          $realName,
+        private ?AgencyIdentifier $agencyIdentifier,
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
@@ -99,6 +102,16 @@ class DraftTalent
     public function setRealName(RealName $realName): void
     {
         $this->realName = $realName;
+    }
+
+    public function agencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->agencyIdentifier;
+    }
+
+    public function setAgencyIdentifier(AgencyIdentifier $agencyIdentifier): void
+    {
+        $this->agencyIdentifier = $agencyIdentifier;
     }
 
     /**

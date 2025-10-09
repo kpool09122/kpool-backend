@@ -38,12 +38,12 @@ readonly class SubmitTalent implements SubmitTalentInterface
 
         $principal = $input->principal();
         $groupIds = array_map(
-            fn ($groupIdentifier) => (string) $groupIdentifier,
+            static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::TALENT,
-            agencyId: null,
+            agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentId: (string) $talent->talentIdentifier(),
         );

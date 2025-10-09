@@ -18,6 +18,7 @@ use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -67,6 +68,7 @@ class TalentServiceTest extends TestCase
             Translation::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUlid()),
             ],
@@ -88,6 +90,7 @@ class TalentServiceTest extends TestCase
             Translation::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUlid()),
             ],
@@ -140,6 +143,7 @@ class TalentServiceTest extends TestCase
             Translation::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUlid()),
             ],
@@ -161,6 +165,7 @@ class TalentServiceTest extends TestCase
             Translation::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUlid()),
             ],
@@ -212,6 +217,7 @@ class TalentServiceTest extends TestCase
             Translation::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUlid()),
             ],
@@ -292,6 +298,7 @@ class TalentServiceTest extends TestCase
             Translation::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [],
             null,
             new Career(''),
@@ -310,6 +317,7 @@ class TalentServiceTest extends TestCase
             Translation::ENGLISH,
             new TalentName('Chaeyoung'),
             new RealName('Son Chaeyoung'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [],
             null,
             new Career(''),
@@ -327,6 +335,7 @@ class TalentServiceTest extends TestCase
             Translation::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [],
             null,
             new Career(''),

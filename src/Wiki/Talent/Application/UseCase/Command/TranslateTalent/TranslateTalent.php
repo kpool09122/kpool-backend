@@ -43,7 +43,7 @@ class TranslateTalent implements TranslateTalentInterface
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::TALENT,
-            agencyId: null,
+            agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentId: (string) $talent->talentIdentifier(),
         );

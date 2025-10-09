@@ -7,6 +7,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -26,6 +27,8 @@ interface CreateTalentInputPort
     public function name(): TalentName;
 
     public function realName(): RealName;
+
+    public function agencyIdentifier(): ?AgencyIdentifier;
 
     /**
      * @return GroupIdentifier[]
