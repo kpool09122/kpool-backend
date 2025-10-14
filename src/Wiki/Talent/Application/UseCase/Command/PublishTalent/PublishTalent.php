@@ -86,6 +86,9 @@ readonly class PublishTalent implements PublishTalentInterface
             );
         }
         $publishedTalent->setRealName($talent->realName());
+        if ($talent->agencyIdentifier()) {
+            $publishedTalent->setAgencyIdentifier($talent->agencyIdentifier());
+        }
         $publishedTalent->setGroupIdentifiers($talent->groupIdentifiers());
         $publishedTalent->setBirthday($talent->birthday());
         $publishedTalent->setCareer($talent->career());

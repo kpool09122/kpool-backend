@@ -13,7 +13,7 @@ use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
-class EditSong implements EditSongInterface
+readonly class EditSong implements EditSongInterface
 {
     public function __construct(
         private SongRepositoryInterface $songRepository,
@@ -36,14 +36,15 @@ class EditSong implements EditSongInterface
         }
 
         $principal = $input->principal();
-        $groupIds = array_map(
-            fn ($belongIdentifier) => (string) $belongIdentifier,
+        $agencyId = (string) $input->agencyIdentifier();
+        $belongIds = array_map(
+            static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
-            groupIds: $groupIds,
+            agencyId: $agencyId,
+            groupIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
@@ -51,6 +52,9 @@ class EditSong implements EditSongInterface
         }
 
         $song->setName($input->name());
+        if ($input->agencyIdentifier()) {
+            $song->setAgencyIdentifier($input->agencyIdentifier());
+        }
         $song->setBelongIdentifiers($input->belongIdentifiers());
         $song->setLyricist($input->lyricist());
         $song->setComposer($input->composer());

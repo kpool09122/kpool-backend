@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -27,7 +28,8 @@ class DraftSong
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param SongName $name
-     * @param BelongIdentifier[] $belongIdentifiers
+     * @param ?AgencyIdentifier $agencyIdentifier
+     * @param BelongIdentifier[] $belongIdentifiers // タレントIDか、グループIDを想定
      * @param Lyricist $lyricist
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
@@ -43,6 +45,7 @@ class DraftSong
         private EditorIdentifier $editorIdentifier,
         private readonly Translation $translation,
         private SongName $name,
+        private ?AgencyIdentifier $agencyIdentifier,
         private array $belongIdentifiers,
         private Lyricist $lyricist,
         private Composer $composer,
@@ -92,6 +95,16 @@ class DraftSong
     public function setName(SongName $name): void
     {
         $this->name = $name;
+    }
+
+    public function agencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->agencyIdentifier;
+    }
+
+    public function setAgencyIdentifier(AgencyIdentifier $agencyIdentifier): void
+    {
+        $this->agencyIdentifier = $agencyIdentifier;
     }
 
     /**

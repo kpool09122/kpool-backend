@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -29,43 +30,18 @@ class SongTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame((string)$songIdentifier, (string)$song->songIdentifier());
-        $this->assertSame((string)$translationSetIdentifier, (string)$song->translationSetIdentifier());
-        $this->assertSame($translation->value, $song->translation()->value);
-        $this->assertSame((string)$name, (string)$song->name());
-        $this->assertSame($belongIdentifiers, $song->belongIdentifiers());
-        $this->assertSame((string)$lyricist, (string)$song->lyricist());
-        $this->assertSame((string)$composer, (string)$song->composer());
-        $this->assertSame((string)$overView, (string)$song->overView());
-        $this->assertSame((string)$coverImagePath, (string)$song->coverImagePath());
-        $this->assertSame((string)$musicVideoLink, (string)$song->musicVideoLink());
+        $createSong = $this->createDummySong();
+        $this->assertSame((string)$createSong->songIdentifier, (string)$createSong->song->songIdentifier());
+        $this->assertSame((string)$createSong->translationSetIdentifier, (string)$createSong->song->translationSetIdentifier());
+        $this->assertSame($createSong->translation->value, $createSong->song->translation()->value);
+        $this->assertSame((string)$createSong->name, (string)$createSong->song->name());
+        $this->assertSame((string)$createSong->agencyIdentifier, (string)$createSong->song->agencyIdentifier());
+        $this->assertSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
+        $this->assertSame((string)$createSong->lyricist, (string)$createSong->song->lyricist());
+        $this->assertSame((string)$createSong->composer, (string)$createSong->song->composer());
+        $this->assertSame((string)$createSong->overView, (string)$createSong->song->overView());
+        $this->assertSame((string)$createSong->coverImagePath, (string)$createSong->song->coverImagePath());
+        $this->assertSame((string)$createSong->musicVideoLink, (string)$createSong->song->musicVideoLink());
     }
 
     /**
@@ -75,39 +51,14 @@ class SongTest extends TestCase
      */
     public function testSetName(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame((string)$name, (string)$song->name());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->name, (string)$createSong->song->name());
 
         $newName = new SongName('I CAN\'T STOP ME');
-        $song->setName($newName);
-        $this->assertNotSame((string)$name, (string)$song->name());
-        $this->assertSame((string)$newName, (string)$song->name());
+        $createSong->song->setName($newName);
+        $this->assertNotSame((string)$createSong->name, (string)$createSong->song->name());
+        $this->assertSame((string)$newName, (string)$createSong->song->name());
     }
 
     /**
@@ -117,46 +68,21 @@ class SongTest extends TestCase
      */
     public function testSetBelongIdentifiers(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame($belongIdentifiers, $song->belongIdentifiers());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
 
         $newBelongIdentifier = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
             new BelongIdentifier(StrTestHelper::generateUlid()),
             new BelongIdentifier(StrTestHelper::generateUlid()),
         ];
-        $song->setBelongIdentifiers($newBelongIdentifier);
-        $this->assertNotSame($belongIdentifiers, $song->belongIdentifiers());
-        $this->assertSame($newBelongIdentifier, $song->belongIdentifiers());
+        $createSong->song->setBelongIdentifiers($newBelongIdentifier);
+        $this->assertNotSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
+        $this->assertSame($newBelongIdentifier, $createSong->song->belongIdentifiers());
 
-        $song->setBelongIdentifiers([]);
-        $this->assertEmpty($song->belongIdentifiers());
+        $createSong->song->setBelongIdentifiers([]);
+        $this->assertEmpty($createSong->song->belongIdentifiers());
     }
 
     /**
@@ -166,39 +92,14 @@ class SongTest extends TestCase
      */
     public function testSetLyricist(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame((string)$lyricist, (string)$song->lyricist());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->lyricist, (string)$createSong->song->lyricist());
 
         $newLyricist = new Lyricist('J.Y. Park');
-        $song->setLyricist($newLyricist);
-        $this->assertNotSame((string)$lyricist, (string)$song->lyricist());
-        $this->assertSame((string)$newLyricist, (string)$song->lyricist());
+        $createSong->song->setLyricist($newLyricist);
+        $this->assertNotSame((string)$createSong->lyricist, (string)$createSong->song->lyricist());
+        $this->assertSame((string)$newLyricist, (string)$createSong->song->lyricist());
     }
 
     /**
@@ -208,39 +109,14 @@ class SongTest extends TestCase
      */
     public function testSetComposer(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame((string)$composer, (string)$song->composer());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->composer, (string)$createSong->song->composer());
 
         $newComposer = new Composer('J.Y. Park');
-        $song->setComposer($newComposer);
-        $this->assertNotSame((string)$composer, (string)$song->composer());
-        $this->assertSame((string)$newComposer, (string)$song->composer());
+        $createSong->song->setComposer($newComposer);
+        $this->assertNotSame((string)$createSong->composer, (string)$createSong->song->composer());
+        $this->assertSame((string)$newComposer, (string)$createSong->song->composer());
     }
 
     /**
@@ -250,39 +126,14 @@ class SongTest extends TestCase
      */
     public function testSetReleaseDate(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame($releaseDate->value(), $song->releaseDate()->value());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame($createSong->releaseDate->value(), $createSong->song->releaseDate()->value());
 
         $newReleaseDate = new ReleaseDate(new DateTimeImmutable('2020-10-26'));
-        $song->setReleaseDate($newReleaseDate);
-        $this->assertNotSame($releaseDate->value(), $song->releaseDate()->value());
-        $this->assertSame($newReleaseDate->value(), $song->releaseDate()->value());
+        $createSong->song->setReleaseDate($newReleaseDate);
+        $this->assertNotSame($createSong->releaseDate->value(), $createSong->song->releaseDate()->value());
+        $this->assertSame($newReleaseDate->value(), $createSong->song->releaseDate()->value());
     }
 
     /**
@@ -292,39 +143,14 @@ class SongTest extends TestCase
      */
     public function testSetOverView(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame((string)$overView, (string)$song->overView());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->overView, (string)$createSong->song->overView());
 
         $newOverView = new Overview('"I CAN\'T STOP ME"는 선과 악의 갈림길에 서서 자기 자신을 제어할 수 없게 되는 위험한 마음을 노래한 곡입니다. 80년대 유럽의 일렉트로닉 사운드와 미국의 신스팝을 융합한 레트로한 멜로디가 특징입니다. 선악의 경계에서 갈등하는 내면의 감정을 중독성 강한 사운드와 파워풀한 퍼포먼스로 표현하고 있습니다. 선과 악을 상징하는 흑백 의상을 입은 멤버들이 마주하는 뮤직비디오 또한 인상적이며, 지금까지의 귀여운 이미지와는 선을 긋는 한층 더 성숙한 트와이스의 모습을 보여준 곡입니다.');
-        $song->setOverView($newOverView);
-        $this->assertNotSame((string)$overView, (string)$song->overView());
-        $this->assertSame((string)$newOverView, (string)$song->overView());
+        $createSong->song->setOverView($newOverView);
+        $this->assertNotSame((string)$createSong->overView, (string)$createSong->song->overView());
+        $this->assertSame((string)$newOverView, (string)$createSong->song->overView());
     }
 
     /**
@@ -334,40 +160,15 @@ class SongTest extends TestCase
      */
     public function testSetImageLink(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/test.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new Song(
-            $songIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-        );
-        $this->assertSame((string)$coverImagePath, (string)$song->coverImagePath());
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->coverImagePath, (string)$createSong->song->coverImagePath());
 
         $newCoverImagePath = new ImagePath('/resources/public/images/after.webp');
 
-        $song->setCoverImagePath($newCoverImagePath);
-        $this->assertNotSame((string)$coverImagePath, (string)$song->coverImagePath());
-        $this->assertSame((string)$newCoverImagePath, (string)$song->coverImagePath());
+        $createSong->song->setCoverImagePath($newCoverImagePath);
+        $this->assertNotSame((string)$createSong->coverImagePath, (string)$createSong->song->coverImagePath());
+        $this->assertSame((string)$newCoverImagePath, (string)$createSong->song->coverImagePath());
     }
 
     /**
@@ -377,9 +178,29 @@ class SongTest extends TestCase
      */
     public function testSetMusicVideoLink(): void
     {
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->musicVideoLink, (string)$createSong->song->musicVideoLink());
+
+        $newMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+
+        $createSong->song->setMusicVideoLink($newMusicVideoLink);
+        $this->assertNotSame((string)$createSong->musicVideoLink, (string)$createSong->song->musicVideoLink());
+        $this->assertSame((string)$newMusicVideoLink, (string)$createSong->song->musicVideoLink());
+    }
+
+    /**
+     * ダミーのSongを作成するヘルパーメソッド
+     *
+     * @return SongTestData
+     */
+    private function createDummySong(): SongTestData
+    {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new SongName('TT');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -390,12 +211,13 @@ class SongTest extends TestCase
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+
         $song = new Song(
             $songIdentifier,
             $translationSetIdentifier,
             $translation,
             $name,
+            $agencyIdentifier,
             $belongIdentifiers,
             $lyricist,
             $composer,
@@ -404,12 +226,48 @@ class SongTest extends TestCase
             $coverImagePath,
             $musicVideoLink,
         );
-        $this->assertSame((string)$musicVideoLink, (string)$song->musicVideoLink());
 
-        $newMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        return new SongTestData(
+            songIdentifier: $songIdentifier,
+            translationSetIdentifier: $translationSetIdentifier,
+            translation: $translation,
+            name: $name,
+            agencyIdentifier: $agencyIdentifier,
+            belongIdentifiers: $belongIdentifiers,
+            lyricist: $lyricist,
+            composer: $composer,
+            releaseDate: $releaseDate,
+            overView: $overView,
+            coverImagePath: $coverImagePath,
+            musicVideoLink: $musicVideoLink,
+            song: $song,
+        );
+    }
+}
 
-        $song->setMusicVideoLink($newMusicVideoLink);
-        $this->assertNotSame((string)$musicVideoLink, (string)$song->musicVideoLink());
-        $this->assertSame((string)$newMusicVideoLink, (string)$song->musicVideoLink());
+/**
+ * テストデータを保持するクラス
+ */
+readonly class SongTestData
+{
+    /**
+     * テストデータなので、すべてpublicで定義
+     * @param BelongIdentifier[] $belongIdentifiers
+     */
+    public function __construct(
+        public SongIdentifier $songIdentifier,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public Translation $translation,
+        public SongName $name,
+        public AgencyIdentifier $agencyIdentifier,
+        public array $belongIdentifiers,
+        public Lyricist $lyricist,
+        public Composer $composer,
+        public ReleaseDate $releaseDate,
+        public Overview $overView,
+        public ImagePath $coverImagePath,
+        public ExternalContentLink $musicVideoLink,
+        public Song $song,
+    ) {
     }
 }

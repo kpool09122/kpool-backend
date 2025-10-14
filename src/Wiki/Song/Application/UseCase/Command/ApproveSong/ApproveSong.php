@@ -45,13 +45,14 @@ class ApproveSong implements ApproveSongInterface
         }
 
         $principal = $input->principal();
+        $agencyId = (string) $song->agencyIdentifier();
         $groupIds = array_map(
-            fn ($belongIdentifier) => (string) $belongIdentifier,
+            static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
+            agencyId: $agencyId,
             groupIds: $groupIds,
         );
 

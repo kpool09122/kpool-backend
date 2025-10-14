@@ -8,6 +8,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -23,6 +24,7 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param EditorIdentifier $editorIdentifier
      * @param Translation $translation
      * @param SongName $name
+     * @param ?AgencyIdentifier $agencyIdentifier
      * @param list<BelongIdentifier> $belongIdentifiers
      * @param Lyricist $lyricist
      * @param Composer $composer
@@ -37,6 +39,7 @@ readonly class CreateSongInput implements CreateSongInputPort
         private EditorIdentifier $editorIdentifier,
         private Translation $translation,
         private SongName             $name,
+        private ?AgencyIdentifier     $agencyIdentifier,
         private array                $belongIdentifiers,
         private Lyricist             $lyricist,
         private Composer             $composer,
@@ -66,6 +69,11 @@ readonly class CreateSongInput implements CreateSongInputPort
     public function name(): SongName
     {
         return $this->name;
+    }
+
+    public function agencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->agencyIdentifier;
     }
 
     /**

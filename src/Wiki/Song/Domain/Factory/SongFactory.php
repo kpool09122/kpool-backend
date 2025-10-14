@@ -31,6 +31,7 @@ readonly class SongFactory implements SongFactoryInterface
             $translationSetIdentifier,
             $translation,
             $name,
+            null,
             [],
             new Lyricist(''),
             new Composer(''),

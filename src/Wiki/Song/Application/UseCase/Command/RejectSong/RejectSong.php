@@ -47,7 +47,7 @@ class RejectSong implements RejectSongInterface
         );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
+            agencyId: (string) $song->agencyIdentifier(),
             groupIds: $groupIds,
         );
 

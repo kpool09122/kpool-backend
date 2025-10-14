@@ -43,7 +43,7 @@ class TranslateSong implements TranslateSongInterface
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
+            agencyId: (string) $song->agencyIdentifier(),
             groupIds: $groupIds,
         );
 

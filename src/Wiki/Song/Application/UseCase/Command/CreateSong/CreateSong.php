@@ -30,14 +30,15 @@ readonly class CreateSong implements CreateSongInterface
     public function process(CreateSongInputPort $input): DraftSong
     {
         $principal = $input->principal();
-        $groupIds = array_map(
-            fn ($belongIdentifier) => (string) $belongIdentifier,
+        $agencyId = (string) $input->agencyIdentifier();
+        $belongIds = array_map(
+            static fn ($belongIdentifier) => (string) $belongIdentifier,
             $input->belongIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
-            groupIds: $groupIds,
+            agencyId: $agencyId,
+            groupIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
