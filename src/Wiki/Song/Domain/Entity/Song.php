@@ -8,6 +8,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -23,6 +24,7 @@ class Song
      * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Translation $translation
      * @param SongName $name
+     * @param ?AgencyIdentifier $agencyIdentifier
      * @param list<BelongIdentifier> $belongIdentifiers
      * @param Lyricist $lyricist
      * @param Composer $composer
@@ -36,6 +38,7 @@ class Song
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Translation $translation,
         private SongName $name,
+        private ?AgencyIdentifier $agencyIdentifier,
         private array $belongIdentifiers,
         private Lyricist $lyricist,
         private Composer $composer,
@@ -69,6 +72,16 @@ class Song
     public function setName(SongName $name): void
     {
         $this->name = $name;
+    }
+
+    public function agencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->agencyIdentifier;
+    }
+
+    public function setAgencyIdentifier(AgencyIdentifier $agencyIdentifier): void
+    {
+        $this->agencyIdentifier = $agencyIdentifier;
     }
 
     /**

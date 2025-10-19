@@ -47,13 +47,14 @@ class PublishSong implements PublishSongInterface
         }
 
         $principal = $input->principal();
+        $agencyId = (string) $song->agencyIdentifier();
         $groupIds = array_map(
-            fn ($belongIdentifier) => (string) $belongIdentifier,
+            static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
+            agencyId: $agencyId,
             groupIds: $groupIds,
         );
 
@@ -81,6 +82,9 @@ class PublishSong implements PublishSongInterface
                 $song->translation(),
                 $song->name(),
             );
+        }
+        if ($song->agencyIdentifier()) {
+            $publishedSong->setAgencyIdentifier($song->agencyIdentifier());
         }
         $publishedSong->setBelongIdentifiers($song->belongIdentifiers());
         $publishedSong->setLyricist($song->lyricist());

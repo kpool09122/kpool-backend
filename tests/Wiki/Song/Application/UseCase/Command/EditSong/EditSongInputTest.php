@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInput;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -31,6 +32,7 @@ class EditSongInputTest extends TestCase
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $name = new SongName('TT');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
             new BelongIdentifier(StrTestHelper::generateUlid()),
             new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -48,6 +50,7 @@ class EditSongInputTest extends TestCase
         $input = new EditSongInput(
             $songIdentifier,
             $name,
+            $agencyIdentifier,
             $belongIdentifiers,
             $lyricist,
             $composer,
@@ -59,6 +62,7 @@ class EditSongInputTest extends TestCase
         );
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
+        $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame($belongIdentifiers, $input->belongIdentifiers());
         $this->assertSame((string)$lyricist, (string)$input->lyricist());
         $this->assertSame((string)$composer, (string)$input->composer());

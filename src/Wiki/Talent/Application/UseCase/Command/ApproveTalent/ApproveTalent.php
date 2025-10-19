@@ -46,10 +46,9 @@ class ApproveTalent implements ApproveTalentInterface
             fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
         );
-        // FIXME: agencyId も取得できるようにリファクタリングする
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::TALENT,
-            agencyId: null,
+            agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentId: (string) $talent->talentIdentifier(),
         );

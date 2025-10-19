@@ -80,7 +80,7 @@ class ChangeAccessControlTest extends TestCase
         $this->assertSame($targetRole, $principal->role());
         $this->assertNull($principal->agencyId());
         $this->assertEmpty($principal->groupIds());
-        $this->assertNull($principal->memberId());
+        $this->assertNull($principal->talentId());
     }
 
     /**

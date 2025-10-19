@@ -38,12 +38,12 @@ readonly class SubmitSong implements SubmitSongInterface
 
         $principal = $input->principal();
         $groupIds = array_map(
-            fn ($belongIdentifier) => (string) $belongIdentifier,
+            static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: null,
+            agencyId: (string)$song->agencyIdentifier(),
             groupIds: $groupIds,
         );
 

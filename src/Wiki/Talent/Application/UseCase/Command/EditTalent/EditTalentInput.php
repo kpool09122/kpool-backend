@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\EditTalent;
 
 use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -19,6 +20,7 @@ readonly class EditTalentInput implements EditTalentInputPort
      * @param TalentIdentifier $talentIdentifier
      * @param TalentName $name
      * @param RealName $realName
+     * @param ?AgencyIdentifier $agencyIdentifier
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
@@ -30,6 +32,7 @@ readonly class EditTalentInput implements EditTalentInputPort
         private TalentIdentifier   $talentIdentifier,
         private TalentName         $name,
         private RealName           $realName,
+        private ?AgencyIdentifier $agencyIdentifier,
         private array              $groupIdentifiers,
         private ?Birthday          $birthday,
         private Career             $career,
@@ -52,6 +55,11 @@ readonly class EditTalentInput implements EditTalentInputPort
     public function realName(): RealName
     {
         return $this->realName;
+    }
+
+    public function agencyIdentifier(): ?AgencyIdentifier
+    {
+        return $this->agencyIdentifier;
     }
 
     /**

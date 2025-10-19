@@ -36,6 +36,7 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
             $editorIdentifier,
             $translation,
             $name,
+            null,
             [],
             new Lyricist(''),
             new Composer(''),

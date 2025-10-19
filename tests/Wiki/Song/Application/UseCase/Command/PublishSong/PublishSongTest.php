@@ -28,6 +28,7 @@ use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -68,113 +69,56 @@ class PublishSongTest extends TestCase
      */
     public function testProcessWhenAlreadyPublished(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
-        );
-
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
-        );
-
-        $exName = new SongName('I CAN\'T STOP ME');
-        $exBelongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $exLyricist = new Lyricist('J.Y. Park');
-        $exComposer = new Composer('Melanie Joy Fontana');
-        $exReleaseDate = new ReleaseDate(new DateTimeImmutable('2020-10-26'));
-        $exOverView = new Overview('\'I CAN\'T STOP ME\'는 80년대 신시사이저 사운드가 특징인 업템포의 레트로풍 댄스곡입니다. 가사는 선과 악의 갈림길에서 자기 자신을 제어하기 힘들어지는 갈등과, 멈출 수 없는 위험한 감정에 이끌리는 마음을 표현하고 있습니다. 파워풀한 퍼포먼스와 함께 트와이스의 새로운 매력을 보여준 곡으로 높은 평가를 받고 있습니다.');
-        $exCoverImagePath = new ImagePath('/resources/public/images/before.webp');
-        $exMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
-        $publishedSong = new Song(
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $exName,
-            $exBelongIdentifiers,
-            $exLyricist,
-            $exComposer,
-            $exReleaseDate,
-            $exOverView,
-            $exCoverImagePath,
-            $exMusicVideoLink,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
         $songRepository->shouldReceive('findById')
             ->once()
-            ->with($publishedSongIdentifier)
-            ->andReturn($publishedSong);
+            ->with($dummyPublishSong->publishedSongIdentifier)
+            ->andReturn($dummyPublishSong->publishedSong);
         $songRepository->shouldReceive('save')
             ->once()
-            ->with($publishedSong)
+            ->with($dummyPublishSong->publishedSong)
             ->andReturn(null);
         $songRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($song)
+            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $publishSong = $this->app->make(PublishSongInterface::class);
         $publishedSong = $publishSong->process($input);
-        $this->assertSame((string)$publishedSongIdentifier, (string)$publishedSong->songIdentifier());
-        $this->assertSame($translation->value, $publishedSong->translation()->value);
-        $this->assertSame((string)$name, (string)$publishedSong->name());
-        $this->assertSame($belongIdentifiers, $publishedSong->belongIdentifiers());
-        $this->assertSame((string)$lyricist, (string)$publishedSong->lyricist());
-        $this->assertSame((string)$composer, (string)$publishedSong->composer());
-        $this->assertSame($releaseDate->value(), $publishedSong->releaseDate()->value());
-        $this->assertSame((string)$overView, (string)$publishedSong->overView());
-        $this->assertSame((string)$coverImagePath, (string)$publishedSong->coverImagePath());
-        $this->assertSame((string)$musicVideoLink, (string)$publishedSong->musicVideoLink());
+        $this->assertSame((string)$dummyPublishSong->publishedSongIdentifier, (string)$publishedSong->songIdentifier());
+        $this->assertSame($dummyPublishSong->translation->value, $publishedSong->translation()->value);
+        $this->assertSame((string)$dummyPublishSong->name, (string)$publishedSong->name());
+        $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
+        $this->assertSame($dummyPublishSong->belongIdentifiers, $publishedSong->belongIdentifiers());
+        $this->assertSame((string)$dummyPublishSong->lyricist, (string)$publishedSong->lyricist());
+        $this->assertSame((string)$dummyPublishSong->composer, (string)$publishedSong->composer());
+        $this->assertSame($dummyPublishSong->releaseDate->value(), $publishedSong->releaseDate()->value());
+        $this->assertSame((string)$dummyPublishSong->overView, (string)$publishedSong->overView());
+        $this->assertSame((string)$dummyPublishSong->coverImagePath, (string)$publishedSong->coverImagePath());
+        $this->assertSame((string)$dummyPublishSong->musicVideoLink, (string)$publishedSong->musicVideoLink());
     }
 
     /**
@@ -188,55 +132,42 @@ class PublishSongTest extends TestCase
      */
     public function testProcessForTheFirstTime(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $dummyPublishSong = $this->createDummyPublishSong();
+
+        // 初回公開なのでpublishedSongIdentifierをnullにする
+        $draftSong = new DraftSong(
+            $dummyPublishSong->songIdentifier,
+            null,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            $dummyPublishSong->status,
+        );
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new DraftSong(
-            $songIdentifier,
-            null,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
-        );
-
         $createdSong = new Song(
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
+            $dummyPublishSong->publishedSongIdentifier,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
             [],
             new Lyricist(''),
             new Composer(''),
@@ -249,27 +180,27 @@ class PublishSongTest extends TestCase
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($draftSong);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($createdSong)
             ->andReturn(null);
         $songRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($song)
+            ->with($draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($translationSetIdentifier, $translation, $name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->translation, $dummyPublishSong->name)
             ->andReturn($createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongFactoryInterface::class, $songFactory);
@@ -277,16 +208,17 @@ class PublishSongTest extends TestCase
         $this->app->instance(SongServiceInterface::class, $songService);
         $publishSong = $this->app->make(PublishSongInterface::class);
         $publishedSong = $publishSong->process($input);
-        $this->assertSame((string)$publishedSongIdentifier, (string)$publishedSong->songIdentifier());
-        $this->assertSame($translation->value, $publishedSong->translation()->value);
-        $this->assertSame((string)$name, (string)$publishedSong->name());
-        $this->assertSame($belongIdentifiers, $publishedSong->belongIdentifiers());
-        $this->assertSame((string)$lyricist, (string)$publishedSong->lyricist());
-        $this->assertSame((string)$composer, (string)$publishedSong->composer());
-        $this->assertSame($releaseDate->value(), $publishedSong->releaseDate()->value());
-        $this->assertSame((string)$overView, (string)$publishedSong->overView());
-        $this->assertSame((string)$coverImagePath, (string)$publishedSong->coverImagePath());
-        $this->assertSame((string)$musicVideoLink, (string)$publishedSong->musicVideoLink());
+        $this->assertSame((string)$dummyPublishSong->publishedSongIdentifier, (string)$publishedSong->songIdentifier());
+        $this->assertSame($dummyPublishSong->translation->value, $publishedSong->translation()->value);
+        $this->assertSame((string)$dummyPublishSong->name, (string)$publishedSong->name());
+        $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
+        $this->assertSame($dummyPublishSong->belongIdentifiers, $publishedSong->belongIdentifiers());
+        $this->assertSame((string)$dummyPublishSong->lyricist, (string)$publishedSong->lyricist());
+        $this->assertSame((string)$dummyPublishSong->composer, (string)$publishedSong->composer());
+        $this->assertSame($dummyPublishSong->releaseDate->value(), $publishedSong->releaseDate()->value());
+        $this->assertSame((string)$dummyPublishSong->overView, (string)$publishedSong->overView());
+        $this->assertSame((string)$dummyPublishSong->coverImagePath, (string)$publishedSong->coverImagePath());
+        $this->assertSame((string)$dummyPublishSong->musicVideoLink, (string)$publishedSong->musicVideoLink());
     }
 
     /**
@@ -298,22 +230,21 @@ class PublishSongTest extends TestCase
      */
     public function testWhenNotFoundSong(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
+            ->with($dummyPublishSong->songIdentifier)
             ->andReturn(null);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -332,57 +263,44 @@ class PublishSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws UnauthorizedException
      */
     public function testInvalidStatus(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
-        $status = ApprovalStatus::Approved;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        // ステータスがApprovedの場合は例外が発生する
         $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            ApprovalStatus::Approved,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
+            ->with($dummyPublishSong->songIdentifier)
             ->andReturn($song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -406,60 +324,27 @@ class PublishSongTest extends TestCase
      */
     public function testHasApprovedButNotTranslatedSong(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
-        );
-
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(true);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -478,66 +363,33 @@ class PublishSongTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      */
-    public function testWhenNotFoundPublishedAgency(): void
+    public function testWhenNotFoundPublishedSong(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
-        );
-
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
         $songRepository->shouldReceive('findById')
             ->once()
-            ->with($publishedSongIdentifier)
+            ->with($dummyPublishSong->publishedSongIdentifier)
             ->andReturn(null);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -558,56 +410,22 @@ class PublishSongTest extends TestCase
      */
     public function testUnauthorizedRole(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
 
@@ -615,6 +433,135 @@ class PublishSongTest extends TestCase
         $this->app->instance(SongServiceInterface::class, $songService);
 
         $this->expectException(UnauthorizedException::class);
+        $publishSong = $this->app->make(PublishSongInterface::class);
+        $publishSong->process($input);
+    }
+
+    /**
+     * 異常系：Agency_ACTORが自分の所属していないグループの楽曲を公開しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedAgencyScope(): void
+    {
+        $dummyPublishSong = $this->createDummyPublishSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $anotherAgencyId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], null);
+
+        $input = new PublishSongInput(
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
+            $principal,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishSong = $this->app->make(PublishSongInterface::class);
+        $publishSong->process($input);
+    }
+
+    /**
+     * 正常系：AGENCY_ACTORが自分の所属するグループの歌を公開できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testAuthorizedAgencyActor(): void
+    {
+        $dummyPublishSong = $this->createDummyPublishSong();
+        $agencyId = (string) $dummyPublishSong->agencyIdentifier;
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+
+        $input = new PublishSongInput(
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
+            $principal,
+        );
+
+        // 初回公開なのでpublishedSongIdentifierをnullにする
+        $draftSong = new DraftSong(
+            $dummyPublishSong->songIdentifier,
+            null,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            $dummyPublishSong->status,
+        );
+
+        $createdSong = new Song(
+            $dummyPublishSong->publishedSongIdentifier,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            [],
+            new Lyricist(''),
+            new Composer(''),
+            null,
+            new Overview(''),
+            null,
+            null,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($draftSong);
+        $songRepository->shouldReceive('save')
+            ->once()
+            ->with($createdSong)
+            ->andReturn(null);
+        $songRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($draftSong)
+            ->andReturn(null);
+
+        $songFactory = Mockery::mock(SongFactoryInterface::class);
+        $songFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->translation, $dummyPublishSong->name)
+            ->andReturn($createdSong);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
+            ->once()
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongFactoryInterface::class, $songFactory);
+        $this->app->instance(SongServiceInterface::class, $songService);
+
         $publishSong = $this->app->make(PublishSongInterface::class);
         $publishSong->process($input);
     }
@@ -629,57 +576,24 @@ class PublishSongTest extends TestCase
      */
     public function testUnauthorizedGroupScope(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $agencyId = (string) $dummyPublishSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
 
@@ -702,56 +616,44 @@ class PublishSongTest extends TestCase
      */
     public function testAuthorizedGroupActor(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
+        $dummyPublishSong = $this->createDummyPublishSong();
+        $agencyId = (string) $dummyPublishSong->agencyIdentifier;
+        $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$groupId], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier($groupId),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
-            $songIdentifier,
+        // 初回公開なのでpublishedSongIdentifierをnullにする
+        $draftSong = new DraftSong(
+            $dummyPublishSong->songIdentifier,
             null,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            $dummyPublishSong->status,
         );
 
         $createdSong = new Song(
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
+            $dummyPublishSong->publishedSongIdentifier,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
             [],
             new Lyricist(''),
             new Composer(''),
@@ -764,27 +666,27 @@ class PublishSongTest extends TestCase
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($draftSong);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($createdSong)
             ->andReturn(null);
         $songRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($song)
+            ->with($draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($translationSetIdentifier, $translation, $name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->translation, $dummyPublishSong->name)
             ->andReturn($createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -792,9 +694,7 @@ class PublishSongTest extends TestCase
         $this->app->instance(SongServiceInterface::class, $songService);
 
         $publishSong = $this->app->make(PublishSongInterface::class);
-        $publishedSong = $publishSong->process($input);
-
-        $this->assertInstanceOf(Song::class, $publishedSong);
+        $publishSong->process($input);
     }
 
     /**
@@ -807,58 +707,24 @@ class PublishSongTest extends TestCase
      */
     public function testUnauthorizedTalentScope(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $agencyId = (string) $dummyPublishSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$anotherGroupId], $talentId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
 
@@ -881,57 +747,44 @@ class PublishSongTest extends TestCase
      */
     public function testAuthorizedTalentActor(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
+        $dummyPublishSong = $this->createDummyPublishSong();
+        $agencyId = (string) $dummyPublishSong->agencyIdentifier;
+        $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], $talentId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$groupId], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier($groupId),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/after.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
-            $songIdentifier,
+        // 初回公開なのでpublishedSongIdentifierをnullにする
+        $draftSong = new DraftSong(
+            $dummyPublishSong->songIdentifier,
             null,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            $dummyPublishSong->status,
         );
 
         $createdSong = new Song(
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
+            $dummyPublishSong->publishedSongIdentifier,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
             [],
             new Lyricist(''),
             new Composer(''),
@@ -944,27 +797,27 @@ class PublishSongTest extends TestCase
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($draftSong);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($createdSong)
             ->andReturn(null);
         $songRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($song)
+            ->with($draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($translationSetIdentifier, $translation, $name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->translation, $dummyPublishSong->name)
             ->andReturn($createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -986,55 +839,42 @@ class PublishSongTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new SongName('TT');
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $lyricist = new Lyricist('블랙아이드필승');
-        $composer = new Composer('Sam Lewis');
-        $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('Test overview');
-        $coverImagePath = new ImagePath('/resources/public/images/before.webp');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $status = ApprovalStatus::UnderReview;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
-            $songIdentifier,
+        // 初回公開なのでpublishedSongIdentifierをnullにする
+        $draftSong = new DraftSong(
+            $dummyPublishSong->songIdentifier,
             null,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $belongIdentifiers,
-            $lyricist,
-            $composer,
-            $releaseDate,
-            $overView,
-            $coverImagePath,
-            $musicVideoLink,
-            $status,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            $dummyPublishSong->status,
         );
 
         $createdSong = new Song(
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
+            $dummyPublishSong->publishedSongIdentifier,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
             [],
             new Lyricist(''),
             new Composer(''),
@@ -1047,27 +887,27 @@ class PublishSongTest extends TestCase
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($draftSong);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($createdSong)
             ->andReturn(null);
         $songRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($song)
+            ->with($draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($translationSetIdentifier, $translation, $name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->translation, $dummyPublishSong->name)
             ->andReturn($createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
             ->once()
-            ->with($translationSetIdentifier, $songIdentifier)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
             ->andReturn(false);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
@@ -1090,40 +930,86 @@ class PublishSongTest extends TestCase
      */
     public function testUnauthorizedNoneRole(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
 
         $input = new PublishSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
             $principal,
         );
 
+        // 初回公開なのでpublishedSongIdentifierをnullにする
+        $draftSong = new DraftSong(
+            $dummyPublishSong->songIdentifier,
+            null,
+            $dummyPublishSong->translationSetIdentifier,
+            $dummyPublishSong->editorIdentifier,
+            $dummyPublishSong->translation,
+            $dummyPublishSong->name,
+            $dummyPublishSong->agencyIdentifier,
+            $dummyPublishSong->belongIdentifiers,
+            $dummyPublishSong->lyricist,
+            $dummyPublishSong->composer,
+            $dummyPublishSong->releaseDate,
+            $dummyPublishSong->overView,
+            $dummyPublishSong->coverImagePath,
+            $dummyPublishSong->musicVideoLink,
+            $dummyPublishSong->status,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($draftSong);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
+
+        $this->expectException(UnauthorizedException::class);
+        $publishSong = $this->app->make(PublishSongInterface::class);
+        $publishSong->process($input);
+    }
+
+    /**
+     * ダミーデータを作成するヘルパーメソッド
+     *
+     * @return PublishSongTestData
+     */
+    private function createDummyPublishSong(): PublishSongTestData
+    {
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Translation::KOREAN;
         $name = new SongName('TT');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
+            new BelongIdentifier(StrTestHelper::generateUlid()),
             new BelongIdentifier(StrTestHelper::generateUlid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('Test overview');
+        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
         $coverImagePath = new ImagePath('/resources/public/images/before.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+
         $status = ApprovalStatus::UnderReview;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-
-        $song = new DraftSong(
+        $draftSong = new DraftSong(
             $songIdentifier,
-            null,
+            $publishedSongIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
             $translation,
             $name,
+            $agencyIdentifier,
             $belongIdentifiers,
             $lyricist,
             $composer,
@@ -1134,19 +1020,84 @@ class PublishSongTest extends TestCase
             $status,
         );
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($songIdentifier)
-            ->andReturn($song);
+        // 公開済みのSongエンティティ（既存データを想定）
+        $publishedName = new SongName('I CAN\'T STOP ME');
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $publishedBelongIdentifiers = [
+            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $publishedLyricist = new Lyricist('J.Y. Park');
+        $publishedComposer = new Composer('Melanie Joy Fontana');
+        $publishedReleaseDate = new ReleaseDate(new DateTimeImmutable('2020-10-26'));
+        $publishedOverView = new Overview('\'I CAN\'T STOP ME\'는 80년대 신시사이저 사운드가 특징인 업템포의 레트로풍 댄스곡입니다. 가사는 선과 악의 갈림길에서 자기 자신을 제어하기 힘들어지는 갈등과, 멈출 수 없는 위험한 감정에 이끌리는 마음을 표현하고 있습니다. 파워풀한 퍼포먼스와 함께 트와이스의 새로운 매력을 보여준 곡으로 높은 평가를 받고 있습니다.');
+        $publishedCoverImagePath = new ImagePath('/resources/public/images/after.webp');
+        $publishedMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
 
-        $songService = Mockery::mock(SongServiceInterface::class);
+        $publishedSong = new Song(
+            $publishedSongIdentifier,
+            $translationSetIdentifier,
+            $translation,
+            $publishedName,
+            $publishedAgencyIdentifier,
+            $publishedBelongIdentifiers,
+            $publishedLyricist,
+            $publishedComposer,
+            $publishedReleaseDate,
+            $publishedOverView,
+            $publishedCoverImagePath,
+            $publishedMusicVideoLink,
+        );
 
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
+        return new PublishSongTestData(
+            $songIdentifier,
+            $publishedSongIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $belongIdentifiers,
+            $lyricist,
+            $composer,
+            $releaseDate,
+            $overView,
+            $coverImagePath,
+            $musicVideoLink,
+            $status,
+            $translationSetIdentifier,
+            $draftSong,
+            $publishedSong,
+        );
+    }
+}
 
-        $this->expectException(UnauthorizedException::class);
-        $publishSong = $this->app->make(PublishSongInterface::class);
-        $publishSong->process($input);
+/**
+ * テストデータを保持するクラス
+ */
+readonly class PublishSongTestData
+{
+    /**
+     * テストデータなので、すべてpublicで定義
+     * @param BelongIdentifier[] $belongIdentifiers
+     */
+    public function __construct(
+        public SongIdentifier $songIdentifier,
+        public SongIdentifier $publishedSongIdentifier,
+        public EditorIdentifier $editorIdentifier,
+        public Translation $translation,
+        public SongName $name,
+        public AgencyIdentifier $agencyIdentifier,
+        public array $belongIdentifiers,
+        public Lyricist $lyricist,
+        public Composer $composer,
+        public ReleaseDate $releaseDate,
+        public Overview $overView,
+        public ImagePath $coverImagePath,
+        public ExternalContentLink $musicVideoLink,
+        public ApprovalStatus $status,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public DraftSong $draftSong,
+        public Song $publishedSong,
+    ) {
     }
 }

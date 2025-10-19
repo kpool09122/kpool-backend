@@ -46,6 +46,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
             $translation,
             $name,
             new RealName(''),
+            null,
             [],
             null,
             new Career(''),

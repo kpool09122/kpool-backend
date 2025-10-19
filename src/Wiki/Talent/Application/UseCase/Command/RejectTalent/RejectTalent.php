@@ -14,7 +14,7 @@ use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
-class RejectTalent implements RejectTalentInterface
+readonly class RejectTalent implements RejectTalentInterface
 {
     public function __construct(
         private TalentRepositoryInterface $talentRepository,
@@ -38,12 +38,12 @@ class RejectTalent implements RejectTalentInterface
 
         $principal = $input->principal();
         $groupIds = array_map(
-            fn ($groupIdentifier) => (string) $groupIdentifier,
+            static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::TALENT,
-            agencyId: null,
+            agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentId: (string) $talent->talentIdentifier(),
         );

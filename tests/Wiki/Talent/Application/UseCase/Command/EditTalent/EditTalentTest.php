@@ -25,6 +25,7 @@ use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalentInterfac
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -65,93 +66,57 @@ class EditTalentTest extends TestCase
      */
     public function testProcess(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('### **경력 소개 예시**
-대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
-2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
-지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
-        $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
-        $externalContentLinks = [$link1, $link2, $link3];
-        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $base64EncodedImage,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
         );
 
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
             ->once()
-            ->with($base64EncodedImage)
-            ->andReturn($imageLink);
-
-        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            $publishedTalentIdentifier,
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            $translation,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
-        );
+            ->with($editTalentInfo->base64EncodedImage)
+            ->andReturn($editTalentInfo->imageLink);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('saveDraft')
             ->once()
-            ->with($talent)
+            ->with($editTalentInfo->draftTalent)
             ->andReturn(null);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $editTalent = $this->app->make(EditTalentInterface::class);
         $talent = $editTalent->process($input);
-        $this->assertSame((string)$talentIdentifier, (string)$talent->talentIdentifier());
-        $this->assertSame((string)$publishedTalentIdentifier, (string)$talent->publishedTalentIdentifier());
-        $this->assertSame((string)$editorIdentifier, (string)$talent->editorIdentifier());
-        $this->assertSame($translation->value, $talent->translation()->value);
-        $this->assertSame((string)$name, (string)$talent->name());
-        $this->assertSame((string)$realName, (string)$talent->realName());
-        $this->assertSame($groupIdentifiers, $talent->groupIdentifiers());
-        $this->assertSame($birthday, $talent->birthday());
-        $this->assertSame((string)$career, (string)$talent->career());
-        $this->assertSame((string)$imageLink, (string)$talent->imageLink());
-        $this->assertSame($relevantVideoLinks->toStringArray(), $talent->relevantVideoLinks()->toStringArray());
-        $this->assertSame($status, $talent->status());
+        $this->assertSame((string)$editTalentInfo->talentIdentifier, (string)$talent->talentIdentifier());
+        $this->assertSame((string)$editTalentInfo->publishedTalentIdentifier, (string)$talent->publishedTalentIdentifier());
+        $this->assertSame((string)$editTalentInfo->editorIdentifier, (string)$talent->editorIdentifier());
+        $this->assertSame($editTalentInfo->translation->value, $talent->translation()->value);
+        $this->assertSame((string)$editTalentInfo->name, (string)$talent->name());
+        $this->assertSame((string)$editTalentInfo->realName, (string)$talent->realName());
+        $this->assertSame((string)$editTalentInfo->agencyIdentifier, (string)$talent->agencyIdentifier());
+        $this->assertSame($editTalentInfo->groupIdentifiers, $talent->groupIdentifiers());
+        $this->assertSame($editTalentInfo->birthday, $talent->birthday());
+        $this->assertSame((string)$editTalentInfo->career, (string)$talent->career());
+        $this->assertSame((string)$editTalentInfo->imageLink, (string)$talent->imageLink());
+        $this->assertSame($editTalentInfo->relevantVideoLinks->toStringArray(), $talent->relevantVideoLinks()->toStringArray());
+        $this->assertSame($editTalentInfo->status, $talent->status());
     }
 
     /**
@@ -160,47 +125,32 @@ class EditTalentTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
      */
     public function testWhenNotFoundTalent(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-        ];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('### **경력 소개 예시**
-대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
-2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
-지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
-        $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
-        $externalContentLinks = [$link1, $link2, $link3];
-        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $base64EncodedImage,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
+            ->with($editTalentInfo->talentIdentifier)
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -224,69 +174,45 @@ class EditTalentTest extends TestCase
      */
     public function testProcessWithCollaborator(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [$groupIdentifier];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('Career description');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1]);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            null,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            Translation::KOREAN,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
         $talentRepository->shouldReceive('saveDraft')
             ->once()
-            ->with($talent)
+            ->with($editTalentInfo->draftTalent)
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldReceive('upload')
+            ->once()
+            ->with($editTalentInfo->base64EncodedImage)
+            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
         $useCase = $this->app->make(EditTalentInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertInstanceOf(DraftTalent::class, $result);
+        $useCase->process($input);
     }
 
     /**
@@ -300,70 +226,46 @@ class EditTalentTest extends TestCase
      */
     public function testProcessWithAgencyActor(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [$groupIdentifier];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('Career description');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1]);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = (string)$editTalentInfo->agencyIdentifier;
         $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            null,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            Translation::KOREAN,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
         $talentRepository->shouldReceive('saveDraft')
             ->once()
-            ->with($talent)
+            ->with($editTalentInfo->draftTalent)
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldReceive('upload')
+            ->once()
+            ->with($editTalentInfo->base64EncodedImage)
+            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
         $useCase = $this->app->make(EditTalentInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertInstanceOf(DraftTalent::class, $result);
+        $useCase->process($input);
     }
 
     /**
@@ -377,69 +279,47 @@ class EditTalentTest extends TestCase
      */
     public function testProcessWithGroupActor(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [$groupIdentifier];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('Career description');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1]);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $groupIdentifier], null);
+        $agencyId = (string)$editTalentInfo->agencyIdentifier;
+        $groupIds = array_map(static fn ($groupId) => (string)$groupId, $editTalentInfo->groupIdentifiers);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            null,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            Translation::KOREAN,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
         $talentRepository->shouldReceive('saveDraft')
             ->once()
-            ->with($talent)
+            ->with($editTalentInfo->draftTalent)
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldReceive('upload')
+            ->once()
+            ->with($editTalentInfo->base64EncodedImage)
+            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
         $useCase = $this->app->make(EditTalentInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertInstanceOf(DraftTalent::class, $result);
+        $useCase->process($input);
     }
 
     /**
@@ -453,62 +333,42 @@ class EditTalentTest extends TestCase
      */
     public function testProcessWithTalentActor(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [$groupIdentifier];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('Career description');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1]);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $groupIdentifier], $talentId);
+        $agencyId = (string)$editTalentInfo->agencyIdentifier;
+        $groupIds = array_map(static fn ($groupId) => (string)$groupId, $editTalentInfo->groupIdentifiers);
+        $talentId = (string)$editTalentInfo->talentIdentifier;
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, $talentId);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            null,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            Translation::KOREAN,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
         $talentRepository->shouldReceive('saveDraft')
             ->once()
-            ->with($talent)
+            ->with($editTalentInfo->draftTalent)
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldReceive('upload')
+            ->once()
+            ->with($editTalentInfo->base64EncodedImage)
+            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
@@ -528,69 +388,45 @@ class EditTalentTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [$groupIdentifier];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('Career description');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1]);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            null,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            Translation::KOREAN,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
         $talentRepository->shouldReceive('saveDraft')
             ->once()
-            ->with($talent)
+            ->with($editTalentInfo->draftTalent)
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldReceive('upload')
+            ->once()
+            ->with($editTalentInfo->base64EncodedImage)
+            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
         $useCase = $this->app->make(EditTalentInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertInstanceOf(DraftTalent::class, $result);
+        $useCase->process($input);
     }
 
     /**
@@ -599,58 +435,34 @@ class EditTalentTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testProcessWithNoneRole(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [$groupIdentifier];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('Career description');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1]);
+        $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
 
         $input = new EditTalentInput(
-            $talentIdentifier,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            null,
-            $relevantVideoLinks,
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
             $principal,
-        );
-
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $editorIdentifier,
-            Translation::KOREAN,
-            $name,
-            $realName,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $imageLink,
-            $relevantVideoLinks,
-            $status,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($talentIdentifier)
-            ->andReturn($talent);
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
@@ -660,5 +472,111 @@ class EditTalentTest extends TestCase
         $this->expectException(UnauthorizedException::class);
         $useCase = $this->app->make(EditTalentInterface::class);
         $useCase->process($input);
+    }
+
+    /**
+     * @return EditTalentTestData
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    private function createEditTalentInfo(): EditTalentTestData
+    {
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translation = Translation::KOREAN;
+        $name = new TalentName('채영');
+        $realName = new RealName('손채영');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUlid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+        $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
+        $externalContentLinks = [$link1, $link2, $link3];
+        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
+
+        $imageLink = new ImagePath('/resources/public/images/before.webp');
+
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $talent = new DraftTalent(
+            $talentIdentifier,
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            $status,
+        );
+
+        return new EditTalentTestData(
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            $realName,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $base64EncodedImage,
+            $link1,
+            $link2,
+            $link3,
+            $relevantVideoLinks,
+            $imageLink,
+            $talentIdentifier,
+            $status,
+            $talent,
+        );
+    }
+}
+
+/**
+ * テストデータを保持するクラス
+ */
+readonly class EditTalentTestData
+{
+    /**
+     * テストデータなので、すべてpublicで定義
+     * @param GroupIdentifier[] $groupIdentifiers
+     */
+    public function __construct(
+        public TalentIdentifier $publishedTalentIdentifier,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public EditorIdentifier $editorIdentifier,
+        public Translation $translation,
+        public TalentName $name,
+        public RealName $realName,
+        public AgencyIdentifier $agencyIdentifier,
+        public array $groupIdentifiers,
+        public Birthday $birthday,
+        public Career $career,
+        public string $base64EncodedImage,
+        public ExternalContentLink $link1,
+        public ExternalContentLink $link2,
+        public ExternalContentLink $link3,
+        public RelevantVideoLinks $relevantVideoLinks,
+        public ImagePath $imageLink,
+        public TalentIdentifier $talentIdentifier,
+        public ApprovalStatus $status,
+        public DraftTalent $draftTalent,
+    ) {
     }
 }

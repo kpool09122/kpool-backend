@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Song\Domain\Service;
 
 use DateTimeImmutable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -16,6 +17,7 @@ use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -28,6 +30,12 @@ use Tests\TestCase;
 
 class SongServiceTest extends TestCase
 {
+    /**
+     * DIが正しく動作すること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
     public function test__construct(): void
     {
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -36,6 +44,10 @@ class SongServiceTest extends TestCase
         $this->assertInstanceOf(SongService::class, $songService);
     }
 
+    /**
+     * @return void
+     * @throws BindingResolutionException
+     */
     public function testExistsApprovedButNotTranslatedSongWhenApprovedExists(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -52,6 +64,7 @@ class SongServiceTest extends TestCase
             $editorIdentifier,
             Translation::KOREAN,
             new SongName('TT'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new BelongIdentifier(StrTestHelper::generateUlid()),
                 new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -82,6 +95,10 @@ class SongServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * @return void
+     * @throws BindingResolutionException
+     */
     public function testExistsApprovedButNotTranslatedSongWhenNoApproved(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -98,6 +115,7 @@ class SongServiceTest extends TestCase
             $editorIdentifier,
             Translation::JAPANESE,
             new SongName('TT'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new BelongIdentifier(StrTestHelper::generateUlid()),
             ],
@@ -127,6 +145,10 @@ class SongServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     * @throws BindingResolutionException
+     */
     public function testExistsApprovedButNotTranslatedSongWhenOnlySelfIsApproved(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -142,6 +164,7 @@ class SongServiceTest extends TestCase
             $editorIdentifier,
             Translation::ENGLISH,
             new SongName('TT'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new BelongIdentifier(StrTestHelper::generateUlid()),
                 new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -172,6 +195,10 @@ class SongServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     * @throws BindingResolutionException
+     */
     public function testExistsApprovedButNotTranslatedSongWhenNoDrafts(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -194,6 +221,10 @@ class SongServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     * @throws BindingResolutionException
+     */
     public function testExistsApprovedButNotTranslatedSongWhenMultipleApprovedExists(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -210,6 +241,7 @@ class SongServiceTest extends TestCase
             $editorIdentifier1,
             Translation::KOREAN,
             new SongName('TT'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new BelongIdentifier(StrTestHelper::generateUlid()),
                 new BelongIdentifier(StrTestHelper::generateUlid()),
@@ -233,6 +265,7 @@ class SongServiceTest extends TestCase
             $editorIdentifier2,
             Translation::ENGLISH,
             new SongName('TT'),
+            new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
                 new BelongIdentifier(StrTestHelper::generateUlid()),
                 new BelongIdentifier(StrTestHelper::generateUlid()),

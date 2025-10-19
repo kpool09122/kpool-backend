@@ -14,14 +14,14 @@ class Principal
      * @param Role $role
      * @param string|null $agencyId
      * @param string[] $groupIds
-     * @param string|null $memberId
+     * @param string|null $talentId
      */
     public function __construct(
         private readonly PrincipalIdentifier $principalIdentifier,
         private Role                         $role,
         private readonly ?string             $agencyId,
         private readonly array               $groupIds,
-        private readonly ?string             $memberId,
+        private readonly ?string             $talentId,
     ) {
     }
 
@@ -53,8 +53,8 @@ class Principal
         return $this->groupIds;
     }
 
-    public function memberId(): ?string
+    public function talentId(): ?string
     {
-        return $this->memberId;
+        return $this->talentId;
     }
 }

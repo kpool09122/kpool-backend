@@ -50,6 +50,7 @@ class DraftTalentFactoryTest extends TestCase
         $this->assertSame($translation->value, $talent->translation()->value);
         $this->assertSame((string)$name, (string)$talent->name());
         $this->assertSame('', (string)$talent->realName());
+        $this->assertNull($talent->agencyIdentifier());
         $this->assertSame([], $talent->groupIdentifiers());
         $this->assertNull($talent->birthday());
         $this->assertSame('', (string)$talent->career());

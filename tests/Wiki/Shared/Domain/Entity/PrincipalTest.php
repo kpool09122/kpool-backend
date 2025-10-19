@@ -38,7 +38,7 @@ class PrincipalTest extends TestCase
         $this->assertSame($role->value, $principal->role()->value);
         $this->assertSame($agencyId, $principal->agencyId());
         $this->assertSame($groupIds, $principal->groupIds());
-        $this->assertSame($memberId, $principal->memberId());
+        $this->assertSame($memberId, $principal->talentId());
 
         $principal = new Principal(
             $principalIdentifier,
@@ -49,7 +49,7 @@ class PrincipalTest extends TestCase
         );
         $this->assertNull($principal->agencyId());
         $this->assertEmpty($principal->groupIds());
-        $this->assertNull($principal->memberId());
+        $this->assertNull($principal->talentId());
     }
 
     /**

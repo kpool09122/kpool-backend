@@ -33,7 +33,7 @@ class CreateTalent implements CreateTalentInterface
     {
         $principal = $input->principal();
         $groupIds = array_map(
-            fn ($groupIdentifier) => (string) $groupIdentifier,
+            static fn ($groupIdentifier) => (string) $groupIdentifier,
             $input->groupIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
@@ -58,6 +58,9 @@ class CreateTalent implements CreateTalentInterface
             }
         }
         $talent->setRealName($input->realName());
+        if ($input->agencyIdentifier()) {
+            $talent->setAgencyIdentifier($input->agencyIdentifier());
+        }
         $talent->setGroupIdentifiers($input->groupIdentifiers());
         $talent->setBirthday($input->birthday());
         $talent->setCareer($input->career());

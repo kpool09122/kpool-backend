@@ -13,6 +13,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInput;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
+use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
@@ -38,6 +39,7 @@ class CreateTalentInputTest extends TestCase
         $translation = Translation::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new GroupIdentifier(StrTestHelper::generateUlid()),
@@ -63,6 +65,7 @@ class CreateTalentInputTest extends TestCase
             $translation,
             $name,
             $realName,
+            $agencyIdentifier,
             $groupIdentifiers,
             $birthday,
             $career,
@@ -75,6 +78,7 @@ class CreateTalentInputTest extends TestCase
         $this->assertSame($translation->value, $input->translation()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$realName, (string)$input->realName());
+        $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($birthday, $input->birthday());
         $this->assertSame($career, $input->career());

@@ -6,6 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -19,6 +20,8 @@ interface EditSongInputPort
     public function songIdentifier(): SongIdentifier;
 
     public function name(): SongName;
+
+    public function agencyIdentifier(): ?AgencyIdentifier;
 
     /**
      * @return list<BelongIdentifier>

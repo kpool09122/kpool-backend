@@ -40,6 +40,7 @@ readonly class TalentFactory implements TalentFactoryInterface
             $translation,
             $name,
             new RealName(''),
+            null,
             [],
             null,
             new Career(''),
