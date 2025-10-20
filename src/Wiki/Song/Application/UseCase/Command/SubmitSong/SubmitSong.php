@@ -37,14 +37,15 @@ readonly class SubmitSong implements SubmitSongInterface
         }
 
         $principal = $input->principal();
-        $groupIds = array_map(
+        $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
             agencyId: (string)$song->agencyIdentifier(),
-            groupIds: $groupIds,
+            groupIds: $belongIds,
+            talentIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {

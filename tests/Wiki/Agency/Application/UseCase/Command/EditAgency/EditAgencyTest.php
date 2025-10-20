@@ -79,7 +79,7 @@ class EditAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -154,7 +154,7 @@ class EditAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -210,7 +210,7 @@ class EditAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -287,7 +287,7 @@ class EditAgencyTest extends TestCase
 
         $agencyId = (string) $agencyIdentifier;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -364,7 +364,7 @@ class EditAgencyTest extends TestCase
 
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -406,7 +406,7 @@ class EditAgencyTest extends TestCase
     }
 
     /**
-     * 正常系：TALENT_ACTORがAgencyを編集できること.
+     * 異常系：TALENT_ACTORはAgencyを編集できないこと.
      *
      * @return void
      * @throws BindingResolutionException
@@ -440,7 +440,7 @@ class EditAgencyTest extends TestCase
         $groupId = StrTestHelper::generateUlid();
         $talentId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], $talentId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -450,6 +450,8 @@ class EditAgencyTest extends TestCase
             $description,
             $principal,
         );
+
+        $this->expectException(UnauthorizedException::class);
 
         $status = ApprovalStatus::Pending;
         $agency = new DraftAgency(
@@ -470,11 +472,6 @@ class EditAgencyTest extends TestCase
             ->once()
             ->with($agencyIdentifier)
             ->andReturn($agency);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
-
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -514,7 +511,7 @@ class EditAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -587,7 +584,7 @@ class EditAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,

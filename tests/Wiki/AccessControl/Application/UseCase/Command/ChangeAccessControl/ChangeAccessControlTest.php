@@ -59,7 +59,7 @@ class ChangeAccessControlTest extends TestCase
             $oldRole,
             null,
             [],
-            null,
+            [],
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -80,7 +80,7 @@ class ChangeAccessControlTest extends TestCase
         $this->assertSame($targetRole, $principal->role());
         $this->assertNull($principal->agencyId());
         $this->assertEmpty($principal->groupIds());
-        $this->assertNull($principal->talentId());
+        $this->assertEmpty($principal->talentIds());
     }
 
     /**

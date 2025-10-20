@@ -13,15 +13,15 @@ final readonly class ResourceIdentifier
      * @param ResourceType $type
      * @param string|null $agencyId
      * @param string[] $groupIds
-     * @param string|null $talentId
+     * @param string[] $talentIds
      */
     public function __construct(
         private ResourceType $type,
         private ?string $agencyId = null,
         private array $groupIds = [],
-        private ?string $talentId = null,
+        private array $talentIds = [],
     ) {
-        $this->validate($agencyId, $this->groupIds, $talentId);
+        $this->validate($agencyId, $this->groupIds, $this->talentIds);
     }
 
     public function type(): ResourceType
@@ -42,21 +42,24 @@ final readonly class ResourceIdentifier
         return $this->groupIds;
     }
 
-    public function talentId(): ?string
+    /**
+     * @return string[]
+     */
+    public function talentIds(): array
     {
-        return $this->talentId;
+        return $this->talentIds;
     }
 
     /**
      * @param string|null $agencyId
      * @param string[] $groupIds
-     * @param string|null $talentId
+     * @param string[] $talentIds
      * @return void
      */
     public function validate(
         ?string $agencyId,
         array $groupIds,
-        ?string $talentId,
+        array $talentIds,
     ): void {
         if ($agencyId !== null && ! UlidValidator::isValid($agencyId)) {
             throw new InvalidArgumentException('Agency id is invalid.');
@@ -68,8 +71,10 @@ final readonly class ResourceIdentifier
             }
         }
 
-        if ($talentId !== null && ! UlidValidator::isValid($talentId)) {
-            throw new InvalidArgumentException('Talent id is invalid.');
+        foreach ($talentIds as $tid) {
+            if (! is_string($tid) || ! UlidValidator::isValid($tid)) {
+                throw new InvalidArgumentException('Talent ids contain invalid value.');
+            }
         }
     }
 }

@@ -77,7 +77,7 @@ class CreateGroupTest extends TestCase
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateGroupInput(
             $editorIdentifier,
@@ -181,7 +181,7 @@ class CreateGroupTest extends TestCase
         $base64EncodedImage = null;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new CreateGroupInput(
             $editorIdentifier,
@@ -261,7 +261,7 @@ class CreateGroupTest extends TestCase
         $base64EncodedImage = null;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new CreateGroupInput(
             $editorIdentifier,
@@ -340,7 +340,7 @@ class CreateGroupTest extends TestCase
         $base64EncodedImage = null;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new CreateGroupInput(
             $editorIdentifier,
@@ -418,7 +418,7 @@ class CreateGroupTest extends TestCase
         $base64EncodedImage = null;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new CreateGroupInput(
             $editorIdentifier,

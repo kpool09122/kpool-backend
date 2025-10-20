@@ -14,7 +14,7 @@ use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
-class TranslateSong implements TranslateSongInterface
+readonly class TranslateSong implements TranslateSongInterface
 {
     public function __construct(
         private SongRepositoryInterface $songRepository,
@@ -37,14 +37,15 @@ class TranslateSong implements TranslateSongInterface
         }
 
         $principal = $input->principal();
-        $groupIds = array_map(
-            fn ($belongIdentifier) => (string) $belongIdentifier,
+        $belongIds = array_map(
+            static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
             agencyId: (string) $song->agencyIdentifier(),
-            groupIds: $groupIds,
+            groupIds: $belongIds,
+            talentIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::TRANSLATE, $resourceIdentifier, $principal)) {

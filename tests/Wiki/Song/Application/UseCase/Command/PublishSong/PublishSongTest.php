@@ -72,7 +72,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -154,7 +154,7 @@ class PublishSongTest extends TestCase
         );
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -233,7 +233,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -270,7 +270,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -327,7 +327,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -368,7 +368,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -413,7 +413,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -451,7 +451,7 @@ class PublishSongTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -490,7 +490,7 @@ class PublishSongTest extends TestCase
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -581,7 +581,7 @@ class PublishSongTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -621,7 +621,7 @@ class PublishSongTest extends TestCase
         $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$groupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$groupId], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -712,7 +712,7 @@ class PublishSongTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -752,7 +752,7 @@ class PublishSongTest extends TestCase
         $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$groupId], null);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$groupId], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -842,7 +842,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -933,7 +933,7 @@ class PublishSongTest extends TestCase
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,

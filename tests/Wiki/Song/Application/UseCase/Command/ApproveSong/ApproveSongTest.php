@@ -70,7 +70,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -116,7 +116,7 @@ class ApproveSongTest extends TestCase
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $songIdentifier,
@@ -153,7 +153,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -211,7 +211,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -252,7 +252,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -290,7 +290,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -338,7 +338,7 @@ class ApproveSongTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $anotherAgencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $anotherAgencyId, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -377,7 +377,7 @@ class ApproveSongTest extends TestCase
         $agencyId = (string) $dummyApproveSong->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -425,7 +425,7 @@ class ApproveSongTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $dummyApproveSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -465,7 +465,7 @@ class ApproveSongTest extends TestCase
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyApproveSong->belongIdentifiers);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -513,7 +513,7 @@ class ApproveSongTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $dummyApproveSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -553,7 +553,95 @@ class ApproveSongTest extends TestCase
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyApproveSong->belongIdentifiers);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, null);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+
+        $input = new ApproveSongInput(
+            $dummyApproveSong->songIdentifier,
+            $dummyApproveSong->publishedSongIdentifier,
+            $principal,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyApproveSong->songIdentifier)
+            ->andReturn($dummyApproveSong->song);
+        $songRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($dummyApproveSong->song)
+            ->andReturn(null);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
+            ->once()
+            ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
+            ->andReturn(false);
+
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
+
+        $approveSong = $this->app->make(ApproveSongInterface::class);
+        $result = $approveSong->process($input);
+
+        $this->assertSame(ApprovalStatus::Approved, $result->status());
+    }
+
+    /**
+     * 異常系：TALENT_ACTORが自分以外のSongを承認しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws InvalidStatusException
+     */
+    public function testUnauthorizedTalentScopeWithoutMe(): void
+    {
+        $dummyApproveSong = $this->createDummyApproveSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
+        $anotherTalentId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [], [$anotherTalentId]);
+
+        $input = new ApproveSongInput(
+            $dummyApproveSong->songIdentifier,
+            $dummyApproveSong->publishedSongIdentifier,
+            $principal,
+        );
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyApproveSong->songIdentifier)
+            ->andReturn($dummyApproveSong->song);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
+
+        $this->expectException(UnauthorizedException::class);
+        $approveSong = $this->app->make(ApproveSongInterface::class);
+        $approveSong->process($input);
+    }
+
+    /**
+     * 正常系：TALENT_ACTORが自分のSongを承認できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testAuthorizedTalentActorWithMe(): void
+    {
+        $dummyApproveSong = $this->createDummyApproveSong();
+        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
+        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyApproveSong->belongIdentifiers);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [], $belongIds);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -600,7 +688,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -646,7 +734,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,

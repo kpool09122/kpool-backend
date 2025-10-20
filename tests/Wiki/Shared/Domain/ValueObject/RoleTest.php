@@ -43,7 +43,7 @@ class RoleTest extends TestCase
     public function testCanAdministratorAlwaysTrue(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
         $resource = new ResourceIdentifier(ResourceType::AGENCY);
 
         foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
@@ -58,8 +58,8 @@ class RoleTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
-        $notOwningAgencyActor = new Principal($principalIdentifier, Role::AGENCY_ACTOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $notOwningAgencyActor = new Principal($principalIdentifier, Role::AGENCY_ACTOR, null, [], []);
 
         // Agency 自身
         $agencyOwned = new ResourceIdentifier(ResourceType::AGENCY, $agencyId);
@@ -112,7 +112,7 @@ class RoleTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId1 = StrTestHelper::generateUlid();
         $groupId2 = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId1], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId1], []);
 
         $groupOwned = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId1]);
         $groupNotOwned = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId2]);
@@ -131,7 +131,7 @@ class RoleTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
 
         $talentInGroup = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId]);
         $talentNoGroup = new ResourceIdentifier(ResourceType::TALENT);
@@ -158,7 +158,7 @@ class RoleTest extends TestCase
     public function testCanGroupActorCannotApproveAgency(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [StrTestHelper::generateUlid()], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [StrTestHelper::generateUlid()], []);
         $agency = new ResourceIdentifier(ResourceType::AGENCY);
 
         $this->assertFalse(Role::GROUP_ACTOR->can(Action::APPROVE, $agency, $principal));
@@ -171,30 +171,36 @@ class RoleTest extends TestCase
     public function testCanGroupActorCanEditAgency(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [], []);
         $agency = new ResourceIdentifier(ResourceType::AGENCY);
 
         $this->assertTrue(Role::GROUP_ACTOR->can(Action::EDIT, $agency, $principal));
     }
 
     /**
-     * 正常系：Talent actor は自分の所属グループ内のリソースのみ承認/翻訳可能.
+     * 正常系：Talent actor は自分自身のTalentと所属グループのリソースのみ承認/翻訳可能.
      */
     public function testCanTalentActorScopeChecksGroupId(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], StrTestHelper::generateUlid());
+        $talentId = StrTestHelper::generateUlid();
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
-        // MEMBER リソース
-        $talentInGroup = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId]);
-        $talentNoGroup = new ResourceIdentifier(ResourceType::TALENT, null, []);
-        $talentOtherGroup = new ResourceIdentifier(ResourceType::TALENT, null, [StrTestHelper::generateUlid()]);
-        $this->assertTrue(Role::TALENT_ACTOR->can(Action::APPROVE, $talentInGroup, $principal));
+        // TALENT リソース（自分自身のTalentのみ承認可能）
+        $ownTalent = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId], [$talentId]);
+        $otherTalent = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId], [StrTestHelper::generateUlid()]);
+        $talentNoGroup = new ResourceIdentifier(ResourceType::TALENT, null, [], [$talentId]);
+        $talentOtherGroup = new ResourceIdentifier(ResourceType::TALENT, null, [StrTestHelper::generateUlid()], [$talentId]);
+
+        $this->assertTrue(Role::TALENT_ACTOR->can(Action::APPROVE, $ownTalent, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $otherTalent, $principal));
         $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $talentNoGroup, $principal));
         $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $talentOtherGroup, $principal));
-        $this->assertTrue(Role::TALENT_ACTOR->can(Action::TRANSLATE, $talentInGroup, $principal));
-        $this->assertFalse(Role::TALENT_ACTOR->can(Action::APPROVE, $talentNoGroup, $principal));
+
+        $this->assertTrue(Role::TALENT_ACTOR->can(Action::TRANSLATE, $ownTalent, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::TRANSLATE, $otherTalent, $principal));
+        $this->assertFalse(Role::TALENT_ACTOR->can(Action::TRANSLATE, $talentNoGroup, $principal));
         $this->assertFalse(Role::TALENT_ACTOR->can(Action::TRANSLATE, $talentOtherGroup, $principal));
 
         // GROUP リソース（groupIds の交差でチェック）
@@ -212,7 +218,7 @@ class RoleTest extends TestCase
     public function testCanCollaboratorBasicOnly(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
         $group = new ResourceIdentifier(ResourceType::GROUP);
 
         $this->assertFalse(Role::COLLABORATOR->can(Action::APPROVE, $group, $principal));
@@ -226,7 +232,7 @@ class RoleTest extends TestCase
     public function testCanSeniorCollaboratorAlwaysTrue(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
         $resource = new ResourceIdentifier(ResourceType::AGENCY);
 
         foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
@@ -240,7 +246,7 @@ class RoleTest extends TestCase
     public function testCanNoneAlwaysFalse(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
         $resource = new ResourceIdentifier(ResourceType::AGENCY);
 
         foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {

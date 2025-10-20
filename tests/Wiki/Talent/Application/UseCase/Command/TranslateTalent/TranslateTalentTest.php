@@ -69,7 +69,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -122,7 +122,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -158,7 +158,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -195,7 +195,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -251,7 +251,7 @@ class TranslateTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -291,7 +291,7 @@ class TranslateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, $groupIds, null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -348,7 +348,7 @@ class TranslateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -388,7 +388,7 @@ class TranslateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -446,8 +446,8 @@ class TranslateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $talentId = (string) $translateTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], $talentId);
+        $anotherTalentId = StrTestHelper::generateUlid(); // 別のTalent IDを使用
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -487,7 +487,7 @@ class TranslateTalentTest extends TestCase
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
         $talentId = (string) $translateTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, $talentId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -543,7 +543,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -598,7 +598,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,

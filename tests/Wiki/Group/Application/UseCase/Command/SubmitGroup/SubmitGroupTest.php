@@ -77,7 +77,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -129,7 +129,7 @@ class SubmitGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -176,7 +176,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -238,7 +238,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -308,7 +308,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -377,7 +377,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $groupIdentifier], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $groupIdentifier], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -447,7 +447,7 @@ class SubmitGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $groupIdentifier], $memberId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $groupIdentifier], [$memberId]);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -516,7 +516,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
@@ -584,7 +584,7 @@ class SubmitGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,

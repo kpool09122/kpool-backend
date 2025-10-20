@@ -81,7 +81,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -142,7 +142,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -194,7 +194,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -263,7 +263,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -335,7 +335,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -404,7 +404,7 @@ class ApproveGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid(); // 異なるグループID
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -473,7 +473,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $groupIdentifier], null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $groupIdentifier], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -551,7 +551,7 @@ class ApproveGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid(); // 異なるグループID
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$anotherGroupId], $memberId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -621,7 +621,7 @@ class ApproveGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $groupIdentifier], $memberId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $groupIdentifier], [$memberId]);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -698,7 +698,7 @@ class ApproveGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid(); // 異なる事務所ID
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -768,7 +768,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -843,7 +843,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,
@@ -917,7 +917,7 @@ class ApproveGroupTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/before.webp');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new ApproveGroupInput(
             $groupIdentifier,

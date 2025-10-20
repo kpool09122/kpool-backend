@@ -57,7 +57,7 @@ class CreateTalentInputTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateTalentInput(
             $publishedTalentIdentifier,
