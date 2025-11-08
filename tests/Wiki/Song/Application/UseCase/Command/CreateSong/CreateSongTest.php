@@ -68,7 +68,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -141,7 +141,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -202,7 +202,7 @@ class CreateSongTest extends TestCase
         $agencyId = (string)$createDummyCreateSong->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -264,7 +264,7 @@ class CreateSongTest extends TestCase
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $createDummyCreateSong->belongIdentifiers);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -326,7 +326,7 @@ class CreateSongTest extends TestCase
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $createDummyCreateSong->belongIdentifiers);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, null);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -386,7 +386,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -445,7 +445,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,

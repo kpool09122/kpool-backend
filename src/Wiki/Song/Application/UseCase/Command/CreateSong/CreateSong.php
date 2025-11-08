@@ -39,6 +39,7 @@ readonly class CreateSong implements CreateSongInterface
             type: ResourceType::SONG,
             agencyId: $agencyId,
             groupIds: $belongIds,
+            talentIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {

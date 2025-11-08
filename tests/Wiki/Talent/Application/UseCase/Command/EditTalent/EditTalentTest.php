@@ -69,7 +69,7 @@ class EditTalentTest extends TestCase
         $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -132,7 +132,7 @@ class EditTalentTest extends TestCase
         $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -177,7 +177,7 @@ class EditTalentTest extends TestCase
         $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -230,7 +230,7 @@ class EditTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string)$editTalentInfo->agencyIdentifier;
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -284,7 +284,7 @@ class EditTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string)$editTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $editTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -339,7 +339,7 @@ class EditTalentTest extends TestCase
         $agencyId = (string)$editTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $editTalentInfo->groupIdentifiers);
         $talentId = (string)$editTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, $talentId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -391,7 +391,7 @@ class EditTalentTest extends TestCase
         $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,
@@ -443,7 +443,7 @@ class EditTalentTest extends TestCase
         $editTalentInfo = $this->createEditTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new EditTalentInput(
             $editTalentInfo->talentIdentifier,

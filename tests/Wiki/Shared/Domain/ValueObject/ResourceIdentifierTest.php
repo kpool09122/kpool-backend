@@ -22,17 +22,17 @@ class ResourceIdentifierTest extends TestCase
         $resourceType = ResourceType::AGENCY;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
-        $talentId = StrTestHelper::generateUlid();
+        $talentIds = [StrTestHelper::generateUlid()];
         $resourceIdentifier = new ResourceIdentifier(
             $resourceType,
             $agencyId,
             $groupIds,
-            $talentId,
+            $talentIds,
         );
         $this->assertSame($resourceType->value, $resourceIdentifier->type()->value);
         $this->assertSame($agencyId, $resourceIdentifier->agencyId());
         $this->assertSame($groupIds, $resourceIdentifier->groupIds());
-        $this->assertSame($talentId, $resourceIdentifier->talentId());
+        $this->assertSame($talentIds, $resourceIdentifier->talentIds());
     }
 
     /**
@@ -45,13 +45,13 @@ class ResourceIdentifierTest extends TestCase
         $resourceType = ResourceType::AGENCY;
         $agencyId = 'test-invalid-agency-id';
         $groupIds = [StrTestHelper::generateUlid()];
-        $talentId = StrTestHelper::generateUlid();
+        $talentIds = [StrTestHelper::generateUlid()];
         $this->expectException(InvalidArgumentException::class);
         new ResourceIdentifier(
             $resourceType,
             $agencyId,
             $groupIds,
-            $talentId,
+            $talentIds,
         );
     }
 
@@ -65,13 +65,13 @@ class ResourceIdentifierTest extends TestCase
         $resourceType = ResourceType::AGENCY;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [StrTestHelper::generateUlid(), 'invalid-group-id'];
-        $talentId = StrTestHelper::generateUlid();
+        $talentIds = [StrTestHelper::generateUlid()];
         $this->expectException(InvalidArgumentException::class);
         new ResourceIdentifier(
             $resourceType,
             $agencyId,
             $groupIds,
-            $talentId,
+            $talentIds,
         );
     }
 
@@ -85,13 +85,13 @@ class ResourceIdentifierTest extends TestCase
         $resourceType = ResourceType::AGENCY;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [StrTestHelper::generateUlid()];
-        $talentId = 'test-invalid-talent-id';
+        $talentIds = ['test-invalid-talent-id'];
         $this->expectException(InvalidArgumentException::class);
         new ResourceIdentifier(
             $resourceType,
             $agencyId,
             $groupIds,
-            $talentId,
+            $talentIds,
         );
     }
 }

@@ -45,7 +45,7 @@ readonly class RejectTalent implements RejectTalentInterface
             type: ResourceType::TALENT,
             agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
-            talentId: (string) $talent->talentIdentifier(),
+            talentIds: [(string) $talent->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::REJECT, $resourceIdentifier, $principal)) {

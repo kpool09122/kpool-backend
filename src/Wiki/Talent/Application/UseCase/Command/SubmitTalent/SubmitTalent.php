@@ -45,7 +45,7 @@ readonly class SubmitTalent implements SubmitTalentInterface
             type: ResourceType::TALENT,
             agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
-            talentId: (string) $talent->talentIdentifier(),
+            talentIds: [(string) $talent->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {

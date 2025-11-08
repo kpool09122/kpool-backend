@@ -26,30 +26,30 @@ class PrincipalTest extends TestCase
             StrTestHelper::generateUlid(),
             StrTestHelper::generateUlid(),
         ];
-        $memberId = StrTestHelper::generateUlid();
+        $memberIds = [StrTestHelper::generateUlid()];
         $principal = new Principal(
             $principalIdentifier,
             $role,
             $agencyId,
             $groupIds,
-            $memberId,
+            $memberIds,
         );
         $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
         $this->assertSame($role->value, $principal->role()->value);
         $this->assertSame($agencyId, $principal->agencyId());
         $this->assertSame($groupIds, $principal->groupIds());
-        $this->assertSame($memberId, $principal->talentId());
+        $this->assertSame($memberIds, $principal->talentIds());
 
         $principal = new Principal(
             $principalIdentifier,
             $role,
             null,
             [],
-            null,
+            [],
         );
         $this->assertNull($principal->agencyId());
         $this->assertEmpty($principal->groupIds());
-        $this->assertNull($principal->talentId());
+        $this->assertEmpty($principal->talentIds());
     }
 
     /**
@@ -66,13 +66,13 @@ class PrincipalTest extends TestCase
             StrTestHelper::generateUlid(),
             StrTestHelper::generateUlid(),
         ];
-        $memberId = StrTestHelper::generateUlid();
+        $memberIds = [StrTestHelper::generateUlid()];
         $principal = new Principal(
             $principalIdentifier,
             $role,
             $agencyId,
             $groupIds,
-            $memberId,
+            $memberIds,
         );
         $this->assertSame($role, $principal->role());
 

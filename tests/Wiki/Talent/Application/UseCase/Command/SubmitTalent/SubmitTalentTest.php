@@ -68,7 +68,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -105,7 +105,7 @@ class SubmitTalentTest extends TestCase
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $talentIdentifier,
@@ -139,7 +139,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -191,7 +191,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -232,7 +232,7 @@ class SubmitTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string)$submitTalentInfo->agencyIdentifier;
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], null);
+        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -274,7 +274,7 @@ class SubmitTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string)$submitTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupIdentifier) => (string) $groupIdentifier, $submitTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, null);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -318,7 +318,7 @@ class SubmitTalentTest extends TestCase
         $agencyId = (string)$submitTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupIdentifier) => (string) $groupIdentifier, $submitTalentInfo->groupIdentifiers);
         $talentId = (string)$submitTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, $talentId);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -358,7 +358,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -398,7 +398,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,

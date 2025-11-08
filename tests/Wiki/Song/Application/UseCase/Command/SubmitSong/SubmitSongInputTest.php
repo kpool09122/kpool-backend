@@ -23,7 +23,7 @@ class SubmitSongInputTest extends TestCase
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitSongInput(
             $songIdentifier,

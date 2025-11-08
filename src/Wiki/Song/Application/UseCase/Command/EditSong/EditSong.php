@@ -45,6 +45,7 @@ readonly class EditSong implements EditSongInterface
             type: ResourceType::SONG,
             agencyId: $agencyId,
             groupIds: $belongIds,
+            talentIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {

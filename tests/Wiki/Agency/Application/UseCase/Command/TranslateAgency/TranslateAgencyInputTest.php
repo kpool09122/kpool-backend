@@ -19,7 +19,7 @@ class TranslateAgencyInputTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], null);
+        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateAgencyInput($agencyIdentifier, $publishedAgencyIdentifier, $principal);
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());

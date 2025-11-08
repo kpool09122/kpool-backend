@@ -48,14 +48,15 @@ class PublishSong implements PublishSongInterface
 
         $principal = $input->principal();
         $agencyId = (string) $song->agencyIdentifier();
-        $groupIds = array_map(
+        $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
         );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
             agencyId: $agencyId,
-            groupIds: $groupIds,
+            groupIds: $belongIds,
+            talentIds: $belongIds,
         );
 
         if (! $principal->role()->can(Action::PUBLISH, $resource, $principal)) {

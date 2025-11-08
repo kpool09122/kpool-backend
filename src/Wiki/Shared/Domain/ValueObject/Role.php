@@ -38,7 +38,7 @@ enum Role: string
      */
     public function can(Action $action, ResourceIdentifier $resource, Principal $principal): bool
     {
-        // 管理者とスーパーコラボレーターは全許可
+        // 管理者とシニアコラボレーターは全許可
         if ($this === self::ADMINISTRATOR ||
             $this === self::SENIOR_COLLABORATOR) {
             return true;
@@ -64,7 +64,7 @@ enum Role: string
         }
 
         // Agency actor のスコープチェック
-        // 要件: Agency actor も「自分のところに所属するグループと、そのメンバー、歌」しか承認・却下・翻訳・公開できない
+        // 要件: Agency actor は「自分のところに所属するGroupと、Talent、Song」しか承認・却下・翻訳・公開できない
         if ($this === self::AGENCY_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
             $principalAgencyId = $principal->agencyId();
             if ($principalAgencyId === null) {
@@ -103,9 +103,13 @@ enum Role: string
             return false;
         }
 
-        // Talent actor の場合、もし承認・却下・翻訳・公開スコープを「自分の所属グループ内のみ」としたければ同様にチェック可能
-        if ($this === self::TALENT_ACTOR && in_array($action, [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
-            if (in_array($resource->type(), [ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG], true)) {
+        // Talent actor のスコープチェック
+        // - Group: 所属グループの修正・承認・却下・翻訳・公開のみ
+        // - Talent: 自分自身かつ所属グループに紐づくもののみ
+        // - Song: 所属グループまたは自分自身に紐づくもののみ
+        // - Agency: 編集・承認・却下・翻訳・公開は不可
+        if ($this === self::TALENT_ACTOR && in_array($action, [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH], true)) {
+            if ($resource->type() === ResourceType::GROUP) {
                 $resourceGroupIds = $resource->groupIds();
                 if (empty($resourceGroupIds)) {
                     return false;
@@ -113,6 +117,34 @@ enum Role: string
 
                 return count(array_intersect($resourceGroupIds, $principal->groupIds())) > 0;
             }
+
+            if ($resource->type() === ResourceType::TALENT) {
+                $principalTalentIds = $principal->talentIds();
+                $resourceTalentIds = $resource->talentIds();
+                $principalGroupIds = $principal->groupIds();
+                $resourceGroupIds = $resource->groupIds();
+                if (empty($principalTalentIds) || empty($resourceTalentIds) || empty($principalGroupIds) || empty($resourceGroupIds)) {
+                    return false;
+                }
+
+                return count(array_intersect($resourceTalentIds, $principalTalentIds)) > 0
+                    && count(array_intersect($resourceGroupIds, $principalGroupIds)) > 0;
+            }
+
+            if ($resource->type() === ResourceType::SONG) {
+                $principalTalentIds = $principal->talentIds();
+                $resourceTalentIds = $resource->talentIds();
+                $byOwnTalent = ! empty($principalTalentIds) && ! empty($resourceTalentIds)
+                    && count(array_intersect($resourceTalentIds, $principalTalentIds)) > 0;
+
+                $resourceGroupIds = $resource->groupIds();
+                $byOwnGroup = ! empty($resourceGroupIds) && count(array_intersect($resourceGroupIds, $principal->groupIds())) > 0;
+
+                return $byOwnTalent || $byOwnGroup;
+            }
+
+            // Talent actor は Agency を編集・承認・却下・翻訳・公開できない
+            return false;
         }
 
         // Collaborator 等は追加のスコープ条件なし（承認・却下・翻訳・公開権がないためここまで来ない）
