@@ -9,6 +9,8 @@ use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\Ch
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgency;
@@ -79,6 +81,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
         $this->app->singleton(EditSongInterface::class, EditSong::class);
         $this->app->singleton(CreateAgencyInterface::class, CreateAgency::class);
+        $this->app->singleton(AutomaticCreateDraftAgencyInterface::class, AutomaticCreateDraftAgency::class);
         $this->app->singleton(EditAgencyInterface::class, EditAgency::class);
         $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
         $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
