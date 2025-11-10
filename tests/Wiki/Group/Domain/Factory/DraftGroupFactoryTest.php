@@ -52,7 +52,7 @@ class DraftGroupFactoryTest extends TestCase
         $this->assertNull($group->agencyIdentifier());
         $this->assertSame('', (string)$group->description());
         $this->assertSame([], $group->songIdentifiers());
-        $this->assertNull($group->imageLink());
+        $this->assertNull($group->imagePath());
         $this->assertSame(ApprovalStatus::Pending, $group->status());
 
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());

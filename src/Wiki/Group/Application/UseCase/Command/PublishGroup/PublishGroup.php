@@ -83,7 +83,7 @@ class PublishGroup implements PublishGroupInterface
         }
         $publishedGroup->setDescription($group->description());
         $publishedGroup->setSongIdentifiers($group->songIdentifiers());
-        $publishedGroup->setImageLink($group->imageLink());
+        $publishedGroup->setImagePath($group->imagePath());
 
         $this->groupRepository->save($publishedGroup);
         $this->groupRepository->deleteDraft($group);

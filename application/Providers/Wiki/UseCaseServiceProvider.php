@@ -29,6 +29,8 @@ use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgencies;
 use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgency;
 use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroup;
 use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroup;
+use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
@@ -77,6 +79,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateTalentInterface::class, CreateTalent::class);
         $this->app->singleton(EditTalentInterface::class, EditTalent::class);
         $this->app->singleton(CreateGroupInterface::class, CreateGroup::class);
+        $this->app->singleton(AutomaticCreateDraftGroupInterface::class, AutomaticCreateDraftGroup::class);
         $this->app->singleton(EditGroupInterface::class, EditGroup::class);
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
         $this->app->singleton(EditSongInterface::class, EditSong::class);

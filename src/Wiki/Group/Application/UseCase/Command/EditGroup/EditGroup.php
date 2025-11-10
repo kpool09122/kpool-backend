@@ -52,7 +52,7 @@ class EditGroup implements EditGroupInterface
         $group->setSongIdentifiers($input->songIdentifiers());
         if ($input->base64EncodedImage()) {
             $imageLink = $this->imageService->upload($input->base64EncodedImage());
-            $group->setImageLink($imageLink);
+            $group->setImagePath($imageLink);
         }
 
         $this->groupRepository->saveDraft($group);

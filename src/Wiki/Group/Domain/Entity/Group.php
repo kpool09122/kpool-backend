@@ -23,17 +23,17 @@ class Group
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
-     * @param ImagePath|null $imageLink
+     * @param ImagePath|null $imagePath
      */
     public function __construct(
-        private readonly GroupIdentifier $groupIdentifier,
+        private readonly GroupIdentifier          $groupIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly Translation $translation,
-        private GroupName $name,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private Description $description,
-        private array $songIdentifiers,
-        private ?ImagePath $imageLink,
+        private readonly Translation              $translation,
+        private GroupName                         $name,
+        private ?AgencyIdentifier                 $agencyIdentifier,
+        private Description                       $description,
+        private array                             $songIdentifiers,
+        private ?ImagePath                        $imagePath,
     ) {
     }
 
@@ -99,13 +99,13 @@ class Group
         $this->songIdentifiers = $songIdentifiers;
     }
 
-    public function imageLink(): ?ImagePath
+    public function imagePath(): ?ImagePath
     {
-        return $this->imageLink;
+        return $this->imagePath;
     }
 
-    public function setImageLink(?ImagePath $imageLink): void
+    public function setImagePath(?ImagePath $imagePath): void
     {
-        $this->imageLink = $imageLink;
+        $this->imagePath = $imagePath;
     }
 }
