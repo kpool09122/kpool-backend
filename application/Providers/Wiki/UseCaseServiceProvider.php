@@ -59,6 +59,8 @@ use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSong;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalent;
@@ -77,6 +79,7 @@ class UseCaseServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(CreateTalentInterface::class, CreateTalent::class);
+        $this->app->singleton(AutomaticCreateDraftTalentInterface::class, AutomaticCreateDraftTalent::class);
         $this->app->singleton(EditTalentInterface::class, EditTalent::class);
         $this->app->singleton(CreateGroupInterface::class, CreateGroup::class);
         $this->app->singleton(AutomaticCreateDraftGroupInterface::class, AutomaticCreateDraftGroup::class);
