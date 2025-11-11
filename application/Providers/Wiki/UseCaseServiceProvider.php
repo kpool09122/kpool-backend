@@ -45,6 +45,8 @@ use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSong;
+use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
@@ -85,6 +87,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(AutomaticCreateDraftGroupInterface::class, AutomaticCreateDraftGroup::class);
         $this->app->singleton(EditGroupInterface::class, EditGroup::class);
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
+        $this->app->singleton(AutomaticCreateDraftSongInterface::class, AutomaticCreateDraftSong::class);
         $this->app->singleton(EditSongInterface::class, EditSong::class);
         $this->app->singleton(CreateAgencyInterface::class, CreateAgency::class);
         $this->app->singleton(AutomaticCreateDraftAgencyInterface::class, AutomaticCreateDraftAgency::class);
