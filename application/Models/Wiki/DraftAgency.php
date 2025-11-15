@@ -19,11 +19,11 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property string $status
  */
-class AgencyChangeRequest extends Model
+class DraftAgency extends Model
 {
     public $incrementing = false;
 
-    protected $table = 'agencies_pending';
+    protected $table = 'draft_agencies';
 
     protected $keyType = 'string';
 

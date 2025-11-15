@@ -118,7 +118,7 @@ class AgencyRepositoryTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         $status = ApprovalStatus::Pending;
-        DB::table('agencies_pending')->upsert([
+        DB::table('draft_agencies')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -207,7 +207,7 @@ class AgencyRepositoryTest extends TestCase
             $agency,
         );
 
-        $this->assertDatabaseHas('agencies_pending', [
+        $this->assertDatabaseHas('draft_agencies', [
             'id' => $id,
             'published_id' => $publishedId,
             'editor_id' => $editorId,
@@ -250,7 +250,7 @@ class AgencyRepositoryTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         $status = ApprovalStatus::Pending;
-        DB::table('agencies_pending')->upsert([
+        DB::table('draft_agencies')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -263,7 +263,7 @@ class AgencyRepositoryTest extends TestCase
             'status' => $status->value,
         ], 'id');
 
-        $this->assertDatabaseHas('agencies_pending', [
+        $this->assertDatabaseHas('draft_agencies', [
             'id' => $id,
             'published_id' => $publishedId,
             'editor_id' => $editorId,
@@ -292,7 +292,7 @@ class AgencyRepositoryTest extends TestCase
             $agency,
         );
 
-        $this->assertDatabaseMissing('agencies_pending', [
+        $this->assertDatabaseMissing('draft_agencies', [
             'id' => $id,
             'published_id' => $publishedId,
             'editor_id' => $editorId,
@@ -378,7 +378,7 @@ class AgencyRepositoryTest extends TestCase
         $description1 = 'JYP엔터테인먼트에 대한 설명입니다.';
         $status1 = ApprovalStatus::Pending;
 
-        DB::table('agencies_pending')->upsert([
+        DB::table('draft_agencies')->upsert([
             'id' => $id1,
             'published_id' => $publishedId1,
             'translation_set_identifier' => (string)$translationSetIdentifier,
@@ -402,7 +402,7 @@ class AgencyRepositoryTest extends TestCase
         $description2 = 'JYPエンターテイメントに関する説明です。';
         $status2 = ApprovalStatus::Approved;
 
-        DB::table('agencies_pending')->upsert([
+        DB::table('draft_agencies')->upsert([
             'id' => $id2,
             'published_id' => $publishedId2,
             'translation_set_identifier' => (string)$translationSetIdentifier,
@@ -422,7 +422,7 @@ class AgencyRepositoryTest extends TestCase
         $translation3 = Translation::KOREAN;
         $differentTranslationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
 
-        DB::table('agencies_pending')->upsert([
+        DB::table('draft_agencies')->upsert([
             'id' => $id3,
             'published_id' => $publishedId3,
             'translation_set_identifier' => (string)$differentTranslationSetIdentifier,

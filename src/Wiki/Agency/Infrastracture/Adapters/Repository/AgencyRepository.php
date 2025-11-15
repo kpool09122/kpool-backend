@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Infrastracture\Adapters\Repository;
 
 use Application\Models\Wiki\Agency as AgencyModel;
-use Application\Models\Wiki\AgencyChangeRequest;
+use Application\Models\Wiki\DraftAgency as DraftAgencyModel;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -44,7 +44,7 @@ class AgencyRepository implements AgencyRepositoryInterface
 
     public function findDraftById(AgencyIdentifier $agencyIdentifier): ?DraftAgency
     {
-        $agencyModel = AgencyChangeRequest::query()
+        $agencyModel = DraftAgencyModel::query()
             ->where('id', $agencyIdentifier)
             ->first();
 
@@ -68,7 +68,7 @@ class AgencyRepository implements AgencyRepositoryInterface
 
     public function saveDraft(DraftAgency $agency): void
     {
-        AgencyChangeRequest::query()->updateOrCreate(
+        DraftAgencyModel::query()->updateOrCreate(
             [
                 'id' => (string)$agency->agencyIdentifier(),
                 'translation' => $agency->translation()->value,
@@ -88,7 +88,7 @@ class AgencyRepository implements AgencyRepositoryInterface
 
     public function deleteDraft(DraftAgency $agency): void
     {
-        AgencyChangeRequest::query()
+        DraftAgencyModel::query()
             ->where('id', (string)$agency->agencyIdentifier())
             ->delete();
     }
@@ -113,7 +113,7 @@ class AgencyRepository implements AgencyRepositoryInterface
     public function findDraftsByTranslationSet(
         TranslationSetIdentifier $translationSetIdentifier,
     ): array {
-        $agencyModels = AgencyChangeRequest::query()
+        $agencyModels = DraftAgencyModel::query()
             ->where('translation_set_identifier', (string)$translationSetIdentifier)
             ->get();
 
