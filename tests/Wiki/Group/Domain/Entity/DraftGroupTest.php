@@ -67,7 +67,7 @@ class DraftGroupTest extends TestCase
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
         $this->assertSame($songsIdentifers, $group->songIdentifiers());
-        $this->assertSame((string)$imagePath, (string)$group->imageLink());
+        $this->assertSame((string)$imagePath, (string)$group->imagePath());
         $this->assertSame($status, $group->status());
     }
 
@@ -346,13 +346,13 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $imagePath,
             $status,
         );
-        $this->assertSame((string)$imagePath, (string)$group->imageLink());
+        $this->assertSame((string)$imagePath, (string)$group->imagePath());
 
         $newImagePath = new ImagePath('/resources/public/images/after.webp');
 
-        $group->setImageLink($newImagePath);
-        $this->assertNotSame((string)$imagePath, (string)$group->imageLink());
-        $this->assertSame((string)$newImagePath, (string)$group->imageLink());
+        $group->setImagePath($newImagePath);
+        $this->assertNotSame((string)$imagePath, (string)$group->imagePath());
+        $this->assertSame((string)$newImagePath, (string)$group->imagePath());
     }
 
     /**

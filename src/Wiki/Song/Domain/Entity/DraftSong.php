@@ -39,20 +39,20 @@ class DraftSong
      * @param ApprovalStatus $status
      */
     public function __construct(
-        private readonly SongIdentifier $songIdentifier,
-        private ?SongIdentifier $publishedSongIdentifier,
+        private readonly SongIdentifier           $songIdentifier,
+        private ?SongIdentifier                   $publishedSongIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private EditorIdentifier $editorIdentifier,
-        private readonly Translation $translation,
-        private SongName $name,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private array $belongIdentifiers,
-        private Lyricist $lyricist,
-        private Composer $composer,
-        private ?ReleaseDate $releaseDate,
-        private Overview $overView,
-        private ?ImagePath $coverImagePath,
-        private ?ExternalContentLink $musicVideoLink,
+        private readonly EditorIdentifier         $editorIdentifier,
+        private readonly Translation              $translation,
+        private SongName                          $name,
+        private ?AgencyIdentifier                 $agencyIdentifier,
+        private array                             $belongIdentifiers,
+        private Lyricist                          $lyricist,
+        private Composer                          $composer,
+        private ?ReleaseDate                      $releaseDate,
+        private Overview                          $overView,
+        private ?ImagePath                        $coverImagePath,
+        private ?ExternalContentLink              $musicVideoLink,
         private ApprovalStatus $status,
     ) {
     }

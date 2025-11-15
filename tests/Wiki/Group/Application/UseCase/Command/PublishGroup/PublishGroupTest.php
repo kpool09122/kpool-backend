@@ -167,7 +167,7 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$description, (string)$publishedGroup->description());
         $this->assertSame($songIdentifiers, $publishedGroup->songIdentifiers());
-        $this->assertSame((string)$imagePath, (string)$publishedGroup->imageLink());
+        $this->assertSame((string)$imagePath, (string)$publishedGroup->imagePath());
     }
 
     /**
@@ -272,7 +272,7 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$description, (string)$publishedGroup->description());
         $this->assertSame($songIdentifiers, $publishedGroup->songIdentifiers());
-        $this->assertSame((string)$imagePath, (string)$publishedGroup->imageLink());
+        $this->assertSame((string)$imagePath, (string)$publishedGroup->imagePath());
     }
 
     /**

@@ -135,7 +135,7 @@ class EditGroupTest extends TestCase
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
         $this->assertSame($songIdentifiers, $group->songIdentifiers());
-        $this->assertSame((string)$imagePath, (string)$group->imageLink());
+        $this->assertSame((string)$imagePath, (string)$group->imagePath());
         $this->assertSame($status, $group->status());
     }
 

@@ -27,21 +27,21 @@ class DraftGroup
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
      * @param SongIdentifier[] $songIdentifiers
-     * @param ImagePath|null $imageLink
+     * @param ImagePath|null $imagePath
      * @param ApprovalStatus $status
      */
     public function __construct(
-        private readonly GroupIdentifier $groupIdentifier,
-        private ?GroupIdentifier $publishedGroupIdentifier,
+        private readonly GroupIdentifier          $groupIdentifier,
+        private ?GroupIdentifier                  $publishedGroupIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly EditorIdentifier $editorIdentifier,
-        private readonly Translation $translation,
-        private GroupName $name,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private Description $description,
-        private array $songIdentifiers,
-        private ?ImagePath $imageLink,
-        private ApprovalStatus $status,
+        private readonly EditorIdentifier         $editorIdentifier,
+        private readonly Translation              $translation,
+        private GroupName                         $name,
+        private ?AgencyIdentifier                 $agencyIdentifier,
+        private Description                       $description,
+        private array                             $songIdentifiers,
+        private ?ImagePath                        $imagePath,
+        private ApprovalStatus                    $status,
     ) {
     }
 
@@ -122,14 +122,14 @@ class DraftGroup
         $this->songIdentifiers = $songIdentifiers;
     }
 
-    public function imageLink(): ?ImagePath
+    public function imagePath(): ?ImagePath
     {
-        return $this->imageLink;
+        return $this->imagePath;
     }
 
-    public function setImageLink(?ImagePath $imageLink): void
+    public function setImagePath(?ImagePath $imagePath): void
     {
-        $this->imageLink = $imageLink;
+        $this->imagePath = $imagePath;
     }
 
     public function status(): ApprovalStatus
