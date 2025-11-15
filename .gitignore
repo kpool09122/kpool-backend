@@ -34,4 +34,6 @@ clover.xml
 
 # Build artifacts
 /build/
-/dist/ 
+/dist/
+
+.codex

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('agencies_pending', static function (Blueprint $table) {
+        Schema::create('draft_agencies', static function (Blueprint $table) {
             $table->string('id', 26)->primary()->comment('事務所ID');
             $table->string('published_id', 26)->nullable()->comment('公開済み事務所ID');
             $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
