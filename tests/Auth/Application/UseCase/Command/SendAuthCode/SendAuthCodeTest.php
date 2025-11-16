@@ -12,6 +12,8 @@ use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCodeInput;
 use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
 use Source\Auth\Domain\Entity\AuthCodeSession;
 use Source\Auth\Domain\Entity\User;
+use Source\Auth\Domain\Factory\AuthCodeSessionFactoryInterface;
+use Source\Auth\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Auth\Domain\Repository\UserRepositoryInterface;
 use Source\Auth\Domain\Service\AuthCodeServiceInterface;
 use Source\Auth\Domain\ValueObject\AuthCode;
@@ -35,8 +37,12 @@ class SendAuthCodeTest extends TestCase
     {
         $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
         $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionFactory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
         $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
         $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(AuthCodeSessionFactoryInterface::class, $authCodeSessionFactory);
 
         $useCase = $this->app->make(SendAuthCodeInterface::class);
 
@@ -65,17 +71,32 @@ class SendAuthCodeTest extends TestCase
             ->andReturnNull();
 
         $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
-        $authCodeService->shouldReceive('generateSession')
+        $authCodeService->shouldReceive('generateCode')
             ->once()
             ->with($email)
-            ->andReturn($session);
+            ->andReturn($authCode);
         $authCodeService->shouldReceive('send')
+            ->once()
+            ->with($session)
+            ->andReturnNull();
+
+        $authCodeSessionFactory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
+        $authCodeSessionFactory->shouldReceive('create')
+            ->once()
+            ->with($email, $authCode)
+            ->andReturn($session);
+
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('save')
             ->once()
             ->with($session)
             ->andReturnNull();
 
         $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
         $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(AuthCodeSessionFactoryInterface::class, $authCodeSessionFactory);
+
         $useCase = $this->app->make(SendAuthCodeInterface::class);
 
         $useCase->process($input);
@@ -116,11 +137,18 @@ class SendAuthCodeTest extends TestCase
             ->once()
             ->with($email)
             ->andReturnNull();
-        $authCodeService->shouldNotReceive('generateSession');
+        $authCodeService->shouldNotReceive('generateCode');
         $authCodeService->shouldNotReceive('send');
+        $authCodeSessionFactory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
+        $authCodeSessionFactory->shouldNotReceive('create');
+
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldNotReceive('save');
 
         $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
         $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(AuthCodeSessionFactoryInterface::class, $authCodeSessionFactory);
         $useCase = $this->app->make(SendAuthCodeInterface::class);
 
         $useCase->process($input);
