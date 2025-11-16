@@ -14,11 +14,13 @@ class AuthCodeSessionFactory implements AuthCodeSessionFactoryInterface
     public function create(
         Email $email,
         AuthCode $authCode,
+        ?DateTimeImmutable $verifiedAt = null,
     ): AuthCodeSession {
         return new AuthCodeSession(
             $email,
             $authCode,
             new DateTimeImmutable('now'),
+            $verifiedAt,
         );
     }
 }
