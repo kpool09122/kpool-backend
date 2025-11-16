@@ -1,0 +1,128 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Auth\Application\UseCase\Command\SendAuthCode;
+
+use DateTimeImmutable;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Mockery;
+use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCode;
+use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCodeInput;
+use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
+use Source\Auth\Domain\Entity\AuthCodeSession;
+use Source\Auth\Domain\Entity\User;
+use Source\Auth\Domain\Repository\UserRepositoryInterface;
+use Source\Auth\Domain\Service\AuthCodeServiceInterface;
+use Source\Auth\Domain\ValueObject\AuthCode;
+use Source\Auth\Domain\ValueObject\HashedPassword;
+use Source\Auth\Domain\ValueObject\PlainPassword;
+use Source\Auth\Domain\ValueObject\ServiceRole;
+use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Shared\Domain\ValueObject\Email;
+use Tests\Helper\StrTestHelper;
+use Tests\TestCase;
+
+class SendAuthCodeTest extends TestCase
+{
+    /**
+     * 正しくDIが動作していること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function test__construct(): void
+    {
+        $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+
+        $useCase = $this->app->make(SendAuthCodeInterface::class);
+
+        $this->assertInstanceOf(SendAuthCode::class, $useCase);
+    }
+
+    /**
+     * 正常系: ユーザー未登録なら認証コード生成と送信を行うこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcess(): void
+    {
+        $email = new Email('user@example.com');
+        $input = new SendAuthCodeInput($email);
+
+        $generatedAt = new DateTimeImmutable();
+        $authCode = new AuthCode('123456');
+        $session = new AuthCodeSession($email, $authCode, $generatedAt);
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturnNull();
+
+        $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
+        $authCodeService->shouldReceive('generateSession')
+            ->once()
+            ->with($email)
+            ->andReturn($session);
+        $authCodeService->shouldReceive('send')
+            ->once()
+            ->with($session)
+            ->andReturnNull();
+
+        $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $useCase = $this->app->make(SendAuthCodeInterface::class);
+
+        $useCase->process($input);
+    }
+
+    /**
+     * 正常系: 登録済みメールアドレスの場合は重複通知のみ送ること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testWhenEmailAlreadyExists(): void
+    {
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $email = new Email('user@example.com');
+        $plainPassword = new PlainPassword('PlainPass1!');
+        $hashedPassword = HashedPassword::fromPlain($plainPassword);
+        $serviceRoles = [new ServiceRole('auth', 'user')];
+        $emailVerifiedAt = new DateTimeImmutable();
+        $user = new User(
+            $userIdentifier,
+            $email,
+            $hashedPassword,
+            $serviceRoles,
+            $emailVerifiedAt,
+        );
+
+        $input = new SendAuthCodeInput($email);
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturn($user);
+
+        $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
+        $authCodeService->shouldReceive('notifyConflict')
+            ->once()
+            ->with($email)
+            ->andReturnNull();
+        $authCodeService->shouldNotReceive('generateSession');
+        $authCodeService->shouldNotReceive('send');
+
+        $this->app->instance(AuthCodeServiceInterface::class, $authCodeService);
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $useCase = $this->app->make(SendAuthCodeInterface::class);
+
+        $useCase->process($input);
+    }
+}
