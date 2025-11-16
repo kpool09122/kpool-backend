@@ -11,6 +11,8 @@ use Source\Auth\Application\UseCase\Command\Logout\Logout;
 use Source\Auth\Application\UseCase\Command\Logout\LogoutInterface;
 use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCode;
 use Source\Auth\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
+use Source\Auth\Application\UseCase\Command\VerifyEmail\VerifyEmail;
+use Source\Auth\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -19,5 +21,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(LoginInterface::class, Login::class);
         $this->app->singleton(LogoutInterface::class, Logout::class);
         $this->app->singleton(SendAuthCodeInterface::class, SendAuthCode::class);
+        $this->app->singleton(VerifyEmailInterface::class, VerifyEmail::class);
     }
 }
