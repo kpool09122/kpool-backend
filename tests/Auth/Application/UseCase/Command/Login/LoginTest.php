@@ -19,7 +19,10 @@ use Source\Auth\Domain\ValueObject\HashedPassword;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\ServiceRole;
 use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\Translation;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -51,7 +54,10 @@ class LoginTest extends TestCase
     public function testProcess(): void
     {
         $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userName = new UserName('test-user');
         $email = new Email('user@example.com');
+        $translation = Translation::KOREAN;
+        $profileImage = new ImagePath('/resources/path/test.png');
         $plainPassword = new PlainPassword('PlainPass1!');
         $hashedPassword = HashedPassword::fromPlain($plainPassword);
         $serviceRoles = [new ServiceRole('auth', 'user'), new ServiceRole('auth', 'admin')];
@@ -61,7 +67,10 @@ class LoginTest extends TestCase
 
         $user = new User(
             $userIdentifier,
+            $userName,
             $email,
+            $translation,
+            $profileImage,
             $hashedPassword,
             $serviceRoles,
             $emailVerifiedAt,
@@ -128,7 +137,10 @@ class LoginTest extends TestCase
     public function testWhenEmailIsNotVerified(): void
     {
         $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userName = new UserName('test-user');
         $email = new Email('user@example.com');
+        $translation = Translation::KOREAN;
+        $profileImage = new ImagePath('/resources/path/test.png');
         $plainPassword = new PlainPassword('PlainPass1!');
         $hashedPassword = HashedPassword::fromPlain($plainPassword);
         $serviceRoles = [new ServiceRole('auth', 'user'), new ServiceRole('auth', 'admin')];
@@ -138,7 +150,10 @@ class LoginTest extends TestCase
 
         $user = new User(
             $userIdentifier,
+            $userName,
             $email,
+            $translation,
+            $profileImage,
             $hashedPassword,
             $serviceRoles,
             $emailVerifiedAt,
@@ -172,7 +187,10 @@ class LoginTest extends TestCase
     public function testWhenFailedToVerifyPassword(): void
     {
         $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userName = new UserName('test-user');
         $email = new Email('user@example.com');
+        $translation = Translation::KOREAN;
+        $profileImage = new ImagePath('/resources/path/test.png');
         $plainPassword = new PlainPassword('PlainPass1!');
         $hashedPassword = HashedPassword::fromPlain(new PlainPassword('NotSamePassword!'));
         $serviceRoles = [new ServiceRole('auth', 'user'), new ServiceRole('auth', 'admin')];
@@ -182,7 +200,10 @@ class LoginTest extends TestCase
 
         $user = new User(
             $userIdentifier,
+            $userName,
             $email,
+            $translation,
+            $profileImage,
             $hashedPassword,
             $serviceRoles,
             $emailVerifiedAt,
