@@ -1,0 +1,14 @@
+{
+    "extends": ["config:base"],
+    "timezone": "Asia/Tokyo",
+    "dependencyDashboard": true,
+    "labels": ["dependencies"],
+    "packageRules": [
+        {
+            "matchManagers": ["composer"],
+            "groupName": "composer dependencies",
+            "stabilityDays": 3,
+            "schedule": ["before 4am on monday"]
+        }
+    ]
+}

@@ -86,6 +86,10 @@ If you prefer to set up PostgreSQL manually:
 4. Grant privileges: `GRANT ALL PRIVILEGES ON DATABASE kpool TO kpool;`
 5. Enable extensions: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
 
+## Automated Dependency Updates
+
+Dependencies are automatically reviewed by Renovate using the rules in `renovate.json`. It groups Composer updates, schedules them for early Tokyo mornings, and surfaces all pending changes on the Renovate dashboard so pull requests stay easy to review. Enable Renovate for this repository on GitHub (connecting it once is enough) to keep tooling current without manual version tracking.
+
 ## License
 All rights reserved. Unauthorized forks, copying, distribution, modification, or commercial use of this project are strictly prohibited without explicit written permission from the project owner.
 
