@@ -10,4 +10,6 @@ use Source\Shared\Domain\ValueObject\Email;
 interface UserRepositoryInterface
 {
     public function findByEmail(Email $email): ?User;
+
+    public function save(User $user): void;
 }

@@ -12,7 +12,10 @@ use Source\Auth\Domain\ValueObject\HashedPassword;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\ServiceRole;
 use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\Translation;
 use Tests\Helper\StrTestHelper;
 
 class UserTest extends TestCase
@@ -25,16 +28,21 @@ class UserTest extends TestCase
     public function test__construct(): void
     {
         $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userName = new UserName('test-user');
         $email = new Email('user@example.com');
+        $profileImage = new ImagePath('/resources/path/test.png');
+        $translation = Translation::JAPANESE;
         $plainPassword = new PlainPassword('PlainPass1!');
         $hashedPassword = HashedPassword::fromPlain($plainPassword);
         $serviceRoles = [new ServiceRole('auth', 'admin')];
         $verifiedAt = new DateTimeImmutable();
 
-        $user = new User($userIdentifier, $email, $hashedPassword, $serviceRoles, $verifiedAt);
+        $user = new User($userIdentifier, $userName, $email, $translation, $profileImage, $hashedPassword, $serviceRoles, $verifiedAt);
 
         $this->assertSame($userIdentifier, $user->userIdentifier());
+        $this->assertSame($userName, $user->userName());
         $this->assertSame($email, $user->email());
+        $this->assertSame($profileImage, $user->profileImage());
         $this->assertSame($hashedPassword, $user->hashedPassword());
         $this->assertSame($verifiedAt, $user->emailVerifiedAt());
         $this->assertSame($serviceRoles, $user->serviceRoles());
@@ -118,14 +126,20 @@ class UserTest extends TestCase
      */
     private function createUser(
         ?UserIdentifier $userIdentifier = null,
+        ?UserName $userName = null,
         ?Email $email = null,
+        ?Translation $translation = null,
+        ?ImagePath $profileImage = null,
         ?HashedPassword $hashedPassword = null,
         array $serviceRoles = [],
         ?DateTimeImmutable $verifiedAt = null,
     ): User {
         return new User(
             $userIdentifier ?? new UserIdentifier(StrTestHelper::generateUlid()),
+            $userName ?? new UserName('test-user'),
             $email ?? new Email('user@example.com'),
+            $translation ?? Translation::JAPANESE,
+            $profileImage ?? new ImagePath('/resources/path/test.png'),
             $hashedPassword ?? HashedPassword::fromPlain(new PlainPassword('PlainPass1!')),
             $serviceRoles ?: [new ServiceRole('auth', 'user')],
             $verifiedAt

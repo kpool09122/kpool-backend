@@ -10,20 +10,29 @@ use Source\Auth\Domain\ValueObject\HashedPassword;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\ServiceRole;
 use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\Translation;
+use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 class User
 {
     /**
      * @param UserIdentifier $userIdentifier
+     * @param UserName $username
      * @param Email $email
+     * @param ?ImagePath $profileImage
      * @param HashedPassword $hashedPassword
      * @param list<ServiceRole> $serviceRoles
      * @param DateTimeImmutable|null $emailVerifiedAt
      */
     public function __construct(
         private readonly UserIdentifier $userIdentifier,
+        private UserName $username,
         private Email                   $email,
+        private Translation $translation,
+        private ?ImagePath $profileImage,
         private HashedPassword          $hashedPassword,
         private array                   $serviceRoles,
         private ?DateTimeImmutable      $emailVerifiedAt,
@@ -35,9 +44,29 @@ class User
         return $this->userIdentifier;
     }
 
+    public function username(): UserName
+    {
+        return $this->username;
+    }
+
     public function email(): Email
     {
         return $this->email;
+    }
+
+    public function translation(): Translation
+    {
+        return $this->translation;
+    }
+
+    public function profileImage(): ?ImagePath
+    {
+        return $this->profileImage;
+    }
+
+    public function setProfileImage(ImagePath $image): void
+    {
+        $this->profileImage = $image;
     }
 
     public function hashedPassword(): HashedPassword
@@ -48,6 +77,19 @@ class User
     public function emailVerifiedAt(): ?DateTimeImmutable
     {
         return $this->emailVerifiedAt;
+    }
+
+    /**
+     * @param AuthCodeSession $session
+     * @return void
+     * @throws UnauthorizedException
+     */
+    public function copyEmailVerifiedAt(AuthCodeSession $session): void
+    {
+        if ($session->verifiedAt() === null) {
+            throw new UnauthorizedException('認証されていないメールアドレスです');
+        }
+        $this->emailVerifiedAt = $session->verifiedAt();
     }
 
     /**
