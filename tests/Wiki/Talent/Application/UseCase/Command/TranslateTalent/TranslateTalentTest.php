@@ -17,6 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalent;
@@ -658,6 +659,7 @@ class TranslateTalentTest extends TestCase
         $imageLink = new ImagePath('/resources/public/images/before.webp');
 
         $status = ApprovalStatus::UnderReview;
+        $version = new Version(1);
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
@@ -670,6 +672,7 @@ class TranslateTalentTest extends TestCase
             $career,
             $imageLink,
             $relevantVideoLinks,
+            $version,
         );
 
         $jaTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());

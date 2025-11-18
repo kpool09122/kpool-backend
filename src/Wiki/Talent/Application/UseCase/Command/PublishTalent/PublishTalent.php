@@ -46,7 +46,7 @@ readonly class PublishTalent implements PublishTalentInterface
 
         $principal = $input->principal();
         $groupIds = array_map(
-            fn ($groupIdentifier) => (string) $groupIdentifier,
+            static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
         );
         $resourceIdentifier = new ResourceIdentifier(
@@ -78,6 +78,7 @@ readonly class PublishTalent implements PublishTalentInterface
                 throw new TalentNotFoundException();
             }
             $publishedTalent->setName($talent->name());
+            $publishedTalent->updateVersion();
         } else {
             $publishedTalent = $this->talentFactory->create(
                 $talent->translationSetIdentifier(),

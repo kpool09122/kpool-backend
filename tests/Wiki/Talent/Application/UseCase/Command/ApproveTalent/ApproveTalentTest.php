@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalent;
@@ -736,6 +737,7 @@ class ApproveTalentTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $publishedTalent = new Talent(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
@@ -748,6 +750,7 @@ class ApproveTalentTest extends TestCase
             $career,
             $imageLink,
             $relevantVideoLinks,
+            $version,
         );
 
         return new ApproveTalentTestData(
@@ -771,6 +774,7 @@ class ApproveTalentTest extends TestCase
             $status,
             $talent,
             $publishedTalent,
+            $version,
         );
     }
 }
@@ -805,6 +809,7 @@ readonly class ApproveTalentTestData
         public ApprovalStatus $status,
         public DraftTalent $draftTalent,
         public Talent $publishedTalent,
+        public Version $version,
     ) {
     }
 }
