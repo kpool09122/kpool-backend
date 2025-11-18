@@ -46,6 +46,9 @@ db-logs: ## View PostgreSQL testing logs
 db-shell: ## Connect to PostgreSQL testing shell
 	docker-compose exec testing_db psql -U kpool -d kpool
 
+db-clean: ## Stop services and remove testing database volumes
+	docker-compose down -v --remove-orphans
+
 # Build and start all services
 up: ## Start all services
 	docker-compose up -d
