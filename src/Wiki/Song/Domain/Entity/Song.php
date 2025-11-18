@@ -8,6 +8,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -32,6 +33,7 @@ class Song
      * @param Overview $overView
      * @param ImagePath|null $coverImagePath
      * @param ?ExternalContentLink $musicVideoLink
+     * @param Version $version
      */
     public function __construct(
         private readonly SongIdentifier $songIdentifier,
@@ -46,6 +48,7 @@ class Song
         private Overview $overView,
         private ?ImagePath $coverImagePath,
         private ?ExternalContentLink $musicVideoLink,
+        private Version $version,
     ) {
     }
 
@@ -159,5 +162,15 @@ class Song
     public function setMusicVideoLink(ExternalContentLink $musicVideoLink): void
     {
         $this->musicVideoLink = $musicVideoLink;
+    }
+
+    public function version(): Version
+    {
+        return $this->version;
+    }
+
+    public function updateVersion(): void
+    {
+        $this->version = Version::nextVersion($this->version);
     }
 }

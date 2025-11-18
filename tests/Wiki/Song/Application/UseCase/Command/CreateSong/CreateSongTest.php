@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
@@ -519,6 +520,7 @@ class CreateSongTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $publishedSong = new Song(
             $publishedSongIdentifier,
             $translationSetIdentifier,
@@ -532,6 +534,7 @@ class CreateSongTest extends TestCase
             $overView,
             $coverImagePath,
             $musicVideoLink,
+            $version,
         );
 
         return new CreateSongTestData(
@@ -553,6 +556,7 @@ class CreateSongTest extends TestCase
             $translationSetIdentifier,
             $song,
             $publishedSong,
+            $version,
         );
     }
 }
@@ -585,6 +589,7 @@ readonly class CreateSongTestData
         public TranslationSetIdentifier $translationSetIdentifier,
         public DraftSong $song,
         public Song $publishedSong,
+        public Version $version,
     ) {
     }
 }
