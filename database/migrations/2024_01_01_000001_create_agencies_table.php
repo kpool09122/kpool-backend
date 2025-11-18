@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('CEO', 32)->comment('CEO名')->default('');
             $table->date('founded_in')->nullable()->comment('設立年');
             $table->text('description')->comment('概要')->default('');
+            $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
         });
 

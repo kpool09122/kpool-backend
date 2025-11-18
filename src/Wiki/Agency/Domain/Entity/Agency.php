@@ -11,6 +11,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Agency
 {
@@ -22,6 +23,7 @@ class Agency
         private CEO                      $CEO,
         private ?FoundedIn               $foundedIn,
         private Description              $description,
+        private Version $version,
     ) {
     }
 
@@ -78,5 +80,15 @@ class Agency
     public function setDescription(Description $description): void
     {
         $this->description = $description;
+    }
+
+    public function version(): Version
+    {
+        return $this->version;
+    }
+
+    public function updateVersion(): void
+    {
+        $this->version = Version::nextVersion($this->version);
     }
 }

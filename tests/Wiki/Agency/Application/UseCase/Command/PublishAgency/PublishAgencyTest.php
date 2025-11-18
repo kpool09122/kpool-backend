@@ -31,6 +31,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -115,6 +116,7 @@ class PublishAgencyTest extends TestCase
         $exCEO = new CEO('이재상');
         $exFoundedInt = new FoundedIn(new DateTimeImmutable('2005-02-01'));
         $exDescription = new Description('HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 산업의 혁신\'**을 목표로 하는 라이프스타일 플랫폼 기업이라는 점입니다. BTS의 세계적인 성공을 기반으로 2021년에 현재의 사명으로 변경했습니다.');
+        $exVersion = new Version(1);
         $publishedAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
@@ -123,6 +125,7 @@ class PublishAgencyTest extends TestCase
             $exCEO,
             $exFoundedInt,
             $exDescription,
+            $exVersion,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -159,6 +162,7 @@ class PublishAgencyTest extends TestCase
         $this->assertSame((string)$CEO, (string)$publishedAgency->CEO());
         $this->assertSame($foundedIn->value(), $publishedAgency->foundedIn()->value());
         $this->assertSame((string)$description, (string)$publishedAgency->description());
+        $this->assertSame($exVersion->value() + 1, $publishedAgency->version()->value());
     }
 
     /**
@@ -217,6 +221,7 @@ class PublishAgencyTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
@@ -225,6 +230,7 @@ class PublishAgencyTest extends TestCase
             new CEO(''),
             null,
             new Description(''),
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -264,6 +270,7 @@ class PublishAgencyTest extends TestCase
         $this->assertSame((string)$CEO, (string)$publishedAgency->CEO());
         $this->assertSame($foundedIn->value(), $publishedAgency->foundedIn()->value());
         $this->assertSame((string)$description, (string)$publishedAgency->description());
+        $this->assertSame($version->value(), $publishedAgency->version()->value());
     }
 
     /**
@@ -652,6 +659,7 @@ class PublishAgencyTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
@@ -660,6 +668,7 @@ class PublishAgencyTest extends TestCase
             new CEO(''),
             null,
             new Description(''),
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -824,6 +833,7 @@ class PublishAgencyTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
@@ -832,6 +842,7 @@ class PublishAgencyTest extends TestCase
             new CEO(''),
             null,
             new Description(''),
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -1066,6 +1077,7 @@ class PublishAgencyTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
@@ -1074,6 +1086,7 @@ class PublishAgencyTest extends TestCase
             new CEO(''),
             null,
             new Description(''),
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);

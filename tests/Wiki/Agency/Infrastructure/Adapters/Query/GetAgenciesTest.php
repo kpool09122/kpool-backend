@@ -47,6 +47,7 @@ class GetAgenciesTest extends TestCase
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
+        $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifier,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -55,12 +56,14 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO,
             'founded_in' => $founded_in,
             'description' => $description,
+            'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
         $CEO2 = 'パク・ジウォン';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
+        $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -69,6 +72,7 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
+            'version' => $version2,
         ], 'id');
 
         $limit = 5;
@@ -109,6 +113,7 @@ class GetAgenciesTest extends TestCase
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
+        $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -117,12 +122,14 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO,
             'founded_in' => $founded_in,
             'description' => $description,
+            'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
         $CEO2 = 'パク・ジウォン';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
+        $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -131,6 +138,7 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
+            'version' => $version2,
         ], 'id');
 
         $limit = 5;
@@ -170,6 +178,7 @@ class GetAgenciesTest extends TestCase
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
+        $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -178,12 +187,14 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO,
             'founded_in' => $founded_in,
             'description' => $description,
+            'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
         $CEO2 = 'パク・ジウォン';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
+        $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -192,6 +203,7 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
+            'version' => $version2,
         ], 'id');
 
         $limit = 1;
@@ -231,6 +243,7 @@ class GetAgenciesTest extends TestCase
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
+        $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -239,12 +252,14 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO,
             'founded_in' => $founded_in,
             'description' => $description,
+            'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
         $CEO2 = 'パク・ジウォン';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
+        $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -253,6 +268,7 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
+            'version' => $version2,
         ], 'id');
 
         $limit = 5;
@@ -304,6 +320,7 @@ class GetAgenciesTest extends TestCase
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
+        $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -312,6 +329,7 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO,
             'founded_in' => $founded_in,
             'description' => $description,
+            'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translation2 = Translation::KOREAN;
@@ -319,6 +337,7 @@ class GetAgenciesTest extends TestCase
         $CEO2 = '박지원';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBE는 단순한 연예 기획사를 넘어, 음악을 기반으로 한 다양한 사업을 전개하는 \'엔터테인먼트 라이프스타일 플랫폼 기업\'입니다.';
+        $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
@@ -327,6 +346,7 @@ class GetAgenciesTest extends TestCase
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
+            'version' => $version2,
         ], 'id');
 
         $limit = 5;

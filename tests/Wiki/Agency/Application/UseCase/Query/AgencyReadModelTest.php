@@ -35,24 +35,28 @@ class AgencyReadModelTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
+        $version = 1;
         $readModel = new AgencyReadModel(
             $agencyId,
             $name,
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
         $this->assertSame($agencyId, $readModel->agencyId());
         $this->assertSame($name, $readModel->name());
         $this->assertSame($CEO, $readModel->CEO());
         $this->assertSame($foundedIn, $readModel->foundedIn());
         $this->assertSame($description, $readModel->description());
+        $this->assertSame($version, $readModel->version());
         $this->assertSame([
             'agency_id' => $agencyId,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $foundedIn->format('Y'),
             'description' => $description,
+            'version' => $version,
         ], $readModel->toArray());
     }
 }

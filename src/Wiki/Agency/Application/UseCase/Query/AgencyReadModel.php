@@ -14,6 +14,7 @@ readonly class AgencyReadModel
      * @param string $CEO
      * @param DateTimeImmutable $foundedIn
      * @param string $description
+     * @param int $version
      */
     public function __construct(
         private string $agencyId,
@@ -21,6 +22,7 @@ readonly class AgencyReadModel
         private string $CEO,
         private DateTimeImmutable $foundedIn,
         private string $description,
+        private int $version,
     ) {
     }
 
@@ -49,6 +51,11 @@ readonly class AgencyReadModel
         return $this->description;
     }
 
+    public function version(): int
+    {
+        return $this->version;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -60,6 +67,7 @@ readonly class AgencyReadModel
             'CEO' => $this->CEO,
             'founded_in' => $this->foundedIn->format('Y'),
             'description' => $this->description,
+            'version' => $this->version,
         ];
     }
 }

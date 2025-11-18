@@ -18,6 +18,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class AgencyRepository implements AgencyRepositoryInterface
 {
@@ -39,6 +40,7 @@ class AgencyRepository implements AgencyRepositoryInterface
             new CEO($agencyModel->CEO),
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
             new Description($agencyModel->description),
+            new Version($agencyModel->version),
         );
     }
 
@@ -77,11 +79,11 @@ class AgencyRepository implements AgencyRepositoryInterface
             [
                 'published_id' => (string)$agency->publishedAgencyIdentifier(),
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
-                'name' => $agency->name(),
-                'CEO' => $agency->CEO(),
+                'name' => (string)$agency->name(),
+                'CEO' => (string)$agency->CEO(),
                 'founded_in' => $agency->foundedIn(),
-                'description' => $agency->description(),
-                'status' => $agency->status(),
+                'description' => (string)$agency->description(),
+                'status' => $agency->status()->value,
             ]
         );
     }
@@ -102,10 +104,11 @@ class AgencyRepository implements AgencyRepositoryInterface
             ],
             [
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
-                'name' => $agency->name(),
-                'CEO' => $agency->CEO(),
+                'name' => (string)$agency->name(),
+                'CEO' => (string)$agency->CEO(),
                 'founded_in' => $agency->foundedIn(),
-                'description' => $agency->description(),
+                'description' => (string)$agency->description(),
+                'version' => $agency->version()->value(),
             ]
         );
     }

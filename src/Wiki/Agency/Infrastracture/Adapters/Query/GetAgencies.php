@@ -33,6 +33,7 @@ class GetAgencies implements GetAgenciesInterface
         }
         $agencies = $query->paginate($input->limit());
         $agencyReadModels = [];
+        /** @var Agency $agency */
         foreach ($agencies->items() as $agency) {
             $agencyReadModels[] = new AgencyReadModel(
                 agencyId: $agency->id,
@@ -40,6 +41,7 @@ class GetAgencies implements GetAgenciesInterface
                 CEO: $agency->CEO,
                 foundedIn: $agency->founded_in?->toDateTimeImmutable(),
                 description: $agency->description,
+                version: $agency->version,
             );
         }
 

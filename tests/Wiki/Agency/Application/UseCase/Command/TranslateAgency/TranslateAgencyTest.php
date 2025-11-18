@@ -28,6 +28,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -88,6 +89,7 @@ class TranslateAgencyTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -96,6 +98,7 @@ class TranslateAgencyTest extends TestCase
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $japanese = Translation::JAPANESE;
@@ -192,6 +195,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws UnauthorizedException
      */
     public function testWhenAgencyNotFound(): void
     {
@@ -250,6 +254,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -258,6 +263,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -305,6 +311,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -313,6 +320,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $japanese = Translation::JAPANESE;
@@ -414,6 +422,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -422,6 +431,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -469,6 +479,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -477,6 +488,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -523,6 +535,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -531,6 +544,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -579,6 +593,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -587,6 +602,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $japanese = Translation::JAPANESE;
@@ -688,6 +704,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -696,6 +713,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
 
         $japanese = Translation::JAPANESE;
@@ -793,6 +811,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $principal,
         );
 
+        $version = new Version(1);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -801,6 +820,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $CEO,
             $foundedIn,
             $description,
+            $version
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
