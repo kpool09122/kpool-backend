@@ -18,7 +18,7 @@ abstract class TestCase extends OrchestraTestCase
      */
     protected $enablesPackageDiscoveries = true;
 
-    // Enable DB usage only for tests marked with @group useDb
+    // Enable DB usage only for tests belonging to the 'useDb' group (now defined via #[Group('useDb')]).
     protected bool $useDb = false;
 
     /**

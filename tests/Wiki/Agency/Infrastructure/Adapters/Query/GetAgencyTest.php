@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Infrastructure\Adapters\Query;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInput;
@@ -30,6 +31,7 @@ class GetAgencyTest extends TestCase
         $this->assertInstanceOf(GetAgency::class, $getAgency);
     }
 
+    #[Group('useDb')]
     /**
      * 正常系：指定したIDの事務所情報が正しく取得できること.
      *
@@ -37,7 +39,6 @@ class GetAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testProcess(): void
     {
@@ -81,13 +82,13 @@ class GetAgencyTest extends TestCase
         $this->assertSame($description, $readModel->description());
     }
 
+    #[Group('useDb')]
     /**
      * 異常系：指定したIDの事務所が存在しない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testWhenNotFoundAgency(): void
     {

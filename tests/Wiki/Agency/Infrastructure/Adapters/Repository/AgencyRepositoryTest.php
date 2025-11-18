@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Infrastructure\Adapters\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -22,6 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
+#[Group('useDb')]
 class AgencyRepositoryTest extends TestCase
 {
     /**
@@ -29,7 +31,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testFindById(): void
     {
@@ -77,7 +78,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testFindByIdWhenNoAgency(): void
     {
@@ -93,7 +93,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testFindDraftById(): void
     {
@@ -149,7 +148,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testFindDraftByIdWhenNoAgency(): void
     {
@@ -165,7 +163,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testSaveDraft(): void
     {
@@ -225,7 +222,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testDelete(): void
     {
@@ -310,7 +306,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testSave(): void
     {
@@ -361,7 +356,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testFindDraftsByTranslationSet(): void
     {
@@ -458,7 +452,6 @@ class AgencyRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @group useDb
      */
     public function testFindDraftsByTranslationSetWhenNoAgencies(): void
     {
