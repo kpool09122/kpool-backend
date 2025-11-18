@@ -29,6 +29,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -115,6 +116,7 @@ class CreateGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $publishedGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -124,6 +126,7 @@ class CreateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')

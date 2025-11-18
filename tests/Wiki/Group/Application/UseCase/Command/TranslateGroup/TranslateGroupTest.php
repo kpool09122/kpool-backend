@@ -28,6 +28,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -84,6 +85,7 @@ class TranslateGroupTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $group = new Group(
             $groupIdentifier,
             $translationSetIdentifier,
@@ -93,6 +95,7 @@ class TranslateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -244,6 +247,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -254,6 +258,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -300,6 +305,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $principal,
         );
 
+        $version = new Version(1);
         $group = new Group(
             $groupIdentifier,
             $translationSetIdentifier,
@@ -309,6 +315,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -412,6 +419,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -422,6 +430,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -466,6 +475,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -476,6 +486,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -580,6 +591,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -590,6 +602,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -633,6 +646,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -643,6 +657,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -747,6 +762,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -757,6 +773,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -801,6 +818,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### 트와이스');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/test.webp');
+        $version = new Version(1);
 
         $group = new Group(
             $groupIdentifier,
@@ -811,6 +829,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -918,6 +937,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### TWICE');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $version = new Version(1);
         $group = new Group(
             $groupIdentifier,
             $translationSetIdentifier,
@@ -927,6 +947,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -1032,6 +1053,8 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
         $description = new Description('### TWICE');
         $songIdentifiers = [];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
+        $version = new Version(1);
+
         $group = new Group(
             $groupIdentifier,
             $translationSetIdentifier,
@@ -1041,6 +1064,7 @@ The group\'s name holds the meaning, "to touch people\'s hearts once through goo
             $description,
             $songIdentifiers,
             $imagePath,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);

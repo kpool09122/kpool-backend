@@ -11,6 +11,7 @@ use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupFactory implements GroupFactoryInterface
 {
@@ -38,7 +39,8 @@ readonly class GroupFactory implements GroupFactoryInterface
             null,
             new Description(''),
             [],
-            null
+            null,
+            new Version(1),
         );
     }
 }
