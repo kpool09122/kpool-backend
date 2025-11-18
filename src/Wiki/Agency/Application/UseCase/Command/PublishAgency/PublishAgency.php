@@ -71,6 +71,7 @@ class PublishAgency implements PublishAgencyInterface
                 throw new AgencyNotFoundException();
             }
             $publishedAgency->setName($agency->name());
+            $publishedAgency->updateVersion();
         } else {
             $publishedAgency = $this->agencyFactory->create(
                 $agency->translationSetIdentifier(),

@@ -12,6 +12,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Group
 {
@@ -24,6 +25,7 @@ class Group
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
      * @param ImagePath|null $imagePath
+     * @param Version $version
      */
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,
@@ -34,6 +36,7 @@ class Group
         private Description                       $description,
         private array                             $songIdentifiers,
         private ?ImagePath                        $imagePath,
+        private Version $version,
     ) {
     }
 
@@ -107,5 +110,15 @@ class Group
     public function setImagePath(?ImagePath $imagePath): void
     {
         $this->imagePath = $imagePath;
+    }
+
+    public function version(): Version
+    {
+        return $this->version;
+    }
+
+    public function updateVersion(): void
+    {
+        $this->version = Version::nextVersion($this->version);
     }
 }

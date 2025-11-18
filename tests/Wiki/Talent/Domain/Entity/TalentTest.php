@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -206,6 +207,7 @@ class TalentTest extends TestCase
         $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
+        $version = new Version(1);
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
@@ -218,6 +220,7 @@ class TalentTest extends TestCase
             $career,
             $imagePath,
             $relevantVideoLinks,
+            $version,
         );
 
         return new TalentTestData(

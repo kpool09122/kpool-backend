@@ -28,6 +28,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -106,6 +107,7 @@ class CreateAgencyTest extends TestCase
             $description,
             $status,
         );
+        $version = new Version(1);
         $publishedAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
@@ -114,6 +116,7 @@ class CreateAgencyTest extends TestCase
             $CEO,
             $foundedIn,
             $description,
+            $version,
         );
         $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')

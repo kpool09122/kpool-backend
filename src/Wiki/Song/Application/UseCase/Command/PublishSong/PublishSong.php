@@ -17,7 +17,7 @@ use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 
-class PublishSong implements PublishSongInterface
+readonly class PublishSong implements PublishSongInterface
 {
     public function __construct(
         private SongRepositoryInterface $songRepository,
@@ -77,6 +77,7 @@ class PublishSong implements PublishSongInterface
                 throw new SongNotFoundException();
             }
             $publishedSong->setName($song->name());
+            $publishedSong->updateVersion();
         } else {
             $publishedSong = $this->songFactory->create(
                 $song->translationSetIdentifier(),

@@ -71,6 +71,7 @@ class PublishGroup implements PublishGroupInterface
                 throw new GroupNotFoundException();
             }
             $publishedGroup->setName($group->name());
+            $publishedGroup->updateVersion();
         } else {
             $publishedGroup = $this->groupFactory->create(
                 $group->translationSetIdentifier(),

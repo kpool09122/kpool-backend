@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSong;
@@ -119,6 +120,7 @@ class PublishSongTest extends TestCase
         $this->assertSame((string)$dummyPublishSong->overView, (string)$publishedSong->overView());
         $this->assertSame((string)$dummyPublishSong->coverImagePath, (string)$publishedSong->coverImagePath());
         $this->assertSame((string)$dummyPublishSong->musicVideoLink, (string)$publishedSong->musicVideoLink());
+        $this->assertSame($dummyPublishSong->publishedVersion->value() + 1, $publishedSong->version()->value());
     }
 
     /**
@@ -162,6 +164,7 @@ class PublishSongTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $createdSong = new Song(
             $dummyPublishSong->publishedSongIdentifier,
             $dummyPublishSong->translationSetIdentifier,
@@ -175,6 +178,7 @@ class PublishSongTest extends TestCase
             new Overview(''),
             null,
             null,
+            $version,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -219,6 +223,7 @@ class PublishSongTest extends TestCase
         $this->assertSame((string)$dummyPublishSong->overView, (string)$publishedSong->overView());
         $this->assertSame((string)$dummyPublishSong->coverImagePath, (string)$publishedSong->coverImagePath());
         $this->assertSame((string)$dummyPublishSong->musicVideoLink, (string)$publishedSong->musicVideoLink());
+        $this->assertSame($version->value(), $publishedSong->version()->value());
     }
 
     /**
@@ -517,6 +522,7 @@ class PublishSongTest extends TestCase
             $dummyPublishSong->status,
         );
 
+        $version = new Version(1);
         $createdSong = new Song(
             $dummyPublishSong->publishedSongIdentifier,
             $dummyPublishSong->translationSetIdentifier,
@@ -530,6 +536,7 @@ class PublishSongTest extends TestCase
             new Overview(''),
             null,
             null,
+            $version,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -648,6 +655,7 @@ class PublishSongTest extends TestCase
             $dummyPublishSong->status,
         );
 
+        $version = new Version(1);
         $createdSong = new Song(
             $dummyPublishSong->publishedSongIdentifier,
             $dummyPublishSong->translationSetIdentifier,
@@ -661,6 +669,7 @@ class PublishSongTest extends TestCase
             new Overview(''),
             null,
             null,
+            $version,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -779,6 +788,7 @@ class PublishSongTest extends TestCase
             $dummyPublishSong->status,
         );
 
+        $version = new Version(1);
         $createdSong = new Song(
             $dummyPublishSong->publishedSongIdentifier,
             $dummyPublishSong->translationSetIdentifier,
@@ -792,6 +802,7 @@ class PublishSongTest extends TestCase
             new Overview(''),
             null,
             null,
+            $version,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -869,6 +880,7 @@ class PublishSongTest extends TestCase
             $dummyPublishSong->status,
         );
 
+        $version = new Version(1);
         $createdSong = new Song(
             $dummyPublishSong->publishedSongIdentifier,
             $dummyPublishSong->translationSetIdentifier,
@@ -882,6 +894,7 @@ class PublishSongTest extends TestCase
             new Overview(''),
             null,
             null,
+            $version,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -1033,6 +1046,7 @@ class PublishSongTest extends TestCase
         $publishedOverView = new Overview('\'I CAN\'T STOP ME\'는 80년대 신시사이저 사운드가 특징인 업템포의 레트로풍 댄스곡입니다. 가사는 선과 악의 갈림길에서 자기 자신을 제어하기 힘들어지는 갈등과, 멈출 수 없는 위험한 감정에 이끌리는 마음을 표현하고 있습니다. 파워풀한 퍼포먼스와 함께 트와이스의 새로운 매력을 보여준 곡으로 높은 평가를 받고 있습니다.');
         $publishedCoverImagePath = new ImagePath('/resources/public/images/after.webp');
         $publishedMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
+        $publishedVersion = new Version(1);
 
         $publishedSong = new Song(
             $publishedSongIdentifier,
@@ -1047,6 +1061,7 @@ class PublishSongTest extends TestCase
             $publishedOverView,
             $publishedCoverImagePath,
             $publishedMusicVideoLink,
+            $publishedVersion,
         );
 
         return new PublishSongTestData(
@@ -1067,6 +1082,7 @@ class PublishSongTest extends TestCase
             $translationSetIdentifier,
             $draftSong,
             $publishedSong,
+            $publishedVersion,
         );
     }
 }
@@ -1098,6 +1114,7 @@ readonly class PublishSongTestData
         public TranslationSetIdentifier $translationSetIdentifier,
         public DraftSong $draftSong,
         public Song $publishedSong,
+        public Version $publishedVersion,
     ) {
     }
 }

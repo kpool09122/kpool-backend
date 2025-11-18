@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\PublishTalent\PublishTalent;
@@ -102,6 +103,7 @@ class PublishTalentTest extends TestCase
         $link4 = new ExternalContentLink('https://example4.youtube.com/watch?v=dQw4w9WgXcQ');
         $link5 = new ExternalContentLink('https://example5.youtube.com/watch?v=dQw4w9WgXcQ');
         $exRelevantVideoLinks = new RelevantVideoLinks([$link4, $link5]);
+        $exVersion = new Version(1);
         $publishedTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
@@ -114,6 +116,7 @@ class PublishTalentTest extends TestCase
             $exCareer,
             $exImagePath,
             $exRelevantVideoLinks,
+            $exVersion,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -153,6 +156,7 @@ class PublishTalentTest extends TestCase
         $this->assertSame((string)$publishTalentInfo->career, (string)$publishedTalent->career());
         $this->assertSame((string)$publishTalentInfo->imagePath, (string)$publishedTalent->imageLink());
         $this->assertSame($publishTalentInfo->relevantVideoLinks->toStringArray(), $publishedTalent->relevantVideoLinks()->toStringArray());
+        $this->assertSame($exVersion->value() + 1, $publishedTalent->version()->value());
     }
 
     /**
@@ -195,6 +199,7 @@ class PublishTalentTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
@@ -207,6 +212,7 @@ class PublishTalentTest extends TestCase
             new Career(''),
             null,
             new RelevantVideoLinks([]),
+            $version,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -249,6 +255,7 @@ class PublishTalentTest extends TestCase
         $this->assertSame((string)$publishTalentInfo->career, (string)$publishedTalent->career());
         $this->assertSame((string)$publishTalentInfo->imagePath, (string)$publishedTalent->imageLink());
         $this->assertSame($publishTalentInfo->relevantVideoLinks->toStringArray(), $publishedTalent->relevantVideoLinks()->toStringArray());
+        $this->assertSame($version->value(), $publishedTalent->version()->value());
     }
 
     /**
@@ -556,6 +563,7 @@ class PublishTalentTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
@@ -568,6 +576,7 @@ class PublishTalentTest extends TestCase
             new Career(''),
             null,
             new RelevantVideoLinks([]),
+            $version,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -686,6 +695,7 @@ class PublishTalentTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
@@ -698,6 +708,7 @@ class PublishTalentTest extends TestCase
             new Career(''),
             null,
             new RelevantVideoLinks([]),
+            $version,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -819,6 +830,7 @@ class PublishTalentTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
@@ -831,6 +843,7 @@ class PublishTalentTest extends TestCase
             new Career(''),
             null,
             new RelevantVideoLinks([]),
+            $version,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -907,6 +920,7 @@ class PublishTalentTest extends TestCase
             $principal,
         );
 
+        $version = new Version(1);
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
@@ -919,6 +933,7 @@ class PublishTalentTest extends TestCase
             new Career(''),
             null,
             new RelevantVideoLinks([]),
+            $version,
         );
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);

@@ -31,6 +31,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -122,6 +123,7 @@ class PublishGroupTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUlid()),
         ];
         $exImagePath = new ImagePath('/resources/public/images/after.webp');
+        $exVersion = new Version(1);
         $publishedGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -131,6 +133,7 @@ class PublishGroupTest extends TestCase
             $exDescription,
             $exSongIdentifiers,
             $exImagePath,
+            $exVersion,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -168,6 +171,7 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$description, (string)$publishedGroup->description());
         $this->assertSame($songIdentifiers, $publishedGroup->songIdentifiers());
         $this->assertSame((string)$imagePath, (string)$publishedGroup->imagePath());
+        $this->assertSame($exVersion->value() + 1, $publishedGroup->version()->value());
     }
 
     /**
@@ -223,6 +227,7 @@ class PublishGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -232,6 +237,7 @@ class PublishGroupTest extends TestCase
             new Description(''),
             [],
             null,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -273,6 +279,7 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$description, (string)$publishedGroup->description());
         $this->assertSame($songIdentifiers, $publishedGroup->songIdentifiers());
         $this->assertSame((string)$imagePath, (string)$publishedGroup->imagePath());
+        $this->assertSame($version->value(), $publishedGroup->version()->value());
     }
 
     /**
@@ -641,6 +648,7 @@ class PublishGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -650,6 +658,7 @@ class PublishGroupTest extends TestCase
             new Description(''),
             [],
             null,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -800,6 +809,7 @@ class PublishGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -809,6 +819,7 @@ class PublishGroupTest extends TestCase
             new Description(''),
             [],
             null,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -958,6 +969,7 @@ class PublishGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -967,6 +979,7 @@ class PublishGroupTest extends TestCase
             new Description(''),
             [],
             null,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -1118,6 +1131,7 @@ class PublishGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -1127,6 +1141,7 @@ class PublishGroupTest extends TestCase
             new Description(''),
             [],
             null,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -1213,6 +1228,7 @@ class PublishGroupTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $createdGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
@@ -1222,6 +1238,7 @@ class PublishGroupTest extends TestCase
             new Description(''),
             [],
             null,
+            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);

@@ -7,6 +7,7 @@ namespace Source\Wiki\Talent\Domain\Entity;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
@@ -30,6 +31,7 @@ class Talent
      * @param Career $career
      * @param ImagePath|null $imageLink
      * @param RelevantVideoLinks $relevantVideoLinks
+     * @param Version $version
      */
     public function __construct(
         private readonly TalentIdentifier         $talentIdentifier,
@@ -43,6 +45,7 @@ class Talent
         private Career                            $career,
         private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
+        private Version $version,
     ) {
     }
 
@@ -153,5 +156,15 @@ class Talent
     public function setRelevantVideoLinks(RelevantVideoLinks $relevantVideoLinks): void
     {
         $this->relevantVideoLinks = $relevantVideoLinks;
+    }
+
+    public function version(): Version
+    {
+        return $this->version;
+    }
+
+    public function updateVersion(): void
+    {
+        $this->version = Version::nextVersion($this->version);
     }
 }

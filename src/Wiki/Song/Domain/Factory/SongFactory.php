@@ -7,6 +7,7 @@ namespace Source\Wiki\Song\Domain\Factory;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Shared\Infrastructure\Service\Ulid\UlidGenerator;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -39,6 +40,7 @@ readonly class SongFactory implements SongFactoryInterface
             new Overview(''),
             null,
             null,
+            new Version(1),
         );
     }
 }

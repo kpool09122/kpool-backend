@@ -35,6 +35,7 @@ class GetAgency implements GetAgencyInterface
             CEO: $agency->CEO,
             foundedIn: $agency->founded_in?->toDateTimeImmutable(),
             description: $agency->description,
+            version: $agency->version,
         );
     }
 }

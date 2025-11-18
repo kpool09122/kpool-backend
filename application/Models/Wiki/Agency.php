@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $CEO
  * @property ?Carbon $founded_in
  * @property string $description
+ * @property int $version
  */
 class Agency extends Model
 {
@@ -32,9 +33,11 @@ class Agency extends Model
         'CEO',
         'founded_in',
         'description',
+        'version',
     ];
 
     protected $casts = [
         'founded_in' => 'date',
+        'version' => 'integer',
     ];
 }

@@ -12,6 +12,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class AgencyFactory implements AgencyFactoryInterface
 {
@@ -33,6 +34,7 @@ class AgencyFactory implements AgencyFactoryInterface
             new CEO(''),
             null,
             new Description(''),
+            new Version(1),
         );
     }
 }

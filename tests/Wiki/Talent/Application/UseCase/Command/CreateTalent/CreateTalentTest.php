@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInterface;
@@ -524,6 +525,7 @@ class CreateTalentTest extends TestCase
             $status,
         );
 
+        $version = new Version(1);
         $publishedTalent = new Talent(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
@@ -536,6 +538,7 @@ class CreateTalentTest extends TestCase
             $career,
             $imageLink,
             $relevantVideoLinks,
+            $version,
         );
 
         return new CreateTalentTestData(
