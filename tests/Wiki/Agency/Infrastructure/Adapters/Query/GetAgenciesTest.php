@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Infrastructure\Adapters\Query;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
+use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Translation;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
@@ -30,13 +31,13 @@ class GetAgenciesTest extends TestCase
         $this->assertInstanceOf(GetAgencies::class, $getAgencies);
     }
 
+    #[Group('useDb')]
     /**
      * 正常系：正しく事務所情報が取得できること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testProcess(): void
     {
@@ -92,13 +93,13 @@ class GetAgenciesTest extends TestCase
         $this->assertSame($name, $output->toArray()['agencies'][1]['name']);
     }
 
+    #[Group('useDb')]
     /**
      * 正常系：検索ワードの絞り込みがうまく機能すること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testProcessUsingSearchWords(): void
     {
@@ -153,13 +154,13 @@ class GetAgenciesTest extends TestCase
         $this->assertSame($name, $output->toArray()['agencies'][0]['name']);
     }
 
+    #[Group('useDb')]
     /**
      * 正常系：表示数の上限機能がうまく動作すること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testProcessWithLimit(): void
     {
@@ -214,13 +215,13 @@ class GetAgenciesTest extends TestCase
         $this->assertCount(1, $output->toArray()['agencies']);
     }
 
+    #[Group('useDb')]
     /**
      * 正常系：ソート機能が正しく動作すること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testProcessUsingSort(): void
     {
@@ -287,13 +288,13 @@ class GetAgenciesTest extends TestCase
         $this->assertSame($name, $output->toArray()['agencies'][0]['name']);
     }
 
+    #[Group('useDb')]
     /**
      * 正常系：言語の違うレコードは取得されないこと.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws \DateMalformedStringException
-     * @group useDb
      */
     public function testProcessWhenDifferentTranslation(): void
     {
