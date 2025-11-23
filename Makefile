@@ -3,13 +3,37 @@
 
 PHPUNIT=./vendor/bin/phpunit
 
+SLEEP_SECONDS ?= 5
+
+ifeq ($(OS),Windows_NT)
+SLEEP_COMMAND := powershell -Command "Start-Sleep -Seconds $(SLEEP_SECONDS)"
+else
+SLEEP_COMMAND := sleep $(SLEEP_SECONDS)
+endif
+
+PHPUNIT_ARGS = $(PHPUNIT) $(if $(filter),--filter=$(filter)) --coverage-html coverage-html
+
+define RUN_TEST_COMMAND_UNIX
+set -e; \
+trap "$(if $(keepdb),,docker-compose stop testing_db && docker-compose rm -v -f testing_db)" EXIT; \
+$(call DOCKER_RUN,$(PHPUNIT_ARGS))
+endef
+
+RUN_TEST_COMMAND_WINDOWS = powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1 $(if $(filter),-Filter "$(filter)",) $(if $(keepdb),-KeepDb,)
+
+ifeq ($(OS),Windows_NT)
+RUN_TEST_COMMAND = $(RUN_TEST_COMMAND_WINDOWS)
+else
+RUN_TEST_COMMAND = $(RUN_TEST_COMMAND_UNIX)
+endif
+
 define DOCKER_RUN
 	docker-compose run --rm php bash -c "$(1)"
 endef
 
 wait-for-test-db: ## Wait for testing database to be ready
 	@echo "Waiting for testing database to be ready..."
-	@sleep 5
+	@$(SLEEP_COMMAND)
 
 # Run code style fix, static analysis, and all tests in sequence
 check: cs-fix phpstan test ## Run code style fix, static analysis, and all tests
@@ -18,10 +42,7 @@ check: cs-fix phpstan test ## Run code style fix, static analysis, and all tests
 test:
 	docker-compose up -d testing_db
 	$(MAKE) wait-for-test-db
-	@set -e; \
-	trap "$(if $(keepdb),,docker-compose stop testing_db && \
-	      docker-compose rm -v -f testing_db)" EXIT; \
-	$(call DOCKER_RUN, $(PHPUNIT) $(if $(filter),--filter=$(filter)) --coverage-html coverage-html)
+	@$(RUN_TEST_COMMAND)
 
 # Run PHPUnit tests excluding 'useDb' group. Usage: `make test-no-db [filter=TestClassName]`
 test-no-db:
