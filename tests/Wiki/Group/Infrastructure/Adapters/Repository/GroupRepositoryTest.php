@@ -8,7 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group as PHPUnitGroup;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -34,7 +34,7 @@ class GroupRepositoryTest extends TestCase
     {
         $id = StrTestHelper::generateUlid();
         $translationSetId = StrTestHelper::generateUlid();
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = 'Stray Kids';
         $agencyId = StrTestHelper::generateUlid();
         $description = 'K-pop boy group.';
@@ -61,7 +61,7 @@ class GroupRepositoryTest extends TestCase
         $this->assertInstanceOf(Group::class, $group);
         $this->assertSame($id, (string) $group->groupIdentifier());
         $this->assertSame($translationSetId, (string) $group->translationSetIdentifier());
-        $this->assertSame($translation, $group->translation());
+        $this->assertSame($translation, $group->language());
         $this->assertSame($name, (string) $group->name());
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
@@ -94,7 +94,7 @@ class GroupRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUlid();
         $translationSetId = StrTestHelper::generateUlid();
         $editorId = StrTestHelper::generateUlid();
-        $translation = Translation::ENGLISH;
+        $translation = Language::ENGLISH;
         $name = 'Stray Kids EN Draft';
         $agencyId = StrTestHelper::generateUlid();
         $description = 'English draft';
@@ -102,7 +102,7 @@ class GroupRepositoryTest extends TestCase
         $imagePath = '/images/groups/skz-en.png';
         $status = ApprovalStatus::Pending;
 
-        DB::table('groups')->upsert([
+        DB::table('draft_groups')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
             'translation_set_identifier' => $translationSetId,
@@ -125,7 +125,7 @@ class GroupRepositoryTest extends TestCase
         $this->assertSame($publishedId, (string) $group->publishedGroupIdentifier());
         $this->assertSame($editorId, (string) $group->editorIdentifier());
         $this->assertSame($translationSetId, (string) $group->translationSetIdentifier());
-        $this->assertSame($translation, $group->translation());
+        $this->assertSame($translation, $group->language());
         $this->assertSame($name, (string) $group->name());
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
@@ -157,7 +157,7 @@ class GroupRepositoryTest extends TestCase
         $group = new Group(
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('Girl group'),
@@ -175,14 +175,12 @@ class GroupRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('groups', [
             'id' => (string) $group->groupIdentifier(),
-            'translation' => $group->translation()->value,
+            'translation' => $group->language()->value,
             'name' => (string) $group->name(),
             'agency_id' => (string) $group->agencyIdentifier(),
             'description' => (string) $group->description(),
             'image_path' => (string) $group->imagePath(),
             'version' => $group->version()->value(),
-            'editor_id' => null,
-            'status' => null,
         ]);
     }
 
@@ -196,7 +194,7 @@ class GroupRepositoryTest extends TestCase
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new GroupName('NEWJEANS'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('New draft'),
@@ -209,16 +207,16 @@ class GroupRepositoryTest extends TestCase
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $repository->saveDraft($draft);
 
-        $this->assertDatabaseHas('groups', [
+        $this->assertDatabaseHas('draft_groups', [
             'id' => (string) $draft->groupIdentifier(),
             'published_id' => (string) $draft->publishedGroupIdentifier(),
+            'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
             'editor_id' => (string) $draft->editorIdentifier(),
-            'translation' => $draft->translation()->value,
+            'translation' => $draft->language()->value,
             'name' => (string) $draft->name(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
             'status' => $draft->status()->value,
-            'version' => null,
         ]);
     }
 
@@ -233,7 +231,7 @@ class GroupRepositoryTest extends TestCase
             new GroupIdentifier(StrTestHelper::generateUlid()),
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new GroupName('削除対象'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('Delete me'),
@@ -242,12 +240,12 @@ class GroupRepositoryTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        DB::table('groups')->insert([
+        DB::table('draft_groups')->insert([
             'id' => $id,
             'published_id' => (string) $draft->publishedGroupIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
             'editor_id' => (string) $draft->editorIdentifier(),
-            'translation' => $draft->translation()->value,
+            'translation' => $draft->language()->value,
             'name' => (string) $draft->name(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
@@ -259,7 +257,7 @@ class GroupRepositoryTest extends TestCase
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $repository->deleteDraft($draft);
 
-        $this->assertDatabaseMissing('groups', [
+        $this->assertDatabaseMissing('draft_groups', [
             'id' => $id,
         ]);
     }
@@ -276,7 +274,7 @@ class GroupRepositoryTest extends TestCase
             'published_id' => StrTestHelper::generateUlid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'editor_id' => StrTestHelper::generateUlid(),
-            'translation' => Translation::KOREAN->value,
+            'translation' => Language::KOREAN->value,
             'name' => '드래프트1',
             'agency_id' => StrTestHelper::generateUlid(),
             'description' => '첫번째',
@@ -289,7 +287,7 @@ class GroupRepositoryTest extends TestCase
             'published_id' => StrTestHelper::generateUlid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'editor_id' => StrTestHelper::generateUlid(),
-            'translation' => Translation::JAPANESE->value,
+            'translation' => Language::JAPANESE->value,
             'name' => 'ドラフト2',
             'agency_id' => StrTestHelper::generateUlid(),
             'description' => '二件目',
@@ -302,7 +300,7 @@ class GroupRepositoryTest extends TestCase
             'published_id' => StrTestHelper::generateUlid(),
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'editor_id' => StrTestHelper::generateUlid(),
-            'translation' => Translation::ENGLISH->value,
+            'translation' => Language::ENGLISH->value,
             'name' => 'Other',
             'agency_id' => StrTestHelper::generateUlid(),
             'description' => 'Other set',
@@ -310,7 +308,7 @@ class GroupRepositoryTest extends TestCase
             'status' => ApprovalStatus::Pending->value,
         ];
 
-        DB::table('groups')->insert([$draft1, $draft2, $otherDraft]);
+        DB::table('draft_groups')->insert([$draft1, $draft2, $otherDraft]);
 
         /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
@@ -338,4 +336,3 @@ class GroupRepositoryTest extends TestCase
         $this->assertEmpty($drafts);
     }
 }
-

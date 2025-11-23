@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Infrastracture\Adapters\Repository;
 
+use Application\Models\Wiki\DraftGroup as DraftGroupModel;
 use Application\Models\Wiki\Group as GroupModel;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -26,7 +27,6 @@ final class GroupRepository implements GroupRepositoryInterface
     {
         $groupModel = GroupModel::query()
             ->where('id', (string) $groupIdentifier)
-            ->whereNull('editor_id')
             ->first();
 
         if ($groupModel === null || $groupModel->version === null) {
@@ -38,9 +38,8 @@ final class GroupRepository implements GroupRepositoryInterface
 
     public function findDraftById(GroupIdentifier $groupIdentifier): ?DraftGroup
     {
-        $draftModel = GroupModel::query()
+        $draftModel = DraftGroupModel::query()
             ->where('id', (string) $groupIdentifier)
-            ->whereNotNull('editor_id')
             ->first();
 
         if ($draftModel === null) {
@@ -57,16 +56,13 @@ final class GroupRepository implements GroupRepositoryInterface
                 'id' => (string) $group->groupIdentifier(),
             ],
             [
-                'published_id' => null,
                 'translation_set_identifier' => (string) $group->translationSetIdentifier(),
-                'editor_id' => null,
-                'translation' => $group->translation()->value,
+                'translation' => $group->language()->value,
                 'name' => (string) $group->name(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
                 'song_identifiers' => $this->extractSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
-                'status' => null,
                 'version' => $group->version()->value(),
             ],
         );
@@ -74,7 +70,7 @@ final class GroupRepository implements GroupRepositoryInterface
 
     public function saveDraft(DraftGroup $group): void
     {
-        GroupModel::query()->updateOrCreate(
+        DraftGroupModel::query()->updateOrCreate(
             [
                 'id' => (string) $group->groupIdentifier(),
             ],
@@ -84,36 +80,33 @@ final class GroupRepository implements GroupRepositoryInterface
                     : null,
                 'translation_set_identifier' => (string) $group->translationSetIdentifier(),
                 'editor_id' => (string) $group->editorIdentifier(),
-                'translation' => $group->translation()->value,
+                'translation' => $group->language()->value,
                 'name' => (string) $group->name(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
                 'song_identifiers' => $this->extractSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'status' => $group->status()->value,
-                'version' => null,
             ],
         );
     }
 
     public function deleteDraft(DraftGroup $group): void
     {
-        GroupModel::query()
+        DraftGroupModel::query()
             ->where('id', (string) $group->groupIdentifier())
-            ->whereNotNull('editor_id')
             ->delete();
     }
 
     public function findDraftsByTranslationSet(
         TranslationSetIdentifier $translationSetIdentifier,
     ): array {
-        $draftModels = GroupModel::query()
+        $draftModels = DraftGroupModel::query()
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
-            ->whereNotNull('editor_id')
             ->get();
 
         return $draftModels
-            ->map(fn (GroupModel $model): DraftGroup => $this->mapDraftEntity($model))
+            ->map(fn (DraftGroupModel $model): DraftGroup => $this->mapDraftEntity($model))
             ->toArray();
     }
 
@@ -148,7 +141,7 @@ final class GroupRepository implements GroupRepositoryInterface
         return new Group(
             new GroupIdentifier($model->id),
             new TranslationSetIdentifier($model->translation_set_identifier),
-            Translation::from($model->translation),
+            Language::from($model->translation),
             new GroupName($model->name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
@@ -158,14 +151,14 @@ final class GroupRepository implements GroupRepositoryInterface
         );
     }
 
-    private function mapDraftEntity(GroupModel $model): DraftGroup
+    private function mapDraftEntity(DraftGroupModel $model): DraftGroup
     {
         return new DraftGroup(
             new GroupIdentifier($model->id),
             $model->published_id ? new GroupIdentifier($model->published_id) : null,
             new TranslationSetIdentifier($model->translation_set_identifier),
             new EditorIdentifier($model->editor_id),
-            Translation::from($model->translation),
+            Language::from($model->translation),
             new GroupName($model->name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
