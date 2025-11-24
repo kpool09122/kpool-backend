@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
@@ -19,7 +19,7 @@ interface CreateGroupInputPort
 
     public function publishedGroupIdentifier(): ?GroupIdentifier;
 
-    public function translation(): Translation;
+    public function language(): Language;
 
     public function name(): GroupName;
 

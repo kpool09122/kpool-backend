@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Announcement\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
@@ -23,7 +23,7 @@ readonly class AnnouncementFactory implements AnnouncementFactoryInterface
 
     /**
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param Category $category
      * @param Title $title
      * @param Content $content
@@ -32,16 +32,16 @@ readonly class AnnouncementFactory implements AnnouncementFactoryInterface
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
-        Translation $translation,
-        Category $category,
-        Title $title,
-        Content $content,
-        PublishedDate $publishedDate,
+        Language                 $language,
+        Category                 $category,
+        Title                    $title,
+        Content                  $content,
+        PublishedDate            $publishedDate,
     ): Announcement {
         return new Announcement(
             new AnnouncementIdentifier($this->ulidGenerator->generate()),
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,

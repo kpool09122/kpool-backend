@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -65,7 +65,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -87,7 +87,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -140,7 +140,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -162,7 +162,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -214,7 +214,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -295,7 +295,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -314,7 +314,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new TalentName('Chaeyoung'),
             new RealName('Son Chaeyoung'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -332,7 +332,7 @@ class TalentServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),

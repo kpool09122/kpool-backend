@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -22,7 +22,7 @@ readonly class CreateSongInput implements CreateSongInputPort
     /**
      * @param SongIdentifier|null $publishedSongIdentifier
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
      * @param list<BelongIdentifier> $belongIdentifiers
@@ -35,11 +35,11 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param Principal $principal
      */
     public function __construct(
-        private ?SongIdentifier $publishedSongIdentifier,
-        private EditorIdentifier $editorIdentifier,
-        private Translation $translation,
+        private ?SongIdentifier      $publishedSongIdentifier,
+        private EditorIdentifier     $editorIdentifier,
+        private Language             $language,
         private SongName             $name,
-        private ?AgencyIdentifier     $agencyIdentifier,
+        private ?AgencyIdentifier    $agencyIdentifier,
         private array                $belongIdentifiers,
         private Lyricist             $lyricist,
         private Composer             $composer,
@@ -61,9 +61,9 @@ readonly class CreateSongInput implements CreateSongInputPort
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): SongName

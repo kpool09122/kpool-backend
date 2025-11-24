@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
@@ -18,7 +18,7 @@ readonly class CreateGroupInput implements CreateGroupInputPort
     /**
      * @param EditorIdentifier $editorIdentifier
      * @param GroupIdentifier|null $publishedGroupIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param GroupName $name
      * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
@@ -29,13 +29,13 @@ readonly class CreateGroupInput implements CreateGroupInputPort
     public function __construct(
         private EditorIdentifier $editorIdentifier,
         private ?GroupIdentifier $publishedGroupIdentifier,
-        private Translation $translation,
-        private GroupName $name,
+        private Language         $language,
+        private GroupName        $name,
         private AgencyIdentifier $agencyIdentifier,
-        private Description $description,
-        private array $songIdentifiers,
-        private ?string $base64EncodedImage,
-        private Principal $principal,
+        private Description      $description,
+        private array            $songIdentifiers,
+        private ?string          $base64EncodedImage,
+        private Principal        $principal,
     ) {
     }
 
@@ -49,9 +49,9 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         return $this->publishedGroupIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): GroupName

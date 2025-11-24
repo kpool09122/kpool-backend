@@ -6,7 +6,7 @@ namespace Source\Wiki\Song\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -23,7 +23,7 @@ class Song
     /**
      * @param SongIdentifier $songIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
      * @param list<BelongIdentifier> $belongIdentifiers
@@ -36,19 +36,19 @@ class Song
      * @param Version $version
      */
     public function __construct(
-        private readonly SongIdentifier $songIdentifier,
+        private readonly SongIdentifier           $songIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly Translation $translation,
-        private SongName $name,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private array $belongIdentifiers,
-        private Lyricist $lyricist,
-        private Composer $composer,
-        private ?ReleaseDate $releaseDate,
-        private Overview $overView,
-        private ?ImagePath $coverImagePath,
-        private ?ExternalContentLink $musicVideoLink,
-        private Version $version,
+        private readonly Language                 $language,
+        private SongName                          $name,
+        private ?AgencyIdentifier                 $agencyIdentifier,
+        private array                             $belongIdentifiers,
+        private Lyricist                          $lyricist,
+        private Composer                          $composer,
+        private ?ReleaseDate                      $releaseDate,
+        private Overview                          $overView,
+        private ?ImagePath                        $coverImagePath,
+        private ?ExternalContentLink              $musicVideoLink,
+        private Version                           $version,
     ) {
     }
 
@@ -62,9 +62,9 @@ class Song
         return $this->translationSetIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): SongName

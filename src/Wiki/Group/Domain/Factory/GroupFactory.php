@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -22,19 +22,19 @@ readonly class GroupFactory implements GroupFactoryInterface
 
     /**
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param GroupName $name
      * @return Group
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
-        Translation $translation,
-        GroupName $name,
+        Language                 $language,
+        GroupName                $name,
     ): Group {
         return new Group(
             new GroupIdentifier($this->ulidGenerator->generate()),
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             null,
             new Description(''),

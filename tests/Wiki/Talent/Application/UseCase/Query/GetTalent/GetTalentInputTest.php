@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Talent\Application\UseCase\Query\GetTalent;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Talent\Application\UseCase\Query\GetTalent\GetTalentInput;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -20,9 +20,9 @@ class GetTalentInputTest extends TestCase
     public function test__construct(): void
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $input = new GetTalentInput($talentIdentifier, $translation);
+        $language = Language::KOREAN;
+        $input = new GetTalentInput($talentIdentifier, $language);
         $this->assertSame((string)$talentIdentifier, (string)$input->talentIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($language->value, $input->language()->value);
     }
 }

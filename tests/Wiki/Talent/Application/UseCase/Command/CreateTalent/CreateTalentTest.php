@@ -11,7 +11,7 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -76,7 +76,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -97,7 +97,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->translation, $createTalentInfo->name)
+            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -118,7 +118,7 @@ class CreateTalentTest extends TestCase
         $this->assertTrue(UlidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertSame((string)$createTalentInfo->publishedTalentIdentifier, (string)$talent->publishedTalentIdentifier());
         $this->assertSame((string)$createTalentInfo->editorIdentifier, (string)$talent->editorIdentifier());
-        $this->assertSame($createTalentInfo->translation->value, $talent->translation()->value);
+        $this->assertSame($createTalentInfo->language->value, $talent->language()->value);
         $this->assertSame((string)$createTalentInfo->name, (string)$talent->name());
         $this->assertSame((string)$createTalentInfo->realName, (string)$talent->realName());
         $this->assertSame($createTalentInfo->groupIdentifiers, $talent->groupIdentifiers());
@@ -147,7 +147,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -168,7 +168,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->translation, $createTalentInfo->name)
+            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -208,7 +208,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -229,7 +229,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->translation, $createTalentInfo->name)
+            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -270,7 +270,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -291,7 +291,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->translation, $createTalentInfo->name)
+            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -333,7 +333,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -354,7 +354,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->translation, $createTalentInfo->name)
+            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -393,7 +393,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -414,7 +414,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->translation, $createTalentInfo->name)
+            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -452,7 +452,7 @@ class CreateTalentTest extends TestCase
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->editorIdentifier,
-            $createTalentInfo->translation,
+            $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
             $createTalentInfo->agencyIdentifier,
@@ -484,7 +484,7 @@ class CreateTalentTest extends TestCase
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -513,7 +513,7 @@ class CreateTalentTest extends TestCase
             $publishedTalentIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -529,7 +529,7 @@ class CreateTalentTest extends TestCase
         $publishedTalent = new Talent(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -545,7 +545,7 @@ class CreateTalentTest extends TestCase
             $publishedTalentIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -576,20 +576,20 @@ readonly class CreateTalentTestData
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        public TalentIdentifier $publishedTalentIdentifier,
+        public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public TalentName $name,
-        public RealName $realName,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $groupIdentifiers,
-        public Birthday $birthday,
-        public Career $career,
-        public string $base64EncodedImage,
-        public ExternalContentLink $link1,
-        public ExternalContentLink $link2,
-        public ExternalContentLink $link3,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $language,
+        public TalentName               $name,
+        public RealName                 $realName,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $groupIdentifiers,
+        public Birthday                 $birthday,
+        public Career                   $career,
+        public string                   $base64EncodedImage,
+        public ExternalContentLink      $link1,
+        public ExternalContentLink      $link2,
+        public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
         public ImagePath $imageLink,
         public TalentIdentifier $talentIdentifier,

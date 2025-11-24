@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $published_id
  * @property string $translation_set_identifier
  * @property string $editor_id
- * @property string $translation
+ * @property string $language
  * @property string $name
  * @property string $CEO
  * @property ?Carbon $founded_in
@@ -32,7 +32,7 @@ class DraftAgency extends Model
         'published_id',
         'translation_set_identifier',
         'editor_id',
-        'translation',
+        'language',
         'name',
         'CEO',
         'founded_in',

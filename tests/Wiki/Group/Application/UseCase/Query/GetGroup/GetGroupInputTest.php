@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Application\UseCase\Query\GetGroup;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\UseCase\Query\GetGroup\GetGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -20,9 +20,9 @@ class GetGroupInputTest extends TestCase
     public function test__construct(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $input = new GetGroupInput($groupIdentifier, $translation);
+        $langauge = Language::KOREAN;
+        $input = new GetGroupInput($groupIdentifier, $langauge);
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($langauge->value, $input->language()->value);
     }
 }

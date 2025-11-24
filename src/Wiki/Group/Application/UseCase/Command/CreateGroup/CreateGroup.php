@@ -42,7 +42,7 @@ class CreateGroup implements CreateGroupInterface
 
         $group = $this->groupFactory->create(
             $input->editorIdentifier(),
-            $input->translation(),
+            $input->language(),
             $input->name(),
         );
         if ($input->publishedGroupIdentifier()) {

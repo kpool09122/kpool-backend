@@ -81,7 +81,7 @@ readonly class PublishSong implements PublishSongInterface
         } else {
             $publishedSong = $this->songFactory->create(
                 $song->translationSetIdentifier(),
-                $song->translation(),
+                $song->language(),
                 $song->name(),
             );
         }

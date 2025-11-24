@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -168,7 +168,7 @@ class ApproveSongTest extends TestCase
             $dummyApproveSong->publishedSongIdentifier,
             $dummyApproveSong->translationSetIdentifier,
             $dummyApproveSong->editorIdentifier,
-            $dummyApproveSong->translation,
+            $dummyApproveSong->language,
             $dummyApproveSong->name,
             $dummyApproveSong->agencyIdentifier,
             $dummyApproveSong->belongIdentifiers,
@@ -768,7 +768,7 @@ class ApproveSongTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
@@ -789,7 +789,7 @@ class ApproveSongTest extends TestCase
             $publishedSongIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -806,7 +806,7 @@ class ApproveSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -833,20 +833,20 @@ readonly class ApproveSongTestData
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        public SongIdentifier $songIdentifier,
-        public SongIdentifier $publishedSongIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public SongName $name,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $belongIdentifiers,
-        public Lyricist $lyricist,
-        public Composer $composer,
-        public ReleaseDate $releaseDate,
-        public Overview $overView,
-        public ImagePath $coverImagePath,
+        public SongIdentifier      $songIdentifier,
+        public SongIdentifier      $publishedSongIdentifier,
+        public EditorIdentifier    $editorIdentifier,
+        public Language            $language,
+        public SongName            $name,
+        public AgencyIdentifier    $agencyIdentifier,
+        public array               $belongIdentifiers,
+        public Lyricist            $lyricist,
+        public Composer            $composer,
+        public ReleaseDate         $releaseDate,
+        public Overview            $overView,
+        public ImagePath           $coverImagePath,
         public ExternalContentLink $musicVideoLink,
-        public ApprovalStatus $status,
+        public ApprovalStatus      $status,
         public TranslationSetIdentifier $translationSetIdentifier,
         public DraftSong $song,
     ) {

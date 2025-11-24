@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesOutput;
@@ -42,7 +42,7 @@ class GetAgenciesTest extends TestCase
     public function testProcess(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -51,7 +51,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifier,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -67,7 +67,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name2,
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
@@ -84,7 +84,7 @@ class GetAgenciesTest extends TestCase
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $output = new GetAgenciesOutput();
         $getAgencies = $this->app->make(GetAgenciesInterface::class);
@@ -108,7 +108,7 @@ class GetAgenciesTest extends TestCase
     public function testProcessUsingSearchWords(): void
     {
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -117,7 +117,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -133,7 +133,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name2,
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
@@ -150,7 +150,7 @@ class GetAgenciesTest extends TestCase
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $output = new GetAgenciesOutput();
         $getAgencies = $this->app->make(GetAgenciesInterface::class);
@@ -173,7 +173,7 @@ class GetAgenciesTest extends TestCase
     public function testProcessWithLimit(): void
     {
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -182,7 +182,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -198,7 +198,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name2,
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
@@ -215,7 +215,7 @@ class GetAgenciesTest extends TestCase
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $output = new GetAgenciesOutput();
         $getAgencies = $this->app->make(GetAgenciesInterface::class);
@@ -238,7 +238,7 @@ class GetAgenciesTest extends TestCase
     public function testProcessUsingSort(): void
     {
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -247,7 +247,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -263,7 +263,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name2,
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
@@ -280,7 +280,7 @@ class GetAgenciesTest extends TestCase
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $output = new GetAgenciesOutput();
         $getAgencies = $this->app->make(GetAgenciesInterface::class);
@@ -296,7 +296,7 @@ class GetAgenciesTest extends TestCase
             $order2,
             $sort2,
             $searchWords2,
-            $translation,
+            $language,
         );
         $output = new GetAgenciesOutput();
         $getAgencies = $this->app->make(GetAgenciesInterface::class);
@@ -315,7 +315,7 @@ class GetAgenciesTest extends TestCase
     public function testProcessWhenDifferentTranslation(): void
     {
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -324,7 +324,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -332,7 +332,7 @@ class GetAgenciesTest extends TestCase
             'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation2 = Translation::KOREAN;
+        $language2 = Language::KOREAN;
         $name2 = 'HYBE';
         $CEO2 = '박지원';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
@@ -341,7 +341,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation2->value,
+            'language' => $language2->value,
             'name' => $name2,
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
@@ -358,7 +358,7 @@ class GetAgenciesTest extends TestCase
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $output = new GetAgenciesOutput();
         $getAgencies = $this->app->make(GetAgenciesInterface::class);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\Factory;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Shared\Infrastructure\Service\Ulid\UlidGenerator;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -24,9 +24,9 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
     }
 
     public function create(
-        EditorIdentifier $editorIdentifier,
-        Translation $translation,
-        SongName $name,
+        EditorIdentifier          $editorIdentifier,
+        Language                  $language,
+        SongName                  $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftSong {
         return new DraftSong(
@@ -34,7 +34,7 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             null,
             [],

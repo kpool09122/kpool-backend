@@ -11,7 +11,7 @@ use Source\Auth\Domain\ValueObject\UserName;
 use Source\Auth\Infrastructure\Factory\UserFactory;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Tests\TestCase;
 
 class UserFactoryTest extends TestCase
@@ -38,13 +38,13 @@ class UserFactoryTest extends TestCase
     {
         $name = new UserName('user-name');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $plainPassword = new PlainPassword('user-password');
         $userFactory = $this->app->make(UserFactoryInterface::class);
-        $user = $userFactory->create($name, $email, $translation, $plainPassword);
+        $user = $userFactory->create($name, $email, $language, $plainPassword);
         $this->assertTrue(UlidValidator::isValid((string)$user->userIdentifier()));
         $this->assertSame((string)$email, (string)$user->email());
-        $this->assertSame($translation, $user->translation());
+        $this->assertSame($language, $user->language());
         $this->assertTrue(password_verify((string) $plainPassword, (string) $user->hashedPassword()));
         $this->assertSame([], $user->serviceRoles());
         $this->assertNull($user->emailVerifiedAt());

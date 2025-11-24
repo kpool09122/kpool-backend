@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncement;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 
-class GetAnnouncementInput implements GetAnnouncementInputPort
+readonly class GetAnnouncementInput implements GetAnnouncementInputPort
 {
     public function __construct(
         private AnnouncementIdentifier $announcementIdentifier,
-        private Translation $translation,
+        private Language               $language,
     ) {
     }
 
@@ -20,8 +20,8 @@ class GetAnnouncementInput implements GetAnnouncementInputPort
         return $this->announcementIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 }

@@ -7,7 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\EditAnno
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncement;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInput;
@@ -33,7 +33,6 @@ class EditAnnouncementTest extends TestCase
      */
     public function test__construct(): void
     {
-        // TODO: 各実装クラス作ったら削除する
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
         $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
@@ -51,7 +50,7 @@ class EditAnnouncementTest extends TestCase
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -88,7 +87,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,
@@ -109,7 +108,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $updateAnnouncement = $this->app->make(UpdateAnnouncementInterface::class);
         $announcement = $updateAnnouncement->process($input);
         $this->assertSame((string)$announcementIdentifier, (string)$announcement->announcementIdentifier());
-        $this->assertSame($translation->value, $announcement->translation()->value);
+        $this->assertSame($language->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());

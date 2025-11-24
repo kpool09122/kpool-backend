@@ -6,7 +6,7 @@ namespace Tests\Wiki\Agency\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactory;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
@@ -40,7 +40,7 @@ class DraftAgencyFactoryTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $name = new AgencyName('JYP엔터테인먼트');
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $agencyFactory = $this->app->make(DraftAgencyFactoryInterface::class);
         $agency = $agencyFactory->create($editorIdentifier, $translation, $name, $translationSetIdentifier);
@@ -48,7 +48,7 @@ class DraftAgencyFactoryTest extends TestCase
         $this->assertNull($agency->publishedAgencyIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$agency->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$agency->editorIdentifier());
-        $this->assertSame($translation->value, $agency->translation()->value);
+        $this->assertSame($translation->value, $agency->language()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame('', (string)$agency->CEO());
         $this->assertNull($agency->foundedIn());

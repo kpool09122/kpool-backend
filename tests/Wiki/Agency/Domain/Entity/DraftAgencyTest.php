@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -31,7 +31,7 @@ class DraftAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -64,7 +64,7 @@ class DraftAgencyTest extends TestCase
         $this->assertSame((string)$agencyIdentifier, (string)$agency->agencyIdentifier());
         $this->assertSame((string)$publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$agency->editorIdentifier());
-        $this->assertSame($translation->value, $agency->translation()->value);
+        $this->assertSame($translation->value, $agency->language()->value);
         $this->assertSame((string)$name, (string)$agency->name());
         $this->assertSame((string)$CEO, (string)$agency->CEO());
         $this->assertSame($foundedIn->value(), $agency->foundedIn()->value());
@@ -83,7 +83,7 @@ class DraftAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -132,7 +132,7 @@ class DraftAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -181,7 +181,7 @@ class DraftAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -230,7 +230,7 @@ class DraftAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -279,7 +279,7 @@ class DraftAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -331,7 +331,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));

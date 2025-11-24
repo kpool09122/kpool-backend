@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -22,7 +22,7 @@ class Talent
     /**
      * @param TalentIdentifier $talentIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
      * @param ?AgencyIdentifier $agencyIdentifier
@@ -36,16 +36,16 @@ class Talent
     public function __construct(
         private readonly TalentIdentifier         $talentIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly Translation              $translation,
+        private readonly Language                 $language,
         private TalentName                        $name,
         private RealName                          $realName,
-        private ?AgencyIdentifier $agencyIdentifier,
+        private ?AgencyIdentifier                 $agencyIdentifier,
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
         private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
-        private Version $version,
+        private Version                           $version,
     ) {
     }
 
@@ -59,9 +59,9 @@ class Talent
         return $this->translationSetIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): TalentName

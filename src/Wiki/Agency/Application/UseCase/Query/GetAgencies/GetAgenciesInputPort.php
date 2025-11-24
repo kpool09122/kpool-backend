@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Query\GetAgencies;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 interface GetAgenciesInputPort
 {
@@ -16,5 +16,5 @@ interface GetAgenciesInputPort
 
     public function searchWords(): string;
 
-    public function translation(): Translation;
+    public function language(): Language;
 }

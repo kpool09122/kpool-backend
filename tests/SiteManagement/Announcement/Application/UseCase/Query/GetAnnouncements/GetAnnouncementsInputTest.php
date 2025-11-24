@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements\GetAnnouncementsInput;
 use Tests\TestCase;
 
@@ -21,18 +21,18 @@ class GetAnnouncementsInputTest extends TestCase
         $order = 'id';
         $sort = 'desc';
         $searchWords = 'test';
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $input = new GetAnnouncementsInput(
             $limit,
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $this->assertSame($limit, $input->limit());
         $this->assertSame($order, $input->order());
         $this->assertSame($sort, $input->sort());
         $this->assertSame($searchWords, $input->searchWords());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($language->value, $input->language()->value);
     }
 }

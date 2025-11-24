@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AutomaticDraftTalentCreationPayload;
@@ -26,7 +26,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
     public function test__construct(): void
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $name = new TalentName('山田 太郎');
         $realName = new RealName('Yamada Taro');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -44,7 +44,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
 
         $payload = new AutomaticDraftTalentCreationPayload(
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -55,7 +55,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
         );
 
         $this->assertSame($editorIdentifier, $payload->editorIdentifier());
-        $this->assertSame($translation, $payload->translation());
+        $this->assertSame($language, $payload->language());
         $this->assertSame($name, $payload->name());
         $this->assertSame($realName, $payload->realName());
         $this->assertSame($agencyIdentifier, $payload->agencyIdentifier());
@@ -69,7 +69,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
     {
         $payload = new AutomaticDraftTalentCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new TalentName('Sample Talent'),
             new RealName('Sample Name'),
             null,

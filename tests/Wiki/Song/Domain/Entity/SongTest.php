@@ -7,7 +7,7 @@ namespace Tests\Wiki\Song\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -34,7 +34,7 @@ class SongTest extends TestCase
         $createSong = $this->createDummySong();
         $this->assertSame((string)$createSong->songIdentifier, (string)$createSong->song->songIdentifier());
         $this->assertSame((string)$createSong->translationSetIdentifier, (string)$createSong->song->translationSetIdentifier());
-        $this->assertSame($createSong->translation->value, $createSong->song->translation()->value);
+        $this->assertSame($createSong->language->value, $createSong->song->language()->value);
         $this->assertSame((string)$createSong->name, (string)$createSong->song->name());
         $this->assertSame((string)$createSong->agencyIdentifier, (string)$createSong->song->agencyIdentifier());
         $this->assertSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
@@ -217,7 +217,7 @@ class SongTest extends TestCase
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
@@ -235,7 +235,7 @@ class SongTest extends TestCase
         $song = new Song(
             $songIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -251,7 +251,7 @@ class SongTest extends TestCase
         return new SongTestData(
             songIdentifier: $songIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
-            translation: $translation,
+            language: $language,
             name: $name,
             agencyIdentifier: $agencyIdentifier,
             belongIdentifiers: $belongIdentifiers,
@@ -277,19 +277,19 @@ readonly class SongTestData
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        public SongIdentifier $songIdentifier,
+        public SongIdentifier           $songIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public Translation $translation,
-        public SongName $name,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $belongIdentifiers,
-        public Lyricist $lyricist,
-        public Composer $composer,
-        public ReleaseDate $releaseDate,
-        public Overview $overView,
-        public ImagePath $coverImagePath,
-        public ExternalContentLink $musicVideoLink,
-        public Song $song,
+        public Language                 $language,
+        public SongName                 $name,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $belongIdentifiers,
+        public Lyricist                 $lyricist,
+        public Composer                 $composer,
+        public ReleaseDate              $releaseDate,
+        public Overview                 $overView,
+        public ImagePath                $coverImagePath,
+        public ExternalContentLink      $musicVideoLink,
+        public Song                     $song,
         public Version $version
     ) {
     }

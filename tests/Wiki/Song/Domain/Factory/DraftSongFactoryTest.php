@@ -6,7 +6,7 @@ namespace Tests\Wiki\Song\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
@@ -38,15 +38,15 @@ class DraftSongFactoryTest extends TestCase
     public function testCreate(): void
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new SongName('TT');
         $songFactory = $this->app->make(DraftSongFactoryInterface::class);
-        $song = $songFactory->create($editorIdentifier, $translation, $name);
+        $song = $songFactory->create($editorIdentifier, $language, $name);
         $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
         $this->assertNull($song->publishedSongIdentifier());
         $this->assertTrue(UlidValidator::isValid((string)$song->translationSetIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$song->editorIdentifier());
-        $this->assertSame($translation->value, $song->translation()->value);
+        $this->assertSame($language->value, $song->language()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertNull($song->agencyIdentifier());
         $this->assertSame([], $song->belongIdentifiers());

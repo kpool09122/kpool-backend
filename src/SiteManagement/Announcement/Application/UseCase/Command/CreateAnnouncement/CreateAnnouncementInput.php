@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
@@ -15,7 +15,7 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
 {
     /**
      * @param TranslationSetIdentifier|null $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param Category $category
      * @param Title $title
      * @param Content $content
@@ -23,11 +23,11 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
      */
     public function __construct(
         private ?TranslationSetIdentifier $translationSetIdentifier,
-        private Translation $translation,
-        private Category $category,
-        private Title $title,
-        private Content $content,
-        private PublishedDate $publishedDate,
+        private Language                  $language,
+        private Category                  $category,
+        private Title                     $title,
+        private Content                   $content,
+        private PublishedDate             $publishedDate,
     ) {
     }
 
@@ -36,9 +36,9 @@ readonly class CreateAnnouncementInput implements CreateAnnouncementInputPort
         return $this->translationSetIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function category(): Category

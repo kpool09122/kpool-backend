@@ -7,7 +7,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\ApproveGroup;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
@@ -66,7 +66,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -179,7 +179,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -248,7 +248,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -320,7 +320,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -388,7 +388,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -458,7 +458,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -534,7 +534,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -605,7 +605,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -682,7 +682,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid()); // グループの所属事務所
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -752,7 +752,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyId = StrTestHelper::generateUlid(); // 事務所ID
         $agencyIdentifier = new AgencyIdentifier($agencyId);
@@ -830,7 +830,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -904,7 +904,7 @@ class ApproveGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹

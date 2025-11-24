@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -31,7 +31,7 @@ class DraftGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -50,7 +50,7 @@ class DraftGroupTest extends TestCase
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -62,7 +62,7 @@ class DraftGroupTest extends TestCase
         $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
-        $this->assertSame($translation->value, $group->translation()->value);
+        $this->assertSame($language->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
@@ -82,7 +82,7 @@ class DraftGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -101,7 +101,7 @@ class DraftGroupTest extends TestCase
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -128,7 +128,7 @@ class DraftGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -147,7 +147,7 @@ class DraftGroupTest extends TestCase
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -174,7 +174,7 @@ class DraftGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -193,7 +193,7 @@ class DraftGroupTest extends TestCase
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -220,7 +220,7 @@ class DraftGroupTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -239,7 +239,7 @@ class DraftGroupTest extends TestCase
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -269,7 +269,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -288,7 +288,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -319,7 +319,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -338,7 +338,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,
@@ -366,7 +366,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -385,7 +385,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $publishedGroupIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $description,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -23,9 +23,9 @@ class DraftAgencyFactory implements DraftAgencyFactoryInterface
     }
 
     public function create(
-        EditorIdentifier $editorIdentifier,
-        Translation $translation,
-        AgencyName $agencyName,
+        EditorIdentifier          $editorIdentifier,
+        Language                  $language,
+        AgencyName                $agencyName,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftAgency {
         return new DraftAgency(
@@ -33,7 +33,7 @@ class DraftAgencyFactory implements DraftAgencyFactoryInterface
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
-            $translation,
+            $language,
             $agencyName,
             new CEO(''),
             null,

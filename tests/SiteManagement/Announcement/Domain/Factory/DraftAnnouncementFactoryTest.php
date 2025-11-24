@@ -7,7 +7,7 @@ namespace Tests\SiteManagement\Announcement\Domain\Factory;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactory;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
@@ -42,7 +42,7 @@ class DraftAnnouncementFactoryTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $category = Category::UPDATES;
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
 K-popを愛するすべてのファンの皆さまに、もっと「推し活」を楽しんでいただくための新機能、**「グローバル投票」**が本日よりスタートしました！🎉
@@ -70,7 +70,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcementFactory = $this->app->make(DraftAnnouncementFactoryInterface::class);
         $announcement = $announcementFactory->create(
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,
@@ -78,7 +78,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
         $this->assertTrue(UlidValidator::isValid((string)$announcement->announcementIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$announcement->translationSetIdentifier());
-        $this->assertSame($translation->value, $announcement->translation()->value);
+        $this->assertSame($language->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());

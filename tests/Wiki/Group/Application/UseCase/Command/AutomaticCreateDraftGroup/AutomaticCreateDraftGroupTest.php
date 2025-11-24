@@ -6,7 +6,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInterface;
@@ -124,7 +124,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     {
         return new AutomaticDraftGroupCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('auto generated group profile'),
@@ -150,7 +150,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('auto generated group'),

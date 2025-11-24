@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInput;
@@ -58,95 +58,38 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcess(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData();
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            $dummyCreateAgency->publishedAgency,
         );
-        $version = new Version(1);
-        $publishedAgency = new Agency(
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $version,
-        );
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn($publishedAgency);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $agency = $createAgency->process($input);
+
         $this->assertTrue(UlidValidator::isValid((string)$agency->agencyIdentifier()));
-        $this->assertSame((string)$publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
-        $this->assertSame((string)$editorIdentifier, (string)$agency->editorIdentifier());
-        $this->assertSame($translation->value, $agency->translation()->value);
-        $this->assertSame((string)$name, (string)$agency->name());
-        $this->assertSame((string)$CEO, (string)$agency->CEO());
-        $this->assertSame($foundedIn->value(), $agency->foundedIn()->value());
-        $this->assertSame((string)$description, (string)$agency->description());
-        $this->assertSame($status, $agency->status());
+        $this->assertSame((string)$dummyCreateAgency->publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
+        $this->assertSame((string)$dummyCreateAgency->editorIdentifier, (string)$agency->editorIdentifier());
+        $this->assertSame($dummyCreateAgency->language->value, $agency->language()->value);
+        $this->assertSame((string)$dummyCreateAgency->name, (string)$agency->name());
+        $this->assertSame((string)$dummyCreateAgency->CEO, (string)$agency->CEO());
+        $this->assertSame($dummyCreateAgency->foundedIn->value(), $agency->foundedIn()->value());
+        $this->assertSame((string)$dummyCreateAgency->description, (string)$agency->description());
+        $this->assertSame($dummyCreateAgency->status, $agency->status());
     }
 
     /**
@@ -158,79 +101,29 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithCollaborator(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::COLLABORATOR);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            null,
         );
-
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $result = $createAgency->process($input);
-
-        $this->assertInstanceOf(DraftAgency::class, $result);
+        $createAgency->process($input);
     }
 
     /**
@@ -242,80 +135,30 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithAgencyActor(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
         $agencyId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::AGENCY_ACTOR, $agencyId);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            null,
         );
-
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $result = $createAgency->process($input);
-
-        $this->assertInstanceOf(DraftAgency::class, $result);
+        $createAgency->process($input);
     }
 
     /**
@@ -327,80 +170,30 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithGroupActor(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
         $groupId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::GROUP_ACTOR, null, [$groupId]);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            null,
         );
-
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $result = $createAgency->process($input);
-
-        $this->assertInstanceOf(DraftAgency::class, $result);
+        $createAgency->process($input);
     }
 
     /**
@@ -412,81 +205,31 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithTalentActor(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
         $groupId = StrTestHelper::generateUlid();
         $talentId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            null,
         );
-
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $result = $createAgency->process($input);
-
-        $this->assertInstanceOf(DraftAgency::class, $result);
+        $createAgency->process($input);
     }
 
     /**
@@ -498,79 +241,29 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::ADMINISTRATOR);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            null,
         );
-
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $result = $createAgency->process($input);
-
-        $this->assertInstanceOf(DraftAgency::class, $result);
+        $createAgency->process($input);
     }
 
     /**
@@ -582,79 +275,29 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::SENIOR_COLLABORATOR);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
-        $agency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $status,
+        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+            $dummyCreateAgency,
+            null,
         );
-
-        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
-        $agencyFactory->shouldReceive('create')
-            ->once()
-            ->with($editorIdentifier, $translation, $name)
-            ->andReturn($agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($publishedAgencyIdentifier)
-            ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($agency)
-            ->andReturn(null);
 
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $result = $createAgency->process($input);
-
-        $this->assertInstanceOf(DraftAgency::class, $result);
+        $createAgency->process($input);
     }
 
     /**
@@ -665,38 +308,17 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithNoneRole(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
-        $CEO = new CEO('J.Y. Park');
-        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
-        $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
-**\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
-음악적인 면에서는 설립자인 박진영이 직접 프로듀서로서 많은 곡 작업에 참여하여, 대중에게 사랑받는 캐치한 히트곡을 수많이 만들어왔습니다.
----
-### 주요 소속 아티스트
-지금까지 **원더걸스(Wonder Girls)**, **2PM**, **미쓰에이(Miss A)**와 같이 K팝의 역사를 만들어 온 그룹들을 배출해왔습니다.
-현재도
-* **트와이스 (TWICE)**
-* **스트레이 키즈 (Stray Kids)**
-* **있지 (ITZY)**
-* **엔믹스 (NMIXX)**
-등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::NONE);
 
         $input = new CreateAgencyInput(
-            $publishedAgencyIdentifier,
-            $editorIdentifier,
-            $translation,
-            $name,
-            $CEO,
-            $foundedIn,
-            $description,
-            $principal,
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principal,
         );
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -705,5 +327,136 @@ class CreateAgencyTest extends TestCase
         $this->expectException(UnauthorizedException::class);
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
+    }
+
+    /**
+     * @param CreateAgencyTestData $dummy
+     * @param Agency|null $existingAgency
+     * @return array<int, Mockery\MockInterface>
+     */
+    private function mockAgencyFactoryAndRepository(CreateAgencyTestData $dummy, ?Agency $existingAgency): array
+    {
+        $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
+        $agencyFactory->shouldReceive('create')
+            ->once()
+            ->with($dummy->editorIdentifier, $dummy->language, $dummy->name)
+            ->andReturn($dummy->draftAgency);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummy->publishedAgencyIdentifier)
+            ->andReturn($existingAgency);
+        $agencyRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($dummy->draftAgency)
+            ->andReturn(null);
+
+        return [$agencyFactory, $agencyRepository];
+    }
+
+    /**
+     * @param Role $role
+     * @param string|null $agencyScopeId
+     * @param string[] $groupIds
+     * @param string[] $talentIds
+     * @return CreateAgencyTestData
+     */
+    private function createDummyCreateAgencyData(
+        Role $role = Role::ADMINISTRATOR,
+        ?string $agencyScopeId = null,
+        array $groupIds = [],
+        array $talentIds = [],
+    ): CreateAgencyTestData {
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $language = Language::KOREAN;
+        $name = new AgencyName('JYP엔터테インメント');
+        $CEO = new CEO('J.Y. Park');
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
+        $description = new Description(<<<'DESC'
+### JYP엔터テインメント (JYP Entertainment)
+가수 겸 음악 프로デューサー인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테インメント 기업입니다。HYBE, SM, YG엔터테インメント와 함께 한국 연예계를 이끄는 **'BIG4'** 중 하나로 꼽힙니다。
+**'진실, 성실, 겸손'**이라는 가치관을 매우 중시하며、소속 아ーティストの노래やダンス 실력뿐만 아니라 인성을 존重する育成方針으로 알려져 있습니다。 이러한 철학은 박진영が オーディション 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다。
+음악적인 면では 설립자인 박진영이 직접 プロデューサー로서 많은 곡 작업에 참여하여、대중에게 사랑받는キャッチ한ヒット곡を数多く 만들어왔습니다。
+---
+### 주요 소속 아ーティスト
+지금まで **원더걸즈(Wonder Girls)**、**2PM**、**ミ쓰에이(Miss A)**と 같이 K팝の 역사를 만들어 온 그룹들을 배출해왔습니다。
+현재도
+* **트와이스 (TWICE)**
+* **스트레이 キ즈 (Stray Kids)**
+* **있지 (ITZY)**
+* **엔믹ス (NMIXX)**
+등 세계적인 인기를 자랑하는 그룹가 多数 所属되어 있으며、K팝의 グローバル한 발전에서 중심적인 역할を 계속해서 맡고 있습니다。音楽 사업 외に 배우 マネジメントや 공연 事業도 하고 있습니다。
+DESC);
+
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $draftAgency = new DraftAgency(
+            $agencyIdentifier,
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $language,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $status,
+        );
+
+        $version = new Version(1);
+        $publishedAgency = new Agency(
+            $publishedAgencyIdentifier,
+            $translationSetIdentifier,
+            $language,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $version,
+        );
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, $role, $agencyScopeId, $groupIds, $talentIds);
+
+        return new CreateAgencyTestData(
+            $publishedAgencyIdentifier,
+            $editorIdentifier,
+            $language,
+            $name,
+            $CEO,
+            $foundedIn,
+            $description,
+            $principal,
+            $agencyIdentifier,
+            $translationSetIdentifier,
+            $status,
+            $draftAgency,
+            $publishedAgency,
+            $version,
+        );
+    }
+}
+
+readonly class CreateAgencyTestData
+{
+    public function __construct(
+        public AgencyIdentifier $publishedAgencyIdentifier,
+        public EditorIdentifier $editorIdentifier,
+        public Language $language,
+        public AgencyName $name,
+        public CEO $CEO,
+        public FoundedIn $foundedIn,
+        public Description $description,
+        public Principal $principal,
+        public AgencyIdentifier $agencyIdentifier,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public ApprovalStatus $status,
+        public DraftAgency $draftAgency,
+        public Agency $publishedAgency,
+        public Version $version,
+    ) {
     }
 }

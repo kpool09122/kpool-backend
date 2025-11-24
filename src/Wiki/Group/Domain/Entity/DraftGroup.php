@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -22,7 +22,7 @@ class DraftGroup
      * @param GroupIdentifier|null $publishedGroupIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param GroupName $name
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
@@ -35,7 +35,7 @@ class DraftGroup
         private ?GroupIdentifier                  $publishedGroupIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly EditorIdentifier         $editorIdentifier,
-        private readonly Translation              $translation,
+        private readonly Language                 $language,
         private GroupName                         $name,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
@@ -70,9 +70,9 @@ class DraftGroup
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): GroupName

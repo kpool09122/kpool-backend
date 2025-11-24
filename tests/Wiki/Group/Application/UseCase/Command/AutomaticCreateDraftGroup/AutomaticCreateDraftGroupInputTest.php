@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup;
 
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
@@ -25,7 +25,7 @@ class AutomaticCreateDraftGroupInputTest extends TestCase
     {
         $payload = new AutomaticDraftGroupCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('auto generated'),

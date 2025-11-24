@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Domain\Entity;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -17,20 +17,20 @@ class DraftAnnouncement
     /**
      * @param AnnouncementIdentifier $announcementIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $translation
      * @param Category $category
      * @param Title $title
      * @param Content $content
      * @param PublishedDate $publishedDate
      */
     public function __construct(
-        private readonly AnnouncementIdentifier $announcementIdentifier,
+        private readonly AnnouncementIdentifier   $announcementIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly Translation $translation,
-        private Category $category,
-        private Title $title,
-        private Content $content,
-        private PublishedDate $publishedDate,
+        private readonly Language                 $translation,
+        private Category                          $category,
+        private Title                             $title,
+        private Content                           $content,
+        private PublishedDate                     $publishedDate,
     ) {
     }
 
@@ -44,7 +44,7 @@ class DraftAnnouncement
         return $this->translationSetIdentifier;
     }
 
-    public function translation(): Translation
+    public function translation(): Language
     {
         return $this->translation;
     }

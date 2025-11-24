@@ -75,7 +75,7 @@ class PublishAgency implements PublishAgencyInterface
         } else {
             $publishedAgency = $this->agencyFactory->create(
                 $agency->translationSetIdentifier(),
-                $agency->translation(),
+                $agency->language(),
                 $agency->name(),
             );
         }

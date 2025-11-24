@@ -6,7 +6,7 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -29,7 +29,7 @@ class AutomaticCreateDraftSongInputTest extends TestCase
     {
         $payload = new AutomaticDraftSongCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new SongName('Auto Song'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [new BelongIdentifier(StrTestHelper::generateUlid())],

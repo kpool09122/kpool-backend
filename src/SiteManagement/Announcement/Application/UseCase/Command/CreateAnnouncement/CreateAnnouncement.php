@@ -8,11 +8,11 @@ use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 
-class CreateAnnouncement implements CreateAnnouncementInterface
+readonly class CreateAnnouncement implements CreateAnnouncementInterface
 {
     public function __construct(
         private DraftAnnouncementFactoryInterface $draftAnnouncementFactory,
-        private AnnouncementRepositoryInterface $announcementRepository,
+        private AnnouncementRepositoryInterface   $announcementRepository,
     ) {
     }
 
@@ -20,7 +20,7 @@ class CreateAnnouncement implements CreateAnnouncementInterface
     {
         $draftAnnouncement = $this->draftAnnouncementFactory->create(
             $input->translationSetIdentifier(),
-            $input->translation(),
+            $input->language(),
             $input->category(),
             $input->title(),
             $input->content(),

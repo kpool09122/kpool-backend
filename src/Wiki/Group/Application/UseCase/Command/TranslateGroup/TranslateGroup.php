@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\TranslateGroup;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
@@ -47,12 +47,12 @@ class TranslateGroup implements TranslateGroupInterface
             throw new UnauthorizedException();
         }
 
-        $translations = Translation::allExcept($group->translation());
+        $languages = Language::allExcept($group->language());
 
         $groupDrafts = [];
-        foreach ($translations as $translation) {
+        foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
-            $groupDraft = $this->translationService->translateGroup($group, $translation);
+            $groupDraft = $this->translationService->translateGroup($group, $language);
             $groupDrafts[] = $groupDraft;
             $this->groupRepository->saveDraft($groupDraft);
         }

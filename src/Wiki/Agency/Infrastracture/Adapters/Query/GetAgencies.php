@@ -24,7 +24,7 @@ class GetAgencies implements GetAgenciesInterface
     public function process(GetAgenciesInputPort $input, GetAgenciesOutputPort $output): void
     {
         $query = Agency::query()
-            ->where('translation', $input->translation()->value);
+            ->where('language', $input->language()->value);
         if ($input->order() && $input->sort()) {
             $query->orderBy($input->order(), $input->sort());
         }

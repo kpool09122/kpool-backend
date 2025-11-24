@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -593,7 +593,7 @@ class TranslateSongTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
@@ -611,7 +611,7 @@ class TranslateSongTest extends TestCase
         $song = new Song(
             $songIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -626,7 +626,7 @@ class TranslateSongTest extends TestCase
 
         // 日本語版
         $jaSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaName = new SongName('TT');
         $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $jaBelongIdentifiers = [
@@ -660,7 +660,7 @@ class TranslateSongTest extends TestCase
 
         // 英語版
         $enSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enName = new SongName('TT');
         $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $enBelongIdentifiers = [
@@ -696,7 +696,7 @@ class TranslateSongTest extends TestCase
             $songIdentifier,
             $editorIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -725,24 +725,24 @@ readonly class TranslateSongTestData
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        public SongIdentifier $songIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public SongIdentifier           $songIdentifier,
+        public EditorIdentifier         $editorIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public Translation $translation,
-        public SongName $name,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $belongIdentifiers,
-        public Lyricist $lyricist,
-        public Composer $composer,
-        public ReleaseDate $releaseDate,
-        public Overview $overView,
-        public ImagePath $coverImagePath,
-        public ExternalContentLink $musicVideoLink,
-        public Song $song,
-        public Translation $japanese,
-        public DraftSong $jaSong,
-        public Translation $english,
-        public DraftSong $enSong,
+        public Language                 $language,
+        public SongName                 $name,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $belongIdentifiers,
+        public Lyricist                 $lyricist,
+        public Composer                 $composer,
+        public ReleaseDate              $releaseDate,
+        public Overview                 $overView,
+        public ImagePath                $coverImagePath,
+        public ExternalContentLink      $musicVideoLink,
+        public Song                     $song,
+        public Language                 $japanese,
+        public DraftSong                $jaSong,
+        public Language                 $english,
+        public DraftSong                $enSong,
     ) {
     }
 }

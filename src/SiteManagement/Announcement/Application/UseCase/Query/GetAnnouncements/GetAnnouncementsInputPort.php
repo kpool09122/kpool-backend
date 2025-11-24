@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Query\GetAnnouncements;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 interface GetAnnouncementsInputPort
 {
@@ -16,5 +16,5 @@ interface GetAnnouncementsInputPort
 
     public function searchWords(): string;
 
-    public function translation(): Translation;
+    public function language(): Language;
 }

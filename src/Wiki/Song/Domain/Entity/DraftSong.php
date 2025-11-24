@@ -6,7 +6,7 @@ namespace Source\Wiki\Song\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -26,7 +26,7 @@ class DraftSong
      * @param SongIdentifier|null $publishedSongIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
      * @param BelongIdentifier[] $belongIdentifiers // タレントIDか、グループIDを想定
@@ -43,7 +43,7 @@ class DraftSong
         private ?SongIdentifier                   $publishedSongIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly EditorIdentifier         $editorIdentifier,
-        private readonly Translation              $translation,
+        private readonly Language                 $language,
         private SongName                          $name,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private array                             $belongIdentifiers,
@@ -53,7 +53,7 @@ class DraftSong
         private Overview                          $overView,
         private ?ImagePath                        $coverImagePath,
         private ?ExternalContentLink              $musicVideoLink,
-        private ApprovalStatus $status,
+        private ApprovalStatus                    $status,
     ) {
     }
 
@@ -82,9 +82,9 @@ class DraftSong
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): SongName

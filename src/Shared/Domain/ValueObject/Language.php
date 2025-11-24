@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Shared\Domain\ValueObject;
 
-enum Translation: string
+enum Language: string
 {
     case JAPANESE = 'ja';
     case KOREAN = 'ko';
     case ENGLISH = 'en';
 
     /**
-     * @param Translation $excluded
-     * @return Translation[]
+     * @param Language $excluded
+     * @return Language[]
      */
     public static function allExcept(self $excluded): array
     {

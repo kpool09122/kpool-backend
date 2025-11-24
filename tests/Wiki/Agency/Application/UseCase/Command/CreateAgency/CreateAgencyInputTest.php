@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -30,7 +30,7 @@ class CreateAgencyInputTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $name = new AgencyName('JYP엔터테인먼트');
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new \Source\Wiki\Agency\Domain\ValueObject\Description('### JYP엔터테인먼트 (JYP Entertainment)
@@ -53,7 +53,7 @@ class CreateAgencyInputTest extends TestCase
         $input = new CreateAgencyInput(
             $publishedAgencyIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $CEO,
             $foundedIn,
@@ -62,7 +62,7 @@ class CreateAgencyInputTest extends TestCase
         );
         $this->assertSame((string)$publishedAgencyIdentifier, (string)$input->publishedAgencyIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($language->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$CEO, (string)$input->CEO());
         $this->assertSame($foundedIn->value(), $input->foundedIn()->value());

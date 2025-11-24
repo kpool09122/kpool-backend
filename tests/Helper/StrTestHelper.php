@@ -11,10 +11,10 @@ use Symfony\Component\Uid\Uuid;
 
 class StrTestHelper
 {
-    private const DEFAULT_LENGTH = 10;
-    private const MIN_DOMAIN_LABEL_LENGTH = 1;
+    private const int DEFAULT_LENGTH = 10;
+    private const int MIN_DOMAIN_LABEL_LENGTH = 1;
 
-    private const MAX_DOMAIN_LABEL_LENGTH = 63;
+    private const int MAX_DOMAIN_LABEL_LENGTH = 63;
 
     /**
      * @param int $length

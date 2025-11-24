@@ -7,7 +7,7 @@ namespace Tests\Wiki\Song\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -37,7 +37,7 @@ class DraftSongTest extends TestCase
         $this->assertSame((string)$createDraftSong->publishedSongIdentifier, (string)$createDraftSong->song->publishedSongIdentifier());
         $this->assertSame((string)$createDraftSong->translationSetIdentifier, (string)$createDraftSong->song->translationSetIdentifier());
         $this->assertSame((string)$createDraftSong->editorIdentifier, (string)$createDraftSong->song->editorIdentifier());
-        $this->assertSame($createDraftSong->translation->value, $createDraftSong->song->translation()->value);
+        $this->assertSame($createDraftSong->language->value, $createDraftSong->song->language()->value);
         $this->assertSame((string)$createDraftSong->name, (string)$createDraftSong->song->name());
         $this->assertSame($createDraftSong->belongIdentifiers, $createDraftSong->song->belongIdentifiers());
         $this->assertSame((string)$createDraftSong->lyricist, (string)$createDraftSong->song->lyricist());
@@ -256,7 +256,7 @@ class DraftSongTest extends TestCase
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
@@ -276,7 +276,7 @@ class DraftSongTest extends TestCase
             $publishedSongIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -294,7 +294,7 @@ class DraftSongTest extends TestCase
             publishedSongIdentifier: $publishedSongIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
             editorIdentifier: $editorIdentifier,
-            translation: $translation,
+            language: $language,
             name: $name,
             agencyIdentifier: $agencyIdentifier,
             belongIdentifiers: $belongIdentifiers,
@@ -320,21 +320,21 @@ readonly class DraftSongTestData
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        public SongIdentifier $songIdentifier,
-        public SongIdentifier $publishedSongIdentifier,
+        public SongIdentifier           $songIdentifier,
+        public SongIdentifier           $publishedSongIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public SongName $name,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $belongIdentifiers,
-        public Lyricist $lyricist,
-        public Composer $composer,
-        public ReleaseDate $releaseDate,
-        public Overview $overView,
-        public ImagePath $coverImagePath,
-        public ExternalContentLink $musicVideoLink,
-        public ApprovalStatus $status,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $language,
+        public SongName                 $name,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $belongIdentifiers,
+        public Lyricist                 $lyricist,
+        public Composer                 $composer,
+        public ReleaseDate              $releaseDate,
+        public Overview                 $overView,
+        public ImagePath                $coverImagePath,
+        public ExternalContentLink      $musicVideoLink,
+        public ApprovalStatus           $status,
         public DraftSong $song,
     ) {
     }

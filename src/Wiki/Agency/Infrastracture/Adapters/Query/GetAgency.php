@@ -22,7 +22,7 @@ class GetAgency implements GetAgencyInterface
     {
         $agency = Agency::query()
             ->where('id', (string)$input->agencyIdentifier())
-            ->where('translation', $input->translation()->value)
+            ->where('language', $input->language()->value)
             ->first();
 
         if ($agency === null) {

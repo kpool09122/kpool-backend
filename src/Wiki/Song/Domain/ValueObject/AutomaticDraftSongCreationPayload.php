@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\ValueObject;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
 final readonly class AutomaticDraftSongCreationPayload
@@ -13,15 +13,15 @@ final readonly class AutomaticDraftSongCreationPayload
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        private EditorIdentifier $editorIdentifier,
-        private Translation $translation,
-        private SongName $name,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private array $belongIdentifiers,
-        private Lyricist $lyricist,
-        private Composer $composer,
-        private ?ReleaseDate $releaseDate,
-        private Overview $overview,
+        private EditorIdentifier         $editorIdentifier,
+        private Language                 $language,
+        private SongName                 $name,
+        private ?AgencyIdentifier        $agencyIdentifier,
+        private array                    $belongIdentifiers,
+        private Lyricist                 $lyricist,
+        private Composer                 $composer,
+        private ?ReleaseDate             $releaseDate,
+        private Overview                 $overview,
         private AutomaticDraftSongSource $source,
     ) {
     }
@@ -31,9 +31,9 @@ final readonly class AutomaticDraftSongCreationPayload
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function translation(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): SongName

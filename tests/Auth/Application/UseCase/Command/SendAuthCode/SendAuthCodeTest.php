@@ -24,7 +24,7 @@ use Source\Auth\Domain\ValueObject\UserIdentifier;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -116,7 +116,7 @@ class SendAuthCodeTest extends TestCase
         $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $profileImage = new ImagePath('/resources/path/test.png');
         $plainPassword = new PlainPassword('PlainPass1!');
         $hashedPassword = HashedPassword::fromPlain($plainPassword);
@@ -126,7 +126,7 @@ class SendAuthCodeTest extends TestCase
             $userIdentifier,
             $userName,
             $email,
-            $translation,
+            $language,
             $profileImage,
             $hashedPassword,
             $serviceRoles,

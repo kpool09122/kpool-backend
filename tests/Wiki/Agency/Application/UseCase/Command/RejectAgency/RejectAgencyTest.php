@@ -7,7 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\RejectAgency;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\UseCase\Command\RejectAgency\RejectAgency;
@@ -62,7 +62,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -165,7 +165,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -231,7 +231,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -299,7 +299,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -373,7 +373,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -443,7 +443,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -516,7 +516,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -584,7 +584,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -654,7 +654,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -727,7 +727,7 @@ class RejectAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));

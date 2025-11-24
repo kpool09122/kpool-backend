@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -23,15 +23,15 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
 
     /**
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param GroupName $name
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftGroup
      */
     public function create(
-        EditorIdentifier $editorIdentifier,
-        Translation $translation,
-        GroupName $name,
+        EditorIdentifier          $editorIdentifier,
+        Language                  $language,
+        GroupName                 $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftGroup {
         return new DraftGroup(
@@ -39,7 +39,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             null,
             new Description(''),

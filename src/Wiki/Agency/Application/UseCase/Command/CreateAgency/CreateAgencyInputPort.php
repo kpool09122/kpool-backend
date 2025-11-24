@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
@@ -19,7 +19,7 @@ interface CreateAgencyInputPort
 
     public function editorIdentifier(): EditorIdentifier;
 
-    public function translation(): Translation;
+    public function language(): Language;
 
     public function name(): AgencyName;
 

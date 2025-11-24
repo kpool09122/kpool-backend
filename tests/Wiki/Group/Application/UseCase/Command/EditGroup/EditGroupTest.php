@@ -8,7 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
@@ -60,7 +60,7 @@ class EditGroupTest extends TestCase
     public function testProcess(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -130,7 +130,7 @@ class EditGroupTest extends TestCase
         $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
-        $this->assertSame($translation->value, $group->translation()->value);
+        $this->assertSame($translation->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
@@ -222,7 +222,7 @@ class EditGroupTest extends TestCase
             $principal,
         );
 
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
@@ -295,7 +295,7 @@ class EditGroupTest extends TestCase
             $principal,
         );
 
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
@@ -367,7 +367,7 @@ class EditGroupTest extends TestCase
             $principal,
         );
 
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
@@ -440,7 +440,7 @@ class EditGroupTest extends TestCase
             $principal,
         );
 
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
@@ -512,7 +512,7 @@ class EditGroupTest extends TestCase
             $principal,
         );
 
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
@@ -583,7 +583,7 @@ class EditGroupTest extends TestCase
             $principal,
         );
 
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());

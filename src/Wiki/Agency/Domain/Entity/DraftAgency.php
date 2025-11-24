@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Entity;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -17,16 +17,16 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 class DraftAgency
 {
     public function __construct(
-        private readonly AgencyIdentifier  $agencyIdentifier,
-        private ?AgencyIdentifier          $publishedAgencyIdentifier,
+        private readonly AgencyIdentifier         $agencyIdentifier,
+        private ?AgencyIdentifier                 $publishedAgencyIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly EditorIdentifier $editorIdentifier,
-        private readonly Translation      $translation,
-        private AgencyName                $name,
-        private CEO                       $CEO,
-        private ?FoundedIn                $foundedIn,
-        private Description               $description,
-        private ApprovalStatus            $status,
+        private readonly EditorIdentifier         $editorIdentifier,
+        private readonly Language                 $language,
+        private AgencyName                        $name,
+        private CEO                               $CEO,
+        private ?FoundedIn                        $foundedIn,
+        private Description                       $description,
+        private ApprovalStatus                    $status,
     ) {
     }
 
@@ -55,9 +55,9 @@ class DraftAgency
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): AgencyName
