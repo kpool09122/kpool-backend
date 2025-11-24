@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\SiteManagement\Contact\Domain\ValueObject;
+namespace Tests\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\Account\Domain\ValueObject\ContractName;
 use Tests\Helper\StrTestHelper;
 
-class ContactNameTest extends TestCase
+class ContractNameTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -18,9 +18,9 @@ class ContactNameTest extends TestCase
      */
     public function test__construct(): void
     {
-        $text = '新機能の追加に関するお願い';
-        $contactName = new ContactName($text);
-        $this->assertSame($text, (string)$contactName);
+        $name = 'Test Taro';
+        $contactName = new ContractName($name);
+        $this->assertSame($name, (string)$contactName);
     }
 
     /**
@@ -31,7 +31,7 @@ class ContactNameTest extends TestCase
     public function testWhenEmpty(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ContactName('');
+        new ContractName('');
     }
 
     /**
@@ -42,7 +42,7 @@ class ContactNameTest extends TestCase
     public function testWhenOnlySpace(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ContactName('  ');
+        new ContractName('  ');
     }
 
     /**
@@ -53,6 +53,6 @@ class ContactNameTest extends TestCase
     public function testExceedMaxChars(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ContactName(StrTestHelper::generateStr(ContactName::MAX_LENGTH + 1));
+        new ContractName(StrTestHelper::generateStr(ContractName::MAX_LENGTH + 1));
     }
 }
