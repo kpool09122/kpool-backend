@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
 RUN pecl install pcov \
     && docker-php-ext-enable pcov
 
+# Raise PHP memory limit for coverage-heavy test runs
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
+
 # Composerのインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
