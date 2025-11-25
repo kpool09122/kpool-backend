@@ -28,6 +28,7 @@ use Tests\TestCase;
 class GroupRepositoryTest extends TestCase
 {
     /**
+     * 正常系：指定したIDのグループ情報が取得できること.
      * @throws BindingResolutionException
      */
     public function testFindById(): void
@@ -74,6 +75,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：指定したIDのグループ情報が存在しない場合、nullが返却されること.
      * @throws BindingResolutionException
      */
     public function testFindByIdWhenNotExist(): void
@@ -86,6 +88,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：指定したIDの下書きグループ情報が取得できること.
      * @throws BindingResolutionException
      */
     public function testFindDraftById(): void
@@ -138,6 +141,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：指定したIDの下書きグループ情報が存在しない場合、nullが返却されること.
      * @throws BindingResolutionException
      */
     public function testFindDraftByIdWhenNotExist(): void
@@ -150,6 +154,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：正しくグループ情報を保存できること.
      * @throws BindingResolutionException
      */
     public function testSave(): void
@@ -185,6 +190,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：正しく下書きを保存できること.
      * @throws BindingResolutionException
      */
     public function testSaveDraft(): void
@@ -221,6 +227,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：正しく下書を削除できること.
      * @throws BindingResolutionException
      */
     public function testDeleteDraft(): void
@@ -322,6 +329,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：指定した翻訳セットIDの下書き情報が存在しない場合、空配列が返却されること.
      * @throws BindingResolutionException
      */
     public function testFindDraftsByTranslationSetWhenNotExist(): void
