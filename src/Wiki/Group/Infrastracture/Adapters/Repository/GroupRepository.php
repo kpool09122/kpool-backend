@@ -61,7 +61,7 @@ final class GroupRepository implements GroupRepositoryInterface
                 'name' => (string) $group->name(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
-                'song_identifiers' => $this->extractSongIdentifiers($group->songIdentifiers()),
+                'song_identifiers' => $this->fromSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'version' => $group->version()->value(),
             ],
@@ -84,7 +84,7 @@ final class GroupRepository implements GroupRepositoryInterface
                 'name' => (string) $group->name(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
-                'song_identifiers' => $this->extractSongIdentifiers($group->songIdentifiers()),
+                'song_identifiers' => $this->fromSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'status' => $group->status()->value,
             ],
@@ -114,7 +114,7 @@ final class GroupRepository implements GroupRepositoryInterface
      * @param array<int, string>|null $songIdentifiers
      * @return SongIdentifier[]
      */
-    private function mapSongIdentifiers(?array $songIdentifiers): array
+    private function toSongIdentifiers(?array $songIdentifiers): array
     {
         $identifiers = $songIdentifiers ?? [];
 
@@ -128,7 +128,7 @@ final class GroupRepository implements GroupRepositoryInterface
      * @param SongIdentifier[] $songIdentifiers
      * @return string[]
      */
-    private function extractSongIdentifiers(array $songIdentifiers): array
+    private function fromSongIdentifiers(array $songIdentifiers): array
     {
         return array_map(
             static fn (SongIdentifier $identifier): string => (string) $identifier,
@@ -145,7 +145,7 @@ final class GroupRepository implements GroupRepositoryInterface
             new GroupName($model->name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $this->mapSongIdentifiers($model->song_identifiers),
+            $this->toSongIdentifiers($model->song_identifiers),
             $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version ?? 1),
         );
@@ -162,7 +162,7 @@ final class GroupRepository implements GroupRepositoryInterface
             new GroupName($model->name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $this->mapSongIdentifiers($model->song_identifiers),
+            $this->toSongIdentifiers($model->song_identifiers),
             $model->image_path ? new ImagePath($model->image_path) : null,
             ApprovalStatus::from($model->status),
         );
