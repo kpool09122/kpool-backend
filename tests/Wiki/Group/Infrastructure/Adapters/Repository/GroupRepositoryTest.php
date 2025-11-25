@@ -55,7 +55,6 @@ class GroupRepositoryTest extends TestCase
             'version' => $version,
         ], 'id');
 
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $group = $repository->findById(new GroupIdentifier($id));
 
@@ -80,7 +79,6 @@ class GroupRepositoryTest extends TestCase
      */
     public function testFindByIdWhenNotExist(): void
     {
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $group = $repository->findById(new GroupIdentifier(StrTestHelper::generateUlid()));
 
@@ -119,7 +117,6 @@ class GroupRepositoryTest extends TestCase
             'status' => $status->value,
         ], 'id');
 
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $group = $repository->findDraftById(new GroupIdentifier($id));
 
@@ -146,7 +143,6 @@ class GroupRepositoryTest extends TestCase
      */
     public function testFindDraftByIdWhenNotExist(): void
     {
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $group = $repository->findDraftById(new GroupIdentifier(StrTestHelper::generateUlid()));
 
@@ -174,7 +170,6 @@ class GroupRepositoryTest extends TestCase
             new Version(5),
         );
 
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $repository->save($group);
 
@@ -209,7 +204,6 @@ class GroupRepositoryTest extends TestCase
             ApprovalStatus::UnderReview,
         );
 
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $repository->saveDraft($draft);
 
@@ -259,8 +253,6 @@ class GroupRepositoryTest extends TestCase
             'song_identifiers' => json_encode([(string) $draft->songIdentifiers()[0]]),
             'status' => $draft->status()->value,
         ]);
-
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $repository->deleteDraft($draft);
 
@@ -334,7 +326,6 @@ class GroupRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSetWhenNotExist(): void
     {
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet(
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
