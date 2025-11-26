@@ -40,7 +40,6 @@ final class GroupRepository implements GroupRepositoryInterface
     {
         $draftModel = DraftGroupModel::query()
             ->where('id', (string) $groupIdentifier)
-            ->whereNotNull('editor_id')
             ->first();
 
         if ($draftModel === null) {
@@ -88,7 +87,6 @@ final class GroupRepository implements GroupRepositoryInterface
                 'song_identifiers' => $this->extractSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'status' => $group->status()->value,
-                'version' => null,
             ],
         );
     }
@@ -97,7 +95,6 @@ final class GroupRepository implements GroupRepositoryInterface
     {
         DraftGroupModel::query()
             ->where('id', (string) $group->groupIdentifier())
-            ->whereNotNull('editor_id')
             ->delete();
     }
 
@@ -106,7 +103,6 @@ final class GroupRepository implements GroupRepositoryInterface
     ): array {
         $draftModels = DraftGroupModel::query()
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
-            ->whereNotNull('editor_id')
             ->get();
 
         return $draftModels

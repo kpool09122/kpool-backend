@@ -217,7 +217,6 @@ class GroupRepositoryTest extends TestCase
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
             'status' => $draft->status()->value,
-            'version' => null,
         ]);
     }
 
