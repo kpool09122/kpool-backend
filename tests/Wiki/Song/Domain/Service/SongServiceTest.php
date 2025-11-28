@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -62,7 +62,7 @@ class SongServiceTest extends TestCase
             $publishedSongIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
@@ -113,7 +113,7 @@ class SongServiceTest extends TestCase
             $publishedSongIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
@@ -162,7 +162,7 @@ class SongServiceTest extends TestCase
             $publishedSongIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
@@ -239,7 +239,7 @@ class SongServiceTest extends TestCase
             $publishedSongIdentifier1,
             $translationSetIdentifier,
             $editorIdentifier1,
-            Translation::KOREAN,
+            Language::KOREAN,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
@@ -263,7 +263,7 @@ class SongServiceTest extends TestCase
             $publishedSongIdentifier2,
             $translationSetIdentifier,
             $editorIdentifier2,
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [

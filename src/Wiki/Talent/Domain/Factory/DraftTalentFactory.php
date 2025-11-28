@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -26,16 +26,16 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
 
     /**
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param TalentName $name
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftTalent
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
-        EditorIdentifier $editorIdentifier,
-        Translation $translation,
-        TalentName $name,
+        EditorIdentifier          $editorIdentifier,
+        Language                  $language,
+        TalentName                $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftTalent {
         return new DraftTalent(
@@ -43,7 +43,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             new RealName(''),
             null,

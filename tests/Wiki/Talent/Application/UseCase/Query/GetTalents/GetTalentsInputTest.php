@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Talent\Application\UseCase\Query\GetTalents;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Talent\Application\UseCase\Query\GetTalents\GetTalentsInput;
 use Tests\TestCase;
 
@@ -21,18 +21,18 @@ class GetTalentsInputTest extends TestCase
         $order = 'id';
         $sort = 'desc';
         $searchWords = 'test';
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $input = new GetTalentsInput(
             $limit,
             $order,
             $sort,
             $searchWords,
-            $translation,
+            $language,
         );
         $this->assertSame($limit, $input->limit());
         $this->assertSame($order, $input->order());
         $this->assertSame($sort, $input->sort());
         $this->assertSame($searchWords, $input->searchWords());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($language->value, $input->language()->value);
     }
 }

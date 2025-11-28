@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -25,7 +25,7 @@ class DraftTalent
      * @param TalentIdentifier|null $publishedTalentIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
      * @param ?AgencyIdentifier $agencyIdentifier
@@ -41,16 +41,16 @@ class DraftTalent
         private ?TalentIdentifier                 $publishedTalentIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly EditorIdentifier         $editorIdentifier,
-        private readonly Translation              $translation,
+        private readonly Language                 $language,
         private TalentName                        $name,
         private RealName                          $realName,
-        private ?AgencyIdentifier $agencyIdentifier,
+        private ?AgencyIdentifier                 $agencyIdentifier,
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
         private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
-        private ApprovalStatus $status,
+        private ApprovalStatus                    $status,
     ) {
     }
 
@@ -79,9 +79,9 @@ class DraftTalent
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): TalentName

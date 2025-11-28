@@ -48,7 +48,7 @@ class CreateTalent implements CreateTalentInterface
 
         $talent = $this->talentFactory->create(
             $input->editorIdentifier(),
-            $input->translation(),
+            $input->language(),
             $input->name(),
         );
         if ($input->publishedTalentIdentifier()) {

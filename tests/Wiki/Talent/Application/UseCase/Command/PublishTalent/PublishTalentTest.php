@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -107,7 +107,7 @@ class PublishTalentTest extends TestCase
         $publishedTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $exName,
             $exRealName,
             $exAgencyIdentifier,
@@ -148,7 +148,7 @@ class PublishTalentTest extends TestCase
         $publishTalent = $this->app->make(PublishTalentInterface::class);
         $publishedTalent = $publishTalent->process($input);
         $this->assertSame((string)$publishTalentInfo->publishedTalentIdentifier, (string)$publishedTalent->talentIdentifier());
-        $this->assertSame($publishTalentInfo->translation->value, $publishedTalent->translation()->value);
+        $this->assertSame($publishTalentInfo->language->value, $publishedTalent->language()->value);
         $this->assertSame((string)$publishTalentInfo->name, (string)$publishedTalent->name());
         $this->assertSame((string)$publishTalentInfo->realName, (string)$publishedTalent->realName());
         $this->assertSame($publishTalentInfo->groupIdentifiers, $publishedTalent->groupIdentifiers());
@@ -178,7 +178,7 @@ class PublishTalentTest extends TestCase
             null,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -203,7 +203,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
             null,
@@ -232,7 +232,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->translation, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -247,7 +247,7 @@ class PublishTalentTest extends TestCase
         $publishTalent = $this->app->make(PublishTalentInterface::class);
         $publishedTalent = $publishTalent->process($input);
         $this->assertSame((string)$publishTalentInfo->publishedTalentIdentifier, (string)$publishedTalent->talentIdentifier());
-        $this->assertSame($publishTalentInfo->translation->value, $publishedTalent->translation()->value);
+        $this->assertSame($publishTalentInfo->language->value, $publishedTalent->language()->value);
         $this->assertSame((string)$publishTalentInfo->name, (string)$publishedTalent->name());
         $this->assertSame((string)$publishTalentInfo->realName, (string)$publishedTalent->realName());
         $this->assertSame($publishTalentInfo->groupIdentifiers, $publishedTalent->groupIdentifiers());
@@ -324,7 +324,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -540,7 +540,7 @@ class PublishTalentTest extends TestCase
             null,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -567,7 +567,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
             null,
@@ -596,7 +596,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->translation, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -672,7 +672,7 @@ class PublishTalentTest extends TestCase
             null,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -699,7 +699,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
             null,
@@ -728,7 +728,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->translation, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -806,7 +806,7 @@ class PublishTalentTest extends TestCase
             null,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -834,7 +834,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
             null,
@@ -863,7 +863,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->translation, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -899,7 +899,7 @@ class PublishTalentTest extends TestCase
             null,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -924,7 +924,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
             null,
@@ -953,7 +953,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->translation, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -988,7 +988,7 @@ class PublishTalentTest extends TestCase
             null,
             $publishTalentInfo->translationSetIdentifier,
             $publishTalentInfo->editorIdentifier,
-            $publishTalentInfo->translation,
+            $publishTalentInfo->language,
             $publishTalentInfo->name,
             $publishTalentInfo->realName,
             $publishTalentInfo->agencyIdentifier,
@@ -1034,7 +1034,7 @@ class PublishTalentTest extends TestCase
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -1063,7 +1063,7 @@ class PublishTalentTest extends TestCase
             $publishedTalentIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -1079,7 +1079,7 @@ class PublishTalentTest extends TestCase
             $publishedTalentIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -1110,20 +1110,20 @@ readonly class PublishTalentTestData
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        public TalentIdentifier $publishedTalentIdentifier,
+        public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public TalentName $name,
-        public RealName $realName,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $groupIdentifiers,
-        public Birthday $birthday,
-        public Career $career,
-        public string $base64EncodedImage,
-        public ExternalContentLink $link1,
-        public ExternalContentLink $link2,
-        public ExternalContentLink $link3,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $language,
+        public TalentName               $name,
+        public RealName                 $realName,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $groupIdentifiers,
+        public Birthday                 $birthday,
+        public Career                   $career,
+        public string                   $base64EncodedImage,
+        public ExternalContentLink      $link1,
+        public ExternalContentLink      $link2,
+        public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
         public ImagePath $imagePath,
         public TalentIdentifier $talentIdentifier,

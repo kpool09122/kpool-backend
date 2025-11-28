@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
@@ -14,10 +14,10 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class TranslateAgency implements TranslateAgencyInterface
+readonly class TranslateAgency implements TranslateAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface $agencyRepository,
+        private AgencyRepositoryInterface   $agencyRepository,
         private TranslationServiceInterface $translationService,
     ) {
     }
@@ -47,11 +47,11 @@ class TranslateAgency implements TranslateAgencyInterface
             throw new UnauthorizedException();
         }
 
-        $translations = Translation::allExcept($agency->translation());
+        $languages = Language::allExcept($agency->language());
 
         $agencyDrafts = [];
-        foreach ($translations as $translation) {
-            $agencyDraft = $this->translationService->translateAgency($agency, $translation);
+        foreach ($languages as $language) {
+            $agencyDraft = $this->translationService->translateAgency($agency, $language);
             $agencyDrafts[] = $agencyDraft;
             $this->agencyRepository->saveDraft($agencyDraft);
         }

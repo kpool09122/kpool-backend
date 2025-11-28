@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Query\GetSongs;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 interface GetSongsInputPort
 {
@@ -16,5 +16,5 @@ interface GetSongsInputPort
 
     public function searchWords(): string;
 
-    public function translation(): Translation;
+    public function language(): Language;
 }

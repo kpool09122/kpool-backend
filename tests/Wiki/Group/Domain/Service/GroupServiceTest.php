@@ -7,7 +7,7 @@ namespace Tests\Wiki\Group\Domain\Service;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
@@ -58,7 +58,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹'),
@@ -75,7 +75,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ'),
@@ -122,7 +122,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹'),
@@ -139,7 +139,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ'),
@@ -185,7 +185,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ'),
@@ -260,7 +260,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::KOREAN,
+            Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -283,7 +283,7 @@ class GroupServiceTest extends TestCase
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('TWICE: The 9-Member Girl Group That Captivated the World
@@ -305,7 +305,7 @@ From their bright and cute concept in their early debut years, they have continu
             null,
             $translationSetIdentifier,
             $editorIdentifier,
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ

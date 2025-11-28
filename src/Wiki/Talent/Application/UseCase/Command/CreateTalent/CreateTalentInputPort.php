@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -22,7 +22,7 @@ interface CreateTalentInputPort
 
     public function editorIdentifier(): EditorIdentifier;
 
-    public function translation(): Translation;
+    public function language(): Language;
 
     public function name(): TalentName;
 

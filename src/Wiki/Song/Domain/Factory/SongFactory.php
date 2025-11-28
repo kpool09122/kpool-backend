@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\Factory;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Shared\Infrastructure\Service\Ulid\UlidGenerator;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -24,13 +24,13 @@ readonly class SongFactory implements SongFactoryInterface
 
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
-        Translation $translation,
-        SongName $name,
+        Language                 $language,
+        SongName                 $name,
     ): Song {
         return new Song(
             new SongIdentifier($this->ulidGenerator->generate()),
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             null,
             [],

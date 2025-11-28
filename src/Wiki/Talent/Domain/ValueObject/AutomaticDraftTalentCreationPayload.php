@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Domain\ValueObject;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
 final readonly class AutomaticDraftTalentCreationPayload
@@ -13,14 +13,14 @@ final readonly class AutomaticDraftTalentCreationPayload
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        private EditorIdentifier $editorIdentifier,
-        private Translation $translation,
-        private TalentName $name,
-        private RealName $realName,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private array $groupIdentifiers,
-        private ?Birthday $birthday,
-        private Career $career,
+        private EditorIdentifier           $editorIdentifier,
+        private Language                   $language,
+        private TalentName                 $name,
+        private RealName                   $realName,
+        private ?AgencyIdentifier          $agencyIdentifier,
+        private array                      $groupIdentifiers,
+        private ?Birthday                  $birthday,
+        private Career                     $career,
         private AutomaticDraftTalentSource $source,
     ) {
     }
@@ -30,9 +30,9 @@ final readonly class AutomaticDraftTalentCreationPayload
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): TalentName

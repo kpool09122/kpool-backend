@@ -48,7 +48,7 @@ readonly class CreateSong implements CreateSongInterface
 
         $song = $this->songFactory->create(
             $input->editorIdentifier(),
-            $input->translation(),
+            $input->language(),
             $input->name()
         );
         if ($input->publishedSongIdentifier()) {

@@ -6,7 +6,7 @@ namespace Tests\Wiki\Song\Domain\ValueObject;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
@@ -24,7 +24,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
     public function test__construct(): void
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::ENGLISH;
+        $language = Language::ENGLISH;
         $name = new SongName('Sample Song');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $belongIdentifiers = [
@@ -39,7 +39,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
 
         $payload = new AutomaticDraftSongCreationPayload(
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $agencyIdentifier,
             $belongIdentifiers,
@@ -51,7 +51,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
         );
 
         $this->assertSame($editorIdentifier, $payload->editorIdentifier());
-        $this->assertSame($translation, $payload->translation());
+        $this->assertSame($language, $payload->translation());
         $this->assertSame($name, $payload->name());
         $this->assertSame($agencyIdentifier, $payload->agencyIdentifier());
         $this->assertSame($belongIdentifiers, $payload->belongIdentifiers());
@@ -66,7 +66,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
     {
         $payload = new AutomaticDraftSongCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new SongName('Optional Song'),
             null,
             [],

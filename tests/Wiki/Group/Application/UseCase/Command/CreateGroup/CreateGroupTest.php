@@ -9,7 +9,7 @@ use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInput;
@@ -63,7 +63,7 @@ class CreateGroupTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -153,7 +153,7 @@ class CreateGroupTest extends TestCase
         $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
-        $this->assertSame($translation->value, $group->translation()->value);
+        $this->assertSame($translation->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
@@ -173,7 +173,7 @@ class CreateGroupTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -252,7 +252,7 @@ class CreateGroupTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyId = StrTestHelper::generateUlid();
         $agencyIdentifier = new AgencyIdentifier($agencyId);
@@ -332,7 +332,7 @@ class CreateGroupTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -410,7 +410,7 @@ class CreateGroupTest extends TestCase
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹

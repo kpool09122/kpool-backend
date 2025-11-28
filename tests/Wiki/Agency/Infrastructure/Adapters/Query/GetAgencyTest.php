@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
@@ -43,7 +43,7 @@ class GetAgencyTest extends TestCase
     public function testProcess(): void
     {
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -64,7 +64,7 @@ class GetAgencyTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string) $agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation->value,
+            'language' => $language->value,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -73,7 +73,7 @@ class GetAgencyTest extends TestCase
         ], 'id');
         $input = new GetAgencyInput(
             $agencyIdentifer,
-            $translation
+            $language
         );
         $getAgency = $this->app->make(GetAgencyInterface::class);
         $readModel = $getAgency->process($input);
@@ -96,10 +96,10 @@ class GetAgencyTest extends TestCase
     public function testWhenNotFoundAgency(): void
     {
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $input = new GetAgencyInput(
             $agencyIdentifer,
-            $translation
+            $language
         );
         $this->expectException(AgencyNotFoundException::class);
         $getAgency = $this->app->make(GetAgencyInterface::class);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -23,13 +23,13 @@ class AgencyFactory implements AgencyFactoryInterface
 
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
-        Translation $translation,
-        AgencyName $agencyName,
+        Language                 $language,
+        AgencyName               $agencyName,
     ): Agency {
         return new Agency(
             new AgencyIdentifier($this->ulidGenerator->generate()),
             $translationSetIdentifier,
-            $translation,
+            $language,
             $agencyName,
             new CEO(''),
             null,

@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -631,7 +631,7 @@ class TranslateTalentTest extends TestCase
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -663,7 +663,7 @@ class TranslateTalentTest extends TestCase
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -676,7 +676,7 @@ class TranslateTalentTest extends TestCase
         );
 
         $jaTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaName = new TalentName('チェヨン');
         $jaRealName = new RealName('ソン・チェヨン');
         $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -716,7 +716,7 @@ TWICEのメンバーとして、チェヨンは数多くのヒット曲に参加
         );
 
         $enTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enName = new TalentName('Chae-young');
         $enRealName = new RealName('Son Chae-young');
         $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -759,7 +759,7 @@ Recently, she has also begun activities as a solo artist, further broadening her
             $talentIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -792,27 +792,27 @@ readonly class TranslateTalentTestData
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        public TalentIdentifier $talentIdentifier,
+        public TalentIdentifier         $talentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public TalentName $name,
-        public RealName $realName,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $groupIdentifiers,
-        public Birthday $birthday,
-        public Career $career,
-        public ExternalContentLink $link1,
-        public ExternalContentLink $link2,
-        public ExternalContentLink $link3,
-        public RelevantVideoLinks $relevantVideoLinks,
-        public ImagePath $imageLink,
-        public ApprovalStatus $status,
-        public Talent $talent,
-        public Translation $english,
-        public DraftTalent $enTalent,
-        public Translation $japanese,
-        public DraftTalent $jaTalent,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $language,
+        public TalentName               $name,
+        public RealName                 $realName,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $groupIdentifiers,
+        public Birthday                 $birthday,
+        public Career                   $career,
+        public ExternalContentLink      $link1,
+        public ExternalContentLink      $link2,
+        public ExternalContentLink      $link3,
+        public RelevantVideoLinks       $relevantVideoLinks,
+        public ImagePath                $imageLink,
+        public ApprovalStatus           $status,
+        public Talent                   $talent,
+        public Language                 $english,
+        public DraftTalent              $enTalent,
+        public Language                 $japanese,
+        public DraftTalent              $jaTalent,
     ) {
     }
 }

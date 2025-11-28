@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Query\GetAgency;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 
-class GetAgencyInput implements GetAgencyInputPort
+readonly class GetAgencyInput implements GetAgencyInputPort
 {
     public function __construct(
         private AgencyIdentifier $agencyIdentifier,
-        private Translation      $translation,
+        private Language         $language,
     ) {
     }
 
@@ -20,8 +20,8 @@ class GetAgencyInput implements GetAgencyInputPort
         return $this->agencyIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 }

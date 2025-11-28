@@ -50,7 +50,7 @@ readonly class RegisterUser implements RegisterUserInterface
         $user = $this->userFactory->create(
             $input->username(),
             $input->email(),
-            $input->translation(),
+            $input->language(),
             $input->password(),
         );
         $user->copyEmailVerifiedAt($session);

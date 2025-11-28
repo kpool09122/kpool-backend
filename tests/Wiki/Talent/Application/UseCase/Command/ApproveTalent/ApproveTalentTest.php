@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -696,7 +696,7 @@ class ApproveTalentTest extends TestCase
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -789,20 +789,20 @@ readonly class ApproveTalentTestData
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        public TalentIdentifier $publishedTalentIdentifier,
+        public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public TalentName $name,
-        public RealName $realName,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $groupIdentifiers,
-        public Birthday $birthday,
-        public Career $career,
-        public string $base64EncodedImage,
-        public ExternalContentLink $link1,
-        public ExternalContentLink $link2,
-        public ExternalContentLink $link3,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $translation,
+        public TalentName               $name,
+        public RealName                 $realName,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $groupIdentifiers,
+        public Birthday                 $birthday,
+        public Career                   $career,
+        public string                   $base64EncodedImage,
+        public ExternalContentLink      $link1,
+        public ExternalContentLink      $link2,
+        public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
         public ImagePath $imageLink,
         public TalentIdentifier $talentIdentifier,

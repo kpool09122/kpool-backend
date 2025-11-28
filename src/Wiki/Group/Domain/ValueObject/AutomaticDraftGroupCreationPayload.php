@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Domain\ValueObject;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
 final readonly class AutomaticDraftGroupCreationPayload
@@ -13,12 +13,12 @@ final readonly class AutomaticDraftGroupCreationPayload
      * @param SongIdentifier[] $songIdentifiers
      */
     public function __construct(
-        private EditorIdentifier $editorIdentifier,
-        private Translation $translation,
-        private GroupName $name,
-        private AgencyIdentifier $agencyIdentifier,
-        private Description $description,
-        private array $songIdentifiers,
+        private EditorIdentifier          $editorIdentifier,
+        private Language                  $language,
+        private GroupName                 $name,
+        private AgencyIdentifier          $agencyIdentifier,
+        private Description               $description,
+        private array                     $songIdentifiers,
         private AutomaticDraftGroupSource $source,
     ) {
     }
@@ -28,9 +28,9 @@ final readonly class AutomaticDraftGroupCreationPayload
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function translation(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): GroupName

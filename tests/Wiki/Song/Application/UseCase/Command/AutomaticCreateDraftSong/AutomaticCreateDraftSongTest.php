@@ -7,7 +7,7 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -130,7 +130,7 @@ class AutomaticCreateDraftSongTest extends TestCase
     {
         return new AutomaticDraftSongCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new SongName('Auto Song'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             [
@@ -159,7 +159,7 @@ class AutomaticCreateDraftSongTest extends TestCase
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new SongName('Auto Song'),
             null,
             [],

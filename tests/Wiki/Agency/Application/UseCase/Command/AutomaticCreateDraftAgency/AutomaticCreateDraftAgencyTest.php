@@ -7,7 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgen
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInterface;
@@ -125,7 +125,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     {
         return new AutomaticDraftAgencyCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
@@ -149,7 +149,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new AgencyName('JYP엔터テインメント'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),

@@ -7,7 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
@@ -62,7 +62,7 @@ class TranslateAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -101,7 +101,7 @@ class TranslateAgencyTest extends TestCase
             $version,
         );
 
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
         $jaCEO = new CEO('J.Y. Park');
         $jaDescription = new Description('JYPエンターテインメント (JYP Entertainment)
@@ -129,7 +129,7 @@ NMIXX
             ApprovalStatus::Pending
         );
 
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
         $enCEO = new CEO('J.Y. Park');
         $enDescription = new Description('JYP Entertainment
@@ -238,7 +238,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -295,7 +295,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -323,7 +323,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $version,
         );
 
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
         $jaCEO = new CEO('J.Y. Park');
         $jaDescription = new Description('### JYPエンターテインメント (JYP Entertainment)
@@ -341,7 +341,7 @@ These groups continue to play a central role in the global growth of K-pop. In a
             ApprovalStatus::Pending
         );
 
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
         $enCEO = new CEO('J.Y. Park');
         $enDescription = new Description('### JYP Entertainment
@@ -405,7 +405,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -461,7 +461,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -518,7 +518,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -577,7 +577,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -605,7 +605,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $version,
         );
 
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
         $jaCEO = new CEO('J.Y. Park');
         $jaDescription = new Description('### JYPエンターテインメント (JYP Entertainment)
@@ -623,7 +623,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             ApprovalStatus::Pending
         );
 
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
         $enCEO = new CEO('J.Y. Park');
         $enDescription = new Description('### JYP Entertainment
@@ -689,7 +689,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -716,7 +716,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $version,
         );
 
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
         $jaCEO = new CEO('J.Y. Park');
         $jaDescription = new Description('### JYPエンターテインメント');
@@ -733,7 +733,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             ApprovalStatus::Pending
         );
 
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
         $enCEO = new CEO('J.Y. Park');
         $enDescription = new Description('### JYP Entertainment');
@@ -796,7 +796,7 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));

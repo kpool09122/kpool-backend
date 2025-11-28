@@ -6,7 +6,7 @@ namespace Tests\Wiki\Agency\Domain\Service;
 
 use DateTimeImmutable;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
@@ -44,7 +44,7 @@ class AgencyServiceTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             $translationSetIdentifier,
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
@@ -81,7 +81,7 @@ class AgencyServiceTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             $translationSetIdentifier,
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
@@ -117,7 +117,7 @@ class AgencyServiceTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             $translationSetIdentifier,
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::ENGLISH,
+            Language::ENGLISH,
             new AgencyName('JYP Entertainment'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
@@ -177,7 +177,7 @@ class AgencyServiceTest extends TestCase
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
@@ -192,7 +192,7 @@ class AgencyServiceTest extends TestCase
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::JAPANESE,
+            Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),

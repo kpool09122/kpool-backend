@@ -6,7 +6,7 @@ namespace Source\Wiki\Agency\Infrastracture\Adapters\Repository;
 
 use Application\Models\Wiki\Agency as AgencyModel;
 use Application\Models\Wiki\DraftAgency as DraftAgencyModel;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
@@ -35,7 +35,7 @@ class AgencyRepository implements AgencyRepositoryInterface
         return new Agency(
             new AgencyIdentifier($agencyModel->id),
             new TranslationSetIdentifier($agencyModel->translation_set_identifier),
-            Translation::from($agencyModel->translation),
+            Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
             new CEO($agencyModel->CEO),
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
@@ -59,7 +59,7 @@ class AgencyRepository implements AgencyRepositoryInterface
             $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
             $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
             new EditorIdentifier($agencyModel->editor_id),
-            Translation::from($agencyModel->translation),
+            Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
             new CEO($agencyModel->CEO),
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
@@ -73,7 +73,7 @@ class AgencyRepository implements AgencyRepositoryInterface
         DraftAgencyModel::query()->updateOrCreate(
             [
                 'id' => (string)$agency->agencyIdentifier(),
-                'translation' => $agency->translation()->value,
+                'language' => $agency->language()->value,
                 'editor_id' => (string)$agency->editorIdentifier(),
             ],
             [
@@ -100,7 +100,7 @@ class AgencyRepository implements AgencyRepositoryInterface
         AgencyModel::query()->updateOrCreate(
             [
                 'id' => (string)$agency->agencyIdentifier(),
-                'translation' => $agency->translation()->value,
+                'language' => $agency->language()->value,
             ],
             [
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
@@ -120,13 +120,13 @@ class AgencyRepository implements AgencyRepositoryInterface
             ->where('translation_set_identifier', (string)$translationSetIdentifier)
             ->get();
 
-        return $agencyModels->map(function ($agencyModel) {
+        return $agencyModels->map(function (DraftAgencyModel $agencyModel) {
             return new DraftAgency(
                 new AgencyIdentifier($agencyModel->id),
                 $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
                 $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
                 new EditorIdentifier($agencyModel->editor_id),
-                Translation::from($agencyModel->translation),
+                Language::from($agencyModel->language),
                 new AgencyName($agencyModel->name),
                 new CEO($agencyModel->CEO),
                 $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,

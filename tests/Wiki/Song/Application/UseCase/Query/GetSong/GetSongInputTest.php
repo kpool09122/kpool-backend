@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Application\UseCase\Query\GetSong;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Song\Application\UseCase\Query\GetSong\GetSongInput;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -20,9 +20,9 @@ class GetSongInputTest extends TestCase
     public function test__construct(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
-        $input = new GetSongInput($songIdentifier, $translation);
+        $language = Language::KOREAN;
+        $input = new GetSongInput($songIdentifier, $language);
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($language->value, $input->language()->value);
     }
 }

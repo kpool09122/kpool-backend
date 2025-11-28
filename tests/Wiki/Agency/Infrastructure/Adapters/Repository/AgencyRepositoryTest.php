@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
@@ -36,7 +36,7 @@ class AgencyRepositoryTest extends TestCase
     public function testFindById(): void
     {
         $id = StrTestHelper::generateUlid();
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -57,7 +57,7 @@ class AgencyRepositoryTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => $id,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'translation' => $translation,
+            'language' => $translation,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -69,7 +69,7 @@ class AgencyRepositoryTest extends TestCase
             new AgencyIdentifier($id),
         );
         $this->assertSame($id, (string)$agency->agencyIdentifier());
-        $this->assertSame($translation, $agency->translation());
+        $this->assertSame($translation, $agency->language());
         $this->assertSame($name, (string)$agency->name());
         $this->assertSame($CEO, (string)$agency->CEO());
         $this->assertSame($founded_in->format('Y-m-d'), $agency->foundedIn()->value()->format('Y-m-d'));
@@ -103,7 +103,7 @@ class AgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUlid();
         $publishedId = StrTestHelper::generateUlid();
         $editorId = StrTestHelper::generateUlid();
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -126,7 +126,7 @@ class AgencyRepositoryTest extends TestCase
             'published_id' => $publishedId,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'editor_id' => $editorId,
-            'translation' => $translation,
+            'language' => $translation,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -139,7 +139,7 @@ class AgencyRepositoryTest extends TestCase
         );
         $this->assertSame($id, (string)$agency->agencyIdentifier());
         $this->assertSame($publishedId, (string)$agency->publishedAgencyIdentifier());
-        $this->assertSame($translation, $agency->translation());
+        $this->assertSame($translation, $agency->language());
         $this->assertSame($name, (string)$agency->name());
         $this->assertSame($CEO, (string)$agency->CEO());
         $this->assertSame($founded_in->format('Y-m-d'), $agency->foundedIn()->value()->format('Y-m-d'));
@@ -173,7 +173,7 @@ class AgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUlid();
         $publishedId = StrTestHelper::generateUlid();
         $editorId = StrTestHelper::generateUlid();
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -196,7 +196,7 @@ class AgencyRepositoryTest extends TestCase
             new AgencyIdentifier($publishedId),
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier($editorId),
-            $translation,
+            $language,
             new AgencyName($name),
             new CEO($CEO),
             new FoundedIn($founded_in),
@@ -212,7 +212,7 @@ class AgencyRepositoryTest extends TestCase
             'id' => $id,
             'published_id' => $publishedId,
             'editor_id' => $editorId,
-            'translation' => $translation,
+            'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -232,7 +232,7 @@ class AgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUlid();
         $publishedId = StrTestHelper::generateUlid();
         $editorId = StrTestHelper::generateUlid();
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -255,7 +255,7 @@ class AgencyRepositoryTest extends TestCase
             'published_id' => $publishedId,
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'editor_id' => $editorId,
-            'translation' => $translation,
+            'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -267,7 +267,7 @@ class AgencyRepositoryTest extends TestCase
             'id' => $id,
             'published_id' => $publishedId,
             'editor_id' => $editorId,
-            'translation' => $translation,
+            'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -280,7 +280,7 @@ class AgencyRepositoryTest extends TestCase
             new AgencyIdentifier($publishedId),
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier($editorId),
-            $translation,
+            $language,
             new AgencyName($name),
             new CEO($CEO),
             new FoundedIn($founded_in),
@@ -296,7 +296,7 @@ class AgencyRepositoryTest extends TestCase
             'id' => $id,
             'published_id' => $publishedId,
             'editor_id' => $editorId,
-            'translation' => $translation,
+            'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -314,7 +314,7 @@ class AgencyRepositoryTest extends TestCase
     public function testSave(): void
     {
         $id = StrTestHelper::generateUlid();
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $founded_in = new DateTimeImmutable('1997-04-25');
@@ -335,7 +335,7 @@ class AgencyRepositoryTest extends TestCase
         $agency = new Agency(
             new AgencyIdentifier($id),
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            $translation,
+            $language,
             new AgencyName($name),
             new CEO($CEO),
             new FoundedIn($founded_in),
@@ -349,7 +349,7 @@ class AgencyRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('agencies', [
             'id' => $id,
-            'translation' => $translation,
+            'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
             'founded_in' => $founded_in,
@@ -372,7 +372,7 @@ class AgencyRepositoryTest extends TestCase
         $id1 = StrTestHelper::generateUlid();
         $publishedId1 = StrTestHelper::generateUlid();
         $editorId1 = StrTestHelper::generateUlid();
-        $translation1 = Translation::KOREAN;
+        $language1 = Language::KOREAN;
         $name1 = 'JYP엔터테인먼트';
         $CEO1 = 'J.Y. Park';
         $founded_in1 = new DateTimeImmutable('1997-04-25');
@@ -384,7 +384,7 @@ class AgencyRepositoryTest extends TestCase
             'published_id' => $publishedId1,
             'translation_set_identifier' => (string)$translationSetIdentifier,
             'editor_id' => $editorId1,
-            'translation' => $translation1,
+            'language' => $language1,
             'name' => $name1,
             'CEO' => $CEO1,
             'founded_in' => $founded_in1,
@@ -396,7 +396,7 @@ class AgencyRepositoryTest extends TestCase
         $id2 = StrTestHelper::generateUlid();
         $publishedId2 = StrTestHelper::generateUlid();
         $editorId2 = StrTestHelper::generateUlid();
-        $translation2 = Translation::JAPANESE;
+        $language2 = Language::JAPANESE;
         $name2 = 'JYPエンターテイメント';
         $CEO2 = 'J.Y. Park';
         $founded_in2 = new DateTimeImmutable('1997-04-25');
@@ -408,7 +408,7 @@ class AgencyRepositoryTest extends TestCase
             'published_id' => $publishedId2,
             'translation_set_identifier' => (string)$translationSetIdentifier,
             'editor_id' => $editorId2,
-            'translation' => $translation2,
+            'language' => $language2,
             'name' => $name2,
             'CEO' => $CEO2,
             'founded_in' => $founded_in2,
@@ -420,7 +420,7 @@ class AgencyRepositoryTest extends TestCase
         $id3 = StrTestHelper::generateUlid();
         $publishedId3 = StrTestHelper::generateUlid();
         $editorId3 = StrTestHelper::generateUlid();
-        $translation3 = Translation::KOREAN;
+        $language3 = Language::KOREAN;
         $differentTranslationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
 
         DB::table('draft_agencies')->upsert([
@@ -428,7 +428,7 @@ class AgencyRepositoryTest extends TestCase
             'published_id' => $publishedId3,
             'translation_set_identifier' => (string)$differentTranslationSetIdentifier,
             'editor_id' => $editorId3,
-            'translation' => $translation3,
+            'language' => $language3,
             'name' => 'HYBE',
             'CEO' => '박지원',
             'founded_in' => new DateTimeImmutable('2005-02-01'),

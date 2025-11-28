@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\TranslateSong;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -52,12 +52,12 @@ readonly class TranslateSong implements TranslateSongInterface
             throw new UnauthorizedException();
         }
 
-        $translations = Translation::allExcept($song->translation());
+        $languages = Language::allExcept($song->language());
 
         $songDrafts = [];
-        foreach ($translations as $translation) {
+        foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
-            $songDraft = $this->translationService->translateSong($song, $translation);
+            $songDraft = $this->translationService->translateSong($song, $language);
             $songDrafts[] = $songDraft;
             $this->songRepository->saveDraft($songDraft);
         }

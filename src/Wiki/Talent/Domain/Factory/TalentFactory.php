@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Factory;
 
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -25,20 +25,20 @@ readonly class TalentFactory implements TalentFactoryInterface
 
     /**
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param TalentName $name
      * @return Talent
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
-        Translation $translation,
-        TalentName $name,
+        Language                 $language,
+        TalentName               $name,
     ): Talent {
         return new Talent(
             new TalentIdentifier($this->ulidGenerator->generate()),
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             new RealName(''),
             null,

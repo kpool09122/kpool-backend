@@ -6,7 +6,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -36,7 +36,7 @@ class CreateTalentInputTest extends TestCase
     {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -62,7 +62,7 @@ class CreateTalentInputTest extends TestCase
         $input = new CreateTalentInput(
             $publishedTalentIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -75,7 +75,7 @@ class CreateTalentInputTest extends TestCase
         );
         $this->assertSame((string)$publishedTalentIdentifier, (string)$input->publishedTalentIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($language->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$realName, (string)$input->realName());
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());

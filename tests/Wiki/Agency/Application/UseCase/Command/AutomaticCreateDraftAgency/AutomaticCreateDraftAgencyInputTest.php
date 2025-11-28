@@ -6,7 +6,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgen
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
@@ -26,7 +26,7 @@ class AutomaticCreateDraftAgencyInputTest extends TestCase
     {
         $payload = new AutomaticDraftAgencyCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new AgencyName('JYP엔터테インメント'),
             new CEO('J.Y. Park'),
             new FoundedIn(new DateTimeImmutable('1997-04-25')),

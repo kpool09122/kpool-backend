@@ -7,17 +7,17 @@ namespace Source\Auth\Application\UseCase\Command\RegisterUser;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 readonly class RegisterUserInput implements RegisterUserInputPort
 {
     public function __construct(
-        private UserName $username,
+        private UserName      $username,
         private Email         $email,
-        private Translation $translation,
+        private Language      $language,
         private PlainPassword $password,
         private PlainPassword $confirmedPassword,
-        private ?string $base64EncodedImage,
+        private ?string       $base64EncodedImage,
     ) {
     }
 
@@ -31,9 +31,9 @@ readonly class RegisterUserInput implements RegisterUserInputPort
         return $this->email;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function password(): PlainPassword

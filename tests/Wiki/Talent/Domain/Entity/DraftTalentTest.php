@@ -7,7 +7,7 @@ namespace Tests\Wiki\Talent\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -39,7 +39,7 @@ class DraftTalentTest extends TestCase
         $this->assertSame((string)$draftTalentInfo->talentIdentifier, (string)$draftTalentInfo->talent->talentIdentifier());
         $this->assertSame((string)$draftTalentInfo->publishedTalentIdentifier, (string)$draftTalentInfo->talent->publishedTalentIdentifier());
         $this->assertSame((string)$draftTalentInfo->editorIdentifier, (string)$draftTalentInfo->talent->editorIdentifier());
-        $this->assertSame($draftTalentInfo->translation->value, $draftTalentInfo->talent->translation()->value);
+        $this->assertSame($draftTalentInfo->language->value, $draftTalentInfo->talent->language()->value);
         $this->assertSame((string)$draftTalentInfo->name, (string)$draftTalentInfo->talent->name());
         $this->assertSame((string)$draftTalentInfo->realName, (string)$draftTalentInfo->talent->realName());
         $this->assertSame((string)$draftTalentInfo->birthday, (string)$draftTalentInfo->talent->birthday());
@@ -246,7 +246,7 @@ class DraftTalentTest extends TestCase
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -270,7 +270,7 @@ class DraftTalentTest extends TestCase
             $publishedTalentIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -287,7 +287,7 @@ class DraftTalentTest extends TestCase
             publishedTalentIdentifier: $publishedTalentIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
             editorIdentifier: $editorIdentifier,
-            translation: $translation,
+            language: $language,
             name: $name,
             realName: $realName,
             agencyIdentifier: $agencyIdentifier,
@@ -315,21 +315,21 @@ readonly class DraftTalentTestData
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        public TalentIdentifier $talentIdentifier,
-        public TalentIdentifier $publishedTalentIdentifier,
+        public TalentIdentifier         $talentIdentifier,
+        public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
-        public Translation $translation,
-        public TalentName $name,
-        public RealName $realName,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $groupIdentifiers,
-        public Birthday $birthday,
-        public Career $career,
-        public ImagePath $imagePath,
-        public ExternalContentLink $link1,
-        public ExternalContentLink $link2,
-        public ExternalContentLink $link3,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $language,
+        public TalentName               $name,
+        public RealName                 $realName,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $groupIdentifiers,
+        public Birthday                 $birthday,
+        public Career                   $career,
+        public ImagePath                $imagePath,
+        public ExternalContentLink      $link1,
+        public ExternalContentLink      $link2,
+        public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
         public ApprovalStatus $status,
         public DraftTalent $talent,

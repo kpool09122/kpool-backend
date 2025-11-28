@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Domain\Factory;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -16,7 +16,7 @@ interface DraftAnnouncementFactoryInterface
 {
     /**
      * @param TranslationSetIdentifier|null $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param Category $category
      * @param Title $title
      * @param Content $content
@@ -25,10 +25,10 @@ interface DraftAnnouncementFactoryInterface
      */
     public function create(
         ?TranslationSetIdentifier $translationSetIdentifier,
-        Translation $translation,
-        Category $category,
-        Title $title,
-        Content $content,
-        PublishedDate $publishedDate,
+        Language                  $language,
+        Category                  $category,
+        Title                     $title,
+        Content                   $content,
+        PublishedDate             $publishedDate,
     ): DraftAnnouncement;
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Application\UseCase\Query\GetAgencyForEdit;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencyForEdit\GetAgencyForEditInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -20,9 +20,9 @@ class GetAgencyForEditInputTest extends TestCase
     public function test__construct(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $input = new GetAgencyForEditInput($agencyIdentifier, $translation);
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($translation->value, $input->language()->value);
     }
 }

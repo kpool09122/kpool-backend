@@ -75,7 +75,7 @@ class PublishGroup implements PublishGroupInterface
         } else {
             $publishedGroup = $this->groupFactory->create(
                 $group->translationSetIdentifier(),
-                $group->translation(),
+                $group->language(),
                 $group->name(),
             );
         }

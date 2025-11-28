@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -21,7 +21,7 @@ readonly class CreateTalentInput implements CreateTalentInputPort
     /**
      * @param TalentIdentifier|null $publishedTalentIdentifier
      * @param EditorIdentifier $editorIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
      * @param ?AgencyIdentifier $agencyIdentifier
@@ -35,10 +35,10 @@ readonly class CreateTalentInput implements CreateTalentInputPort
     public function __construct(
         private ?TalentIdentifier  $publishedTalentIdentifier,
         private EditorIdentifier   $editorIdentifier,
-        private Translation        $translation,
+        private Language           $language,
         private TalentName         $name,
         private RealName           $realName,
-        private ?AgencyIdentifier   $agencyIdentifier,
+        private ?AgencyIdentifier  $agencyIdentifier,
         private array              $groupIdentifiers,
         private ?Birthday          $birthday,
         private Career             $career,
@@ -58,9 +58,9 @@ readonly class CreateTalentInput implements CreateTalentInputPort
         return $this->editorIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): TalentName

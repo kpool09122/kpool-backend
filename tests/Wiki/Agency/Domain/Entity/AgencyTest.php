@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -30,7 +30,7 @@ class AgencyTest extends TestCase
         $agency = $createAgency->agency;
 
         $this->assertSame((string)$createAgency->agencyIdentifier, (string)$agency->agencyIdentifier());
-        $this->assertSame($createAgency->translation->value, $agency->translation()->value);
+        $this->assertSame($createAgency->translation->value, $agency->language()->value);
         $this->assertSame((string)$createAgency->name, (string)$agency->name());
         $this->assertSame((string)$createAgency->CEO, (string)$agency->CEO());
         $this->assertSame($createAgency->foundedIn->value(), $agency->foundedIn()->value());
@@ -144,7 +144,7 @@ DESCRIPTION
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -197,15 +197,15 @@ DESCRIPTION
 readonly class AgencyTestData
 {
     public function __construct(
-        public AgencyIdentifier $agencyIdentifier,
+        public AgencyIdentifier         $agencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public Translation $translation,
-        public AgencyName $name,
-        public CEO $CEO,
-        public FoundedIn $foundedIn,
-        public Description $description,
-        public Version $version,
-        public Agency $agency,
+        public Language                 $translation,
+        public AgencyName               $name,
+        public CEO                      $CEO,
+        public FoundedIn                $foundedIn,
+        public Description              $description,
+        public Version                  $version,
+        public Agency                   $agency,
     ) {
     }
 }

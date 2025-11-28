@@ -13,7 +13,7 @@ use Source\Auth\Domain\ValueObject\UserIdentifier;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 class User
@@ -29,10 +29,10 @@ class User
      */
     public function __construct(
         private readonly UserIdentifier $userIdentifier,
-        private UserName $username,
+        private UserName                $username,
         private Email                   $email,
-        private Translation $translation,
-        private ?ImagePath $profileImage,
+        private Language                $language,
+        private ?ImagePath              $profileImage,
         private HashedPassword          $hashedPassword,
         private array                   $serviceRoles,
         private ?DateTimeImmutable      $emailVerifiedAt,
@@ -54,9 +54,9 @@ class User
         return $this->email;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function profileImage(): ?ImagePath

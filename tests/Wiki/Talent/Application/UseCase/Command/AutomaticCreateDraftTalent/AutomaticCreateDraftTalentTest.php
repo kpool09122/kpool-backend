@@ -7,7 +7,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTale
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -131,7 +131,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
     {
         return new AutomaticDraftTalentCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new TalentName('テストタレント'),
             new RealName('Test Talent'),
             new AgencyIdentifier(StrTestHelper::generateUlid()),
@@ -162,7 +162,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::KOREAN,
+            Language::KOREAN,
             new TalentName('テストタレント'),
             new RealName('Test Talent'),
             null,

@@ -40,7 +40,7 @@ class CreateAgency implements CreateAgencyInterface
 
         $agency = $this->agencyFactory->create(
             $input->editorIdentifier(),
-            $input->translation(),
+            $input->language(),
             $input->name(),
         );
         if ($input->publishedAgencyIdentifier()) {

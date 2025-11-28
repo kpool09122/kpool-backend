@@ -7,7 +7,7 @@ namespace Tests\Wiki\Talent\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -36,7 +36,7 @@ class TalentTest extends TestCase
         $talentInfo = $this->createDummyDraftTalent();
 
         $this->assertSame((string)$talentInfo->talentIdentifier, (string)$talentInfo->talent->talentIdentifier());
-        $this->assertSame($talentInfo->translation->value, $talentInfo->talent->translation()->value);
+        $this->assertSame($talentInfo->language->value, $talentInfo->talent->language()->value);
         $this->assertSame((string)$talentInfo->name, (string)$talentInfo->talent->name());
         $this->assertSame((string)$talentInfo->realName, (string)$talentInfo->talent->realName());
         $this->assertSame((string)$talentInfo->birthday, (string)$talentInfo->talent->birthday());
@@ -189,7 +189,7 @@ class TalentTest extends TestCase
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
@@ -211,7 +211,7 @@ class TalentTest extends TestCase
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $name,
             $realName,
             $agencyIdentifier,
@@ -226,7 +226,7 @@ class TalentTest extends TestCase
         return new TalentTestData(
             talentIdentifier: $talentIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
-            translation: $translation,
+            language: $language,
             name: $name,
             realName: $realName,
             agencyIdentifier: $agencyIdentifier,
@@ -253,19 +253,19 @@ readonly class TalentTestData
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        public TalentIdentifier $talentIdentifier,
+        public TalentIdentifier         $talentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public Translation $translation,
-        public TalentName $name,
-        public RealName $realName,
-        public AgencyIdentifier $agencyIdentifier,
-        public array $groupIdentifiers,
-        public Birthday $birthday,
-        public Career $career,
-        public ImagePath $imagePath,
-        public ExternalContentLink $link1,
-        public ExternalContentLink $link2,
-        public ExternalContentLink $link3,
+        public Language                 $language,
+        public TalentName               $name,
+        public RealName                 $realName,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $groupIdentifiers,
+        public Birthday                 $birthday,
+        public Career                   $career,
+        public ImagePath                $imagePath,
+        public ExternalContentLink      $link1,
+        public ExternalContentLink      $link2,
+        public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
         public Talent $talent,
     ) {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Application\UseCase\Query\GetAgencies;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInput;
 use Tests\TestCase;
 
@@ -21,7 +21,7 @@ class GetAgenciesInputTest extends TestCase
         $order = 'id';
         $sort = 'desc';
         $searchWords = 'test';
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $input = new GetAgenciesInput(
             $limit,
             $order,
@@ -33,6 +33,6 @@ class GetAgenciesInputTest extends TestCase
         $this->assertSame($order, $input->order());
         $this->assertSame($sort, $input->sort());
         $this->assertSame($searchWords, $input->searchWords());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($translation->value, $input->language()->value);
     }
 }

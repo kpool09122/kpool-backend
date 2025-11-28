@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $translation_set_identifier
- * @property string $translation
+ * @property string $language
  * @property string $name
  * @property string $CEO
  * @property ?Carbon $founded_in
@@ -28,7 +28,7 @@ class Agency extends Model
     protected $fillable = [
         'id',
         'translation_set_identifier',
-        'translation',
+        'language',
         'name',
         'CEO',
         'founded_in',

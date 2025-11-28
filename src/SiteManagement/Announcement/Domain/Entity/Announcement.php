@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Domain\Entity;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
@@ -15,13 +15,13 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 readonly class Announcement
 {
     public function __construct(
-        private AnnouncementIdentifier $announcementIdentifier,
+        private AnnouncementIdentifier   $announcementIdentifier,
         private TranslationSetIdentifier $translationSetIdentifier,
-        private Translation $translation,
-        private Category $category,
-        private Title $title,
-        private Content $content,
-        private PublishedDate $publishedDate,
+        private Language                 $language,
+        private Category                 $category,
+        private Title                    $title,
+        private Content                  $content,
+        private PublishedDate            $publishedDate,
     ) {
     }
 
@@ -35,9 +35,9 @@ readonly class Announcement
         return $this->translationSetIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function category(): Category

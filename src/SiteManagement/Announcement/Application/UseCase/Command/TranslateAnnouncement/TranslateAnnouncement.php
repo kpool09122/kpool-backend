@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Announcement\Application\UseCase\Command\TranslateAnnouncement;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Announcement\Application\Service\TranslationServiceInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
 
-class TranslateAnnouncement implements TranslateAnnouncementInterface
+readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
 {
     public function __construct(
         private AnnouncementRepositoryInterface $announcementRepository,
-        private TranslationServiceInterface $translationService,
+        private TranslationServiceInterface     $translationService,
     ) {
     }
 
@@ -31,12 +31,12 @@ class TranslateAnnouncement implements TranslateAnnouncementInterface
             throw new AnnouncementNotFoundException();
         }
 
-        $translations = Translation::allExcept($announcement->translation());
+        $languages = Language::allExcept($announcement->translation());
 
         $DraftAnnouncements = [];
-        foreach ($translations as $translation) {
+        foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
-            $DraftAnnouncement = $this->translationService->translateAnnouncement($announcement, $translation);
+            $DraftAnnouncement = $this->translationService->translateAnnouncement($announcement, $language);
             $DraftAnnouncements[] = $DraftAnnouncement;
             $this->announcementRepository->saveDraft($DraftAnnouncement);
         }

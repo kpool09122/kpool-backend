@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Announcement\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\ValueObject\AnnouncementIdentifier;
@@ -27,7 +27,7 @@ class DraftAnnouncementTest extends TestCase
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -56,7 +56,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,
@@ -64,7 +64,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
         $this->assertSame((string)$announcementIdentifier, (string)$announcement->announcementIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$announcement->translationSetIdentifier());
-        $this->assertSame($translation->value, $announcement->translation()->value);
+        $this->assertSame($language->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);
         $this->assertSame((string)$title, (string)$announcement->title());
         $this->assertSame((string)$content, (string)$announcement->content());
@@ -80,7 +80,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -109,7 +109,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,
@@ -132,7 +132,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -161,7 +161,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,
@@ -184,7 +184,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -213,7 +213,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,
@@ -258,7 +258,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
     {
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！
@@ -287,7 +287,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         $announcement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
-            $translation,
+            $language,
             $category,
             $title,
             $content,

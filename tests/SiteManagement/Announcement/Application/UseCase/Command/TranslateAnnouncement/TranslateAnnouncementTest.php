@@ -7,7 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\Translat
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\Service\TranslationServiceInterface;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteAnnouncement\DeleteAnnouncement;
@@ -35,7 +35,6 @@ class TranslateAnnouncementTest extends TestCase
      */
     public function test__construct(): void
     {
-        // TODO: 各実装クラス作ったら削除する
         $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
@@ -58,7 +57,7 @@ class TranslateAnnouncementTest extends TestCase
         $publishedDate = new PublishedDate(new DateTimeImmutable());
 
         $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $japanese = Translation::JAPANESE;
+        $japanese = Language::JAPANESE;
         $jaTitle = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $jaContent = new Content('いつもk-poolをご利用いただき、ありがとうございます！
 K-popを愛するすべてのファンの皆さまに、もっと「推し活」を楽しんでいただくための新機能、**「グローバル投票」**が本日よりスタートしました！🎉
@@ -98,7 +97,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
         );
 
         $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $korean = Translation::KOREAN;
+        $korean = Language::KOREAN;
         $koTitle = new Title('🏆 당신의 한 표가 최애를 빛나게 합니다! 새로운 기능 「글로벌 투표」 시작!');
         $koContent = new Content('항상 k-pool을 이용해 주셔서 감사합니다!
 K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁게 하실 수 있도록 새로운 기능인 **「글로벌 투표」**가 오늘부터 시작되었습니다! 🎉
@@ -133,7 +132,7 @@ K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁�
         );
 
         $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $english = Translation::ENGLISH;
+        $english = Language::ENGLISH;
         $enTitle = new Title('🏆 Your Vote Makes Your Favorite Shine! The New "Global Voting" F');
         $enContent = new Content('Thank you for always using k-pool!
 To help all K-pop fans enjoy their fan activities even more, our new feature, **"Global Voting,"** launches today! 🎉

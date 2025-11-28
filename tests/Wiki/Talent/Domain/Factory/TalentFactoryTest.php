@@ -6,7 +6,7 @@ namespace Tests\Wiki\Talent\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactory;
@@ -39,13 +39,13 @@ class TalentFactoryTest extends TestCase
     public function testCreate(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new TalentName('채영');
         $talentFactory = $this->app->make(TalentFactoryInterface::class);
-        $talent = $talentFactory->create($translationSetIdentifier, $translation, $name);
+        $talent = $talentFactory->create($translationSetIdentifier, $language, $name);
         $this->assertTrue(UlidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$talent->translationSetIdentifier());
-        $this->assertSame($translation->value, $talent->translation()->value);
+        $this->assertSame($language->value, $talent->language()->value);
         $this->assertSame((string)$name, (string)$talent->name());
         $this->assertSame('', (string)$talent->realName());
         $this->assertNull($talent->agencyIdentifier());

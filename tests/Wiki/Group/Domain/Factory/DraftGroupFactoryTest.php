@@ -6,7 +6,7 @@ namespace Tests\Wiki\Group\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactory;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
@@ -39,15 +39,15 @@ class DraftGroupFactoryTest extends TestCase
     public function testCreate(): void
     {
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $groupFactory = $this->app->make(DraftGroupFactoryInterface::class);
-        $group = $groupFactory->create($editorIdentifier, $translation, $name);
+        $group = $groupFactory->create($editorIdentifier, $language, $name);
         $this->assertTrue(UlidValidator::isValid((string)$group->groupIdentifier()));
         $this->assertNull($group->publishedGroupIdentifier());
         $this->assertTrue(UlidValidator::isValid((string)$group->translationSetIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
-        $this->assertSame($translation->value, $group->translation()->value);
+        $this->assertSame($language->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertNull($group->agencyIdentifier());
         $this->assertSame('', (string)$group->description());
@@ -56,7 +56,7 @@ class DraftGroupFactoryTest extends TestCase
         $this->assertSame(ApprovalStatus::Pending, $group->status());
 
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $group = $groupFactory->create($editorIdentifier, $translation, $name, $translationSetIdentifier);
+        $group = $groupFactory->create($editorIdentifier, $language, $name, $translationSetIdentifier);
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -19,7 +19,7 @@ class Group
     /**
      * @param GroupIdentifier $groupIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param Translation $translation
+     * @param Language $language
      * @param GroupName $name
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
@@ -30,13 +30,13 @@ class Group
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly Translation              $translation,
+        private readonly Language                 $language,
         private GroupName                         $name,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
         private array                             $songIdentifiers,
         private ?ImagePath                        $imagePath,
-        private Version $version,
+        private Version                           $version,
     ) {
     }
 
@@ -50,9 +50,9 @@ class Group
         return $this->translationSetIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->language;
     }
 
     public function name(): GroupName

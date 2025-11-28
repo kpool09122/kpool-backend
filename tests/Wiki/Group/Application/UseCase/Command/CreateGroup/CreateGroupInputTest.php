@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Application\UseCase\Command\CreateGroup;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -29,7 +29,7 @@ class CreateGroupInputTest extends TestCase
     {
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -59,7 +59,7 @@ class CreateGroupInputTest extends TestCase
         );
         $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
         $this->assertSame((string)$publishedGroupIdentifier, (string)$input->publishedGroupIdentifier());
-        $this->assertSame($translation->value, $input->translation()->value);
+        $this->assertSame($translation->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$companyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame($description, $input->description());

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Query\GetGroup;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 
-class GetGroupInput implements GetGroupInputPort
+readonly class GetGroupInput implements GetGroupInputPort
 {
     public function __construct(
         private GroupIdentifier $groupIdentifier,
-        private Translation $translation,
+        private Language        $langauge,
     ) {
     }
 
@@ -20,8 +20,8 @@ class GetGroupInput implements GetGroupInputPort
         return $this->groupIdentifier;
     }
 
-    public function translation(): Translation
+    public function language(): Language
     {
-        return $this->translation;
+        return $this->langauge;
     }
 }

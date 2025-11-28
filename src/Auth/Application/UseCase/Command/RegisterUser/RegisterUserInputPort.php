@@ -7,7 +7,7 @@ namespace Source\Auth\Application\UseCase\Command\RegisterUser;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 interface RegisterUserInputPort
 {
@@ -15,7 +15,7 @@ interface RegisterUserInputPort
 
     public function email(): Email;
 
-    public function translation(): Translation;
+    public function language(): Language;
 
     public function password(): PlainPassword;
 

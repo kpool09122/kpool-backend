@@ -12,7 +12,7 @@ use Source\Auth\Domain\ValueObject\UserIdentifier;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 readonly class UserFactory implements UserFactoryInterface
 {
@@ -22,16 +22,16 @@ readonly class UserFactory implements UserFactoryInterface
     }
 
     public function create(
-        UserName $username,
-        Email $email,
-        Translation $translation,
+        UserName      $username,
+        Email         $email,
+        Language      $language,
         PlainPassword $plainPassword,
     ): User {
         return new User(
             new UserIdentifier($this->ulidGenerator->generate()),
             $username,
             $email,
-            $translation,
+            $language,
             null,
             HashedPassword::fromPlain($plainPassword),
             [],

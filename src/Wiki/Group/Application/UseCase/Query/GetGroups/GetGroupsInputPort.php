@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Query\GetGroups;
 
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 interface GetGroupsInputPort
 {
@@ -16,5 +16,5 @@ interface GetGroupsInputPort
 
     public function searchWords(): string;
 
-    public function translation(): Translation;
+    public function language(): Language;
 }

@@ -9,7 +9,7 @@ use Source\Auth\Application\UseCase\Command\RegisterUser\RegisterUserInput;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 
 class RegisterUserInputTest extends TestCase
 {
@@ -17,7 +17,7 @@ class RegisterUserInputTest extends TestCase
     {
         $userName = new UserName('userName');
         $email = new Email('user@example.com');
-        $translation = Translation::KOREAN;
+        $language = Language::KOREAN;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
@@ -26,7 +26,7 @@ class RegisterUserInputTest extends TestCase
         $input = new RegisterUserInput(
             $userName,
             $email,
-            $translation,
+            $language,
             $password,
             $confirmedPassword,
             $base64EncodedImage,
@@ -34,7 +34,7 @@ class RegisterUserInputTest extends TestCase
 
         $this->assertSame($userName, $input->userName());
         $this->assertSame($email, $input->email());
-        $this->assertSame($translation, $input->translation());
+        $this->assertSame($language, $input->language());
         $this->assertSame($password, $input->password());
         $this->assertSame($confirmedPassword, $input->confirmedPassword());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());

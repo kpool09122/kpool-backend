@@ -26,7 +26,7 @@ use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -66,14 +66,14 @@ class RegisterUserTest extends TestCase
     {
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AAusB9xyxOvUAAAAASUVORK5CYII=';
         $input = new RegisterUserInput(
             $userName,
             $email,
-            $translation,
+            $language,
             $password,
             $confirmedPassword,
             $base64EncodedImage,
@@ -87,7 +87,7 @@ class RegisterUserTest extends TestCase
             new UserIdentifier(StrTestHelper::generateUlid()),
             $userName,
             $email,
-            $translation,
+            $language,
             null,
             HashedPassword::fromPlain($password),
             [],
@@ -120,7 +120,7 @@ class RegisterUserTest extends TestCase
         $userFactory = Mockery::mock(UserFactoryInterface::class);
         $userFactory->shouldReceive('create')
             ->once()
-            ->with($userName, $email, $translation, $password)
+            ->with($userName, $email, $language, $password)
             ->andReturn($user);
 
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
@@ -148,14 +148,14 @@ class RegisterUserTest extends TestCase
     {
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
         $input = new RegisterUserInput(
             $userName,
             $email,
-            $translation,
+            $language,
             $password,
             $confirmedPassword,
             $base64EncodedImage,
@@ -200,14 +200,14 @@ class RegisterUserTest extends TestCase
     {
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
         $input = new RegisterUserInput(
             $userName,
             $email,
-            $translation,
+            $language,
             $password,
             $confirmedPassword,
             $base64EncodedImage,
@@ -220,7 +220,7 @@ class RegisterUserTest extends TestCase
             new UserIdentifier(StrTestHelper::generateUlid()),
             $userName,
             $email,
-            $translation,
+            $language,
             null,
             HashedPassword::fromPlain($password),
             [],
@@ -270,14 +270,14 @@ class RegisterUserTest extends TestCase
     {
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass2@');
         $base64EncodedImage = null;
         $input = new RegisterUserInput(
             $userName,
             $email,
-            $translation,
+            $language,
             $password,
             $confirmedPassword,
             $base64EncodedImage,
@@ -311,14 +311,14 @@ class RegisterUserTest extends TestCase
     {
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
-        $translation = Translation::JAPANESE;
+        $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
         $input = new RegisterUserInput(
             $userName,
             $email,
-            $translation,
+            $language,
             $password,
             $confirmedPassword,
             $base64EncodedImage,
@@ -344,7 +344,7 @@ class RegisterUserTest extends TestCase
             new UserIdentifier(StrTestHelper::generateUlid()),
             $userName,
             $email,
-            $translation,
+            $language,
             null,
             HashedPassword::fromPlain($password),
             [],
@@ -353,7 +353,7 @@ class RegisterUserTest extends TestCase
         $userFactory = Mockery::mock(UserFactoryInterface::class);
         $userFactory->shouldReceive('create')
             ->once()
-            ->with($userName, $email, $translation, $password)
+            ->with($userName, $email, $language, $password)
             ->andReturn($user);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);

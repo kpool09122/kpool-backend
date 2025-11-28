@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -23,7 +23,7 @@ interface CreateSongInputPort
 
     public function editorIdentifier(): EditorIdentifier;
 
-    public function translation(): Translation;
+    public function language(): Language;
 
     public function name(): SongName;
 

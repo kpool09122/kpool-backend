@@ -6,7 +6,7 @@ namespace Tests\Wiki\Agency\Domain\ValueObject;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\Translation;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencySource;
@@ -32,7 +32,7 @@ class AutomaticDraftAgencyCreationPayloadTest extends TestCase
         $source = new AutomaticDraftAgencySource('webhook::news');
 
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translation = Translation::KOREAN;
+        $translation = Language::KOREAN;
 
         $payload = new AutomaticDraftAgencyCreationPayload(
             $editorIdentifier,
@@ -45,7 +45,7 @@ class AutomaticDraftAgencyCreationPayloadTest extends TestCase
         );
 
         $this->assertSame($editorIdentifier, $payload->editorIdentifier());
-        $this->assertSame($translation, $payload->translation());
+        $this->assertSame($translation, $payload->language());
         $this->assertSame($name, $payload->name());
         $this->assertSame($ceo, $payload->CEO());
         $this->assertSame($foundedIn, $payload->foundedIn());
@@ -64,7 +64,7 @@ class AutomaticDraftAgencyCreationPayloadTest extends TestCase
         $description = new Description('auto generated agency profile');
         $payload = new AutomaticDraftAgencyCreationPayload(
             new EditorIdentifier(StrTestHelper::generateUlid()),
-            Translation::ENGLISH,
+            Language::ENGLISH,
             $name,
             null,
             null,
