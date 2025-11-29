@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Application\Models\Wiki;
+
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * @property string $id
+ * @property string $translation_set_identifier
+ * @property string $translation
+ * @property string $name
+ * @property ?string $agency_id
+ * @property string $description
+ * @property array $song_identifiers
+ * @property ?string $image_path
+ * @property int|null $version
+ */
+class Group extends Model
+{
+    public $incrementing = false;
+
+    protected $table = 'groups';
+
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'id',
+        'translation_set_identifier',
+        'translation',
+        'name',
+        'agency_id',
+        'description',
+        'song_identifiers',
+        'image_path',
+        'version',
+    ];
+
+    protected $casts = [
+        'song_identifiers' => 'array',
+        'version' => 'integer',
+    ];
+}

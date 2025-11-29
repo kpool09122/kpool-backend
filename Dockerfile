@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
 RUN pecl install pcov \
     && docker-php-ext-enable pcov
 
+# Raise PHP memory limit for coverage-heavy test runs
+RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory-limit.ini
+
 # Composerのインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -23,6 +26,7 @@ RUN composer require --dev phpunit/phpunit
 
 # テスト実行用のエントリーポイント
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"] 
