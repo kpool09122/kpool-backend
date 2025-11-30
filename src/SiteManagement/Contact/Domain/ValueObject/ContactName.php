@@ -11,17 +11,15 @@ class ContactName extends StringBaseValue
 {
     public const int MAX_LENGTH = 32;
 
-    public function __construct(
-        protected readonly string $name,
-    ) {
-        parent::__construct($name);
-        $this->validate($name);
+    public function __construct(string $name)
+    {
+        parent::__construct(trim($name));
     }
 
     protected function validate(
         string $value,
     ): void {
-        if (empty($value)) {
+        if ($value === '') {
             throw new InvalidArgumentException('Contact name cannot be empty');
         }
 
