@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\Domain\Entity;
 
 use DomainException;
+use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
+use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
 use Source\Account\Domain\ValueObject\AccountIdentifier;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
@@ -12,6 +14,7 @@ use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 class Account
 {
@@ -75,15 +78,29 @@ class Account
         return $this->memberships;
     }
 
-    public function attachUser(AccountMembership $membership): void
+    public function attachMember(AccountMembership $membership): void
     {
         $newMemberships = [...$this->memberships, $membership];
         $this->assertUniqueMembers($newMemberships);
         $this->memberships = $newMemberships;
     }
 
-    public function detachUser(AccountMembership $removeMembership): void
+    /**
+     * @throws DisallowedToWithdrawByOwnerException
+     * @throws AccountMembershipNotFoundException
+     */
+    public function detachMember(AccountMembership $removeMembership): void
     {
+        $storedMembership = $this->findMembershipByUserIdentifier($removeMembership->userIdentifier());
+
+        if (! $storedMembership) {
+            throw new AccountMembershipNotFoundException();
+        }
+
+        if ($storedMembership->role() === AccountRole::OWNER) {
+            throw new DisallowedToWithdrawByOwnerException();
+        }
+
         $updatedMemberships = array_values(
             array_filter(
                 $this->memberships,
@@ -123,5 +140,11 @@ class Account
         if (count($ids) !== count(array_unique($ids))) {
             throw new DomainException('Duplicate account membership detected.');
         }
+    }
+
+    private function findMembershipByUserIdentifier(UserIdentifier $userIdentifier): ?AccountMembership
+    {
+        return array_find($this->memberships, fn ($membership) => (string)$membership->userIdentifier() === (string)$userIdentifier);
+
     }
 }

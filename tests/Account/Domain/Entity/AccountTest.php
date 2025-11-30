@@ -8,6 +8,8 @@ use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
+use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
+use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
 use Source\Account\Domain\ValueObject\AccountIdentifier;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
@@ -58,11 +60,23 @@ class AccountTest extends TestCase
     }
 
     /**
-     * 正常系: ユーザーを正しく追加できること.
+     * 正常系: 所有者のいないアカウントは作成できないこと.
      *
      * @return void
      */
-    public function testAttachUser(): void
+    public function testNoOwner(): void
+    {
+        $memberships = [new AccountMembership(new UserIdentifier(StrTestHelper::generateUlid()), AccountRole::MEMBER)];
+        $this->expectException(DomainException::class);
+        $this->createDummyAccountTestData($memberships);
+    }
+
+    /**
+     * 正常系: メンバーを正しく追加できること.
+     *
+     * @return void
+     */
+    public function testAttachMembership(): void
     {
         $dummyAccount = $this->createDummyAccountTestData();
 
@@ -71,17 +85,17 @@ class AccountTest extends TestCase
             AccountRole::MEMBER
         );
 
-        $dummyAccount->account->attachUser($newMember);
+        $dummyAccount->account->attachMember($newMember);
 
         $this->assertContains($newMember, $dummyAccount->account->memberships());
     }
 
     /**
-     * 異常系: 重複ユーザーを正しく追加しようとした場合、例外をスローすること.
+     * 異常系: 重複メンバーを正しく追加しようとした場合、例外をスローすること.
      *
      * @return void
      */
-    public function testAttachUserThrowsDomainException(): void
+    public function testAttachMembershipThrowsDomainException(): void
     {
         $dummyAccount = $this->createDummyAccountTestData();
 
@@ -91,15 +105,15 @@ class AccountTest extends TestCase
         );
 
         $this->expectException(DomainException::class);
-        $dummyAccount->account->attachUser($newMember);
+        $dummyAccount->account->attachMember($newMember);
     }
 
     /**
-     * 正常系: ユーザーを正しく削除できること.
+     * 正常系: メンバーを正しく削除できること.
      *
      * @return void
      */
-    public function testDetachUser(): void
+    public function testDetachMembership(): void
     {
         $dummyAccount = $this->createDummyAccountTestData();
 
@@ -108,13 +122,68 @@ class AccountTest extends TestCase
             AccountRole::MEMBER
         );
 
-        $dummyAccount->account->attachUser($newMember);
+        $dummyAccount->account->attachMember($newMember);
 
         $this->assertContains($newMember, $dummyAccount->account->memberships());
 
-        $dummyAccount->account->detachUser($newMember);
+        $dummyAccount->account->detachMember($newMember);
 
         $this->assertNotContains($newMember, $dummyAccount->account->memberships());
+    }
+
+    /**
+     * 異常系: アカウント所有者はdetachできないこと.
+     *
+     * @return void
+     */
+    public function testDetachMembershipWhenCorporateOwner(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+
+        $member = $dummyAccount->memberships[0];
+
+        $this->expectException(DisallowedToWithdrawByOwnerException::class);
+
+        $dummyAccount->account->detachMember($member);
+    }
+
+    /**
+     * 異常系: アカウントに存在しないメンバーをdetachできないこと.
+     *
+     * @return void
+     */
+    public function testDetachMembershipWhenNotFound(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+
+        $nonMember = new AccountMembership(
+            new UserIdentifier(StrTestHelper::generateUlid()),
+            AccountRole::MEMBER
+        );
+
+        $this->expectException(AccountMembershipNotFoundException::class);
+
+        $dummyAccount->account->detachMember($nonMember);
+    }
+
+    /**
+     * 異常系: オーナーが入力上でMEMBERに偽装されてもdetachできないこと.
+     *
+     * @return void
+     */
+    public function testDetachMembershipWhenOwnerRoleSpoofed(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+        $owner = $dummyAccount->memberships[0];
+
+        $spoofedMembership = new AccountMembership(
+            $owner->userIdentifier(),
+            AccountRole::MEMBER
+        );
+
+        $this->expectException(DisallowedToWithdrawByOwnerException::class);
+
+        $dummyAccount->account->detachMember($spoofedMembership);
     }
 
     /**
@@ -127,15 +196,16 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $this->expectException(DomainException::class);
-        $dummyAccount->account->detachUser($dummyAccount->memberships[0]);
+        $dummyAccount->account->detachMember($dummyAccount->memberships[0]);
     }
 
     /**
      * テスト用のダミーAccount情報
      *
+     * @param AccountMembership[] $memberships
      * @return AccountTestData
      */
-    private function createDummyAccountTestData(): AccountTestData
+    private function createDummyAccountTestData(array $memberships = []): AccountTestData
     {
         $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
         $email = new Email('test@test.com');
@@ -169,7 +239,9 @@ class AccountTest extends TestCase
         );
 
         $userId = new UserIdentifier(StrTestHelper::generateUlid());
-        $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
+        if ($memberships === []) {
+            $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
+        }
 
         $status = AccountStatus::ACTIVE;
 
