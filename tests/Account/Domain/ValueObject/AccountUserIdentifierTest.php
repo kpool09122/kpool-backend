@@ -6,7 +6,7 @@ namespace Tests\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Domain\ValueObject\AccountUserIdentifier;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AccountUserIdentifierTest extends TestCase
@@ -19,7 +19,7 @@ class AccountUserIdentifierTest extends TestCase
     public function test__construct(): void
     {
         $ulid = StrTestHelper::generateUlid();
-        $accountUserIdentifier = new AccountUserIdentifier($ulid);
+        $accountUserIdentifier = new UserIdentifier($ulid);
         $this->assertSame($ulid, (string)$accountUserIdentifier);
     }
 
@@ -32,6 +32,6 @@ class AccountUserIdentifierTest extends TestCase
     {
         $ulid = 'invalid-ulid';
         $this->expectException(InvalidArgumentException::class);
-        new AccountUserIdentifier($ulid);
+        new UserIdentifier($ulid);
     }
 }

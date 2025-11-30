@@ -20,11 +20,11 @@ use Source\Auth\Domain\ValueObject\AuthCode;
 use Source\Auth\Domain\ValueObject\HashedPassword;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\ServiceRole;
-use Source\Auth\Domain\ValueObject\UserIdentifier;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

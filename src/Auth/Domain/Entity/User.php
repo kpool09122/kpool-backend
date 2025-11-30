@@ -9,11 +9,12 @@ use DomainException;
 use Source\Auth\Domain\ValueObject\HashedPassword;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\ServiceRole;
-use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Auth\Domain\ValueObject\SocialConnection;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 class User
@@ -22,10 +23,12 @@ class User
      * @param UserIdentifier $userIdentifier
      * @param UserName $username
      * @param Email $email
+     * @param Language $language
      * @param ?ImagePath $profileImage
      * @param HashedPassword $hashedPassword
      * @param list<ServiceRole> $serviceRoles
      * @param DateTimeImmutable|null $emailVerifiedAt
+     * @param SocialConnection[] $socialConnections
      */
     public function __construct(
         private readonly UserIdentifier $userIdentifier,
@@ -36,6 +39,7 @@ class User
         private HashedPassword          $hashedPassword,
         private array                   $serviceRoles,
         private ?DateTimeImmutable      $emailVerifiedAt,
+        private array                   $socialConnections = [],
     ) {
     }
 
@@ -124,6 +128,14 @@ class User
     }
 
     /**
+     * @return SocialConnection[]
+     */
+    public function socialConnections(): array
+    {
+        return $this->socialConnections;
+    }
+
+    /**
      * あるサービスのロール一覧を返す
      *
      * @return ServiceRole[]
@@ -141,6 +153,25 @@ class User
         return array_any(
             $this->serviceRoles,
             fn ($serviceRole) => $serviceRole->service() === $targetRole->service() && $serviceRole->role() === $targetRole->role()
+        );
+    }
+
+    public function addSocialConnection(SocialConnection $connection): void
+    {
+        foreach ($this->socialConnections as $existing) {
+            if ($existing->equals($connection)) {
+                throw new DomainException('Social connection already exists.');
+            }
+        }
+
+        $this->socialConnections[] = $connection;
+    }
+
+    public function hasSocialConnection(SocialConnection $connection): bool
+    {
+        return array_any(
+            $this->socialConnections,
+            static fn (SocialConnection $existing) => $existing->equals($connection)
         );
     }
 }
