@@ -10,7 +10,6 @@ use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountType;
-use Source\Account\Domain\ValueObject\AccountUserIdentifier;
 use Source\Account\Domain\ValueObject\AddressLine;
 use Source\Account\Domain\ValueObject\BillingAddress;
 use Source\Account\Domain\ValueObject\BillingContact;
@@ -32,6 +31,7 @@ use Source\Account\Domain\ValueObject\TaxCategory;
 use Source\Account\Domain\ValueObject\TaxInfo;
 use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class CreateAccountInputTest extends TestCase
@@ -49,7 +49,7 @@ class CreateAccountInputTest extends TestCase
         $contractInfo = $this->createContractInfo();
         $initialMembers = [
             new AccountMembership(
-                new AccountUserIdentifier(StrTestHelper::generateUlid()),
+                new UserIdentifier(StrTestHelper::generateUlid()),
                 AccountRole::OWNER,
             ),
         ];

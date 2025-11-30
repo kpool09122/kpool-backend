@@ -11,11 +11,13 @@ use Source\Auth\Domain\Entity\User;
 use Source\Auth\Domain\ValueObject\HashedPassword;
 use Source\Auth\Domain\ValueObject\PlainPassword;
 use Source\Auth\Domain\ValueObject\ServiceRole;
-use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Auth\Domain\ValueObject\SocialConnection;
+use Source\Auth\Domain\ValueObject\SocialProvider;
 use Source\Auth\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class UserTest extends TestCase
@@ -36,16 +38,20 @@ class UserTest extends TestCase
         $hashedPassword = HashedPassword::fromPlain($plainPassword);
         $serviceRoles = [new ServiceRole('auth', 'admin')];
         $verifiedAt = new DateTimeImmutable();
+        $socialConnection = new SocialConnection(SocialProvider::GOOGLE, 'provider-user-id');
+        $connections = [$socialConnection];
 
-        $user = new User($userIdentifier, $userName, $email, $language, $profileImage, $hashedPassword, $serviceRoles, $verifiedAt);
+        $user = new User($userIdentifier, $userName, $email, $language, $profileImage, $hashedPassword, $serviceRoles, $verifiedAt, $connections);
 
         $this->assertSame($userIdentifier, $user->userIdentifier());
         $this->assertSame($userName, $user->userName());
         $this->assertSame($email, $user->email());
+        $this->assertSame($language, $user->language());
         $this->assertSame($profileImage, $user->profileImage());
         $this->assertSame($hashedPassword, $user->hashedPassword());
         $this->assertSame($verifiedAt, $user->emailVerifiedAt());
         $this->assertSame($serviceRoles, $user->serviceRoles());
+        $this->assertSame($connections, $user->socialConnections());
     }
 
     /**
@@ -117,6 +123,31 @@ class UserTest extends TestCase
     }
 
     /**
+     * 正常系: ソーシャルコネクションを正しく追加できること.
+     *
+     * @return void
+     */
+    public function testAddSocialConnection(): void
+    {
+        $connection = new SocialConnection(SocialProvider::INSTAGRAM, 'provider-user-id');
+        $user = $this->createUser();
+        $user->addSocialConnection($connection);
+        $this->assertContains($connection, $user->socialConnections());
+    }
+
+    /**
+     * 異常系: 重複するソーシャルコネクションを追加しようとすると、例外がスローされること.
+     *
+     * @return void
+     */
+    public function testConnectionWhenAddingDuplicateSocialConnection(): void
+    {
+        $user = $this->createUser();
+        $this->expectException(DomainException::class);
+        $user->addSocialConnection(new SocialConnection(SocialProvider::GOOGLE, 'provider-user-id'));
+    }
+
+    /**
      * @param UserIdentifier|null $userIdentifier
      * @param UserName|null $userName
      * @param Email|null $email
@@ -125,6 +156,7 @@ class UserTest extends TestCase
      * @param HashedPassword|null $hashedPassword
      * @param ServiceRole[] $serviceRoles
      * @param DateTimeImmutable|null $verifiedAt
+     * @param SocialConnection[] $connections
      * @return User
      */
     private function createUser(
@@ -136,6 +168,7 @@ class UserTest extends TestCase
         ?HashedPassword    $hashedPassword = null,
         array              $serviceRoles = [],
         ?DateTimeImmutable $verifiedAt = null,
+        array              $connections = []
     ): User {
         return new User(
             $userIdentifier ?? new UserIdentifier(StrTestHelper::generateUlid()),
@@ -145,7 +178,8 @@ class UserTest extends TestCase
             $profileImage ?? new ImagePath('/resources/path/test.png'),
             $hashedPassword ?? HashedPassword::fromPlain(new PlainPassword('PlainPass1!')),
             $serviceRoles ?: [new ServiceRole('auth', 'user')],
-            $verifiedAt
+            $verifiedAt,
+            $connections ?: [new SocialConnection(SocialProvider::GOOGLE, 'provider-user-id')]
         );
     }
 }

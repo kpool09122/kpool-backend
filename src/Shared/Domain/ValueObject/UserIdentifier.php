@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Auth\Domain\ValueObject;
+namespace Source\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Ulid\UlidValidator;

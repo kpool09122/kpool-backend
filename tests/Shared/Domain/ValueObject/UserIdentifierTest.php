@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Auth\Domain\ValueObject;
+namespace Tests\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Auth\Domain\ValueObject\UserIdentifier;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class UserIdentifierTest extends TestCase

@@ -13,7 +13,6 @@ use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
-use Source\Account\Domain\ValueObject\AccountUserIdentifier;
 use Source\Account\Domain\ValueObject\AddressLine;
 use Source\Account\Domain\ValueObject\BillingAddress;
 use Source\Account\Domain\ValueObject\BillingContact;
@@ -35,6 +34,7 @@ use Source\Account\Domain\ValueObject\TaxCategory;
 use Source\Account\Domain\ValueObject\TaxInfo;
 use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AccountTest extends TestCase
@@ -67,7 +67,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            new AccountUserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUlid()),
             AccountRole::MEMBER
         );
 
@@ -104,7 +104,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            new AccountUserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUlid()),
             AccountRole::MEMBER
         );
 
@@ -168,7 +168,7 @@ class AccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new AccountUserIdentifier(StrTestHelper::generateUlid());
+        $userId = new UserIdentifier(StrTestHelper::generateUlid());
         $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
 
         $status = AccountStatus::ACTIVE;
