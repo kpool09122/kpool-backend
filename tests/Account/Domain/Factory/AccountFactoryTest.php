@@ -21,6 +21,7 @@ use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\ContractName;
 use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Account\Domain\ValueObject\Currency;
+use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Domain\ValueObject\Money;
 use Source\Account\Domain\ValueObject\Phone;
 use Source\Account\Domain\ValueObject\Plan;
@@ -107,5 +108,6 @@ class AccountFactoryTest extends TestCase
         $this->assertSame($accountName, $account->name());
         $this->assertSame($contractInfo, $account->contractInfo());
         $this->assertSame($memberships, $account->memberships());
+        $this->assertEquals(DeletionReadinessChecklist::ready(), $account->deletionReadiness());
     }
 }

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Application\UseCase\Command\CreateAccount;
+namespace Tests\Account\Application\UseCase\Command\DeleteAccount;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Application\Exception\AccountAlreadyExistsException;
-use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
-use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
-use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
+use Source\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
+use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInput;
+use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
-use Source\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountIdentifier;
 use Source\Account\Domain\ValueObject\AccountName;
@@ -29,6 +29,7 @@ use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\ContractName;
 use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Account\Domain\ValueObject\Currency;
+use Source\Account\Domain\ValueObject\DeletionBlockReason;
 use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Domain\ValueObject\Money;
 use Source\Account\Domain\ValueObject\Phone;
@@ -45,7 +46,7 @@ use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class CreateAccountTest extends TestCase
+class DeleteAccountTest extends TestCase
 {
     /**
      * 正常系: 正しくDIが動作すること
@@ -56,95 +57,122 @@ class CreateAccountTest extends TestCase
     public function test__construct(): void
     {
         $repository = Mockery::mock(AccountRepositoryInterface::class);
-        $factory = Mockery::mock(AccountFactoryInterface::class);
         $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
-        $useCase = $this->app->make(CreateAccountInterface::class);
-        $this->assertInstanceOf(CreateAccount::class, $useCase);
+        $useCase = $this->app->make(DeleteAccountInterface::class);
+        $this->assertInstanceOf(DeleteAccount::class, $useCase);
     }
 
     /**
-     * 正常系: 正しくアカウントを作成できること.
+     * 正常系: 正しくアカウントが削除できること.
      *
      * @return void
-     * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
+     * @throws AccountNotFoundException
      */
     public function testProcess(): void
     {
-        $testData = $this->createDummyAccountTestData();
+        $dummyData = $this->createDummyAccountTestData();
+        $input = new DeleteAccountInput($dummyData->identifier);
 
         $repository = Mockery::mock(AccountRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
-            ->with($testData->email)
+        $repository->shouldReceive('findById')
+            ->with($dummyData->identifier)
+            ->once()
+            ->andReturn($dummyData->account);
+        $repository->shouldReceive('delete')
+            ->with($dummyData->account)
             ->once()
             ->andReturnNull();
-        $repository->shouldReceive('save')
-            ->once()
-            ->with($testData->account)
-            ->andReturnNull();
-
-        $factory = Mockery::mock(AccountFactoryInterface::class);
-        $factory->shouldReceive('create')
-            ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName, $testData->contractInfo, $testData->memberships)
-            ->andReturn($testData->account);
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
+        $useCase = $this->app->make(DeleteAccountInterface::class);
+        $account = $useCase->process($input);
 
-        $useCase = $this->app->make(CreateAccountInterface::class);
-
-        $account = $useCase->process($testData->input);
-
-        $this->assertSame((string)$testData->identifier, (string)$account->accountIdentifier());
-        $this->assertSame((string)$testData->email, (string)$account->email());
-        $this->assertSame($testData->accountType, $account->type());
-        $this->assertSame((string)$testData->accountName, (string)$account->name());
-        $this->assertSame($testData->contractInfo, $account->contractInfo());
-        $this->assertSame($testData->memberships, $account->memberships());
+        $this->assertSame((string)$dummyData->identifier, (string)$account->accountIdentifier());
+        $this->assertSame((string)$dummyData->email, (string)$account->email());
+        $this->assertSame($dummyData->accountType, $account->type());
+        $this->assertSame((string)$dummyData->accountName, (string)$account->name());
+        $this->assertSame($dummyData->contractInfo, $account->contractInfo());
+        $this->assertSame($dummyData->memberships, $account->memberships());
     }
 
     /**
-     * 異常系: アカウントが重複した時に、例外がスローされること.
+     * 異常系: IDに紐づくアカウントが見つからない場合、例外がスローされること.
      *
      * @return void
-     * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
      */
-    public function testThrowsWhenDuplicate(): void
+    public function testThrowsAccountNotFoundException(): void
     {
-        $testData = $this->createDummyAccountTestData();
-        $input = $testData->input;
+        $dummyData = $this->createDummyAccountTestData();
+        $input = new DeleteAccountInput($dummyData->identifier);
 
         $repository = Mockery::mock(AccountRepositoryInterface::class);
-        $repository->shouldReceive('findByEmail')
+        $repository->shouldReceive('findById')
+            ->with($dummyData->identifier)
             ->once()
-            ->with($testData->email)
-            ->andReturn($testData->account);
-        $repository->shouldNotReceive('save');
-
-        $factory = Mockery::mock(AccountFactoryInterface::class);
-        $factory->shouldNotReceive('create');
+            ->andReturnNull();
+        $repository->shouldNotReceive('delete');
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
-        $this->app->instance(AccountFactoryInterface::class, $factory);
+        $useCase = $this->app->make(DeleteAccountInterface::class);
 
-
-        $useCase = $this->app->make(CreateAccountInterface::class);
-
-        $this->expectException(AccountAlreadyExistsException::class);
-
+        $this->expectException(AccountNotFoundException::class);
         $useCase->process($input);
+    }
+
+    /**
+     * 異常系: 削除前提条件を満たしていない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AccountNotFoundException
+     */
+    public function testThrowsWhenDeletionNotReady(): void
+    {
+        $deletionReadiness = DeletionReadinessChecklist::fromReasons(
+            DeletionBlockReason::UNPAID_INVOICES,
+            DeletionBlockReason::EXTERNAL_INTEGRATIONS_ACTIVE,
+        );
+        $dummyData = $this->createDummyAccountTestData(deletionReadiness: $deletionReadiness);
+        $input = new DeleteAccountInput($dummyData->identifier);
+
+        $repository = Mockery::mock(AccountRepositoryInterface::class);
+        $repository->shouldReceive('findById')
+            ->with($dummyData->identifier)
+            ->once()
+            ->andReturn($dummyData->account);
+        $repository->shouldNotReceive('delete');
+
+        $this->app->instance(AccountRepositoryInterface::class, $repository);
+        $useCase = $this->app->make(DeleteAccountInterface::class);
+
+        $this->expectException(AccountDeletionBlockedException::class);
+
+        try {
+            $useCase->process($input);
+            $this->fail('AccountDeletionBlockedException was not thrown.');
+        } catch (AccountDeletionBlockedException $exception) {
+            $this->assertEquals(
+                [
+                    DeletionBlockReason::UNPAID_INVOICES,
+                    DeletionBlockReason::EXTERNAL_INTEGRATIONS_ACTIVE,
+                ],
+                $exception->blockers()
+            );
+
+            throw $exception;
+        }
     }
 
     /**
      * テスト用のダミーAccount情報
      *
-     * @return CreateAccountTestData
+     * @return DeleteAccountTestData
      */
-    private function createDummyAccountTestData(): CreateAccountTestData
-    {
+    private function createDummyAccountTestData(
+        ?DeletionReadinessChecklist $deletionReadiness = null
+    ): DeleteAccountTestData {
         $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
@@ -181,6 +209,8 @@ class CreateAccountTest extends TestCase
 
         $status = AccountStatus::ACTIVE;
 
+        $deletionReadiness ??= DeletionReadinessChecklist::ready();
+
         $account = new Account(
             $identifier,
             $email,
@@ -189,12 +219,10 @@ class CreateAccountTest extends TestCase
             $contractInfo,
             $status,
             $memberships,
-            DeletionReadinessChecklist::ready(),
+            $deletionReadiness,
         );
 
-        $input = new CreateAccountInput($email, $accountType, $accountName, $contractInfo, $memberships);
-
-        return new CreateAccountTestData(
+        return new DeleteAccountTestData(
             $identifier,
             $email,
             $accountType,
@@ -202,7 +230,7 @@ class CreateAccountTest extends TestCase
             $contractInfo,
             $memberships,
             $account,
-            $input,
+            $deletionReadiness,
         );
     }
 }
@@ -210,7 +238,7 @@ class CreateAccountTest extends TestCase
 /**
  * テスト用のAccountデータ
  */
-readonly class CreateAccountTestData
+readonly class DeleteAccountTestData
 {
     /**
      * @param AccountMembership[] $memberships
@@ -223,7 +251,7 @@ readonly class CreateAccountTestData
         public ContractInfo $contractInfo,
         public array $memberships,
         public Account $account,
-        public CreateAccountInput $input,
+        public DeletionReadinessChecklist $deletionReadiness,
     ) {
     }
 }

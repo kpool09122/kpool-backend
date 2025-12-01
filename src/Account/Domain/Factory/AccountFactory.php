@@ -11,6 +11,7 @@ use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\ContractInfo;
+use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
 
@@ -44,6 +45,7 @@ readonly class AccountFactory implements AccountFactoryInterface
             $contractInfo,
             AccountStatus::ACTIVE,
             $memberships,
+            DeletionReadinessChecklist::ready(),
         );
     }
 }

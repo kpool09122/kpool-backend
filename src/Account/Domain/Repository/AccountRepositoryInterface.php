@@ -15,4 +15,6 @@ interface AccountRepositoryInterface
     public function findById(AccountIdentifier $identifier): ?Account;
 
     public function findByEmail(Email $email): ?Account;
+
+    public function delete(Account $account): void;
 }

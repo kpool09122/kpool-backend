@@ -30,6 +30,7 @@ use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\ContractName;
 use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Account\Domain\ValueObject\Currency;
+use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Domain\ValueObject\Money;
 use Source\Account\Domain\ValueObject\Phone;
 use Source\Account\Domain\ValueObject\Plan;
@@ -242,6 +243,7 @@ class WithdrawFromMembershipTest extends TestCase
             $contractInfo,
             $status,
             $memberships,
+            DeletionReadinessChecklist::ready(),
         );
 
         $input = new WithdrawFromMembershipInput($identifier, $withdrawMembership);
