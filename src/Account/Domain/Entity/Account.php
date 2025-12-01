@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Domain\Entity;
 
 use DomainException;
+use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
 use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
 use Source\Account\Domain\ValueObject\AccountIdentifier;
@@ -13,6 +14,7 @@ use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\ContractInfo;
+use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 
@@ -26,6 +28,7 @@ class Account
      * @param ContractInfo $contractInfo
      * @param AccountStatus $status
      * @param list<AccountMembership> $memberships
+     * @param DeletionReadinessChecklist $deletionReadiness
      */
     public function __construct(
         private readonly AccountIdentifier $accountIdentifier,
@@ -35,6 +38,7 @@ class Account
         private ContractInfo $contractInfo,
         private AccountStatus $status,
         private array $memberships,
+        private DeletionReadinessChecklist $deletionReadiness,
     ) {
         $this->assertHasOwner();
         $this->assertUniqueMembers();
@@ -78,6 +82,11 @@ class Account
         return $this->memberships;
     }
 
+    public function deletionReadiness(): DeletionReadinessChecklist
+    {
+        return $this->deletionReadiness;
+    }
+
     public function attachMember(AccountMembership $membership): void
     {
         $newMemberships = [...$this->memberships, $membership];
@@ -109,6 +118,14 @@ class Account
         );
         $this->assertHasOwner($updatedMemberships);
         $this->memberships = $updatedMemberships;
+    }
+
+    /**
+     * @throws AccountDeletionBlockedException
+     */
+    public function assertDeletable(): void
+    {
+        $this->deletionReadiness->assertReady();
     }
 
     /**

@@ -8,6 +8,7 @@ use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
+use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
 use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
 use Source\Account\Domain\ValueObject\AccountIdentifier;
@@ -25,6 +26,8 @@ use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\ContractName;
 use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Account\Domain\ValueObject\Currency;
+use Source\Account\Domain\ValueObject\DeletionBlockReason;
+use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Domain\ValueObject\Money;
 use Source\Account\Domain\ValueObject\Phone;
 use Source\Account\Domain\ValueObject\Plan;
@@ -57,6 +60,7 @@ class AccountTest extends TestCase
         $this->assertSame($dummyAccount->contractInfo, $dummyAccount->account->contractInfo());
         $this->assertSame($dummyAccount->status, $dummyAccount->account->status());
         $this->assertSame($dummyAccount->memberships, $dummyAccount->account->memberships());
+        $this->assertSame($dummyAccount->deletionReadiness, $dummyAccount->account->deletionReadiness());
     }
 
     /**
@@ -200,13 +204,62 @@ class AccountTest extends TestCase
     }
 
     /**
+     * 正常系: 削除に必要な前提条件を満たしていれば例外が発生しないこと.
+     *
+     * @return void
+     */
+    public function testAssertDeletable(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+
+        $dummyAccount->account->assertDeletable();
+        $this->assertTrue($dummyAccount->account->deletionReadiness()->isReady());
+    }
+
+    /**
+     * 異常系: 削除前提条件が不足している場合、理由とともに例外がスローされること.
+     *
+     * @return void
+     */
+    public function testAssertDeletableThrowsWhenNotReady(): void
+    {
+        $deletionReadiness = DeletionReadinessChecklist::fromReasons(
+            DeletionBlockReason::UNPAID_INVOICES,
+            DeletionBlockReason::OWNERSHIP_UNCONFIRMED,
+            DeletionBlockReason::EXTERNAL_INTEGRATIONS_ACTIVE,
+        );
+
+        $dummyAccount = $this->createDummyAccountTestData(deletionReadiness: $deletionReadiness);
+
+        $this->expectException(AccountDeletionBlockedException::class);
+
+        try {
+            $dummyAccount->account->assertDeletable();
+            $this->fail('AccountDeletionBlockedException was not thrown.');
+        } catch (AccountDeletionBlockedException $exception) {
+            $this->assertEquals(
+                [
+                    DeletionBlockReason::UNPAID_INVOICES,
+                    DeletionBlockReason::OWNERSHIP_UNCONFIRMED,
+                    DeletionBlockReason::EXTERNAL_INTEGRATIONS_ACTIVE,
+                ],
+                $exception->blockers()
+            );
+
+            throw $exception;
+        }
+    }
+
+    /**
      * テスト用のダミーAccount情報
      *
      * @param AccountMembership[] $memberships
      * @return AccountTestData
      */
-    private function createDummyAccountTestData(array $memberships = []): AccountTestData
-    {
+    private function createDummyAccountTestData(
+        array $memberships = [],
+        ?DeletionReadinessChecklist $deletionReadiness = null
+    ): AccountTestData {
         $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
@@ -245,6 +298,8 @@ class AccountTest extends TestCase
 
         $status = AccountStatus::ACTIVE;
 
+        $deletionReadiness ??= DeletionReadinessChecklist::ready();
+
         $account = new Account(
             $identifier,
             $email,
@@ -253,8 +308,8 @@ class AccountTest extends TestCase
             $contractInfo,
             $status,
             $memberships,
+            $deletionReadiness,
         );
-
 
         return new AccountTestData(
             $identifier,
@@ -265,6 +320,7 @@ class AccountTest extends TestCase
             $status,
             $memberships,
             $account,
+            $deletionReadiness,
         );
     }
 }
@@ -286,6 +342,7 @@ readonly class AccountTestData
         public AccountStatus $status,
         public array $memberships,
         public Account $account,
+        public DeletionReadinessChecklist $deletionReadiness,
     ) {
     }
 }
