@@ -310,7 +310,6 @@ class GroupRepositoryTest extends TestCase
 
         DB::table('draft_groups')->insert([$draft1, $draft2, $otherDraft]);
 
-        /** @var GroupRepositoryInterface $repository */
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet($translationSetIdentifier);
 
