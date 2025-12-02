@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Domain\ValueObject;
 
+use Source\Shared\Domain\ValueObject\Money;
+
 readonly class Plan
 {
     public function __construct(
