@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name', 32)->comment('グループ名');
             $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
-            $table->json('song_identifiers')->comment('楽曲ID一覧')->default('[]');
+            $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');
             $table->string('image_path', 255)->nullable()->comment('画像パス');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->string('name', 32)->comment('グループ名');
             $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
-            $table->json('song_identifiers')->comment('楽曲ID一覧')->default('[]');
+            $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');
             $table->string('image_path', 255)->nullable()->comment('画像パス');
             $table->text('status')->comment('公開ステータス');
             $table->timestamps();
