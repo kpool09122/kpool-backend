@@ -39,6 +39,8 @@ abstract class TestCase extends OrchestraTestCase
             \Application\Providers\Auth\DomainServiceProvider::class,
             \Application\Providers\Account\UseCaseServiceProvider::class,
             \Application\Providers\Account\DomainServiceProvider::class,
+            \Application\Providers\Monetization\UseCaseServiceProvider::class,
+            \Application\Providers\Monetization\DomainServiceProvider::class,
         ];
     }
 

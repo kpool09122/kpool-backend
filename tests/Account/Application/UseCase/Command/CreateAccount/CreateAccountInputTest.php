@@ -19,8 +19,6 @@ use Source\Account\Domain\ValueObject\City;
 use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\ContractName;
 use Source\Account\Domain\ValueObject\CountryCode;
-use Source\Account\Domain\ValueObject\Currency;
-use Source\Account\Domain\ValueObject\Money;
 use Source\Account\Domain\ValueObject\Phone;
 use Source\Account\Domain\ValueObject\Plan;
 use Source\Account\Domain\ValueObject\PlanDescription;
@@ -30,7 +28,9 @@ use Source\Account\Domain\ValueObject\StateOrProvince;
 use Source\Account\Domain\ValueObject\TaxCategory;
 use Source\Account\Domain\ValueObject\TaxInfo;
 use Source\Account\Domain\ValueObject\TaxRegion;
+use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Domain\ValueObject;
+namespace Source\Shared\Domain\ValueObject;
 
 enum Currency: string
 {
-    case JYP = 'JPY';
+    case JPY = 'JPY';
     case USD = 'USD';
     case KRW = 'KRW';
 }

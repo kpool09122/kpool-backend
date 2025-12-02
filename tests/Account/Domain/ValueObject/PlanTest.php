@@ -6,11 +6,11 @@ namespace Tests\Account\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Domain\ValueObject\Currency;
-use Source\Account\Domain\ValueObject\Money;
 use Source\Account\Domain\ValueObject\Plan;
 use Source\Account\Domain\ValueObject\PlanDescription;
 use Source\Account\Domain\ValueObject\PlanName;
+use Source\Shared\Domain\ValueObject\Currency;
+use Source\Shared\Domain\ValueObject\Money;
 
 class PlanTest extends TestCase
 {
