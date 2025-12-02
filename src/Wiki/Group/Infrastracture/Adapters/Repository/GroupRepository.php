@@ -33,7 +33,7 @@ final class GroupRepository implements GroupRepositoryInterface
             return null;
         }
 
-        return $this->mapGroupEntity($groupModel);
+        return $this->toEntity($groupModel);
     }
 
     public function findDraftById(GroupIdentifier $groupIdentifier): ?DraftGroup
@@ -46,7 +46,7 @@ final class GroupRepository implements GroupRepositoryInterface
             return null;
         }
 
-        return $this->mapDraftEntity($draftModel);
+        return $this->toDraftEntity($draftModel);
     }
 
     public function save(Group $group): void
@@ -106,7 +106,7 @@ final class GroupRepository implements GroupRepositoryInterface
             ->get();
 
         return $draftModels
-            ->map(fn (DraftGroupModel $model): DraftGroup => $this->mapDraftEntity($model))
+            ->map(fn (DraftGroupModel $model): DraftGroup => $this->toDraftEntity($model))
             ->toArray();
     }
 
@@ -136,7 +136,7 @@ final class GroupRepository implements GroupRepositoryInterface
         );
     }
 
-    private function mapGroupEntity(GroupModel $model): Group
+    private function toEntity(GroupModel $model): Group
     {
         return new Group(
             new GroupIdentifier($model->id),
@@ -151,7 +151,7 @@ final class GroupRepository implements GroupRepositoryInterface
         );
     }
 
-    private function mapDraftEntity(DraftGroupModel $model): DraftGroup
+    private function toDraftEntity(DraftGroupModel $model): DraftGroup
     {
         return new DraftGroup(
             new GroupIdentifier($model->id),
