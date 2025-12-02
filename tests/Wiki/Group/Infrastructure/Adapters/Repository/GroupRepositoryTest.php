@@ -262,6 +262,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：指定した翻訳セットIDの下書き情報が取得できること.
      * @throws BindingResolutionException
      */
     public function testFindDraftsByTranslationSet(): void
