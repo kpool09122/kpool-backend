@@ -58,6 +58,7 @@ use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 use Source\Wiki\Talent\Infrastructure\Adapters\Repository\TalentSnapshotRepository;
@@ -65,6 +66,7 @@ use Source\Wiki\Talent\Infrastructure\Factory\DraftTalentFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentHistoryFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentSnapshotFactory;
+use Source\Wiki\Talent\Infrastracture\Adapters\Repository\TalentRepository;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -94,6 +96,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AgencyRepositoryInterface::class, AgencyRepository::class);
         $this->app->singleton(AgencySnapshotRepositoryInterface::class, AgencySnapshotRepository::class);
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
+        $this->app->singleton(TalentRepositoryInterface::class, TalentRepository::class);
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
