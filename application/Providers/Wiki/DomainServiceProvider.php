@@ -31,8 +31,10 @@ use Source\Wiki\Talent\Domain\Factory\DraftTalentFactory;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentFactory;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
+use Source\Wiki\Talent\Infrastracture\Adapters\Repository\TalentRepository;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -50,6 +52,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftAgencyFactoryInterface::class, DraftAgencyFactory::class);
         $this->app->singleton(AgencyRepositoryInterface::class, AgencyRepository::class);
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
+        $this->app->singleton(TalentRepositoryInterface::class, TalentRepository::class);
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
     }
