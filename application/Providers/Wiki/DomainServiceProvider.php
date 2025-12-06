@@ -25,8 +25,10 @@ use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
+use Source\Wiki\Song\Infrastracture\Adapters\Repository\SongRepository;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactory;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentFactory;
@@ -52,5 +54,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
+        $this->app->singleton(SongRepositoryInterface::class, SongRepository::class);
     }
 }
