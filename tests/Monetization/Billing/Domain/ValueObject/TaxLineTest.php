@@ -6,8 +6,8 @@ namespace Tests\Monetization\Billing\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Billing\Domain\ValueObject\Percentage;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
+use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 

@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Monetization\Settlement\Domain\ValueObject;
+
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
+use Tests\Helper\StrTestHelper;
+
+class TransferIdentifierTest extends TestCase
+{
+    /**
+     * 正常系: ULID が渡されれば生成できること.
+     *
+     * @return void
+     */
+    public function test__construct(): void
+    {
+        $ulid = StrTestHelper::generateUlid();
+
+        $identifier = new TransferIdentifier($ulid);
+
+        $this->assertSame($ulid, (string)$identifier);
+    }
+
+    /**
+     * 異常系: ULID 形式以外は例外となること.
+     *
+     * @return void
+     */
+    public function testValidate(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new TransferIdentifier('invalid');
+    }
+}
