@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Monetization\Billing\Domain\ValueObject;
+namespace Source\Monetization\Shared\ValueObject;
 
 use InvalidArgumentException;
 

@@ -6,7 +6,7 @@ namespace Tests\Monetization\Billing\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
-use Source\Monetization\Billing\Domain\ValueObject\Percentage;
+use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Domain\ValueObject;
 
 use InvalidArgumentException;
+use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Money;
 
 readonly class TaxLine

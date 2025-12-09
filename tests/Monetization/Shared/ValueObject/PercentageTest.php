@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Monetization\Billing\Domain\ValueObject;
+namespace Tests\Monetization\Shared\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Billing\Domain\ValueObject\Percentage;
+use Source\Monetization\Shared\ValueObject\Percentage;
 
 class PercentageTest extends TestCase
 {
