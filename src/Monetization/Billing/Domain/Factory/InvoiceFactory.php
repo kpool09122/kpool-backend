@@ -6,9 +6,7 @@ namespace Source\Monetization\Billing\Domain\Factory;
 
 use DateTimeImmutable;
 use DomainException;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
-use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
@@ -21,13 +19,8 @@ use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 readonly class InvoiceFactory implements InvoiceFactoryInterface
 {
-    /**
-     * @param UlidGeneratorInterface $generator
-     * @param TaxDocumentPolicyServiceInterface $taxDocumentPolicy
-     */
     public function __construct(
-        private UlidGeneratorInterface   $generator,
-        private TaxDocumentPolicyServiceInterface $taxDocumentPolicy,
+        private UlidGeneratorInterface $generator,
     ) {
     }
 
@@ -43,14 +36,6 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
         DateTimeImmutable $dueDate,
         ?Discount $discount,
         array $taxLines,
-        CountryCode $sellerCountry,
-        bool $sellerRegistered,
-        bool $qualifiedInvoiceRequired,
-        CountryCode $buyerCountry,
-        bool $buyerIsBusiness,
-        bool $paidByCard,
-        ?string $registrationNumber = null,
-        ?string $reason = null,
     ): Invoice {
         if ($lines === []) {
             throw new DomainException('Invoice must have at least one line.');
@@ -72,18 +57,6 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
             }
         }
 
-        $taxDocument = $this->taxDocumentPolicy->decide(
-            $sellerCountry,
-            $sellerRegistered,
-            $qualifiedInvoiceRequired,
-            $buyerCountry,
-            $buyerIsBusiness,
-            $paidByCard,
-            $registrationNumber,
-            $dueDate,
-            $reason
-        );
-
         return new Invoice(
             new InvoiceIdentifier($this->generator->generate()),
             $customerId,
@@ -95,7 +68,6 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
             $issuedAt,
             $dueDate,
             InvoiceStatus::ISSUED,
-            $taxDocument
         );
     }
 

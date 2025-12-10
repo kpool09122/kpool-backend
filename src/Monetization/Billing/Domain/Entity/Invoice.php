@@ -102,6 +102,11 @@ class Invoice
         return $this->taxDocument;
     }
 
+    public function setTaxDocument(TaxDocument $taxDocument): void
+    {
+        $this->taxDocument = $taxDocument;
+    }
+
     public function paidAt(): ?DateTimeImmutable
     {
         return $this->paidAt;
