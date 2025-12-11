@@ -9,15 +9,11 @@ use DomainException;
 use Exception;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
-use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
-use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
-use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
@@ -42,45 +38,13 @@ class InvoiceFactoryTest extends TestCase
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $issuedAt = new DateTimeImmutable('2024-01-01');
         $dueDate = $issuedAt->modify('+14 days');
-        $sellerCountry = CountryCode::JAPAN;
-        $sellerRegistered = true;
-        $qualifiedInvoiceRequired = true;
-        $buyerCountry = CountryCode::UNITED_STATES;
-        $buyerIsBusiness = true;
-        $paidByCard = true;
-        $registrationNumber = 'T-12345';
-
-        $taxDocument = new TaxDocument(
-            TaxDocumentType::JP_QUALIFIED_INVOICE,
-            $sellerCountry,
-            $registrationNumber,
-            $dueDate,
-            null,
-        );
 
         $generator = Mockery::mock(UlidGeneratorInterface::class);
         $generator->shouldReceive('generate')
             ->once()
             ->andReturn((string)$invoiceIdentifier);
 
-        $service = Mockery::mock(TaxDocumentPolicyServiceInterface::class);
-        $service->shouldReceive('decide')
-            ->once()
-            ->with(
-                $sellerCountry,
-                $sellerRegistered,
-                $qualifiedInvoiceRequired,
-                $buyerCountry,
-                $buyerIsBusiness,
-                $paidByCard,
-                $registrationNumber,
-                $dueDate,
-                null
-            )
-            ->andReturn($taxDocument);
-
         $this->app->instance(UlidGeneratorInterface::class, $generator);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $service);
         $factory = $this->app->make(InvoiceFactoryInterface::class);
 
         $invoiceLines = [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)];
@@ -95,13 +59,6 @@ class InvoiceFactoryTest extends TestCase
             $dueDate,
             $discount,
             $taxLines,
-            $sellerCountry,
-            $sellerRegistered,
-            $qualifiedInvoiceRequired,
-            $buyerCountry,
-            $buyerIsBusiness,
-            $paidByCard,
-            $registrationNumber,
         );
 
         $this->assertSame((string)$invoiceIdentifier, (string)$invoice->invoiceIdentifier());
@@ -118,7 +75,7 @@ class InvoiceFactoryTest extends TestCase
         $this->assertSame($issuedAt, $invoice->issuedAt());
         $this->assertSame($dueDate, $invoice->dueDate());
         $this->assertSame(InvoiceStatus::ISSUED, $invoice->status());
-        $this->assertSame($taxDocument, $invoice->taxDocument());
+        $this->assertNull($invoice->taxDocument());
     }
 
     /**
@@ -135,11 +92,7 @@ class InvoiceFactoryTest extends TestCase
         $generator = Mockery::mock(UlidGeneratorInterface::class);
         $generator->shouldNotReceive('generate');
 
-        $service = Mockery::mock(TaxDocumentPolicyServiceInterface::class);
-        $service->shouldNotReceive('decide');
-
         $this->app->instance(UlidGeneratorInterface::class, $generator);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $service);
         $factory = $this->app->make(InvoiceFactoryInterface::class);
 
         $this->expectException(DomainException::class);
@@ -151,12 +104,6 @@ class InvoiceFactoryTest extends TestCase
             $dueDate,
             new Discount(new Percentage(10), 'TEN_OFF'),
             [new TaxLine('VAT', new Percentage(10), false)],
-            CountryCode::JAPAN,
-            true,
-            true,
-            CountryCode::UNITED_STATES,
-            true,
-            true,
         );
     }
 
@@ -174,11 +121,7 @@ class InvoiceFactoryTest extends TestCase
         $generator = Mockery::mock(UlidGeneratorInterface::class);
         $generator->shouldNotReceive('generate');
 
-        $service = Mockery::mock(TaxDocumentPolicyServiceInterface::class);
-        $service->shouldNotReceive('decide');
-
         $this->app->instance(UlidGeneratorInterface::class, $generator);
-        $this->app->instance(TaxDocumentPolicyServiceInterface::class, $service);
         $factory = $this->app->make(InvoiceFactoryInterface::class);
 
         $this->expectException(DomainException::class);
@@ -193,12 +136,6 @@ class InvoiceFactoryTest extends TestCase
             $dueDate,
             new Discount(new Percentage(10), 'TEN_OFF'),
             [new TaxLine('VAT', new Percentage(10), false)],
-            CountryCode::JAPAN,
-            true,
-            true,
-            CountryCode::UNITED_STATES,
-            true,
-            true,
         );
     }
 }
