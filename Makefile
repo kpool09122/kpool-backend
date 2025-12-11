@@ -1,5 +1,5 @@
 # PHPUnit and Database Commands
-.PHONY: test test-no-db check db-up db-down db-restart db-logs db-shell wait-for-test-db cs-fix phpstan
+.PHONY: test test-no-db check db-up db-down db-restart db-logs db-shell wait-for-test-db cs-fix phpstan mail-up mail-down
 
 PHPUNIT=./vendor/bin/phpunit
 
@@ -69,6 +69,12 @@ db-shell: ## Connect to PostgreSQL testing shell
 
 db-clean: ## Stop services and remove testing database volumes
 	docker-compose down -v --remove-orphans
+
+mail-up: ## Start Mailpit and php (php will pull up testing_db via depends_on)
+	docker-compose up -d mail php
+
+mail-down: ## Stop Mailpit and php
+	docker-compose stop mail php
 
 # Build and start all services
 up: ## Start all services
