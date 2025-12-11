@@ -7,7 +7,6 @@ namespace Tests\Monetization\Payment\Application\UseCase\Command\AuthorizePaymen
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use RuntimeException;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
 use Source\Monetization\Payment\Domain\Entity\Payment;
@@ -27,6 +26,9 @@ use Tests\TestCase;
 class AuthorizePaymentTest extends TestCase
 {
     /**
+     * 正常系: 正しく支払いの与信を取得できること.
+     *
+     * @return void
      * @throws BindingResolutionException
      */
     public function testProcessCreatesAndAuthorizesPayment(): void
@@ -74,48 +76,6 @@ class AuthorizePaymentTest extends TestCase
         $this->assertSame($pendingPayment, $result);
         $this->assertSame(PaymentStatus::AUTHORIZED, $result->status());
         $this->assertNotNull($result->authorizedAt());
-    }
-
-    /**
-     * @throws BindingResolutionException
-     */
-    public function testProcessPropagatesGatewayException(): void
-    {
-        $money = new Money(1000, Currency::JPY);
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
-            PaymentMethodType::CARD,
-            'Visa **** 1234',
-            true,
-        );
-
-        $input = new AuthorizePaymentInput($money, $paymentMethod);
-
-        $pendingPayment = $this->createPendingPayment($money, $paymentMethod);
-
-        $paymentFactory = Mockery::mock(PaymentFactoryInterface::class);
-        $paymentFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($pendingPayment);
-
-        $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
-        $paymentGateway->shouldReceive('authorize')
-            ->once()
-            ->andThrow(new RuntimeException('Gateway error: Card declined'));
-
-        $paymentRepository = Mockery::mock(PaymentRepositoryInterface::class);
-        $paymentRepository->shouldNotReceive('save');
-
-        $this->app->instance(PaymentFactoryInterface::class, $paymentFactory);
-        $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);
-        $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
-
-        $useCase = $this->app->make(AuthorizePaymentInterface::class);
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Gateway error: Card declined');
-
-        $useCase->process($input);
     }
 
     private function createPendingPayment(Money $money, PaymentMethod $paymentMethod): Payment

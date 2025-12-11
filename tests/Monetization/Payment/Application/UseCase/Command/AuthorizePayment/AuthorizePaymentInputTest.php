@@ -15,7 +15,12 @@ use Tests\TestCase;
 
 class AuthorizePaymentInputTest extends TestCase
 {
-    public function testGetters(): void
+    /**
+     * 正常系: 正しくインスタンスが作成できること.
+     *
+     * @return void
+     */
+    public function test__construct(): void
     {
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
