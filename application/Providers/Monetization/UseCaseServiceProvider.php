@@ -9,6 +9,8 @@ use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\Create
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePayment;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
+use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePayment;
+use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -16,5 +18,6 @@ class UseCaseServiceProvider extends ServiceProvider
     {
         $this->app->singleton(CreateInvoiceInterface::class, CreateInvoice::class);
         $this->app->singleton(AuthorizePaymentInterface::class, AuthorizePayment::class);
+        $this->app->singleton(CapturePaymentInterface::class, CapturePayment::class);
     }
 }

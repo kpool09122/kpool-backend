@@ -9,4 +9,6 @@ use Source\Monetization\Payment\Domain\Entity\Payment;
 interface PaymentGatewayInterface
 {
     public function authorize(Payment $payment): void;
+
+    public function capture(Payment $payment): void;
 }
