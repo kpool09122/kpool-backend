@@ -25,6 +25,7 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -39,6 +40,7 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessCreatesInvoiceWithProductAndShipping(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $lines = [
             new InvoiceLine(
@@ -60,6 +62,7 @@ class CreateInvoiceTest extends TestCase
         $registrationNumber = 'T-12345';
 
         $input = new CreateInvoiceInput(
+            orderIdentifier: $orderIdentifier,
             customerIdentifier: $customerIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
@@ -89,6 +92,7 @@ class CreateInvoiceTest extends TestCase
         $invoiceFactory->shouldReceive('create')
             ->once()
             ->withArgs(function (
+                OrderIdentifier $orderId,
                 UserIdentifier $customerId,
                 array $invoiceLines,
                 Currency $cur,
@@ -96,7 +100,7 @@ class CreateInvoiceTest extends TestCase
                 DateTimeImmutable $dueDate,
                 ?Discount $disc,
                 array $taxes,
-            ) use ($customerIdentifier, $currency, $discount, $taxLines) {
+            ) use ($orderIdentifier, $customerIdentifier, $currency, $discount, $taxLines) {
                 // 2つのInvoiceLine: 商品明細 + 送料
                 if (count($invoiceLines) !== 2) {
                     return false;
@@ -118,7 +122,8 @@ class CreateInvoiceTest extends TestCase
                     return false;
                 }
 
-                return $customerId === $customerIdentifier &&
+                return $orderId === $orderIdentifier &&
+                    $customerId === $customerIdentifier &&
                     $cur === $currency &&
                     $disc === $discount &&
                     $taxes === $taxLines;
@@ -170,6 +175,7 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessWithZeroShippingCost(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $lines = [
             new InvoiceLine(
@@ -181,6 +187,7 @@ class CreateInvoiceTest extends TestCase
         $shippingCost = new Money(0, Currency::JPY);
 
         $input = new CreateInvoiceInput(
+            orderIdentifier: $orderIdentifier,
             customerIdentifier: $customerIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
@@ -202,6 +209,7 @@ class CreateInvoiceTest extends TestCase
         $invoiceFactory->shouldReceive('create')
             ->once()
             ->withArgs(function (
+                OrderIdentifier $orderId,
                 UserIdentifier $customerId,
                 array $invoiceLines,
             ) {
@@ -245,6 +253,7 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessWithMultipleLines(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $lines = [
             new InvoiceLine(
@@ -261,6 +270,7 @@ class CreateInvoiceTest extends TestCase
         $shippingCost = new Money(300, Currency::JPY);
 
         $input = new CreateInvoiceInput(
+            orderIdentifier: $orderIdentifier,
             customerIdentifier: $customerIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
@@ -282,6 +292,7 @@ class CreateInvoiceTest extends TestCase
         $invoiceFactory->shouldReceive('create')
             ->once()
             ->withArgs(function (
+                OrderIdentifier $orderId,
                 UserIdentifier $customerId,
                 array $invoiceLines,
             ) {
@@ -327,10 +338,12 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessRejectsEmptyLines(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $shippingCost = new Money(500, Currency::JPY);
 
         $input = new CreateInvoiceInput(
+            orderIdentifier: $orderIdentifier,
             customerIdentifier: $customerIdentifier,
             lines: [],
             shippingCost: $shippingCost,
@@ -373,6 +386,7 @@ class CreateInvoiceTest extends TestCase
 
         return new Invoice(
             new InvoiceIdentifier(StrTestHelper::generateUlid()),
+            new OrderIdentifier(StrTestHelper::generateUlid()),
             $customerIdentifier,
             [new InvoiceLine('Test', new Money(1000, $currency), 1)],
             new Money(1000, $currency),

@@ -13,6 +13,7 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -25,6 +26,7 @@ class CreateInvoiceInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $lines = [
             new InvoiceLine(
@@ -46,6 +48,7 @@ class CreateInvoiceInputTest extends TestCase
         $registrationNumber = 'T-12345';
 
         $input = new CreateInvoiceInput(
+            orderIdentifier: $orderIdentifier,
             customerIdentifier: $customerIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
@@ -61,6 +64,7 @@ class CreateInvoiceInputTest extends TestCase
             registrationNumber: $registrationNumber,
         );
 
+        $this->assertSame($orderIdentifier, $input->orderIdentifier());
         $this->assertSame($customerIdentifier, $input->customerIdentifier());
         $this->assertSame($lines, $input->lines());
         $this->assertSame($shippingCost, $input->shippingCost());
@@ -83,6 +87,7 @@ class CreateInvoiceInputTest extends TestCase
      */
     public function testWithNullOptionalParameters(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $lines = [
             new InvoiceLine(
@@ -94,6 +99,7 @@ class CreateInvoiceInputTest extends TestCase
         $shippingCost = new Money(0, Currency::JPY);
 
         $input = new CreateInvoiceInput(
+            orderIdentifier: $orderIdentifier,
             customerIdentifier: $customerIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,

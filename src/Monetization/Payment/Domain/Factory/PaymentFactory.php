@@ -11,6 +11,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
 readonly class PaymentFactory implements PaymentFactoryInterface
 {
@@ -20,12 +21,14 @@ readonly class PaymentFactory implements PaymentFactoryInterface
     }
 
     public function create(
+        OrderIdentifier   $orderIdentifier,
         Money             $money,
         PaymentMethod     $paymentMethod,
         DateTimeImmutable $createdAt,
     ): Payment {
         return new Payment(
             new PaymentIdentifier($this->generator->generate()),
+            $orderIdentifier,
             $money,
             $paymentMethod,
             $createdAt,

@@ -20,6 +20,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -34,8 +35,9 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testMarksInvoicePaidWhenCapturedPaymentMatches(): void
     {
-        $invoice = $this->createInvoice();
-        $payment = $this->createCapturedPayment($invoice->total());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $invoice = $this->createInvoice($orderIdentifier);
+        $payment = $this->createCapturedPayment($orderIdentifier, $invoice->total());
         $paidAt = new DateTimeImmutable('+1 minute');
 
         $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
@@ -46,6 +48,25 @@ class PaymentMatcherServiceTest extends TestCase
     }
 
     /**
+     * 異常系: 請求書と支払いの注文識別子が異なる場合、例外がスローされること.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function testRejectsWhenOrderIdentifiersDiffer(): void
+    {
+        $invoiceOrderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $paymentOrderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $invoice = $this->createInvoice($invoiceOrderIdentifier);
+        $payment = $this->createCapturedPayment($paymentOrderIdentifier, $invoice->total());
+
+        $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
+
+        $this->expectException(DomainException::class);
+        $matcher->match($invoice, $payment, new DateTimeImmutable('+1 minute'));
+    }
+
+    /**
      * 異常系: 支払いステータスが確定済みでない場合、例外がスローされること.
      *
      * @return void
@@ -53,8 +74,9 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenPaymentStatusIsNotCaptured(): void
     {
-        $invoice = $this->createInvoice();
-        $payment = $this->createCapturedPayment($invoice->total(), PaymentStatus::AUTHORIZED);
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $invoice = $this->createInvoice($orderIdentifier);
+        $payment = $this->createCapturedPayment($orderIdentifier, $invoice->total(), PaymentStatus::AUTHORIZED);
 
         $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
 
@@ -70,8 +92,9 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenPaymentAmountDiffers(): void
     {
-        $invoice = $this->createInvoice();
-        $payment = $this->createCapturedPayment(new Money($invoice->total()->amount() - 10, Currency::JPY));
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $invoice = $this->createInvoice($orderIdentifier);
+        $payment = $this->createCapturedPayment($orderIdentifier, new Money($invoice->total()->amount() - 10, Currency::JPY));
 
         $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
 
@@ -87,8 +110,9 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenPaymentCurrencyDiffers(): void
     {
-        $invoice = $this->createInvoice();
-        $payment = $this->createCapturedPayment(new Money($invoice->total()->amount(), Currency::KRW));
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $invoice = $this->createInvoice($orderIdentifier);
+        $payment = $this->createCapturedPayment($orderIdentifier, new Money($invoice->total()->amount(), Currency::KRW));
 
         $matcher = $this->app->make(PaymentMatcherServiceInterface::class);
 
@@ -97,15 +121,15 @@ class PaymentMatcherServiceTest extends TestCase
     }
 
     /**
-     * @return Invoice
      * @throws Exception
      */
-    private function createInvoice(): Invoice
+    private function createInvoice(OrderIdentifier $orderIdentifier): Invoice
     {
         $issuedAt = new DateTimeImmutable('2024-01-01');
 
         return new Invoice(
             new InvoiceIdentifier(StrTestHelper::generateUlid()),
+            $orderIdentifier,
             new UserIdentifier(StrTestHelper::generateUlid()),
             [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)],
             new Money(1000, Currency::JPY),
@@ -119,11 +143,13 @@ class PaymentMatcherServiceTest extends TestCase
     }
 
     private function createCapturedPayment(
+        OrderIdentifier $orderIdentifier,
         Money $money,
         ?PaymentStatus $status = null
     ): Payment {
         return new Payment(
             new PaymentIdentifier(StrTestHelper::generateUlid()),
+            $orderIdentifier,
             $money,
             new PaymentMethod(
                 new PaymentMethodIdentifier(StrTestHelper::generateUlid()),

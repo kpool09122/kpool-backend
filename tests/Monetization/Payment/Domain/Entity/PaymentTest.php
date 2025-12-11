@@ -15,6 +15,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class PaymentTest extends TestCase
@@ -30,6 +31,7 @@ class PaymentTest extends TestCase
         $payment = $dummyPayment->payment;
 
         $this->assertSame($dummyPayment->paymentId, $payment->paymentId());
+        $this->assertSame($dummyPayment->orderIdentifier, $payment->orderIdentifier());
         $this->assertSame($dummyPayment->money, $payment->money());
         $this->assertSame($dummyPayment->method, $payment->paymentMethod());
         $this->assertSame($dummyPayment->createdAt, $payment->createdAt());
@@ -219,6 +221,7 @@ class PaymentTest extends TestCase
         ?Money $money = null,
     ): PaymentTestData {
         $paymentId = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $money ??= new Money(1000, Currency::JPY);
         $method = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
@@ -237,6 +240,7 @@ class PaymentTest extends TestCase
 
         $payment = new Payment(
             $paymentId,
+            $orderIdentifier,
             $money,
             $method,
             $createdAt,
@@ -251,6 +255,7 @@ class PaymentTest extends TestCase
 
         return new PaymentTestData(
             $paymentId,
+            $orderIdentifier,
             $money,
             $method,
             $createdAt,
@@ -273,6 +278,7 @@ readonly class PaymentTestData
 {
     public function __construct(
         public PaymentIdentifier $paymentId,
+        public OrderIdentifier $orderIdentifier,
         public Money $money,
         public PaymentMethod $method,
         public DateTimeImmutable $createdAt,

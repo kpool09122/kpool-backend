@@ -10,11 +10,13 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
 class Payment
 {
     public function __construct(
         private readonly PaymentIdentifier $paymentId,
+        private readonly OrderIdentifier   $orderIdentifier,
         private readonly Money             $money,
         private readonly PaymentMethod     $paymentMethod,
         private readonly DateTimeImmutable $createdAt,
@@ -31,6 +33,11 @@ class Payment
     public function paymentId(): PaymentIdentifier
     {
         return $this->paymentId;
+    }
+
+    public function orderIdentifier(): OrderIdentifier
+    {
+        return $this->orderIdentifier;
     }
 
     public function money(): Money

@@ -15,6 +15,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,6 +41,7 @@ class PaymentFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $money = new Money(100, Currency::KRW);
         $method = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
@@ -50,12 +52,14 @@ class PaymentFactoryTest extends TestCase
         $createdAt = new DateTimeImmutable();
         $factory = $this->app->make(PaymentFactoryInterface::class);
         $payment = $factory->create(
+            $orderIdentifier,
             $money,
             $method,
             $createdAt,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$payment->paymentId()));
+        $this->assertSame($orderIdentifier, $payment->orderIdentifier());
         $this->assertSame($money, $payment->money());
         $this->assertSame($method, $payment->paymentMethod());
         $this->assertSame($createdAt, $payment->createdAt());

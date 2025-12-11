@@ -24,6 +24,7 @@ readonly class AuthorizePayment implements AuthorizePaymentInterface
         $now = new DateTimeImmutable();
 
         $payment = $this->paymentFactory->create(
+            $input->orderIdentifier(),
             $input->money(),
             $input->paymentMethod(),
             $now,

@@ -15,6 +15,7 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 readonly class InvoiceFactory implements InvoiceFactoryInterface
@@ -29,6 +30,7 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
      * @param TaxLine[] $taxLines
      */
     public function create(
+        OrderIdentifier $orderIdentifier,
         UserIdentifier $customerId,
         array $lines,
         Currency $currency,
@@ -59,6 +61,7 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
 
         return new Invoice(
             new InvoiceIdentifier($this->generator->generate()),
+            $orderIdentifier,
             $customerId,
             $lines,
             $subtotal,

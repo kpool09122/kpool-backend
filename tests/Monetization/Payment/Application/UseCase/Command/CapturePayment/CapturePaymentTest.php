@@ -21,6 +21,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -137,6 +138,7 @@ class CapturePaymentTest extends TestCase
 
     private function createAuthorizedPayment(PaymentIdentifier $paymentIdentifier): Payment
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
@@ -148,6 +150,7 @@ class CapturePaymentTest extends TestCase
 
         return new Payment(
             $paymentIdentifier,
+            $orderIdentifier,
             $money,
             $paymentMethod,
             $now,

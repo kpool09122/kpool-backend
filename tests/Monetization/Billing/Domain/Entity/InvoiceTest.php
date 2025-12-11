@@ -17,6 +17,7 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -30,6 +31,7 @@ class InvoiceTest extends TestCase
     public function test__construct(): void
     {
         $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $invoiceLines = [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)];
         $subtotal = new Money(1000, Currency::JPY);
@@ -52,6 +54,7 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->createInvoice([
             'invoiceIdentifier' => $invoiceIdentifier,
+            'orderIdentifier' => $orderIdentifier,
             'customerIdentifier' => $customerIdentifier,
             'invoiceLines' => $invoiceLines,
             'subtotal' => $subtotal,
@@ -68,6 +71,7 @@ class InvoiceTest extends TestCase
         ]);
 
         $this->assertSame($invoiceIdentifier, $invoice->invoiceIdentifier());
+        $this->assertSame($orderIdentifier, $invoice->orderIdentifier());
         $this->assertSame($customerIdentifier, $invoice->customerIdentifier());
         $this->assertSame($invoiceLines, $invoice->lines());
         $this->assertSame($total->currency(), $invoice->currency());
@@ -371,6 +375,7 @@ class InvoiceTest extends TestCase
     {
         return new Invoice(
             $values['invoiceIdentifier'] ?? new InvoiceIdentifier(StrTestHelper::generateUlid()),
+            $values['orderIdentifier'] ?? new OrderIdentifier(StrTestHelper::generateUlid()),
             $values['customerIdentifier'] ?? new UserIdentifier(StrTestHelper::generateUlid()),
             $values['invoiceLines'] ?? [new InvoiceLine('Standard plan', new Money(1000, Currency::KRW), 1)],
             $values['subtotal'] ?? new Money(1000, Currency::KRW),

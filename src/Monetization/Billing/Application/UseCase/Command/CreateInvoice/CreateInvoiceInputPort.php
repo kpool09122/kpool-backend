@@ -10,10 +10,13 @@ use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 interface CreateInvoiceInputPort
 {
+    public function orderIdentifier(): OrderIdentifier;
+
     public function customerIdentifier(): UserIdentifier;
 
     /**
