@@ -35,6 +35,7 @@ readonly class CreateInvoice implements CreateInvoiceInterface
         $dueDate = $issuedAt->modify('+' . self::DEFAULT_DUE_DAYS . ' days');
 
         $invoice = $this->invoiceFactory->create(
+            $input->orderIdentifier(),
             $input->customerIdentifier(),
             $invoiceLines,
             $input->currency(),

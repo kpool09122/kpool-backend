@@ -19,6 +19,7 @@ use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -35,6 +36,7 @@ class InvoiceFactoryTest extends TestCase
     public function testCreate(): void
     {
         $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $issuedAt = new DateTimeImmutable('2024-01-01');
         $dueDate = $issuedAt->modify('+14 days');
@@ -52,6 +54,7 @@ class InvoiceFactoryTest extends TestCase
         $taxLines = [new TaxLine('VAT', new Percentage(10), false)];
         $discount = new Discount(new Percentage(10), 'TEN_OFF');
         $invoice = $factory->create(
+            $orderIdentifier,
             $customerIdentifier,
             $invoiceLines,
             $currency,
@@ -62,6 +65,7 @@ class InvoiceFactoryTest extends TestCase
         );
 
         $this->assertSame((string)$invoiceIdentifier, (string)$invoice->invoiceIdentifier());
+        $this->assertSame((string)$orderIdentifier, (string)$invoice->orderIdentifier());
         $this->assertSame((string)$customerIdentifier, (string)$invoice->customerIdentifier());
         $this->assertSame($invoiceLines, $invoice->lines());
         $this->assertSame(1000, $invoice->subtotal()->amount());
@@ -97,6 +101,7 @@ class InvoiceFactoryTest extends TestCase
 
         $this->expectException(DomainException::class);
         $factory->create(
+            new OrderIdentifier(StrTestHelper::generateUlid()),
             new UserIdentifier(StrTestHelper::generateUlid()),
             [],
             Currency::JPY,
@@ -126,6 +131,7 @@ class InvoiceFactoryTest extends TestCase
 
         $this->expectException(DomainException::class);
         $factory->create(
+            new OrderIdentifier(StrTestHelper::generateUlid()),
             new UserIdentifier(StrTestHelper::generateUlid()),
             [
                 new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2),

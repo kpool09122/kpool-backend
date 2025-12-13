@@ -13,6 +13,7 @@ use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 class Invoice
@@ -22,6 +23,7 @@ class Invoice
      */
     public function __construct(
         private readonly InvoiceIdentifier $invoiceIdentifier,
+        private readonly OrderIdentifier $orderIdentifier,
         private readonly UserIdentifier $customerIdentifier,
         private readonly array $lines,
         private readonly Money $subtotal,
@@ -42,6 +44,11 @@ class Invoice
     public function invoiceIdentifier(): InvoiceIdentifier
     {
         return $this->invoiceIdentifier;
+    }
+
+    public function orderIdentifier(): OrderIdentifier
+    {
+        return $this->orderIdentifier;
     }
 
     public function customerIdentifier(): UserIdentifier

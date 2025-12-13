@@ -14,6 +14,9 @@ class PaymentMatcherService implements PaymentMatcherServiceInterface
 {
     public function match(Invoice $invoice, Payment $payment, DateTimeImmutable $paidAt): void
     {
+        if ((string) $invoice->orderIdentifier() !== (string) $payment->orderIdentifier()) {
+            throw new DomainException('Invoice and Payment are not for the same order.');
+        }
         if ($payment->status() !== PaymentStatus::CAPTURED) {
             throw new DomainException('Payment must be captured before matching to invoice.');
         }

@@ -6,9 +6,12 @@ namespace Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayme
 
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
 interface AuthorizePaymentInputPort
 {
+    public function orderIdentifier(): OrderIdentifier;
+
     public function money(): Money;
 
     public function paymentMethod(): PaymentMethod;

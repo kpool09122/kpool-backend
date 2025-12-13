@@ -10,11 +10,13 @@ use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 readonly class CreateInvoiceInput implements CreateInvoiceInputPort
 {
     /**
+     * @param OrderIdentifier $orderIdentifier
      * @param UserIdentifier $customerIdentifier
      * @param InvoiceLine[] $lines
      * @param Money $shippingCost
@@ -30,6 +32,7 @@ readonly class CreateInvoiceInput implements CreateInvoiceInputPort
      * @param string|null $registrationNumber
      */
     public function __construct(
+        private OrderIdentifier $orderIdentifier,
         private UserIdentifier $customerIdentifier,
         private array $lines,
         private Money $shippingCost,
@@ -44,6 +47,11 @@ readonly class CreateInvoiceInput implements CreateInvoiceInputPort
         private bool $paidByCard,
         private ?string $registrationNumber,
     ) {
+    }
+
+    public function orderIdentifier(): OrderIdentifier
+    {
+        return $this->orderIdentifier;
     }
 
     public function customerIdentifier(): UserIdentifier

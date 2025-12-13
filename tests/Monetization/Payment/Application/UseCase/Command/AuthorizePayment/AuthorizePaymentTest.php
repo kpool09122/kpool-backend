@@ -20,6 +20,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -33,6 +34,7 @@ class AuthorizePaymentTest extends TestCase
      */
     public function testProcessCreatesAndAuthorizesPayment(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
@@ -41,15 +43,15 @@ class AuthorizePaymentTest extends TestCase
             true,
         );
 
-        $input = new AuthorizePaymentInput($money, $paymentMethod);
+        $input = new AuthorizePaymentInput($orderIdentifier, $money, $paymentMethod);
 
-        $pendingPayment = $this->createPendingPayment($money, $paymentMethod);
+        $pendingPayment = $this->createPendingPayment($orderIdentifier, $money, $paymentMethod);
 
         $paymentFactory = Mockery::mock(PaymentFactoryInterface::class);
         $paymentFactory->shouldReceive('create')
             ->once()
-            ->withArgs(function (Money $m, PaymentMethod $pm, DateTimeImmutable $createdAt) use ($money, $paymentMethod) {
-                return $m === $money && $pm === $paymentMethod;
+            ->withArgs(function (OrderIdentifier $oi, Money $m, PaymentMethod $pm, DateTimeImmutable $createdAt) use ($orderIdentifier, $money, $paymentMethod) {
+                return $oi === $orderIdentifier && $m === $money && $pm === $paymentMethod;
             })
             ->andReturn($pendingPayment);
 
@@ -78,10 +80,11 @@ class AuthorizePaymentTest extends TestCase
         $this->assertNotNull($result->authorizedAt());
     }
 
-    private function createPendingPayment(Money $money, PaymentMethod $paymentMethod): Payment
+    private function createPendingPayment(OrderIdentifier $orderIdentifier, Money $money, PaymentMethod $paymentMethod): Payment
     {
         return new Payment(
             new PaymentIdentifier(StrTestHelper::generateUlid()),
+            $orderIdentifier,
             $money,
             $paymentMethod,
             new DateTimeImmutable(),

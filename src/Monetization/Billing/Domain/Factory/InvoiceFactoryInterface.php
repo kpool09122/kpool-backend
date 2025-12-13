@@ -10,6 +10,7 @@ use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Shared\Domain\ValueObject\Currency;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 interface InvoiceFactoryInterface
@@ -19,6 +20,7 @@ interface InvoiceFactoryInterface
      * @param TaxLine[] $taxLines
      */
     public function create(
+        OrderIdentifier $orderIdentifier,
         UserIdentifier $customerId,
         array $lines,
         Currency $currency,

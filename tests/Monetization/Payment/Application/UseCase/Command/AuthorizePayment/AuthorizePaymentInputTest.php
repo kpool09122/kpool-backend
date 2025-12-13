@@ -10,6 +10,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\OrderIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -22,6 +23,7 @@ class AuthorizePaymentInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
@@ -30,8 +32,9 @@ class AuthorizePaymentInputTest extends TestCase
             true,
         );
 
-        $input = new AuthorizePaymentInput($money, $paymentMethod);
+        $input = new AuthorizePaymentInput($orderIdentifier, $money, $paymentMethod);
 
+        $this->assertSame($orderIdentifier, $input->orderIdentifier());
         $this->assertSame($money, $input->money());
         $this->assertSame($paymentMethod, $input->paymentMethod());
     }
