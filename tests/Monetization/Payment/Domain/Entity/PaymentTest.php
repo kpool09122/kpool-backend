@@ -146,13 +146,15 @@ class PaymentTest extends TestCase
         $payment->authorize(new DateTimeImmutable());
         $payment->capture(new DateTimeImmutable('+1 minute'));
 
-        $payment->refund(new Money(400, Currency::JPY), new DateTimeImmutable('+2 minutes'));
+        $payment->refund(new Money(400, Currency::JPY), new DateTimeImmutable('+2 minutes'), 'customer_request');
         $this->assertSame(PaymentStatus::PARTIALLY_REFUNDED, $payment->status());
         $this->assertSame(400, $payment->refundedMoney()->amount());
+        $this->assertSame('customer_request', $payment->lastRefundReason());
 
-        $payment->refund(new Money(600, Currency::JPY), new DateTimeImmutable('+3 minutes'));
+        $payment->refund(new Money(600, Currency::JPY), new DateTimeImmutable('+3 minutes'), 'order_cancelled');
         $this->assertSame(PaymentStatus::REFUNDED, $payment->status());
         $this->assertSame(1000, $payment->refundedMoney()->amount());
+        $this->assertSame('order_cancelled', $payment->lastRefundReason());
     }
 
     /**
@@ -164,7 +166,7 @@ class PaymentTest extends TestCase
 
         $this->expectException(DomainException::class);
 
-        $payment->refund(new Money(100, Currency::USD), new DateTimeImmutable());
+        $payment->refund(new Money(100, Currency::USD), new DateTimeImmutable(), 'test');
     }
 
     /**
@@ -176,7 +178,7 @@ class PaymentTest extends TestCase
 
         $this->expectException(DomainException::class);
 
-        $payment->refund(new Money(2000, Currency::JPY), new DateTimeImmutable());
+        $payment->refund(new Money(2000, Currency::JPY), new DateTimeImmutable(), 'test');
     }
 
     /**
@@ -189,7 +191,7 @@ class PaymentTest extends TestCase
 
         $this->expectException(DomainException::class);
 
-        $payment->refund(new Money(2000, Currency::JPY), new DateTimeImmutable());
+        $payment->refund(new Money(2000, Currency::JPY), new DateTimeImmutable(), 'test');
     }
 
     /**
