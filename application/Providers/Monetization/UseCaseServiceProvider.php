@@ -15,6 +15,8 @@ use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\Captu
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPayment;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInterface;
+use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenue;
+use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -25,5 +27,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(AuthorizePaymentInterface::class, AuthorizePayment::class);
         $this->app->singleton(CapturePaymentInterface::class, CapturePayment::class);
         $this->app->singleton(RefundPaymentInterface::class, RefundPayment::class);
+        $this->app->singleton(SettleRevenueInterface::class, SettleRevenue::class);
     }
 }
