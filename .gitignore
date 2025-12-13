@@ -38,3 +38,7 @@ clover.xml
 /dist/
 
 .codex
+
+# Mailpit local DB
+/mailpit/
+/mailpit*.db*
