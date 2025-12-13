@@ -27,6 +27,7 @@ class Payment
         private ?string                    $failureReason,
         private Money                      $refundedMoney,
         private ?DateTimeImmutable         $lastRefundedAt,
+        private ?string                    $lastRefundReason = null,
     ) {
     }
 
@@ -90,6 +91,11 @@ class Payment
         return $this->lastRefundedAt;
     }
 
+    public function lastRefundReason(): ?string
+    {
+        return $this->lastRefundReason;
+    }
+
     public function authorize(DateTimeImmutable $authorizedAt): void
     {
         if ($this->status !== PaymentStatus::PENDING) {
@@ -121,7 +127,7 @@ class Payment
         $this->status = PaymentStatus::FAILED;
     }
 
-    public function refund(Money $refundAmount, DateTimeImmutable $refundedAt): void
+    public function refund(Money $refundAmount, DateTimeImmutable $refundedAt, string $reason): void
     {
         if (! in_array($this->status, [PaymentStatus::CAPTURED, PaymentStatus::PARTIALLY_REFUNDED], true)) {
             throw new DomainException('Refund is allowed only for captured payments.');
@@ -138,6 +144,7 @@ class Payment
 
         $this->refundedMoney = $newRefundedAmount;
         $this->lastRefundedAt = $refundedAt;
+        $this->lastRefundReason = $reason;
         $this->status = $this->refundedMoney->amount() === $this->money->amount()
             ? PaymentStatus::REFUNDED
             : PaymentStatus::PARTIALLY_REFUNDED;
