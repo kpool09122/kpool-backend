@@ -4,6 +4,7 @@ services:
     volumes:
       - .:/var/www/html
     working_dir: /var/www/html
+    command: ["bash", "-c", "tail -f /dev/null"]
     environment:
       - DB_CONNECTION=pgsql
       - DB_HOST=testing_db
@@ -11,8 +12,11 @@ services:
       - DB_DATABASE=kpool
       - DB_USERNAME=kpool
       - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       - testing_db
+      - redis
     networks:
       - kpool-network
 
@@ -30,8 +34,19 @@ services:
     networks:
       - kpool-network
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - kpool-network
+
 volumes:
   testing_db_data:
+  redis_data:
 
 networks:
   kpool-network:

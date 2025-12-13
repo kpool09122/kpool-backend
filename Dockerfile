@@ -1,16 +1,24 @@
 FROM php:8.4-cli
 
 # 必要なパッケージのインストール
-RUN apt-get update && apt-get install -y \
-    libzip-dev \
-    libpq-dev \
-    zip \
-    unzip \
-    && docker-php-ext-install zip pdo pdo_pgsql
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        autoconf \
+        libzip-dev \
+        libpq-dev \
+        zip \
+        unzip; \
+    docker-php-ext-install zip pdo pdo_pgsql; \
+    rm -rf /var/lib/apt/lists/*
 
-# PCOVのインストール（軽量なコードカバレッジドライバー）
-RUN pecl install pcov \
-    && docker-php-ext-enable pcov
+# PCOVとRedis拡張のインストール
+RUN set -eux; \
+    pecl install pcov redis; \
+    docker-php-ext-enable pcov redis; \
+    apt-get purge -y --auto-remove build-essential autoconf; \
+    rm -rf /tmp/pear /var/lib/apt/lists/*
 
 # Composerのインストール
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
