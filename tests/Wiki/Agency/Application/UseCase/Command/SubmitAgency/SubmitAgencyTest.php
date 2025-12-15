@@ -64,7 +64,9 @@ class SubmitAgencyTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -96,7 +98,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $status,
@@ -167,7 +171,9 @@ class SubmitAgencyTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -199,7 +205,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $status,
@@ -246,7 +254,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
+            'j.y. park',
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
             new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -312,7 +322,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
+            'j.y. park',
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
             new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -378,7 +390,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
+            'j.y. park',
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
             new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -445,7 +459,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
+            'j.y. park',
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
             new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -510,7 +526,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
+            'j.y. park',
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
             new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -574,7 +592,9 @@ class SubmitAgencyTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
+            'j.y. park',
             new FoundedIn(new DateTimeImmutable('1997-04-25')),
             new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Group\Infrastracture\Adapters\Repository;
+namespace Source\Wiki\Group\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\DraftGroup as DraftGroupModel;
 use Application\Models\Wiki\Group as GroupModel;
@@ -59,6 +59,7 @@ final class GroupRepository implements GroupRepositoryInterface
                 'translation_set_identifier' => (string) $group->translationSetIdentifier(),
                 'translation' => $group->language()->value,
                 'name' => (string) $group->name(),
+                'normalized_name' => $group->normalizedName(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
                 'song_identifiers' => $this->fromSongIdentifiers($group->songIdentifiers()),
@@ -82,6 +83,7 @@ final class GroupRepository implements GroupRepositoryInterface
                 'editor_id' => (string) $group->editorIdentifier(),
                 'translation' => $group->language()->value,
                 'name' => (string) $group->name(),
+                'normalized_name' => $group->normalizedName(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
                 'song_identifiers' => $this->fromSongIdentifiers($group->songIdentifiers()),
@@ -143,6 +145,7 @@ final class GroupRepository implements GroupRepositoryInterface
             new TranslationSetIdentifier($model->translation_set_identifier),
             Language::from($model->translation),
             new GroupName($model->name),
+            $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
             $this->toSongIdentifiers($model->song_identifiers),
@@ -160,6 +163,7 @@ final class GroupRepository implements GroupRepositoryInterface
             new EditorIdentifier($model->editor_id),
             Language::from($model->translation),
             new GroupName($model->name),
+            $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
             $this->toSongIdentifiers($model->song_identifiers),

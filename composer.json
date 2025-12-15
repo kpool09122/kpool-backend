@@ -8,9 +8,11 @@
         "laravel/framework": "^12.0",
         "illuminate/container": "^12.0",
         "illuminate/contracts": "^12.0",
-        "psr/log": "^3.0"
+        "psr/log": "^3.0",
+        "ext-mbstring": "*"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest",
         "phpunit/phpunit": "^12.0",
         "friendsofphp/php-cs-fixer": "^3.86",
         "phpstan/phpstan": "^2.1",

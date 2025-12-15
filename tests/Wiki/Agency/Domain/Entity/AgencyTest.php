@@ -32,7 +32,9 @@ class AgencyTest extends TestCase
         $this->assertSame((string)$createAgency->agencyIdentifier, (string)$agency->agencyIdentifier());
         $this->assertSame($createAgency->translation->value, $agency->language()->value);
         $this->assertSame((string)$createAgency->name, (string)$agency->name());
+        $this->assertSame($createAgency->normalizedName, $agency->normalizedName());
         $this->assertSame((string)$createAgency->CEO, (string)$agency->CEO());
+        $this->assertSame($createAgency->normalizedCEO, $agency->normalizedCEO());
         $this->assertSame($createAgency->foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$createAgency->description, (string)$agency->description());
         $this->assertSame($createAgency->version->value(), $agency->version()->value());
@@ -57,6 +59,24 @@ class AgencyTest extends TestCase
     }
 
     /**
+     * 正常系：NormalizedNameのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedName(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        $this->assertSame($createAgency->normalizedName, $agency->normalizedName());
+
+        $newNormalizedName = 'hybe';
+        $agency->setNormalizedName($newNormalizedName);
+        $this->assertNotSame($createAgency->normalizedName, $agency->normalizedName());
+        $this->assertSame($newNormalizedName, $agency->normalizedName());
+    }
+
+    /**
      * 正常系：CEOのsetterが正しく動作すること.
      *
      * @return void
@@ -72,6 +92,24 @@ class AgencyTest extends TestCase
         $agency->setCEO($newCEO);
         $this->assertNotSame((string)$createAgency->CEO, (string)$agency->CEO());
         $this->assertSame((string)$newCEO, (string)$agency->CEO());
+    }
+
+    /**
+     * 正常系：NormalizedCEOのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedCEO(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        $this->assertSame($createAgency->normalizedCEO, $agency->normalizedCEO());
+
+        $newNormalizedCEO = 'ㅇㅈㅅ';
+        $agency->setNormalizedCEO($newNormalizedCEO);
+        $this->assertNotSame($createAgency->normalizedCEO, $agency->normalizedCEO());
+        $this->assertSame($newNormalizedCEO, $agency->normalizedCEO());
     }
 
     /**
@@ -146,7 +184,9 @@ DESCRIPTION
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.yp.park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description(
             <<<'DESCRIPTION'
@@ -171,7 +211,9 @@ DESCRIPTION
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -182,7 +224,9 @@ DESCRIPTION
             translationSetIdentifier: $translationSetIdentifier,
             translation: $translation,
             name: $name,
+            normalizedName: $normalizedName,
             CEO: $CEO,
+            normalizedCEO: $normalizedCEO,
             foundedIn: $foundedIn,
             description: $description,
             version: $version,
@@ -201,7 +245,9 @@ readonly class AgencyTestData
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $translation,
         public AgencyName               $name,
+        public string                   $normalizedName,
         public CEO                      $CEO,
+        public string                   $normalizedCEO,
         public FoundedIn                $foundedIn,
         public Description              $description,
         public Version                  $version,

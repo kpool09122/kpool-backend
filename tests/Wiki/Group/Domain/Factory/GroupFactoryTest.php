@@ -45,6 +45,7 @@ class GroupFactoryTest extends TestCase
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame($language->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
+        $this->assertSame('twice', $group->normalizedName());
         $this->assertNull($group->agencyIdentifier());
         $this->assertSame('', (string)$group->description());
         $this->assertSame([], $group->songIdentifiers());

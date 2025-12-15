@@ -86,7 +86,9 @@ class CreateAgencyTest extends TestCase
         $this->assertSame((string)$dummyCreateAgency->editorIdentifier, (string)$agency->editorIdentifier());
         $this->assertSame($dummyCreateAgency->language->value, $agency->language()->value);
         $this->assertSame((string)$dummyCreateAgency->name, (string)$agency->name());
+        $this->assertSame($dummyCreateAgency->normalizedName, $agency->normalizedName());
         $this->assertSame((string)$dummyCreateAgency->CEO, (string)$agency->CEO());
+        $this->assertSame($dummyCreateAgency->normalizedCEO, $agency->normalizedCEO());
         $this->assertSame($dummyCreateAgency->foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$dummyCreateAgency->description, (string)$agency->description());
         $this->assertSame($dummyCreateAgency->status, $agency->status());
@@ -392,6 +394,8 @@ DESC);
 
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
+        $normalizedCEO = 'j.y. park';
         $status = ApprovalStatus::Pending;
         $draftAgency = new DraftAgency(
             $agencyIdentifier,
@@ -400,7 +404,9 @@ DESC);
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $status,
@@ -412,7 +418,9 @@ DESC);
             $translationSetIdentifier,
             $language,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -426,7 +434,9 @@ DESC);
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $principal,
@@ -447,7 +457,9 @@ readonly class CreateAgencyTestData
         public EditorIdentifier $editorIdentifier,
         public Language $language,
         public AgencyName $name,
+        public string $normalizedName,
         public CEO $CEO,
+        public string $normalizedCEO,
         public FoundedIn $foundedIn,
         public Description $description,
         public Principal $principal,

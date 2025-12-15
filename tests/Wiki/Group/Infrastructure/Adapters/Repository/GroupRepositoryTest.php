@@ -37,6 +37,7 @@ class GroupRepositoryTest extends TestCase
         $translationSetId = StrTestHelper::generateUlid();
         $translation = Language::KOREAN;
         $name = 'Stray Kids';
+        $normalizedName = 'stray kids';
         $agencyId = StrTestHelper::generateUlid();
         $description = 'K-pop boy group.';
         $songIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
@@ -48,6 +49,7 @@ class GroupRepositoryTest extends TestCase
             'translation_set_identifier' => $translationSetId,
             'translation' => $translation->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
             'song_identifiers' => json_encode($songIds),
@@ -63,6 +65,7 @@ class GroupRepositoryTest extends TestCase
         $this->assertSame($translationSetId, (string) $group->translationSetIdentifier());
         $this->assertSame($translation, $group->language());
         $this->assertSame($name, (string) $group->name());
+        $this->assertSame($normalizedName, $group->normalizedName());
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($imagePath, (string) $group->imagePath());
@@ -97,6 +100,7 @@ class GroupRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUlid();
         $translation = Language::ENGLISH;
         $name = 'Stray Kids EN Draft';
+        $normalizedName = 'stray kids en draft';
         $agencyId = StrTestHelper::generateUlid();
         $description = 'English draft';
         $songIds = [StrTestHelper::generateUlid()];
@@ -110,6 +114,7 @@ class GroupRepositoryTest extends TestCase
             'editor_id' => $editorId,
             'translation' => $translation->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
             'song_identifiers' => json_encode($songIds),
@@ -127,6 +132,7 @@ class GroupRepositoryTest extends TestCase
         $this->assertSame($translationSetId, (string) $group->translationSetIdentifier());
         $this->assertSame($translation, $group->language());
         $this->assertSame($name, (string) $group->name());
+        $this->assertSame($normalizedName, $group->normalizedName());
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($status, $group->status());
@@ -160,6 +166,7 @@ class GroupRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             Language::JAPANESE,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('Girl group'),
             [
@@ -177,6 +184,7 @@ class GroupRepositoryTest extends TestCase
             'id' => (string) $group->groupIdentifier(),
             'translation' => $group->language()->value,
             'name' => (string) $group->name(),
+            'normalized_name' => $group->normalizedName(),
             'agency_id' => (string) $group->agencyIdentifier(),
             'description' => (string) $group->description(),
             'image_path' => (string) $group->imagePath(),
@@ -197,6 +205,7 @@ class GroupRepositoryTest extends TestCase
             new EditorIdentifier(StrTestHelper::generateUlid()),
             Language::ENGLISH,
             new GroupName('NEWJEANS'),
+            'newjeans',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('New draft'),
             [new SongIdentifier(StrTestHelper::generateUlid())],
@@ -214,6 +223,7 @@ class GroupRepositoryTest extends TestCase
             'editor_id' => (string) $draft->editorIdentifier(),
             'translation' => $draft->language()->value,
             'name' => (string) $draft->name(),
+            'normalized_name' => $draft->normalizedName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
             'status' => $draft->status()->value,
@@ -234,6 +244,7 @@ class GroupRepositoryTest extends TestCase
             new EditorIdentifier(StrTestHelper::generateUlid()),
             Language::JAPANESE,
             new GroupName('削除対象'),
+            'さくじょたいしょう',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('Delete me'),
             [new SongIdentifier(StrTestHelper::generateUlid())],
@@ -248,6 +259,7 @@ class GroupRepositoryTest extends TestCase
             'editor_id' => (string) $draft->editorIdentifier(),
             'translation' => $draft->language()->value,
             'name' => (string) $draft->name(),
+            'normalized_name' => $draft->normalizedName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
             'song_identifiers' => json_encode([(string) $draft->songIdentifiers()[0]]),
@@ -276,6 +288,7 @@ class GroupRepositoryTest extends TestCase
             'editor_id' => StrTestHelper::generateUlid(),
             'translation' => Language::KOREAN->value,
             'name' => '드래프트1',
+            'normalized_name' => 'ㄷㄹㅍㅌ1',
             'agency_id' => StrTestHelper::generateUlid(),
             'description' => '첫번째',
             'song_identifiers' => json_encode([StrTestHelper::generateUlid()]),
@@ -289,6 +302,7 @@ class GroupRepositoryTest extends TestCase
             'editor_id' => StrTestHelper::generateUlid(),
             'translation' => Language::JAPANESE->value,
             'name' => 'ドラフト2',
+            'normalized_name' => 'どらふと2',
             'agency_id' => StrTestHelper::generateUlid(),
             'description' => '二件目',
             'song_identifiers' => json_encode([StrTestHelper::generateUlid()]),
@@ -302,6 +316,7 @@ class GroupRepositoryTest extends TestCase
             'editor_id' => StrTestHelper::generateUlid(),
             'translation' => Language::ENGLISH->value,
             'name' => 'Other',
+            'normalized_name' => 'other',
             'agency_id' => StrTestHelper::generateUlid(),
             'description' => 'Other set',
             'song_identifiers' => json_encode([StrTestHelper::generateUlid()]),

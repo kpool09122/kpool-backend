@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $editor_id
  * @property string $translation
  * @property string $name
+ * @property string $normalized_name
  * @property ?string $agency_id
  * @property string $description
  * @property array $song_identifiers
@@ -34,6 +35,7 @@ class DraftGroup extends Model
         'editor_id',
         'translation',
         'name',
+        'normalized_name',
         'agency_id',
         'description',
         'song_identifiers',

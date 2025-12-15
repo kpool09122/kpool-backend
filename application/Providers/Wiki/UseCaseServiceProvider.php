@@ -25,8 +25,8 @@ use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgen
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
-use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgencies;
-use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgency;
+use Source\Wiki\Agency\Infrastructure\Adapters\Query\GetAgencies;
+use Source\Wiki\Agency\Infrastructure\Adapters\Query\GetAgency;
 use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroup;
 use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroup;

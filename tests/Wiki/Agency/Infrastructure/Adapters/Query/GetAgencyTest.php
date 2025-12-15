@@ -13,7 +13,7 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgency\GetAgencyInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgency;
+use Source\Wiki\Agency\Infrastructure\Adapters\Query\GetAgency;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -45,7 +45,9 @@ class GetAgencyTest extends TestCase
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
+        $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -66,7 +68,9 @@ class GetAgencyTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,

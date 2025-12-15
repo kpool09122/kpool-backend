@@ -8,6 +8,7 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -16,6 +17,7 @@ class EditAgency implements EditAgencyInterface
 {
     public function __construct(
         private AgencyRepositoryInterface $agencyRepository,
+        private NormalizationServiceInterface   $normalizationService,
     ) {
     }
 
@@ -45,7 +47,11 @@ class EditAgency implements EditAgencyInterface
         }
 
         $agency->setName($input->name());
+        $normalizedName = $this->normalizationService->normalize((string)$agency->name(), $agency->language());
+        $agency->setNormalizedName($normalizedName);
         $agency->setCEO($input->CEO());
+        $normalizedCEO = $this->normalizationService->normalize((string)$agency->CEO(), $agency->language());
+        $agency->setNormalizedCEO($normalizedCEO);
         if ($input->foundedIn()) {
             $agency->setFoundedIn($input->foundedIn());
         }

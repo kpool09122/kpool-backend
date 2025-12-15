@@ -62,6 +62,7 @@ class EditGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
+        $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
@@ -105,6 +106,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -132,6 +134,7 @@ class EditGroupTest extends TestCase
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($translation->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
+        $this->assertSame($normalizedName, $group->normalizedName());
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$description, (string)$group->description());
         $this->assertSame($songIdentifiers, $group->songIdentifiers());
@@ -144,6 +147,7 @@ class EditGroupTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws UnauthorizedException
      */
     public function testWhenNotFoundGroup(): void
     {
@@ -235,6 +239,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            'twice',
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -308,6 +313,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            'twice',
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -380,6 +386,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            'twice',
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -453,6 +460,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            'twice',
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -525,6 +533,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            'twice',
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -596,6 +605,7 @@ class EditGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            'twice',
             $agencyIdentifier,
             $description,
             $songIdentifiers,

@@ -109,7 +109,8 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
         $this->assertSame($dummyPublishGroup->language->value, $publishedGroup->language()->value);
         $this->assertSame((string)$dummyPublishGroup->agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
-        $this->assertSame((string)$dummyPublishGroup->agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
+        $this->assertSame((string)$dummyPublishGroup->name, (string)$publishedGroup->name());
+        $this->assertSame((string)$dummyPublishGroup->normalizedName, (string)$publishedGroup->normalizedName());
         $this->assertSame((string)$dummyPublishGroup->description, (string)$publishedGroup->description());
         $this->assertSame($dummyPublishGroup->songIdentifiers, $publishedGroup->songIdentifiers());
         $this->assertSame((string)$dummyPublishGroup->imagePath, (string)$publishedGroup->imagePath());
@@ -145,6 +146,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             $dummyPublishGroup->songIdentifiers,
@@ -158,6 +160,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->translationSetIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             null,
             new Description(''),
             [],
@@ -273,6 +276,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             $dummyPublishGroup->songIdentifiers,
@@ -325,6 +329,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             $dummyPublishGroup->songIdentifiers,
@@ -424,6 +429,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'twice',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -473,6 +479,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'twice',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -486,6 +493,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->translationSetIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             null,
             new Description(''),
             [],
@@ -593,6 +601,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -606,6 +615,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->translationSetIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             null,
             new Description(''),
             [],
@@ -676,6 +686,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -726,6 +737,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -739,6 +751,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->translationSetIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             null,
             new Description(''),
             [],
@@ -810,6 +823,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -861,6 +875,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -874,6 +889,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->translationSetIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             null,
             new Description(''),
             [],
@@ -944,6 +960,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -957,6 +974,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->translationSetIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             null,
             new Description(''),
             [],
@@ -1026,6 +1044,7 @@ class PublishGroupTest extends TestCase
             $dummyPublishGroup->editorIdentifier,
             $dummyPublishGroup->language,
             $dummyPublishGroup->name,
+            'TWICE',
             $dummyPublishGroup->agencyIdentifier,
             $dummyPublishGroup->description,
             [],
@@ -1062,6 +1081,7 @@ class PublishGroupTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
+        $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
@@ -1082,6 +1102,7 @@ class PublishGroupTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -1110,6 +1131,7 @@ class PublishGroupTest extends TestCase
             $translationSetIdentifier,
             $language,
             $exName,
+            'aespa',
             $exAgencyIdentifier,
             $exDescription,
             $exSongIdentifiers,
@@ -1123,6 +1145,7 @@ class PublishGroupTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -1151,6 +1174,7 @@ readonly class PublishGroupTestData
         public EditorIdentifier         $editorIdentifier,
         public Language                 $language,
         public GroupName                $name,
+        public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
         public array                    $songIdentifiers,

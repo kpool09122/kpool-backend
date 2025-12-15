@@ -8,6 +8,7 @@ use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -17,6 +18,7 @@ class CreateAgency implements CreateAgencyInterface
     public function __construct(
         private DraftAgencyFactoryInterface $agencyFactory,
         private AgencyRepositoryInterface   $agencyRepository,
+        private NormalizationServiceInterface   $normalizationService,
     ) {
     }
 
@@ -50,6 +52,8 @@ class CreateAgency implements CreateAgencyInterface
             }
         }
         $agency->setCEO($input->CEO());
+        $normalizedCEO = $this->normalizationService->normalize((string)$agency->CEO(), $agency->language());
+        $agency->setNormalizedCEO($normalizedCEO);
         if ($input->foundedIn()) {
             $agency->setFoundedIn($input->foundedIn());
         }

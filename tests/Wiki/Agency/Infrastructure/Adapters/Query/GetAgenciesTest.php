@@ -13,7 +13,7 @@ use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInput;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesInterface;
 use Source\Wiki\Agency\Application\UseCase\Query\GetAgencies\GetAgenciesOutput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Infrastracture\Adapters\Query\GetAgencies;
+use Source\Wiki\Agency\Infrastructure\Adapters\Query\GetAgencies;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,7 +44,9 @@ class GetAgenciesTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
+        $normalizedName = 'jypえんたーていめんと';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         $version = 1;
@@ -53,14 +55,18 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
+        $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
+        $normalizedCEO2 = 'ぱく・じうぉん';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         $version2 = 2;
@@ -69,7 +75,9 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name2,
+            'normalized_name' => $normalizedName2,
             'CEO' => $CEO2,
+            'normalized_CEO' => $normalizedCEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
             'version' => $version2,
@@ -110,7 +118,9 @@ class GetAgenciesTest extends TestCase
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
+        $normalizedName = 'jypえんたーていめんと';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         $version = 1;
@@ -119,14 +129,18 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
+        $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
+        $normalizedCEO2 = 'ぱく・じうぉん';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         $version2 = 2;
@@ -135,7 +149,9 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name2,
+            'normalized_name' => $normalizedName2,
             'CEO' => $CEO2,
+            'normalized_CEO' => $normalizedCEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
             'version' => $version2,
@@ -175,7 +191,9 @@ class GetAgenciesTest extends TestCase
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
+        $normalizedName = 'jypえんたーていめんと';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         $version = 1;
@@ -184,14 +202,18 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
+        $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
+        $normalizedCEO2 = 'ぱく・じうぉん';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         $version2 = 2;
@@ -200,7 +222,9 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name2,
+            'normalized_name' => $normalizedName2,
             'CEO' => $CEO2,
+            'normalized_CEO' => $normalizedCEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
             'version' => $version2,
@@ -240,7 +264,9 @@ class GetAgenciesTest extends TestCase
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
+        $normalizedName = 'jypえんたーていめんと';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         $version = 1;
@@ -249,14 +275,18 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,
         ], 'id');
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $name2 = 'HYBE';
+        $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
+        $normalizedCEO2 = 'ぱく・じうぉん';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBEは、単なる芸能事務所にとどまらず、音楽を基盤とした多様な事業を展開する「エンターテインメントライフスタイルプラットフォーム企業」です。';
         $version2 = 2;
@@ -265,7 +295,9 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name2,
+            'normalized_name' => $normalizedName2,
             'CEO' => $CEO2,
+            'normalized_CEO' => $normalizedCEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
             'version' => $version2,
@@ -317,7 +349,9 @@ class GetAgenciesTest extends TestCase
         $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
+        $normalizedName = 'jypえんたーていめんと';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '歌手兼音楽プロデューサーの**パク・ジニョン(J.Y. Park)**が1997年に設立した韓国の大型総合エンターテイメント企業です。 HYBE、SM、YGエンターテインメントと共に韓国芸能界を率いる**\'BIG4\'**の一つに挙げられます。';
         $version = 1;
@@ -326,7 +360,9 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language->value,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,
@@ -334,7 +370,9 @@ class GetAgenciesTest extends TestCase
         $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
         $language2 = Language::KOREAN;
         $name2 = 'HYBE';
+        $normalizedName2 = 'hybe';
         $CEO2 = '박지원';
+        $normalizedCEO2 = 'ㅂㅈㅇ';
         $founded_in2 = new DateTimeImmutable('2005-02-01');
         $description2 = 'HYBE는 단순한 연예 기획사를 넘어, 음악을 기반으로 한 다양한 사업을 전개하는 \'엔터테인먼트 라이프스타일 플랫폼 기업\'입니다.';
         $version2 = 2;
@@ -343,7 +381,9 @@ class GetAgenciesTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $language2->value,
             'name' => $name2,
+            'normalized_name' => $normalizedName2,
             'CEO' => $CEO2,
+            'normalized_CEO' => $normalizedCEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
             'version' => $version2,

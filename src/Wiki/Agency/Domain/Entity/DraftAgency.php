@@ -23,7 +23,9 @@ class DraftAgency
         private readonly EditorIdentifier         $editorIdentifier,
         private readonly Language                 $language,
         private AgencyName                        $name,
+        private string                            $normalizedName,
         private CEO                               $CEO,
+        private string                            $normalizedCEO,
         private ?FoundedIn                        $foundedIn,
         private Description                       $description,
         private ApprovalStatus                    $status,
@@ -70,7 +72,17 @@ class DraftAgency
         $this->name = $name;
     }
 
-    public function CEO(): ?CEO
+    public function setNormalizedName(string $normalizedName): void
+    {
+        $this->normalizedName = $normalizedName;
+    }
+
+    public function normalizedName(): string
+    {
+        return $this->normalizedName;
+    }
+
+    public function CEO(): CEO
     {
         return $this->CEO;
     }
@@ -78,6 +90,16 @@ class DraftAgency
     public function setCEO(CEO $CEO): void
     {
         $this->CEO = $CEO;
+    }
+
+    public function normalizedCEO(): string
+    {
+        return $this->normalizedCEO;
+    }
+
+    public function setNormalizedCEO(string $normalizedCEO): void
+    {
+        $this->normalizedCEO = $normalizedCEO;
     }
 
     public function foundedIn(): ?FoundedIn

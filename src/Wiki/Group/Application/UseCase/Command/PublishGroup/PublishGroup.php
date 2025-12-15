@@ -17,12 +17,12 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class PublishGroup implements PublishGroupInterface
+readonly class PublishGroup implements PublishGroupInterface
 {
     public function __construct(
         private GroupRepositoryInterface $groupRepository,
-        private GroupServiceInterface $groupService,
-        private GroupFactoryInterface $groupFactory,
+        private GroupServiceInterface    $groupService,
+        private GroupFactoryInterface    $groupFactory,
     ) {
     }
 
@@ -71,6 +71,7 @@ class PublishGroup implements PublishGroupInterface
                 throw new GroupNotFoundException();
             }
             $publishedGroup->setName($group->name());
+            $publishedGroup->setNormalizedName($group->normalizedName());
             $publishedGroup->updateVersion();
         } else {
             $publishedGroup = $this->groupFactory->create(

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $translation_set_identifier
  * @property string $translation
  * @property string $name
+ * @property string $normalized_name
  * @property ?string $agency_id
  * @property string $description
  * @property array $song_identifiers
@@ -30,6 +31,7 @@ class Group extends Model
         'translation_set_identifier',
         'translation',
         'name',
+        'normalized_name',
         'agency_id',
         'description',
         'song_identifiers',
