@@ -50,7 +50,9 @@ class DraftAgencyFactoryTest extends TestCase
         $this->assertSame((string)$editorIdentifier, (string)$agency->editorIdentifier());
         $this->assertSame($translation->value, $agency->language()->value);
         $this->assertSame((string)$name, (string)$agency->name());
+        $this->assertSame('jypㅇㅌㅌㅇㅁㅌ', $agency->normalizedName());
         $this->assertSame('', (string)$agency->CEO());
+        $this->assertSame('', $agency->normalizedCEO());
         $this->assertNull($agency->foundedIn());
         $this->assertSame('', (string)$agency->description());
         $this->assertSame(ApprovalStatus::Pending, $agency->status());

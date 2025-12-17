@@ -71,6 +71,7 @@ class PublishAgency implements PublishAgencyInterface
                 throw new AgencyNotFoundException();
             }
             $publishedAgency->setName($agency->name());
+            $publishedAgency->setNormalizedName($agency->normalizedName());
             $publishedAgency->updateVersion();
         } else {
             $publishedAgency = $this->agencyFactory->create(
@@ -80,6 +81,7 @@ class PublishAgency implements PublishAgencyInterface
             );
         }
         $publishedAgency->setCEO($agency->CEO());
+        $publishedAgency->setNormalizedCEO($agency->normalizedCEO());
         $publishedAgency->setDescription($agency->description());
         $publishedAgency->setFoundedIn($agency->foundedIn());
 

@@ -21,6 +21,7 @@ class Group
      * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Language $language
      * @param GroupName $name
+     * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
@@ -32,6 +33,7 @@ class Group
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Language                 $language,
         private GroupName                         $name,
+        private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
         private array                             $songIdentifiers,
@@ -63,6 +65,16 @@ class Group
     public function setName(GroupName $name): void
     {
         $this->name = $name;
+    }
+
+    public function normalizedName(): string
+    {
+        return $this->normalizedName;
+    }
+
+    public function setNormalizedName(string $normalizedName): void
+    {
+        $this->normalizedName = $normalizedName;
     }
 
     public function agencyIdentifier(): ?AgencyIdentifier

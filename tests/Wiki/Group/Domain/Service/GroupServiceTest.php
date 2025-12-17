@@ -60,6 +60,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹'),
             [
@@ -77,6 +78,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ'),
             [
@@ -124,6 +126,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹'),
             [
@@ -141,6 +144,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ'),
             [
@@ -187,6 +191,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ'),
             [
@@ -262,6 +267,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
@@ -285,6 +291,7 @@ class GroupServiceTest extends TestCase
             $editorIdentifier,
             Language::ENGLISH,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('TWICE: The 9-Member Girl Group That Captivated the World
 TWICE is a nine-member girl group under JYP Entertainment, formed in 2015 through the South Korean survival audition show "SIXTEEN." The group has a multinational lineup, consisting of five members from Korea (Nayeon, Jeongyeon, Jihyo, Dahyun, Chaeyoung), three from Japan (Momo, Sana, Mina), and one from Taiwan (Tzuyu), bringing together a diverse array of charms.
@@ -307,6 +314,7 @@ From their bright and cute concept in their early debut years, they have continu
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('### TWICE：世界を魅了する9人組ガールズグループ
 TWICE（トゥワイス）は、2015年に韓国のサバイバルオーディション番組「SIXTEEN」を通じて結成された、JYPエンターテインメント所属の9人組ガールズグループです。メンバーは韓国出身5名（ナヨン、ジョンヨン、ジヒョ、ダヒョン、チェヨン）、日本出身3名（モモ、サナ、ミナ）、台湾出身1名（ツウィ）という多国籍構成で、多様な魅力が集まっています。

@@ -64,7 +64,9 @@ class TranslateAgencyTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -95,7 +97,9 @@ class TranslateAgencyTest extends TestCase
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -103,7 +107,9 @@ class TranslateAgencyTest extends TestCase
 
         $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
+        $jaNormalizedName = 'jypえんたーていんめんと';
         $jaCEO = new CEO('J.Y. Park');
+        $jaNormalizedCEO = 'j.y. park';
         $jaDescription = new Description('JYPエンターテインメント (JYP Entertainment)
 歌手兼音楽プロデューサーである**パク・ジニョン（J.Y. Park）が1997年に設立した韓国の大手総合エンターテインメント企業です。HYBE、SM、YGエンターテインメントと共に、韓国の芸能界をリードする「BIG4」**の一つに数えられています。
 **「真実、誠実、謙虚」**という価値観を非常に重視し、所属アーティストの歌やダンスの実力だけでなく、人柄を尊重する育成方針で知られています。このような哲学は、パク・ジニョンがオーディション番組などで見せる姿を通じても広く知られています。
@@ -123,7 +129,9 @@ NMIXX
             $editorIdentifier,
             $japanese,
             $jaName,
+            $jaNormalizedName,
             $jaCEO,
+            $jaNormalizedCEO,
             $foundedIn,
             $jaDescription,
             ApprovalStatus::Pending
@@ -131,7 +139,9 @@ NMIXX
 
         $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
+        $enNormalizedName = 'jyp entertainment';
         $enCEO = new CEO('J.Y. Park');
+        $enNormalizedCEO = 'j.y. park';
         $enDescription = new Description('JYP Entertainment
 JYP Entertainment is a major South Korean multinational entertainment company founded in 1997 by singer and music producer J.Y. Park. It is considered one of the "BIG4" entertainment companies in South Korea, alongside HYBE, SM Entertainment, and YG Entertainment.
 The company places great importance on the values of "Truth, Sincerity, and Humility," and is known for its policy of developing artists by emphasizing not only their singing and dancing skills but also their personal character. This philosophy has become widely known through J.Y. Park\'s appearances on audition programs.
@@ -151,7 +161,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $editorIdentifier,
             $english,
             $enName,
+            $enNormalizedName,
             $enCEO,
+            $enNormalizedCEO,
             $foundedIn,
             $enDescription,
             ApprovalStatus::Pending
@@ -240,7 +252,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.');
@@ -260,7 +274,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -297,7 +313,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.');
@@ -317,7 +335,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -325,7 +345,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
 
         $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
+        $jaNormalizedName = 'jypえんたーていんめんと';
         $jaCEO = new CEO('J.Y. Park');
+        $jaNormalizedCEO = 'j.y. park';
         $jaDescription = new Description('### JYPエンターテインメント (JYP Entertainment)
 歌手兼音楽プロデューサーである**パク・ジニョン（J.Y. Park）**が1997年に設立した韓国の大手総合エンターテインメント企業です。HYBE、SM、YGエンターテインメントと共に、韓国の芸能界をリードする**「BIG4」**の一つに数えられています。');
         $jaAgency = new DraftAgency(
@@ -335,7 +357,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
             $editorIdentifier,
             $japanese,
             $jaName,
+            $jaNormalizedName,
             $jaCEO,
+            $jaNormalizedCEO,
             $foundedIn,
             $jaDescription,
             ApprovalStatus::Pending
@@ -343,7 +367,9 @@ These groups continue to play a central role in the global growth of K-pop. In a
 
         $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
+        $enNormalizedName = 'jyp entertainment';
         $enCEO = new CEO('J.Y. Park');
+        $enNormalizedCEO = 'j.y. park';
         $enDescription = new Description('### JYP Entertainment
 JYP Entertainment is a major South Korean multinational entertainment company founded in 1997 by singer and music producer **J.Y. Park**. It is considered one of the **"BIG4"** entertainment companies in South Korea, alongside HYBE, SM Entertainment, and YG Entertainment.');
         $enAgency = new DraftAgency(
@@ -353,7 +379,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $editorIdentifier,
             $english,
             $enName,
+            $enNormalizedName,
             $enCEO,
+            $enNormalizedCEO,
             $foundedIn,
             $enDescription,
             ApprovalStatus::Pending
@@ -407,7 +435,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.');
@@ -428,7 +458,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -463,7 +495,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.');
@@ -485,7 +519,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -520,7 +556,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.');
@@ -541,7 +579,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -579,7 +619,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.');
@@ -599,7 +641,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -607,7 +651,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
 
         $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
+        $jaNormalizedName = 'jypえんたーていんめんと';
         $jaCEO = new CEO('J.Y. Park');
+        $jaNormalizedCEO = 'j.y. park';
         $jaDescription = new Description('### JYPエンターテインメント (JYP Entertainment)
 歌手兼音楽プロデューサーである**パク・ジニョン（J.Y. Park）**が1997年に設立した韓国の大手総合エンターテインメント企業です。HYBE、SM、YGエンターテインメントと共に、韓国の芸能界をリードする**「BIG4」**の一つに数えられています。');
         $jaAgency = new DraftAgency(
@@ -617,7 +663,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $editorIdentifier,
             $japanese,
             $jaName,
+            $jaNormalizedName,
             $jaCEO,
+            $jaNormalizedCEO,
             $foundedIn,
             $jaDescription,
             ApprovalStatus::Pending
@@ -625,7 +673,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
 
         $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
+        $enNormalizedName = 'jyp entertainment';
         $enCEO = new CEO('J.Y. Park');
+        $enNormalizedCEO = 'j.y. park';
         $enDescription = new Description('### JYP Entertainment
 JYP Entertainment is a major South Korean multinational entertainment company founded in 1997 by singer and music producer **J.Y. Park**. It is considered one of the **"BIG4"** entertainment companies in South Korea, alongside HYBE, SM Entertainment, and YG Entertainment.');
         $enAgency = new DraftAgency(
@@ -635,7 +685,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $editorIdentifier,
             $english,
             $enName,
+            $enNormalizedName,
             $enCEO,
+            $enNormalizedCEO,
             $foundedIn,
             $enDescription,
             ApprovalStatus::Pending
@@ -691,7 +743,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
 
@@ -710,7 +764,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version,
@@ -718,7 +774,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
 
         $japanese = Language::JAPANESE;
         $jaName = new AgencyName('JYPエンターテインメント');
+        $jaNormalizedName = 'jypえんたーていんめんと';
         $jaCEO = new CEO('J.Y. Park');
+        $jaNormalizedCEO = 'j.y. park';
         $jaDescription = new Description('### JYPエンターテインメント');
         $jaAgency = new DraftAgency(
             $agencyIdentifier,
@@ -727,7 +785,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $editorIdentifier,
             $japanese,
             $jaName,
+            $jaNormalizedName,
             $jaCEO,
+            $jaNormalizedCEO,
             $foundedIn,
             $jaDescription,
             ApprovalStatus::Pending
@@ -735,7 +795,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
 
         $english = Language::ENGLISH;
         $enName = new AgencyName('JYP Entertainment');
+        $enNormalizedName = 'jyp entertainment';
         $enCEO = new CEO('J.Y. Park');
+        $enNormalizedCEO = 'j.y. park';
         $enDescription = new Description('### JYP Entertainment');
         $enAgency = new DraftAgency(
             $agencyIdentifier,
@@ -744,7 +806,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $editorIdentifier,
             $english,
             $enName,
+            $enNormalizedName,
             $enCEO,
+            $enNormalizedCEO,
             $foundedIn,
             $enDescription,
             ApprovalStatus::Pending
@@ -798,7 +862,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)');
 
@@ -817,7 +883,9 @@ JYP Entertainment is a major South Korean multinational entertainment company fo
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $version

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('グループ名');
+            $table->string('normalized_name', 32)->comment('正規化されたグループ名');
             $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
             $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->string('editor_id', 26)->comment('編集者ID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('グループ名');
+            $table->string('normalized_name', 32)->comment('正規化されたグループ名');
             $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
             $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');

@@ -87,7 +87,9 @@ class EditAgencyTest extends TestCase
         $this->assertSame((string)$dummyAgency->publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
         $this->assertSame($dummyAgency->language->value, $agency->language()->value);
         $this->assertSame((string)$dummyAgency->name, (string)$agency->name());
+        $this->assertSame($dummyAgency->normalizedName, $agency->normalizedName());
         $this->assertSame((string)$dummyAgency->CEO, (string)$agency->CEO());
+        $this->assertSame($dummyAgency->normalizedCEO, $agency->normalizedCEO());
         $this->assertSame($dummyAgency->foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$dummyAgency->description, (string)$agency->description());
         $this->assertSame($dummyAgency->status, $agency->status());
@@ -378,7 +380,9 @@ class EditAgencyTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description(<<<'DESC'
 ### JYP엔터테인먼트 (JYP Entertainment)
@@ -404,7 +408,9 @@ DESC);
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $status,
@@ -417,7 +423,9 @@ DESC);
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $status,
@@ -438,7 +446,9 @@ readonly class EditAgencyTestData
         public EditorIdentifier         $editorIdentifier,
         public Language                 $language,
         public AgencyName               $name,
+        public string                   $normalizedName,
         public CEO                      $CEO,
+        public string                   $normalizedCEO,
         public FoundedIn                $foundedIn,
         public Description              $description,
         public ApprovalStatus           $status,

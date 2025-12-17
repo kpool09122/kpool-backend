@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Infrastracture\Adapters\Query;
+namespace Source\Wiki\Agency\Infrastructure\Adapters\Query;
 
 use Application\Models\Wiki\Agency;
 use Source\Shared\Infrastructure\Trait\WhereLike;

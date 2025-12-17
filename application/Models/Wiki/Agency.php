@@ -12,7 +12,9 @@ use Illuminate\Support\Carbon;
  * @property string $translation_set_identifier
  * @property string $language
  * @property string $name
+ * @property string $normalized_name
  * @property string $CEO
+ * @property string $normalized_CEO
  * @property ?Carbon $founded_in
  * @property string $description
  * @property int $version
@@ -30,7 +32,9 @@ class Agency extends Model
         'translation_set_identifier',
         'language',
         'name',
+        'normalized_name',
         'CEO',
+        'normalized_CEO',
         'founded_in',
         'description',
         'version',

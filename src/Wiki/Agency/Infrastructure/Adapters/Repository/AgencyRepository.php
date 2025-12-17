@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Infrastracture\Adapters\Repository;
+namespace Source\Wiki\Agency\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\Agency as AgencyModel;
 use Application\Models\Wiki\DraftAgency as DraftAgencyModel;
@@ -37,7 +37,9 @@ class AgencyRepository implements AgencyRepositoryInterface
             new TranslationSetIdentifier($agencyModel->translation_set_identifier),
             Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
+            $agencyModel->normalized_name,
             new CEO($agencyModel->CEO),
+            $agencyModel->normalized_CEO,
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
             new Description($agencyModel->description),
             new Version($agencyModel->version),
@@ -61,7 +63,9 @@ class AgencyRepository implements AgencyRepositoryInterface
             new EditorIdentifier($agencyModel->editor_id),
             Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
+            $agencyModel->normalized_name,
             new CEO($agencyModel->CEO),
+            $agencyModel->normalized_CEO,
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
             new Description($agencyModel->description),
             ApprovalStatus::from($agencyModel->status),
@@ -80,7 +84,9 @@ class AgencyRepository implements AgencyRepositoryInterface
                 'published_id' => (string)$agency->publishedAgencyIdentifier(),
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
                 'name' => (string)$agency->name(),
+                'normalized_name' => $agency->normalizedName(),
                 'CEO' => (string)$agency->CEO(),
+                'normalized_CEO' => $agency->normalizedCEO(),
                 'founded_in' => $agency->foundedIn(),
                 'description' => (string)$agency->description(),
                 'status' => $agency->status()->value,
@@ -105,7 +111,9 @@ class AgencyRepository implements AgencyRepositoryInterface
             [
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
                 'name' => (string)$agency->name(),
+                'normalized_name' => $agency->normalizedName(),
                 'CEO' => (string)$agency->CEO(),
+                'normalized_CEO' => $agency->normalizedCEO(),
                 'founded_in' => $agency->foundedIn(),
                 'description' => (string)$agency->description(),
                 'version' => $agency->version()->value(),
@@ -128,7 +136,9 @@ class AgencyRepository implements AgencyRepositoryInterface
                 new EditorIdentifier($agencyModel->editor_id),
                 Language::from($agencyModel->language),
                 new AgencyName($agencyModel->name),
+                $agencyModel->normalized_name,
                 new CEO($agencyModel->CEO),
+                $agencyModel->normalized_CEO,
                 $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
                 new Description($agencyModel->description),
                 ApprovalStatus::from($agencyModel->status),

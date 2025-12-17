@@ -38,7 +38,9 @@ class AgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUlid();
         $translation = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
+        $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -59,7 +61,9 @@ class AgencyRepositoryTest extends TestCase
             'translation_set_identifier' => StrTestHelper::generateUlid(),
             'language' => $translation,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'version' => $version,
@@ -105,7 +109,9 @@ class AgencyRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUlid();
         $translation = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
+        $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -128,7 +134,9 @@ class AgencyRepositoryTest extends TestCase
             'editor_id' => $editorId,
             'language' => $translation,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'status' => $status->value,
@@ -198,7 +206,9 @@ class AgencyRepositoryTest extends TestCase
             new EditorIdentifier($editorId),
             $language,
             new AgencyName($name),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
+            'j.y. park',
             new FoundedIn($founded_in),
             new Description($description),
             $status
@@ -234,7 +244,9 @@ class AgencyRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUlid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
+        $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
+        $normalizedCEO = 'j.y. park';
         $founded_in = new DateTimeImmutable('1997-04-25');
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
@@ -257,7 +269,9 @@ class AgencyRepositoryTest extends TestCase
             'editor_id' => $editorId,
             'language' => $language,
             'name' => $name,
+            'normalized_name' => $normalizedName,
             'CEO' => $CEO,
+            'normalized_CEO' => $normalizedCEO,
             'founded_in' => $founded_in,
             'description' => $description,
             'status' => $status->value,
@@ -282,7 +296,9 @@ class AgencyRepositoryTest extends TestCase
             new EditorIdentifier($editorId),
             $language,
             new AgencyName($name),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
+            'j.y. park',
             new FoundedIn($founded_in),
             new Description($description),
             $status
@@ -337,7 +353,9 @@ class AgencyRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUlid()),
             $language,
             new AgencyName($name),
+            'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
+            'j.y. park',
             new FoundedIn($founded_in),
             new Description($description),
             new Version($version),
@@ -374,7 +392,9 @@ class AgencyRepositoryTest extends TestCase
         $editorId1 = StrTestHelper::generateUlid();
         $language1 = Language::KOREAN;
         $name1 = 'JYP엔터테인먼트';
+        $normalizedName1 = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO1 = 'J.Y. Park';
+        $normalizedCEO1 = 'j.y. park';
         $founded_in1 = new DateTimeImmutable('1997-04-25');
         $description1 = 'JYP엔터테인먼트에 대한 설명입니다.';
         $status1 = ApprovalStatus::Pending;
@@ -386,7 +406,9 @@ class AgencyRepositoryTest extends TestCase
             'editor_id' => $editorId1,
             'language' => $language1,
             'name' => $name1,
+            'normalized_name' => $normalizedName1,
             'CEO' => $CEO1,
+            'normalized_CEO' => $normalizedCEO1,
             'founded_in' => $founded_in1,
             'description' => $description1,
             'status' => $status1->value,
@@ -398,7 +420,9 @@ class AgencyRepositoryTest extends TestCase
         $editorId2 = StrTestHelper::generateUlid();
         $language2 = Language::JAPANESE;
         $name2 = 'JYPエンターテイメント';
+        $normalizedName2 = 'jypえんたーていめんと';
         $CEO2 = 'J.Y. Park';
+        $normalizedCEO2 = 'j.y. park';
         $founded_in2 = new DateTimeImmutable('1997-04-25');
         $description2 = 'JYPエンターテイメントに関する説明です。';
         $status2 = ApprovalStatus::Approved;
@@ -410,7 +434,9 @@ class AgencyRepositoryTest extends TestCase
             'editor_id' => $editorId2,
             'language' => $language2,
             'name' => $name2,
+            'normalized_name' => $normalizedName2,
             'CEO' => $CEO2,
+            'normalized_CEO' => $normalizedCEO2,
             'founded_in' => $founded_in2,
             'description' => $description2,
             'status' => $status2->value,
@@ -430,7 +456,9 @@ class AgencyRepositoryTest extends TestCase
             'editor_id' => $editorId3,
             'language' => $language3,
             'name' => 'HYBE',
+            'normalized_name' => 'hybe',
             'CEO' => '박지원',
+            'normalized_CEO' => 'ㅂㅈㅇ',
             'founded_in' => new DateTimeImmutable('2005-02-01'),
             'description' => 'HYBEに関する説明です。',
             'status' => ApprovalStatus::Pending->value,

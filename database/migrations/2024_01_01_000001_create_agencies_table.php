@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
+            $table->string('normalized_name', 32)->comment('正規化された事務所名');
             $table->string('CEO', 32)->comment('CEO名')->default('');
+            $table->string('normalized_CEO', 32)->comment('正規化されたCEO名')->default('');
             $table->date('founded_in')->nullable()->comment('設立年');
             $table->text('description')->comment('概要')->default('');
             $table->unsignedInteger('version')->comment('バージョン');
@@ -30,7 +32,9 @@ return new class extends Migration
             $table->string('editor_id', 26)->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
+            $table->string('normalized_name', 32)->comment('正規化された事務所名');
             $table->string('CEO', 32)->comment('CEO名')->default('');
+            $table->string('normalized_CEO', 32)->comment('正規化されたCEO名')->default('');
             $table->date('founded_in')->nullable()->comment('設立年');
             $table->text('description')->comment('概要')->default('');
             $table->text('status')->comment('公開ステータス');

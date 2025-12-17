@@ -554,8 +554,10 @@ class ApproveAgencyTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
-        $name = new AgencyName('JYP엔터테인メント');
+        $name = new AgencyName('JYP엔터테인먼트');
+        $normalizedName = 'JYPㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
+        $normalizedCEO = 'j.y. park';
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description(<<<'DESC'
 ### JYP엔터테インメント (JYP Entertainment)
@@ -580,7 +582,9 @@ DESC);
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $CEO,
+            $normalizedCEO,
             $foundedIn,
             $description,
             $status,

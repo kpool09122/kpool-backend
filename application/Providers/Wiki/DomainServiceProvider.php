@@ -12,7 +12,7 @@ use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyService;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
-use Source\Wiki\Agency\Infrastracture\Adapters\Repository\AgencyRepository;
+use Source\Wiki\Agency\Infrastructure\Adapters\Repository\AgencyRepository;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactory;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupFactory;
@@ -20,7 +20,9 @@ use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupService;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
-use Source\Wiki\Group\Infrastracture\Adapters\Repository\GroupRepository;
+use Source\Wiki\Group\Infrastructure\Adapters\Repository\GroupRepository;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
+use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
@@ -52,5 +54,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftGroupFactoryInterface::class, DraftGroupFactory::class);
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
+        $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
     }
 }

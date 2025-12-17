@@ -33,6 +33,7 @@ class GroupTest extends TestCase
         $this->assertSame((string)$createGroup->translationSetIdentifier, (string)$group->translationSetIdentifier());
         $this->assertSame($createGroup->language->value, $group->language()->value);
         $this->assertSame((string)$createGroup->name, (string)$group->name());
+        $this->assertSame($createGroup->normalizedName, $group->normalizedName());
         $this->assertSame((string)$createGroup->agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$createGroup->description, (string)$group->description());
         $this->assertSame($createGroup->songIdentifiers, $group->songIdentifiers());
@@ -56,6 +57,24 @@ class GroupTest extends TestCase
         $group->setName($newName);
         $this->assertNotSame((string)$createGroup->name, (string)$group->name());
         $this->assertSame((string)$newName, (string)$group->name());
+    }
+
+    /**
+     * 正常系：NormalizedNameのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedName(): void
+    {
+        $createGroup = $this->createDummyGroup();
+        $group = $createGroup->group;
+
+        $this->assertSame((string)$createGroup->name, (string)$group->name());
+
+        $newNormalizedName = 'aespa';
+        $group->setNormalizedName($newNormalizedName);
+        $this->assertNotSame($createGroup->normalizedName, $group->normalizedName());
+        $this->assertSame($newNormalizedName, $group->normalizedName());
     }
 
     /**
@@ -167,6 +186,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
+        $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
@@ -185,6 +205,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $translationSetIdentifier,
             $language,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -197,6 +218,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             translationSetIdentifier: $translationSetIdentifier,
             language: $language,
             name: $name,
+            normalizedName: $normalizedName,
             agencyIdentifier: $agencyIdentifier,
             description: $description,
             songIdentifiers: $songIdentifiers,
@@ -221,6 +243,7 @@ readonly class GroupTestData
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $language,
         public GroupName                $name,
+        public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
         public array                    $songIdentifiers,

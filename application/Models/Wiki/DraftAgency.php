@@ -14,7 +14,9 @@ use Illuminate\Support\Carbon;
  * @property string $editor_id
  * @property string $language
  * @property string $name
+ * @property string $normalized_name
  * @property string $CEO
+ * @property string $normalized_CEO
  * @property ?Carbon $founded_in
  * @property string $description
  * @property string $status
@@ -34,7 +36,9 @@ class DraftAgency extends Model
         'editor_id',
         'language',
         'name',
+        'normalized_name',
         'CEO',
+        'normalized_CEO',
         'founded_in',
         'description',
         'status',

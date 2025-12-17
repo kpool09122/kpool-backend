@@ -102,6 +102,7 @@ class CreateGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
+        $normalizedName = 'twice';
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
@@ -109,6 +110,7 @@ class CreateGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -122,6 +124,7 @@ class CreateGroupTest extends TestCase
             $translationSetIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -201,6 +204,7 @@ class CreateGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
+        $normalizedName = 'twice';
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
@@ -208,6 +212,7 @@ class CreateGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -281,6 +286,7 @@ class CreateGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
+        $normalizedName = 'twice';
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
@@ -288,6 +294,7 @@ class CreateGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,
@@ -360,6 +367,7 @@ class CreateGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $status = ApprovalStatus::Pending;
+        $normalizedName = 'twice';
         $group = new DraftGroup(
             $groupIdentifier,
             $publishedGroupIdentifier,
@@ -367,6 +375,7 @@ class CreateGroupTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $description,
             $songIdentifiers,

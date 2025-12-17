@@ -152,6 +152,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
             new EditorIdentifier(StrTestHelper::generateUlid()),
             Language::KOREAN,
             new GroupName('TWICE'),
+            'twice',
             new AgencyIdentifier(StrTestHelper::generateUlid()),
             new Description('auto generated group'),
             [

@@ -11,6 +11,7 @@ use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -18,6 +19,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
 {
     public function __construct(
         private UlidGeneratorInterface $ulidGenerator,
+        private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
@@ -34,6 +36,8 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
         GroupName                 $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftGroup {
+        $normalizedName = $this->normalizationService->normalize((string)$name, $language);
+
         return new DraftGroup(
             new GroupIdentifier($this->ulidGenerator->generate()),
             null,
@@ -41,6 +45,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             null,
             new Description(''),
             [],

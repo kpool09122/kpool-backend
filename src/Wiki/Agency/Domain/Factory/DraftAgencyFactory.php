@@ -12,6 +12,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -19,6 +20,7 @@ class DraftAgencyFactory implements DraftAgencyFactoryInterface
 {
     public function __construct(
         private UlidGeneratorInterface $ulidGenerator,
+        private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
@@ -28,6 +30,8 @@ class DraftAgencyFactory implements DraftAgencyFactoryInterface
         AgencyName                $agencyName,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftAgency {
+        $normalizedName = $this->normalizationService->normalize((string)$agencyName, $language);
+
         return new DraftAgency(
             new AgencyIdentifier($this->ulidGenerator->generate()),
             null,
@@ -35,7 +39,9 @@ class DraftAgencyFactory implements DraftAgencyFactoryInterface
             $editorIdentifier,
             $language,
             $agencyName,
+            $normalizedName,
             new CEO(''),
+            '',
             null,
             new Description(''),
             ApprovalStatus::Pending,

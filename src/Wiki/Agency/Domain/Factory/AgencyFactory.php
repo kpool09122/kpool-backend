@@ -12,12 +12,14 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
-class AgencyFactory implements AgencyFactoryInterface
+readonly class AgencyFactory implements AgencyFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UlidGeneratorInterface        $ulidGenerator,
+        private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
@@ -26,12 +28,16 @@ class AgencyFactory implements AgencyFactoryInterface
         Language                 $language,
         AgencyName               $agencyName,
     ): Agency {
+        $normalizedName = $this->normalizationService->normalize((string)$agencyName, $language);
+
         return new Agency(
             new AgencyIdentifier($this->ulidGenerator->generate()),
             $translationSetIdentifier,
             $language,
             $agencyName,
+            $normalizedName,
             new CEO(''),
+            '',
             null,
             new Description(''),
             new Version(1),

@@ -21,6 +21,11 @@ jobs:
         extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo, pdo_mysql, phar, tokenizer, xml, xmlreader, xmlwriter
         tools: composer:v2
 
+    - name: Install MeCab
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mecab mecab-ipadic-utf8
+
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 

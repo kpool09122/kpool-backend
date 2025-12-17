@@ -24,6 +24,7 @@ class DraftGroup
      * @param EditorIdentifier $editorIdentifier
      * @param Language $language
      * @param GroupName $name
+     * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
      * @param SongIdentifier[] $songIdentifiers
@@ -37,6 +38,7 @@ class DraftGroup
         private readonly EditorIdentifier         $editorIdentifier,
         private readonly Language                 $language,
         private GroupName                         $name,
+        private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
         private array                             $songIdentifiers,
@@ -83,6 +85,16 @@ class DraftGroup
     public function setName(GroupName $name): void
     {
         $this->name = $name;
+    }
+
+    public function normalizedName(): string
+    {
+        return $this->normalizedName;
+    }
+
+    public function setNormalizedName(string $normalizedName): void
+    {
+        $this->normalizedName = $normalizedName;
     }
 
     public function agencyIdentifier(): ?AgencyIdentifier

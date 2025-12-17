@@ -9,15 +9,17 @@ use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class EditGroup implements EditGroupInterface
+readonly class EditGroup implements EditGroupInterface
 {
     public function __construct(
-        private ImageServiceInterface $imageService,
+        private ImageServiceInterface    $imageService,
         private GroupRepositoryInterface $groupRepository,
+        private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
@@ -47,6 +49,8 @@ class EditGroup implements EditGroupInterface
         }
 
         $group->setName($input->name());
+        $normalizedName = $this->normalizationService->normalize((string)$group->name(), $group->language());
+        $group->setNormalizedName($normalizedName);
         $group->setAgencyIdentifier($input->agencyIdentifier());
         $group->setDescription($input->description());
         $group->setSongIdentifiers($input->songIdentifiers());
