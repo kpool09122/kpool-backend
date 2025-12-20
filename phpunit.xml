@@ -28,6 +28,7 @@
         <env name="DB_DATABASE" value="kpool"/>
         <env name="DB_USERNAME" value="kpool"/>
         <env name="DB_PASSWORD" value="secret"/>
+        <env name="APP_KEY" value="base64:YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE="/>
         <ini name="memory_limit" value="256M"/>
     </php>
 </phpunit>
