@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Wiki\Agency\Domain\Factory;
+
+use DateTimeImmutable;
+use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+
+readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
+{
+    public function __construct(
+        private UlidGeneratorInterface $ulidGenerator,
+    ) {
+    }
+
+    public function create(
+        EditorIdentifier $editorIdentifier,
+        ?EditorIdentifier $submitterIdentifier,
+        ?AgencyIdentifier $agencyIdentifier,
+        ?AgencyIdentifier $draftAgencyIdentifier,
+        ?ApprovalStatus $fromStatus,
+        ApprovalStatus $toStatus,
+    ): AgencyHistory {
+        return new AgencyHistory(
+            new AgencyHistoryIdentifier($this->ulidGenerator->generate()),
+            $editorIdentifier,
+            $submitterIdentifier,
+            $agencyIdentifier,
+            $draftAgencyIdentifier,
+            $fromStatus,
+            $toStatus,
+            new DateTimeImmutable('now'),
+        );
+    }
+}
