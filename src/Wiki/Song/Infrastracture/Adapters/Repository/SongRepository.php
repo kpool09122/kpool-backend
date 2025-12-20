@@ -6,8 +6,6 @@ namespace Source\Wiki\Song\Infrastracture\Adapters\Repository;
 
 use Application\Models\Wiki\DraftSong as DraftSongModel;
 use Application\Models\Wiki\Song as SongModel;
-use DateTimeImmutable;
-use DateTimeInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -44,7 +42,9 @@ final class SongRepository implements SongRepositoryInterface
             $belongIdentifiers[] = new BelongIdentifier($identifier);
         }
 
-        $releaseDate = $this->createReleaseDate($songModel->release_date);
+        $releaseDate = $songModel->release_date
+            ? new ReleaseDate($songModel->release_date->toDateTimeImmutable())
+            : null;
 
         return new Song(
             new SongIdentifier($songModel->id),
@@ -109,7 +109,9 @@ final class SongRepository implements SongRepositoryInterface
             $belongIdentifiers[] = new BelongIdentifier($identifier);
         }
 
-        $releaseDate = $this->createReleaseDate($draftModel->release_date);
+        $releaseDate = $draftModel->release_date
+            ? new ReleaseDate($draftModel->release_date->toDateTimeImmutable())
+            : null;
 
         return new DraftSong(
             new SongIdentifier($draftModel->id),
@@ -187,7 +189,9 @@ final class SongRepository implements SongRepositoryInterface
                 $belongIdentifiers[] = new BelongIdentifier($identifier);
             }
 
-            $releaseDate = $this->createReleaseDate($model->release_date);
+            $releaseDate = $model->release_date
+                ? new ReleaseDate($model->release_date->toDateTimeImmutable())
+                : null;
 
             $drafts[] = new DraftSong(
                 new SongIdentifier($model->id),
@@ -209,18 +213,5 @@ final class SongRepository implements SongRepositoryInterface
         }
 
         return $drafts;
-    }
-
-    private function createReleaseDate(?DateTimeInterface $releaseDateValue): ?ReleaseDate
-    {
-        if ($releaseDateValue === null) {
-            return null;
-        }
-
-        $immutableReleaseDate = $releaseDateValue instanceof DateTimeImmutable
-            ? $releaseDateValue
-            : DateTimeImmutable::createFromInterface($releaseDateValue);
-
-        return new ReleaseDate($immutableReleaseDate);
     }
 }
