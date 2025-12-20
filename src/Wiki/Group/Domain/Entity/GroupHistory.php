@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -20,7 +21,8 @@ readonly class GroupHistory
         private ?GroupIdentifier       $groupIdentifier,
         private ?GroupIdentifier       $draftGroupIdentifier,
         private ?ApprovalStatus        $fromStatus,
-        private ApprovalStatus         $toStatus,
+        private ?ApprovalStatus        $toStatus,
+        private GroupName              $subjectName,
         private DateTimeImmutable      $recordedAt
     ) {
         $this->validate($groupIdentifier, $draftGroupIdentifier);
@@ -66,6 +68,11 @@ readonly class GroupHistory
     public function toStatus(): ?ApprovalStatus
     {
         return $this->toStatus;
+    }
+
+    public function subjectName(): GroupName
+    {
+        return $this->subjectName;
     }
 
     public function recordedAt(): DateTimeImmutable

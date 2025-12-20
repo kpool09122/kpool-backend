@@ -16,11 +16,15 @@ use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInput
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
+use Source\Wiki\Group\Domain\Entity\GroupHistory;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
+use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
+use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
@@ -52,6 +56,10 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $this->assertInstanceOf(PublishGroup::class, $publishGroup);
     }
@@ -67,10 +75,13 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessWhenAlreadyPublished(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            hasPublishedGroup: true,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -102,8 +113,21 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
@@ -128,10 +152,13 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessForTheFirstTime(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            hasPublishedGroup: false,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -139,54 +166,25 @@ class PublishGroupTest extends TestCase
             $principal,
         );
 
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            $dummyPublishGroup->songIdentifiers,
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
-        $version = new Version(1);
-        $createdGroup = new Group(
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            null,
-            new Description(''),
-            [],
-            null,
-            $version,
-        );
-
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
-            ->with($createdGroup)
+            ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
         $groupRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($group)
+            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
-            ->andReturn($createdGroup);
+            ->andReturn($dummyPublishGroup->createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -194,9 +192,22 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
@@ -207,7 +218,7 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$dummyPublishGroup->description, (string)$publishedGroup->description());
         $this->assertSame($dummyPublishGroup->songIdentifiers, $publishedGroup->songIdentifiers());
         $this->assertSame((string)$dummyPublishGroup->imagePath, (string)$publishedGroup->imagePath());
-        $this->assertSame($version->value(), $publishedGroup->version()->value());
+        $this->assertSame($dummyPublishGroup->version->value(), $publishedGroup->version()->value());
     }
 
     /**
@@ -238,9 +249,13 @@ class PublishGroupTest extends TestCase
             ->andReturn(null);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(GroupNotFoundException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -257,7 +272,7 @@ class PublishGroupTest extends TestCase
      */
     public function testInvalidStatus(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
+        $dummyPublishGroup = $this->createDummyPublishGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
@@ -268,32 +283,20 @@ class PublishGroupTest extends TestCase
             $principal,
         );
 
-        $status = ApprovalStatus::Approved;
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            $dummyPublishGroup->songIdentifiers,
-            $dummyPublishGroup->imagePath,
-            $status,
-        );
-
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(InvalidStatusException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -322,26 +325,11 @@ class PublishGroupTest extends TestCase
             $principal,
         );
 
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            $dummyPublishGroup->songIdentifiers,
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -349,8 +337,13 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(true);
 
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->expectException(ExistsApprovedButNotTranslatedGroupException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -366,7 +359,7 @@ class PublishGroupTest extends TestCase
      */
     public function testWhenNotFoundPublishedAgency(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
+        $dummyPublishGroup = $this->createDummyPublishGroup(hasPublishedGroup: true);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
@@ -393,8 +386,13 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(GroupNotFoundException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -418,32 +416,22 @@ class PublishGroupTest extends TestCase
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'twice',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -461,65 +449,38 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
+
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'twice',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
-        $version = new Version(1);
-        $createdGroup = new Group(
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            null,
-            new Description(''),
-            [],
-            null,
-            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
-            ->with($createdGroup)
+            ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
         $groupRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($group)
+            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
-            ->andReturn($createdGroup);
+            ->andReturn($dummyPublishGroup->createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -527,12 +488,27 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
-        $publishGroup->process($input);
+        $result = $publishGroup->process($input);
+
+        $this->assertSame(ApprovalStatus::UnderReview, $dummyPublishGroup->status);
     }
 
     /**
@@ -553,7 +529,7 @@ class PublishGroupTest extends TestCase
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
         );
 
@@ -563,7 +539,12 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
 
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -581,67 +562,40 @@ class PublishGroupTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-        $agencyId = (string)$dummyPublishGroup->agencyIdentifier;
-        $agencyIdentifier = new AgencyIdentifier($agencyId);
-
+        $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
 
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            agencyId: $agencyId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
+
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
-        $version = new Version(1);
-        $createdGroup = new Group(
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            null,
-            new Description(''),
-            [],
-            null,
-            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
-            ->with($createdGroup)
+            ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
         $groupRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($group)
+            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
-            ->andReturn($createdGroup);
+            ->andReturn($dummyPublishGroup->createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -649,9 +603,22 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -675,32 +642,22 @@ class PublishGroupTest extends TestCase
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -718,66 +675,40 @@ class PublishGroupTest extends TestCase
      */
     public function testAuthorizedGroupActor(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-        $groupId = (string)$dummyPublishGroup->groupIdentifier;
-
+        $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
 
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            groupId: $groupId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
+
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
-        $version = new Version(1);
-        $createdGroup = new Group(
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            null,
-            new Description(''),
-            [],
-            null,
-            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
-            ->with($createdGroup)
+            ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
         $groupRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($group)
+            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
-            ->andReturn($createdGroup);
+            ->andReturn($dummyPublishGroup->createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -785,9 +716,22 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -812,32 +756,22 @@ class PublishGroupTest extends TestCase
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -855,67 +789,41 @@ class PublishGroupTest extends TestCase
      */
     public function testAuthorizedMemberActor(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-        $groupId = (string)$dummyPublishGroup->groupIdentifier;
-
+        $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
         $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
 
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            groupId: $groupId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
+
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
-        $version = new Version(1);
-        $createdGroup = new Group(
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            null,
-            new Description(''),
-            [],
-            null,
-            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
-            ->with($createdGroup)
+            ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
         $groupRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($group)
+            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
-            ->andReturn($createdGroup);
+            ->andReturn($dummyPublishGroup->createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -923,9 +831,22 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -942,65 +863,38 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $dummyPublishGroup = $this->createDummyPublishGroup();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
 
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
+
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
+            null,
             $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
-            null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
-        );
-
-        $version = new Version(1);
-        $createdGroup = new Group(
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            null,
-            new Description(''),
-            [],
-            null,
-            $version,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
-            ->with($createdGroup)
+            ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
         $groupRepository->shouldReceive('deleteDraft')
             ->once()
-            ->with($group)
+            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
-            ->andReturn($createdGroup);
+            ->andReturn($dummyPublishGroup->createdGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -1008,9 +902,22 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
             ->andReturn(false);
 
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -1033,35 +940,24 @@ class PublishGroupTest extends TestCase
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
-            $dummyPublishGroup->publishedGroupIdentifier,
-            $principal,
-        );
-
-        $group = new DraftGroup(
-            $dummyPublishGroup->groupIdentifier,
             null,
-            $dummyPublishGroup->translationSetIdentifier,
-            $dummyPublishGroup->editorIdentifier,
-            $dummyPublishGroup->language,
-            $dummyPublishGroup->name,
-            'TWICE',
-            $dummyPublishGroup->agencyIdentifier,
-            $dummyPublishGroup->description,
-            [],
-            $dummyPublishGroup->imagePath,
-            $dummyPublishGroup->status,
+            $principal,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($group);
+            ->andReturn($dummyPublishGroup->draftGroup);
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -1071,18 +967,28 @@ class PublishGroupTest extends TestCase
     /**
      * ダミーデータを作成するヘルパーメソッド
      *
+     * @param string|null $groupId
+     * @param string|null $agencyId
+     * @param ApprovalStatus $status
+     * @param bool $hasPublishedGroup
+     * @param EditorIdentifier|null $operatorIdentifier
      * @return PublishGroupTestData
      */
-    private function createDummyPublishGroup(): PublishGroupTestData
-    {
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+    private function createDummyPublishGroup(
+        ?string $groupId = null,
+        ?string $agencyId = null,
+        ApprovalStatus $status = ApprovalStatus::UnderReview,
+        bool $hasPublishedGroup = false,
+        ?EditorIdentifier $operatorIdentifier = null,
+    ): PublishGroupTestData {
+        $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUlid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
 그룹명은 \'좋은 음악으로 한번, 멋진 퍼포먼스로 두 번 감동을 준다\'는 의미를 담고 있습니다. 그 이름처럼 데뷔곡 \'OOH-AHH하게\' 이후, \'CHEER UP\', \'TT\', \'LIKEY\', \'What is Love?\', \'FANCY\' 등 수많은 히트곡을 연달아 발표했습니다. 특히 \'TT\'에서 보여준 우는 표정을 표현한 \'TT 포즈\'는 일본에서도 사회 현상이 될 정도로 큰 인기를 얻었습니다.
@@ -1094,10 +1000,9 @@ class PublishGroupTest extends TestCase
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
 
-        $status = ApprovalStatus::UnderReview;
         $draftGroup = new DraftGroup(
             $groupIdentifier,
-            $publishedGroupIdentifier,
+            $hasPublishedGroup ? $publishedGroupIdentifier : null,
             $translationSetIdentifier,
             $editorIdentifier,
             $language,
@@ -1139,6 +1044,34 @@ class PublishGroupTest extends TestCase
             $publishedVersion,
         );
 
+        // 新規作成用のGroup
+        $version = new Version(1);
+        $createdGroup = new Group(
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $language,
+            $name,
+            $normalizedName,
+            null,
+            new Description(''),
+            [],
+            null,
+            $version,
+        );
+
+        $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUlid());
+        $history = new GroupHistory(
+            $historyIdentifier,
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $draftGroup->editorIdentifier(),
+            $hasPublishedGroup ? $publishedGroupIdentifier : null,
+            $draftGroup->groupIdentifier(),
+            $draftGroup->status(),
+            null,
+            $draftGroup->name(),
+            new \DateTimeImmutable(),
+        );
+
         return new PublishGroupTestData(
             $groupIdentifier,
             $publishedGroupIdentifier,
@@ -1154,7 +1087,11 @@ class PublishGroupTest extends TestCase
             $translationSetIdentifier,
             $draftGroup,
             $publishedGroup,
+            $createdGroup,
+            $version,
             $publishedVersion,
+            $historyIdentifier,
+            $history,
         );
     }
 }
@@ -1183,7 +1120,11 @@ readonly class PublishGroupTestData
         public TranslationSetIdentifier $translationSetIdentifier,
         public DraftGroup               $draftGroup,
         public Group                    $publishedGroup,
+        public Group                    $createdGroup,
+        public Version                  $version,
         public Version                  $publishedVersion,
+        public GroupHistoryIdentifier   $historyIdentifier,
+        public GroupHistory             $history,
     ) {
     }
 }

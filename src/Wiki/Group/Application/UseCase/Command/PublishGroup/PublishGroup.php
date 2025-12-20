@@ -8,21 +8,26 @@ use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupE
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
+use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class PublishGroup implements PublishGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface $groupRepository,
-        private GroupServiceInterface    $groupService,
-        private GroupFactoryInterface    $groupFactory,
+        private GroupRepositoryInterface        $groupRepository,
+        private GroupServiceInterface           $groupService,
+        private GroupFactoryInterface           $groupFactory,
+        private GroupHistoryRepositoryInterface $groupHistoryRepository,
+        private GroupHistoryFactoryInterface    $groupHistoryFactory,
     ) {
     }
 
@@ -88,6 +93,18 @@ readonly class PublishGroup implements PublishGroupInterface
         $publishedGroup->setImagePath($group->imagePath());
 
         $this->groupRepository->save($publishedGroup);
+
+        $history = $this->groupHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $group->editorIdentifier(),
+            $group->publishedGroupIdentifier(),
+            $group->groupIdentifier(),
+            $group->status(),
+            null,
+            $group->name(),
+        );
+        $this->groupHistoryRepository->save($history);
+
         $this->groupRepository->deleteDraft($group);
 
         return $publishedGroup;

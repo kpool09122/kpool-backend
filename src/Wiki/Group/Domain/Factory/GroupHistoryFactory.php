@@ -9,6 +9,7 @@ use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Wiki\Group\Domain\Entity\GroupHistory;
 use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -25,7 +26,8 @@ readonly class GroupHistoryFactory implements GroupHistoryFactoryInterface
         ?GroupIdentifier $groupIdentifier,
         ?GroupIdentifier $draftGroupIdentifier,
         ?ApprovalStatus $fromStatus,
-        ApprovalStatus $toStatus,
+        ?ApprovalStatus $toStatus,
+        GroupName $subjectName,
     ): GroupHistory {
         return new GroupHistory(
             new GroupHistoryIdentifier($this->ulidGenerator->generate()),
@@ -35,6 +37,7 @@ readonly class GroupHistoryFactory implements GroupHistoryFactoryInterface
             $draftGroupIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             new DateTimeImmutable('now'),
         );
     }
