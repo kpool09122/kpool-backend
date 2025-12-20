@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('image_link', 255)->nullable()->comment('画像リンク');
             $table->json('relevant_video_links')->default('[]')->comment('関連動画リンク一覧');
             $table->unsignedInteger('version')->default(1)->comment('バージョン');
+            $table->softDeletes();
             $table->timestamps();
         });
 

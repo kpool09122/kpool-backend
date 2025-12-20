@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $id
@@ -22,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Talent extends Model
 {
+    use SoftDeletes;
+
     public $incrementing = false;
 
     protected $table = 'talents';
