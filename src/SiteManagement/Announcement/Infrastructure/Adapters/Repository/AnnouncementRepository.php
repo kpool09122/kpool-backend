@@ -6,9 +6,6 @@ namespace Source\SiteManagement\Announcement\Infrastructure\Adapters\Repository;
 
 use Application\Models\SiteManagement\Announcement as AnnouncementModel;
 use Application\Models\SiteManagement\DraftAnnouncement as DraftAnnouncementModel;
-use DateTimeImmutable;
-use Illuminate\Support\Carbon;
-use RuntimeException;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
@@ -125,7 +122,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
             Category::from((int)$model->category),
             new Title($model->title),
             new Content($model->content),
-            new PublishedDate($this->asDateTimeImmutable($model->published_date)),
+            new PublishedDate($model->published_date->toDateTimeImmutable()),
         );
     }
 
@@ -138,24 +135,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
             Category::from((int)$model->category),
             new Title($model->title),
             new Content($model->content),
-            new PublishedDate($this->asDateTimeImmutable($model->published_date)),
+            new PublishedDate($model->published_date->toDateTimeImmutable()),
         );
-    }
-
-    private function asDateTimeImmutable(mixed $value): DateTimeImmutable
-    {
-        if ($value instanceof DateTimeImmutable) {
-            return $value;
-        }
-
-        if ($value instanceof Carbon) {
-            return $value->toDateTimeImmutable();
-        }
-
-        if ($value === null) {
-            throw new RuntimeException('Published date is missing');
-        }
-
-        return new DateTimeImmutable((string)$value);
     }
 }
