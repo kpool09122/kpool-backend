@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('announcements', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('アナウンスID');
+            $table->string('id', 26)->primary()->comment('お知らせID');
             $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->unsignedTinyInteger('category')->comment('カテゴリ');
@@ -20,10 +20,11 @@ return new class extends Migration
             $table->text('content')->comment('本文');
             $table->dateTime('published_date')->comment('公開日時');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('draft_announcements', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('アナウンスID');
+            $table->string('id', 26)->primary()->comment('お知らせID');
             $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->unsignedTinyInteger('category')->comment('カテゴリ');

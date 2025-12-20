@@ -25,7 +25,7 @@ use Tests\TestCase;
 class AnnouncementRepositoryTest extends TestCase
 {
     /**
-     * 正常系：指定IDのアナウンスを取得できる.
+     * 正常系：指定IDのお知らせを取得できる.
      * @throws BindingResolutionException
      */
     public function testFindById(): void
@@ -74,7 +74,7 @@ class AnnouncementRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：翻訳セットIDでアナウンス一覧を取得できる.
+     * 正常系：翻訳セットIDでお知らせ一覧を取得できる.
      * @throws BindingResolutionException
      */
     public function testFindByTranslationSetIdentifier(): void
@@ -124,7 +124,7 @@ class AnnouncementRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：下書きアナウンスを取得できる.
+     * 正常系：下書きお知らせを取得できる.
      * @throws BindingResolutionException
      */
     public function testFindDraftById(): void
@@ -238,7 +238,7 @@ class AnnouncementRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：アナウンスを保存できる.
+     * 正常系：お知らせを保存できる.
      * @throws BindingResolutionException
      */
     public function testSave(): void
@@ -298,7 +298,7 @@ class AnnouncementRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：アナウンスを削除できる.
+     * 正常系：お知らせを削除できる.
      * @throws BindingResolutionException
      */
     public function testDelete(): void
