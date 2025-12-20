@@ -113,7 +113,7 @@ class AnnouncementRepository implements AnnouncementRepositoryInterface
     {
         DraftAnnouncementModel::query()
             ->where('id', (string)$draftAnnouncement->announcementIdentifier())
-            ->delete();
+            ->forceDelete();
     }
 
     private function toAnnouncementEntity(AnnouncementModel $model): Announcement

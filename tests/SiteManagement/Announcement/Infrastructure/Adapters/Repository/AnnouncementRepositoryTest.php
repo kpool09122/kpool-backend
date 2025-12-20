@@ -328,7 +328,7 @@ class AnnouncementRepositoryTest extends TestCase
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
         $repository->delete($announcement);
 
-        $this->assertDatabaseMissing('announcements', ['id' => $id]);
+        $this->assertSoftDeleted('announcements', ['id' => $id]);
     }
 
     /**
