@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\SiteManagement;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -18,6 +19,8 @@ use Illuminate\Support\Carbon;
  */
 class Announcement extends Model
 {
+    use SoftDeletes;
+
     public $incrementing = false;
 
     protected $table = 'announcements';

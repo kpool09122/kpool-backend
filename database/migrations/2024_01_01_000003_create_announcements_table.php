@@ -31,6 +31,7 @@ return new class extends Migration
             $table->text('content')->comment('本文');
             $table->dateTime('published_date')->comment('公開予定日時');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
