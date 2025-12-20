@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('lyricist', 32)->default('')->comment('作詞者');
             $table->string('composer', 32)->default('')->comment('作曲者');
             $table->date('release_date')->nullable()->comment('リリース日');
+            $table->text('lyrics')->nullable()->comment('歌詞');
             $table->string('overview', 512)->default('')->comment('概要');
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->string('music_video_link', 255)->nullable()->comment('MVリンク');
@@ -40,6 +41,7 @@ return new class extends Migration
             $table->string('lyricist', 32)->default('')->comment('作詞者');
             $table->string('composer', 32)->default('')->comment('作曲者');
             $table->date('release_date')->nullable()->comment('リリース日');
+            $table->text('lyrics')->nullable()->comment('歌詞');
             $table->string('overview', 512)->default('')->comment('概要');
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->string('music_video_link', 255)->nullable()->comment('MVリンク');
