@@ -14,9 +14,13 @@ use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgenc
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInterface;
+use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
@@ -46,6 +50,10 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $this->assertInstanceOf(ApproveAgency::class, $approveAgency);
     }
@@ -61,10 +69,12 @@ class ApproveAgencyTest extends TestCase
      */
     public function testProcess(): void
     {
-        $dummyApproveAgency = $this->createDummyApproveAgency();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $dummyApproveAgency = $this->createDummyApproveAgency(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -88,8 +98,20 @@ class ApproveAgencyTest extends TestCase
             ->with($dummyApproveAgency->translationSetIdentifier, $dummyApproveAgency->agencyIdentifier)
             ->andReturn(false);
 
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $agencyHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveAgency->history);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveAgency->history)
+            ->andReturn(null);
+
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $agency = $approveAgency->process($input);
         $this->assertNotSame($dummyApproveAgency->status, $agency->status());
@@ -124,9 +146,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn(null);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->expectException(AgencyNotFoundException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $approveAgency->process($input);
@@ -160,9 +186,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn($dummyApproveAgency->agency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->expectException(InvalidStatusException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $approveAgency->process($input);
@@ -202,8 +232,13 @@ class ApproveAgencyTest extends TestCase
             ->with($dummyApproveAgency->translationSetIdentifier, $dummyApproveAgency->agencyIdentifier)
             ->andReturn(true);
 
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $this->expectException(ExistsApprovedButNotTranslatedAgencyException::class);
         $approveAgency->process($input);
@@ -237,9 +272,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn($dummyApproveAgency->agency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
@@ -257,10 +296,12 @@ class ApproveAgencyTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $dummyApproveAgency = $this->createDummyApproveAgency();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $dummyApproveAgency = $this->createDummyApproveAgency(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -284,8 +325,20 @@ class ApproveAgencyTest extends TestCase
             ->with($dummyApproveAgency->translationSetIdentifier, $dummyApproveAgency->agencyIdentifier)
             ->andReturn(false);
 
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $agencyHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveAgency->history);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveAgency->history)
+            ->andReturn(null);
+
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $result = $approveAgency->process($input);
@@ -322,9 +375,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn($dummyApproveAgency->agency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
@@ -343,10 +400,13 @@ class ApproveAgencyTest extends TestCase
     public function testProcessWithAgencyActor(): void
     {
         $agencyId = StrTestHelper::generateUlid();
-        $dummyApproveAgency = $this->createDummyApproveAgency($agencyId);
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+
+        $dummyApproveAgency = $this->createDummyApproveAgency(
+            agencyId: $agencyId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -370,8 +430,20 @@ class ApproveAgencyTest extends TestCase
             ->with($dummyApproveAgency->translationSetIdentifier, $dummyApproveAgency->agencyIdentifier)
             ->andReturn(false);
 
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $agencyHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveAgency->history);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveAgency->history)
+            ->andReturn(null);
+
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $result = $approveAgency->process($input);
@@ -408,9 +480,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn($dummyApproveAgency->agency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
@@ -447,9 +523,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn($dummyApproveAgency->agency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
@@ -467,10 +547,12 @@ class ApproveAgencyTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $dummyApproveAgency = $this->createDummyApproveAgency();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+
+        $dummyApproveAgency = $this->createDummyApproveAgency(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -494,8 +576,20 @@ class ApproveAgencyTest extends TestCase
             ->with($dummyApproveAgency->translationSetIdentifier, $dummyApproveAgency->agencyIdentifier)
             ->andReturn(false);
 
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $agencyHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveAgency->history);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveAgency->history)
+            ->andReturn(null);
+
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $result = $approveAgency->process($input);
@@ -531,9 +625,13 @@ class ApproveAgencyTest extends TestCase
             ->andReturn($dummyApproveAgency->agency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
@@ -547,8 +645,11 @@ class ApproveAgencyTest extends TestCase
      * @param ApprovalStatus $status
      * @return ApproveAgencyTestData
      */
-    private function createDummyApproveAgency(?string $agencyId = null, ApprovalStatus $status = ApprovalStatus::UnderReview): ApproveAgencyTestData
-    {
+    private function createDummyApproveAgency(
+        ?string $agencyId = null,
+        ApprovalStatus $status = ApprovalStatus::UnderReview,
+        ?EditorIdentifier $operatorIdentifier = null,
+    ): ApproveAgencyTestData {
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -590,6 +691,19 @@ DESC);
             $status,
         );
 
+        $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUlid());
+        $history = new AgencyHistory(
+            $historyIdentifier,
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $agency->editorIdentifier(),
+            null,
+            $agency->agencyIdentifier(),
+            ApprovalStatus::UnderReview,
+            ApprovalStatus::Approved,
+            $agency->name(),
+            new DateTimeImmutable('now'),
+        );
+
         return new ApproveAgencyTestData(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
@@ -602,6 +716,8 @@ DESC);
             $description,
             $status,
             $agency,
+            $historyIdentifier,
+            $history,
         );
     }
 }
@@ -623,6 +739,8 @@ readonly class ApproveAgencyTestData
         public Description $description,
         public ApprovalStatus $status,
         public DraftAgency $agency,
+        public AgencyHistoryIdentifier $historyIdentifier,
+        public AgencyHistory $history,
     ) {
     }
 }

@@ -6,18 +6,23 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\RejectAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class RejectAgency implements RejectAgencyInterface
+readonly class RejectAgency implements RejectAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface $agencyRepository,
+        private AgencyRepositoryInterface        $agencyRepository,
+        private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
+        private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
     ) {
     }
 
@@ -51,9 +56,21 @@ class RejectAgency implements RejectAgencyInterface
             throw new InvalidStatusException();
         }
 
+        $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::Rejected);
 
         $this->agencyRepository->saveDraft($agency);
+
+        $history = $this->agencyHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $agency->editorIdentifier(),
+            $agency->publishedAgencyIdentifier(),
+            $agency->agencyIdentifier(),
+            $previousStatus,
+            $agency->status(),
+            $agency->name(),
+        );
+        $this->agencyHistoryRepository->save($history);
 
         return $agency;
     }

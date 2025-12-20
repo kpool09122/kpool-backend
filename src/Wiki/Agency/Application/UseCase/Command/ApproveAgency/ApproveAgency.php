@@ -7,20 +7,25 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class ApproveAgency implements ApproveAgencyInterface
+readonly class ApproveAgency implements ApproveAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface $agencyRepository,
-        private AgencyServiceInterface $agencyService,
+        private AgencyRepositoryInterface        $agencyRepository,
+        private AgencyServiceInterface           $agencyService,
+        private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
+        private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
     ) {
     }
 
@@ -63,9 +68,21 @@ class ApproveAgency implements ApproveAgencyInterface
             throw new ExistsApprovedButNotTranslatedAgencyException();
         }
 
+        $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::Approved);
 
         $this->agencyRepository->saveDraft($agency);
+
+        $history = $this->agencyHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $agency->editorIdentifier(),
+            $agency->publishedAgencyIdentifier(),
+            $agency->agencyIdentifier(),
+            $previousStatus,
+            $agency->status(),
+            $agency->name(),
+        );
+        $this->agencyHistoryRepository->save($history);
 
         return $agency;
     }
