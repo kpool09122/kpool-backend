@@ -39,6 +39,8 @@ use Source\Wiki\Talent\Domain\Factory\DraftTalentFactory;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentFactory;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactory;
+use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 
@@ -47,6 +49,7 @@ class DomainServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(TalentFactoryInterface::class, TalentFactory::class);
+        $this->app->singleton(TalentHistoryFactoryInterface::class, TalentHistoryFactory::class);
         $this->app->singleton(TalentServiceInterface::class, TalentService::class);
         $this->app->singleton(GroupFactoryInterface::class, GroupFactory::class);
         $this->app->singleton(GroupHistoryFactoryInterface::class, GroupHistoryFactory::class);
