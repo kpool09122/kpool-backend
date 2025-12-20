@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Infrastructure\Adapters\Repository;
 
-use DateTime;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group as PHPUnitGroup;
-use ReflectionClass;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -29,7 +27,6 @@ use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
-use Source\Wiki\Song\Infrastracture\Adapters\Repository\SongRepository;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,58 +40,43 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
-        $translation = Language::ENGLISH;
-        $name = 'Thunderous';
-        $agencyId = StrTestHelper::generateUlid();
-        $belongIdentifiers = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
-        $lyricist = 'Han';
-        $composer = 'Bang Chan';
-        $releaseDate = '2021-08-23';
-        $overview = 'Title track';
-        $coverImagePath = '/images/song/thunderous.jpg';
-        $musicVideoLink = 'https://example.com/mv';
-        $version = 2;
-
-        DB::table('songs')->upsert([
-            'id' => $id,
-            'translation_set_identifier' => $translationSetId,
-            'language' => $translation->value,
-            'name' => $name,
-            'agency_id' => $agencyId,
-            'belong_identifiers' => json_encode($belongIdentifiers),
-            'lyricist' => $lyricist,
-            'composer' => $composer,
-            'release_date' => $releaseDate,
-            'overview' => $overview,
-            'cover_image_path' => $coverImagePath,
-            'music_video_link' => $musicVideoLink,
-            'version' => $version,
-        ], 'id');
+        $songData = $this->upsertSongRecord([
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'language' => Language::ENGLISH->value,
+            'name' => 'Thunderous',
+            'agency_id' => StrTestHelper::generateUlid(),
+            'belong_identifiers' => [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()],
+            'lyricist' => 'Han',
+            'composer' => 'Bang Chan',
+            'release_date' => '2021-08-23',
+            'overview' => 'Title track',
+            'cover_image_path' => '/images/song/thunderous.jpg',
+            'music_video_link' => 'https://example.com/mv',
+            'version' => 2,
+        ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $song = $repository->findById(new SongIdentifier($id));
+        $song = $repository->findById(new SongIdentifier($songData['id']));
 
         $this->assertInstanceOf(Song::class, $song);
-        $this->assertSame($id, (string) $song->songIdentifier());
-        $this->assertSame($translationSetId, (string) $song->translationSetIdentifier());
-        $this->assertSame($translation, $song->language());
-        $this->assertSame($name, (string) $song->name());
-        $this->assertSame($agencyId, (string) $song->agencyIdentifier());
-        $this->assertSame($belongIdentifiers, array_map(
+        $this->assertSame($songData['id'], (string) $song->songIdentifier());
+        $this->assertSame($songData['translation_set_identifier'], (string) $song->translationSetIdentifier());
+        $this->assertSame(Language::ENGLISH, $song->language());
+        $this->assertSame($songData['name'], (string) $song->name());
+        $this->assertSame($songData['agency_id'], (string) $song->agencyIdentifier());
+        $this->assertSame($songData['belong_identifiers'], array_map(
             static fn (BelongIdentifier $identifier): string => (string) $identifier,
             $song->belongIdentifiers(),
         ));
-        $this->assertSame($lyricist, (string) $song->lyricist());
-        $this->assertSame($composer, (string) $song->composer());
+        $this->assertSame($songData['lyricist'], (string) $song->lyricist());
+        $this->assertSame($songData['composer'], (string) $song->composer());
         $this->assertInstanceOf(ReleaseDate::class, $song->releaseDate());
         $this->assertInstanceOf(DateTimeImmutable::class, $song->releaseDate()->value());
-        $this->assertSame($releaseDate, $song->releaseDate()->format('Y-m-d'));
-        $this->assertSame($overview, (string) $song->overView());
-        $this->assertSame($coverImagePath, (string) $song->coverImagePath());
-        $this->assertSame($musicVideoLink, (string) $song->musicVideoLink());
-        $this->assertSame($version, $song->version()->value());
+        $this->assertSame($songData['release_date'], $song->releaseDate()->format('Y-m-d'));
+        $this->assertSame($songData['overview'], (string) $song->overView());
+        $this->assertSame($songData['cover_image_path'], (string) $song->coverImagePath());
+        $this->assertSame($songData['music_video_link'], (string) $song->musicVideoLink());
+        $this->assertSame($songData['version'], $song->version()->value());
     }
 
     /**
@@ -104,26 +86,15 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindByIdWhenReleaseDateIsNull(): void
     {
-        $id = StrTestHelper::generateUlid();
-
-        DB::table('songs')->upsert([
-            'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+        $songData = $this->upsertSongRecord([
             'language' => Language::ENGLISH->value,
             'name' => 'No Release Date',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUlid()]),
-            'lyricist' => 'Lyricist',
-            'composer' => 'Composer',
             'release_date' => null,
-            'overview' => 'Overview',
-            'cover_image_path' => null,
-            'music_video_link' => null,
-            'version' => 1,
-        ], 'id');
+            'belong_identifiers' => [StrTestHelper::generateUlid()],
+        ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $song = $repository->findById(new SongIdentifier($id));
+        $song = $repository->findById(new SongIdentifier($songData['id']));
 
         $this->assertInstanceOf(Song::class, $song);
         $this->assertNull($song->releaseDate());
@@ -149,64 +120,47 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindDraftById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $publishedId = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
-        $editorId = StrTestHelper::generateUlid();
-        $translation = Language::JAPANESE;
-        $name = 'サンプル歌';
-        $agencyId = StrTestHelper::generateUlid();
-        $belongIdentifiers = [StrTestHelper::generateUlid()];
-        $lyricist = 'テスター';
-        $composer = 'コンポーザー';
-        $releaseDate = '2022-02-02';
-        $overview = 'ドラフト概要';
-        $coverImagePath = '/covers/sample.png';
-        $musicVideoLink = 'https://example.com/draft';
-        $status = ApprovalStatus::Pending;
-
-        DB::table('draft_songs')->upsert([
-            'id' => $id,
-            'published_id' => $publishedId,
-            'translation_set_identifier' => $translationSetId,
-            'editor_id' => $editorId,
-            'language' => $translation->value,
-            'name' => $name,
-            'agency_id' => $agencyId,
-            'belong_identifiers' => json_encode($belongIdentifiers),
-            'lyricist' => $lyricist,
-            'composer' => $composer,
-            'release_date' => $releaseDate,
-            'overview' => $overview,
-            'cover_image_path' => $coverImagePath,
-            'music_video_link' => $musicVideoLink,
-            'status' => $status->value,
-        ], 'id');
+        $draftData = $this->upsertDraftSongRecord([
+            'published_id' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUlid(),
+            'language' => Language::JAPANESE->value,
+            'name' => 'サンプル歌',
+            'agency_id' => StrTestHelper::generateUlid(),
+            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'lyricist' => 'テスター',
+            'composer' => 'コンポーザー',
+            'release_date' => '2022-02-02',
+            'overview' => 'ドラフト概要',
+            'cover_image_path' => '/covers/sample.png',
+            'music_video_link' => 'https://example.com/draft',
+            'status' => ApprovalStatus::Pending->value,
+        ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $draft = $repository->findDraftById(new SongIdentifier($id));
+        $draft = $repository->findDraftById(new SongIdentifier($draftData['id']));
 
         $this->assertInstanceOf(DraftSong::class, $draft);
-        $this->assertSame($id, (string) $draft->songIdentifier());
-        $this->assertSame($publishedId, (string) $draft->publishedSongIdentifier());
-        $this->assertSame($translationSetId, (string) $draft->translationSetIdentifier());
-        $this->assertSame($editorId, (string) $draft->editorIdentifier());
-        $this->assertSame($translation, $draft->language());
-        $this->assertSame($name, (string) $draft->name());
-        $this->assertSame($agencyId, (string) $draft->agencyIdentifier());
-        $this->assertSame($belongIdentifiers, array_map(
+        $this->assertSame($draftData['id'], (string) $draft->songIdentifier());
+        $this->assertSame($draftData['published_id'], (string) $draft->publishedSongIdentifier());
+        $this->assertSame($draftData['translation_set_identifier'], (string) $draft->translationSetIdentifier());
+        $this->assertSame($draftData['editor_id'], (string) $draft->editorIdentifier());
+        $this->assertSame(Language::JAPANESE, $draft->language());
+        $this->assertSame($draftData['name'], (string) $draft->name());
+        $this->assertSame($draftData['agency_id'], (string) $draft->agencyIdentifier());
+        $this->assertSame($draftData['belong_identifiers'], array_map(
             static fn (BelongIdentifier $identifier): string => (string) $identifier,
             $draft->belongIdentifiers(),
         ));
-        $this->assertSame($lyricist, (string) $draft->lyricist());
-        $this->assertSame($composer, (string) $draft->composer());
+        $this->assertSame($draftData['lyricist'], (string) $draft->lyricist());
+        $this->assertSame($draftData['composer'], (string) $draft->composer());
         $this->assertInstanceOf(ReleaseDate::class, $draft->releaseDate());
         $this->assertInstanceOf(DateTimeImmutable::class, $draft->releaseDate()->value());
-        $this->assertSame($releaseDate, $draft->releaseDate()->format('Y-m-d'));
-        $this->assertSame($overview, (string) $draft->overView());
-        $this->assertSame($coverImagePath, (string) $draft->coverImagePath());
-        $this->assertSame($musicVideoLink, (string) $draft->musicVideoLink());
-        $this->assertSame($status, $draft->status());
+        $this->assertSame($draftData['release_date'], $draft->releaseDate()->format('Y-m-d'));
+        $this->assertSame($draftData['overview'], (string) $draft->overView());
+        $this->assertSame($draftData['cover_image_path'], (string) $draft->coverImagePath());
+        $this->assertSame($draftData['music_video_link'], (string) $draft->musicVideoLink());
+        $this->assertSame(ApprovalStatus::Pending, $draft->status());
     }
 
     /**
@@ -216,28 +170,18 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindDraftByIdWhenReleaseDateIsNull(): void
     {
-        $id = StrTestHelper::generateUlid();
-
-        DB::table('draft_songs')->upsert([
-            'id' => $id,
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+        $draftData = $this->upsertDraftSongRecord([
             'language' => Language::JAPANESE->value,
             'name' => 'Draft Song',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'release_date' => null,
+            'belong_identifiers' => [StrTestHelper::generateUlid()],
             'lyricist' => 'Tester',
             'composer' => 'Composer',
-            'release_date' => null,
             'overview' => 'Draft Overview',
-            'cover_image_path' => null,
-            'music_video_link' => null,
-            'status' => ApprovalStatus::Pending->value,
-        ], 'id');
+        ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $draft = $repository->findDraftById(new SongIdentifier($id));
+        $draft = $repository->findDraftById(new SongIdentifier($draftData['id']));
 
         $this->assertInstanceOf(DraftSong::class, $draft);
         $this->assertNull($draft->releaseDate());
@@ -482,7 +426,6 @@ class SongRepositoryTest extends TestCase
 
         DB::table('draft_songs')->insert([$draft1, $draft2, $otherDraft]);
 
-        /** @var SongRepositoryInterface $repository */
         $repository = $this->app->make(SongRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet($translationSetIdentifier);
 
@@ -502,6 +445,36 @@ class SongRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：翻訳セットIDに紐づく下書きのリリース日がnullの場合、nullが返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testFindDraftsByTranslationSetWhenReleaseDateIsNull(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+
+        $draftData = $this->upsertDraftSongRecord([
+            'translation_set_identifier' => (string) $translationSetIdentifier,
+            'language' => Language::ENGLISH->value,
+            'name' => 'Draft without release date',
+            'release_date' => null,
+            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'lyricist' => 'Lyricist',
+            'composer' => 'Composer',
+        ]);
+
+        /** @var SongRepositoryInterface $repository */
+        $repository = $this->app->make(SongRepositoryInterface::class);
+        $drafts = $repository->findDraftsByTranslationSet($translationSetIdentifier);
+
+        $this->assertCount(1, $drafts);
+        $draft = $drafts[0];
+
+        $this->assertSame($draftData['id'], (string) $draft->songIdentifier());
+        $this->assertNull($draft->releaseDate());
+    }
+
+    /**
      * 正常系：指定した翻訳セットIDに紐づく下書き歌が存在しない場合、空配列が返却されること.
      *
      * @throws BindingResolutionException
@@ -518,41 +491,66 @@ class SongRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：DateTimeInterface 実装（Carbon）を渡した場合でも DateTimeImmutable に変換されること.
+     * @param array<string,mixed> $override
+     * @return array<string,mixed>
      */
-    public function testCreateReleaseDateConvertsMutableInstance(): void
+    private function upsertSongRecord(array $override = []): array
     {
-        $repository = new SongRepository();
-        $reflection = new ReflectionClass($repository);
-        $method = $reflection->getMethod('createReleaseDate');
-        $method->setAccessible(true);
+        $data = array_merge([
+            'id' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'language' => Language::ENGLISH->value,
+            'name' => 'Song',
+            'agency_id' => StrTestHelper::generateUlid(),
+            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'lyricist' => 'Lyricist',
+            'composer' => 'Composer',
+            'release_date' => '2024-01-01',
+            'lyrics' => null,
+            'overview' => 'Overview',
+            'cover_image_path' => null,
+            'music_video_link' => null,
+            'version' => 1,
+        ], $override);
 
-        $mutableReleaseDate = new DateTime('2020-08-15');
+        $record = $data;
+        $record['belong_identifiers'] = json_encode($record['belong_identifiers']);
 
-        /** @var ReleaseDate $releaseDate */
-        $releaseDate = $method->invoke($repository, $mutableReleaseDate);
+        DB::table('songs')->upsert($record, 'id');
 
-        $this->assertInstanceOf(ReleaseDate::class, $releaseDate);
-        $this->assertInstanceOf(DateTimeImmutable::class, $releaseDate->value());
-        $this->assertSame('2020-08-15', $releaseDate->format('Y-m-d'));
+        return $data;
     }
 
     /**
-     * 正常系：DateTimeImmutable を渡した場合は同一インスタンスが利用されること.
+     * @param array<string,mixed> $override
+     * @return array<string,mixed>
      */
-    public function testCreateReleaseDateKeepsImmutableInstance(): void
+    private function upsertDraftSongRecord(array $override = []): array
     {
-        $repository = new SongRepository();
-        $reflection = new ReflectionClass($repository);
-        $method = $reflection->getMethod('createReleaseDate');
-        $method->setAccessible(true);
+        $data = array_merge([
+            'id' => StrTestHelper::generateUlid(),
+            'published_id' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUlid(),
+            'language' => Language::JAPANESE->value,
+            'name' => 'Draft Song',
+            'agency_id' => StrTestHelper::generateUlid(),
+            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'lyricist' => 'Lyricist',
+            'composer' => 'Composer',
+            'release_date' => '2024-01-01',
+            'lyrics' => null,
+            'overview' => 'Draft Overview',
+            'cover_image_path' => null,
+            'music_video_link' => null,
+            'status' => ApprovalStatus::Pending->value,
+        ], $override);
 
-        $immutableReleaseDate = new DateTimeImmutable('2018-04-30');
+        $record = $data;
+        $record['belong_identifiers'] = json_encode($record['belong_identifiers']);
 
-        /** @var ReleaseDate $releaseDate */
-        $releaseDate = $method->invoke($repository, $immutableReleaseDate);
+        DB::table('draft_songs')->upsert($record, 'id');
 
-        $this->assertInstanceOf(ReleaseDate::class, $releaseDate);
-        $this->assertSame($immutableReleaseDate, $releaseDate->value());
+        return $data;
     }
 }
