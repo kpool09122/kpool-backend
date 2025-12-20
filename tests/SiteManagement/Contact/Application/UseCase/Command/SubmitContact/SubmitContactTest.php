@@ -14,6 +14,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\Subm
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
@@ -88,8 +89,14 @@ class SubmitContactTest extends TestCase
             ->with($contact)
             ->andReturn(null);
 
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldReceive('save')
+            ->once()
+            ->with($contact);
+
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
         $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $submitContact = $this->app->make(SubmitContactInterface::class);
         $submitContact->process($input);
     }
@@ -140,8 +147,14 @@ class SubmitContactTest extends TestCase
             ->with($contact)
             ->andThrow(new RuntimeException());
 
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldReceive('save')
+            ->once()
+            ->with($contact);
+
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
         $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
 
         $this->expectException(FailedToSendEmailException::class);
         $submitContact = $this->app->make(SubmitContactInterface::class);
@@ -198,8 +211,14 @@ class SubmitContactTest extends TestCase
             ->with($contact)
             ->andThrow(new RuntimeException());
 
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldReceive('save')
+            ->once()
+            ->with($contact);
+
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
         $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
 
         $this->expectException(FailedToSendEmailException::class);
         $submitContact = $this->app->make(SubmitContactInterface::class);
