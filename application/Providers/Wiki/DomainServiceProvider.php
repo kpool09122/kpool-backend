@@ -31,6 +31,8 @@ use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\SongHistoryFactory;
+use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactory;
@@ -51,6 +53,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(GroupServiceInterface::class, GroupService::class);
         $this->app->singleton(GroupRepositoryInterface::class, GroupRepository::class);
         $this->app->singleton(SongFactoryInterface::class, SongFactory::class);
+        $this->app->singleton(SongHistoryFactoryInterface::class, SongHistoryFactory::class);
         $this->app->singleton(SongServiceInterface::class, SongService::class);
         $this->app->singleton(AgencyFactoryInterface::class, AgencyFactory::class);
         $this->app->singleton(AgencyHistoryFactoryInterface::class, AgencyHistoryFactory::class);
