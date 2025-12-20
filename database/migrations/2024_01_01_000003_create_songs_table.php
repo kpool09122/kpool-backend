@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->string('music_video_link', 255)->nullable()->comment('MVリンク');
             $table->unsignedInteger('version')->default(1)->comment('バージョン');
+            $table->softDeletes();
             $table->timestamps();
         });
 

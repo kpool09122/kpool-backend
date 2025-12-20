@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string $id
@@ -20,9 +21,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $cover_image_path
  * @property ?string $music_video_link
  * @property int|null $version
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  */
 class Song extends Model
 {
+    use SoftDeletes;
+
     public $incrementing = false;
 
     protected $table = 'songs';
@@ -49,5 +53,6 @@ class Song extends Model
         'belong_identifiers' => 'array',
         'release_date' => 'date',
         'version' => 'integer',
+        'deleted_at' => 'datetime',
     ];
 }
