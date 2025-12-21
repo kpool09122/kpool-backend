@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\Entity\TalentHistory;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -56,6 +57,10 @@ class TalentHistoryTest extends TestCase
         $this->assertSame(
             $createTalentHistory->toStatus,
             $talentHistory->toStatus()
+        );
+        $this->assertSame(
+            (string)$createTalentHistory->subjectName,
+            (string)$talentHistory->subjectName()
         );
         $this->assertSame(
             $createTalentHistory->recordedAt,
@@ -113,6 +118,7 @@ class TalentHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $toStatus = ApprovalStatus::Pending;
+        $subjectName = new TalentName('채영');
         $recordedAt = new DateTimeImmutable();
 
         $talentHistory = new TalentHistory(
@@ -123,6 +129,7 @@ class TalentHistoryTest extends TestCase
             null,
             null,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
 
@@ -144,6 +151,7 @@ class TalentHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
+        $subjectName = new TalentName('채영');
         $recordedAt = new DateTimeImmutable();
 
         new TalentHistory(
@@ -154,6 +162,7 @@ class TalentHistoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
     }
@@ -175,6 +184,7 @@ class TalentHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $subjectName = new TalentName('채영');
         $recordedAt = new DateTimeImmutable();
 
         $talentHistory = new TalentHistory(
@@ -185,6 +195,7 @@ class TalentHistoryTest extends TestCase
             $draftTalentIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
 
@@ -196,6 +207,7 @@ class TalentHistoryTest extends TestCase
             draftTalentIdentifier: $draftTalentIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            subjectName: $subjectName,
             recordedAt: $recordedAt,
             talentHistory: $talentHistory,
         );
@@ -215,6 +227,7 @@ readonly class TalentHistoryTestData
         public ?TalentIdentifier       $draftTalentIdentifier,
         public ApprovalStatus          $fromStatus,
         public ApprovalStatus          $toStatus,
+        public TalentName              $subjectName,
         public DateTimeImmutable       $recordedAt,
         public TalentHistory           $talentHistory,
     ) {

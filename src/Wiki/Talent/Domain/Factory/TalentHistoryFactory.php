@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\Entity\TalentHistory;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 readonly class TalentHistoryFactory implements TalentHistoryFactoryInterface
 {
@@ -25,7 +26,8 @@ readonly class TalentHistoryFactory implements TalentHistoryFactoryInterface
         ?TalentIdentifier $talentIdentifier,
         ?TalentIdentifier $draftTalentIdentifier,
         ?ApprovalStatus $fromStatus,
-        ApprovalStatus $toStatus,
+        ?ApprovalStatus $toStatus,
+        TalentName $subjectName,
     ): TalentHistory {
         return new TalentHistory(
             new TalentHistoryIdentifier($this->ulidGenerator->generate()),
@@ -35,6 +37,7 @@ readonly class TalentHistoryFactory implements TalentHistoryFactoryInterface
             $draftTalentIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             new DateTimeImmutable('now'),
         );
     }

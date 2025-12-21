@@ -23,7 +23,10 @@ use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalentInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
+use Source\Wiki\Talent\Domain\Entity\TalentHistory;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
+use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -31,6 +34,7 @@ use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
+use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
@@ -49,6 +53,10 @@ class SubmitTalentTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $this->assertInstanceOf(SubmitTalent::class, $submitTalent);
     }
@@ -65,10 +73,12 @@ class SubmitTalentTest extends TestCase
      */
     public function testProcess(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $submitTalentInfo = $this->createSubmitTalentInfo(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -85,7 +95,19 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->talentIdentifier)
             ->andReturn($submitTalentInfo->draftTalent);
 
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($submitTalentInfo->history);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($submitTalentInfo->history)
+            ->andReturn(null);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $talent = $submitTalent->process($input);
         $this->assertNotSame($submitTalentInfo->status, $talent->status());
@@ -118,7 +140,12 @@ class SubmitTalentTest extends TestCase
             ->with($talentIdentifier)
             ->andReturn(null);
 
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $this->expectException(TalentNotFoundException::class);
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
@@ -136,7 +163,7 @@ class SubmitTalentTest extends TestCase
      */
     public function testInvalidStatus(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
+        $submitTalentInfo = $this->createSubmitTalentInfo(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
@@ -146,30 +173,18 @@ class SubmitTalentTest extends TestCase
             $principal,
         );
 
-        $talent = new DraftTalent(
-            $submitTalentInfo->talentIdentifier,
-            $submitTalentInfo->publishedTalentIdentifier,
-            $submitTalentInfo->translationSetIdentifier,
-            $submitTalentInfo->editorIdentifier,
-            $submitTalentInfo->language,
-            $submitTalentInfo->name,
-            $submitTalentInfo->realName,
-            $submitTalentInfo->agencyIdentifier,
-            $submitTalentInfo->groupIdentifiers,
-            $submitTalentInfo->birthday,
-            $submitTalentInfo->career,
-            $submitTalentInfo->imageLink,
-            $submitTalentInfo->relevantVideoLinks,
-            ApprovalStatus::Approved, // 無効なステータス
-        );
-
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
             ->once()
             ->with($submitTalentInfo->talentIdentifier)
-            ->andReturn($talent);
+            ->andReturn($submitTalentInfo->draftTalent);
+
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $this->expectException(InvalidStatusException::class);
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
@@ -188,10 +203,12 @@ class SubmitTalentTest extends TestCase
      */
     public function testProcessWithCollaborator(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+
+        $submitTalentInfo = $this->createSubmitTalentInfo(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -208,7 +225,19 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->draftTalent)
             ->andReturn(null);
 
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($submitTalentInfo->history);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($submitTalentInfo->history)
+            ->andReturn(null);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $result = $submitTalent->process($input);
@@ -228,11 +257,14 @@ class SubmitTalentTest extends TestCase
      */
     public function testProcessWithAgencyActor(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
-
+        $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $agencyId = (string)$submitTalentInfo->agencyIdentifier;
         $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+
+        $submitTalentInfo = $this->createSubmitTalentInfo(
+            agencyId: $agencyId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -249,7 +281,19 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->draftTalent)
             ->andReturn(null);
 
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($submitTalentInfo->history);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($submitTalentInfo->history)
+            ->andReturn(null);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $result = $submitTalent->process($input);
@@ -269,12 +313,16 @@ class SubmitTalentTest extends TestCase
      */
     public function testProcessWithGroupActor(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
-
+        $agencyId = StrTestHelper::generateUlid();
+        $groupIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $agencyId = (string)$submitTalentInfo->agencyIdentifier;
-        $groupIds = array_map(static fn ($groupIdentifier) => (string) $groupIdentifier, $submitTalentInfo->groupIdentifiers);
         $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, []);
+
+        $submitTalentInfo = $this->createSubmitTalentInfo(
+            agencyId: $agencyId,
+            groupIds: $groupIds,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -291,7 +339,19 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->draftTalent)
             ->andReturn(null);
 
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($submitTalentInfo->history);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($submitTalentInfo->history)
+            ->andReturn(null);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $result = $submitTalent->process($input);
@@ -311,14 +371,18 @@ class SubmitTalentTest extends TestCase
      */
     public function testProcessWithTalentActor(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
-
-
+        $agencyId = StrTestHelper::generateUlid();
+        $groupIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
+        $talentId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $agencyId = (string)$submitTalentInfo->agencyIdentifier;
-        $groupIds = array_map(static fn ($groupIdentifier) => (string) $groupIdentifier, $submitTalentInfo->groupIdentifiers);
-        $talentId = (string)$submitTalentInfo->talentIdentifier;
         $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+
+        $submitTalentInfo = $this->createSubmitTalentInfo(
+            agencyId: $agencyId,
+            groupIds: $groupIds,
+            talentId: $talentId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -335,7 +399,19 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->draftTalent)
             ->andReturn(null);
 
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($submitTalentInfo->history);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($submitTalentInfo->history)
+            ->andReturn(null);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $result = $submitTalent->process($input);
@@ -355,10 +431,12 @@ class SubmitTalentTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $submitTalentInfo = $this->createSubmitTalentInfo();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+
+        $submitTalentInfo = $this->createSubmitTalentInfo(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -375,7 +453,19 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->draftTalent)
             ->andReturn(null);
 
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($submitTalentInfo->history);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($submitTalentInfo->history)
+            ->andReturn(null);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
         $result = $submitTalent->process($input);
@@ -411,7 +501,12 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->talentIdentifier)
             ->andReturn($submitTalentInfo->draftTalent);
 
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $submitTalent = $this->app->make(SubmitTalentInterface::class);
@@ -419,22 +514,36 @@ class SubmitTalentTest extends TestCase
     }
 
     /**
+     * ダミーデータを作成するヘルパーメソッド
+     *
+     * @param string|null $agencyId
+     * @param array<string>|null $groupIds
+     * @param string|null $talentId
+     * @param ApprovalStatus $status
+     * @param EditorIdentifier|null $operatorIdentifier
      * @return SubmitTalentTestData
      * @throws ExceedMaxRelevantVideoLinksException
      */
-    private function createSubmitTalentInfo(): SubmitTalentTestData
-    {
+    private function createSubmitTalentInfo(
+        ?string $agencyId = null,
+        ?array $groupIds = null,
+        ?string $talentId = null,
+        ApprovalStatus $status = ApprovalStatus::Pending,
+        ?EditorIdentifier $operatorIdentifier = null,
+    ): SubmitTalentTestData {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-        ];
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
+        $groupIdentifiers = $groupIds !== null
+            ? array_map(static fn ($id) => new GroupIdentifier($id), $groupIds)
+            : [
+                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUlid()),
+            ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
@@ -449,8 +558,7 @@ class SubmitTalentTest extends TestCase
 
         $imageLink = new ImagePath('/resources/public/images/before.webp');
 
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $status = ApprovalStatus::Pending;
+        $talentIdentifier = new TalentIdentifier($talentId ?? StrTestHelper::generateUlid());
         $talent = new DraftTalent(
             $talentIdentifier,
             $publishedTalentIdentifier,
@@ -466,6 +574,19 @@ class SubmitTalentTest extends TestCase
             $imageLink,
             $relevantVideoLinks,
             $status,
+        );
+
+        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUlid());
+        $history = new TalentHistory(
+            $historyIdentifier,
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $talent->editorIdentifier(),
+            $talent->publishedTalentIdentifier(),
+            $talent->talentIdentifier(),
+            $status,
+            ApprovalStatus::UnderReview,
+            $talent->name(),
+            new DateTimeImmutable('now'),
         );
 
         return new SubmitTalentTestData(
@@ -488,6 +609,8 @@ class SubmitTalentTest extends TestCase
             $talentIdentifier,
             $status,
             $talent,
+            $historyIdentifier,
+            $history,
         );
     }
 }
@@ -521,6 +644,8 @@ readonly class SubmitTalentTestData
         public TalentIdentifier $talentIdentifier,
         public ApprovalStatus $status,
         public DraftTalent $draftTalent,
+        public TalentHistoryIdentifier $historyIdentifier,
+        public TalentHistory $history,
     ) {
     }
 }
