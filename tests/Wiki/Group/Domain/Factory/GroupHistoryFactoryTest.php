@@ -9,6 +9,7 @@ use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactory;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -41,6 +42,7 @@ class GroupHistoryFactoryTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $subjectName = new GroupName('TWICE');
 
         $groupHistoryFactory = $this->app->make(GroupHistoryFactoryInterface::class);
         $groupHistory = $groupHistoryFactory->create(
@@ -50,6 +52,7 @@ class GroupHistoryFactoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $subjectName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$groupHistory->historyIdentifier()));
@@ -59,6 +62,7 @@ class GroupHistoryFactoryTest extends TestCase
         $this->assertNull($groupHistory->draftGroupIdentifier());
         $this->assertSame($fromStatus, $groupHistory->fromStatus());
         $this->assertSame($toStatus, $groupHistory->toStatus());
+        $this->assertSame((string)$subjectName, (string)$groupHistory->subjectName());
         $this->assertNotNull($groupHistory->recordedAt());
     }
 
@@ -74,6 +78,7 @@ class GroupHistoryFactoryTest extends TestCase
         $draftGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
+        $subjectName = new GroupName('TWICE');
 
         $groupHistoryFactory = $this->app->make(GroupHistoryFactoryInterface::class);
         $groupHistory = $groupHistoryFactory->create(
@@ -83,6 +88,7 @@ class GroupHistoryFactoryTest extends TestCase
             $draftGroupIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$groupHistory->historyIdentifier()));
@@ -92,6 +98,7 @@ class GroupHistoryFactoryTest extends TestCase
         $this->assertSame((string)$draftGroupIdentifier, (string)$groupHistory->draftGroupIdentifier());
         $this->assertNull($groupHistory->fromStatus());
         $this->assertSame($toStatus, $groupHistory->toStatus());
+        $this->assertSame((string)$subjectName, (string)$groupHistory->subjectName());
         $this->assertNotNull($groupHistory->recordedAt());
     }
 }

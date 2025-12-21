@@ -8,21 +8,26 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
+use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class PublishAgency implements PublishAgencyInterface
+readonly class PublishAgency implements PublishAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface $agencyRepository,
-        private AgencyServiceInterface $agencyService,
-        private AgencyFactoryInterface $agencyFactory,
+        private AgencyRepositoryInterface        $agencyRepository,
+        private AgencyServiceInterface           $agencyService,
+        private AgencyFactoryInterface           $agencyFactory,
+        private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
+        private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
     ) {
     }
 
@@ -86,6 +91,18 @@ class PublishAgency implements PublishAgencyInterface
         $publishedAgency->setFoundedIn($agency->foundedIn());
 
         $this->agencyRepository->save($publishedAgency);
+
+        $history = $this->agencyHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $agency->editorIdentifier(),
+            $agency->publishedAgencyIdentifier(),
+            $agency->agencyIdentifier(),
+            $agency->status(),
+            null,
+            $agency->name(),
+        );
+        $this->agencyHistoryRepository->save($history);
+
         $this->agencyRepository->deleteDraft($agency);
 
         return $publishedAgency;

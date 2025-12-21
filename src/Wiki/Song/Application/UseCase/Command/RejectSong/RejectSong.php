@@ -8,16 +8,21 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
+use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
-class RejectSong implements RejectSongInterface
+readonly class RejectSong implements RejectSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
+        private SongRepositoryInterface        $songRepository,
+        private SongHistoryRepositoryInterface $songHistoryRepository,
+        private SongHistoryFactoryInterface    $songHistoryFactory,
     ) {
     }
 
@@ -56,9 +61,21 @@ class RejectSong implements RejectSongInterface
             throw new UnauthorizedException();
         }
 
+        $previousStatus = $song->status();
         $song->setStatus(ApprovalStatus::Rejected);
 
         $this->songRepository->saveDraft($song);
+
+        $history = $this->songHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $song->editorIdentifier(),
+            $song->publishedSongIdentifier(),
+            $song->songIdentifier(),
+            $previousStatus,
+            $song->status(),
+            $song->name(),
+        );
+        $this->songHistoryRepository->save($history);
 
         return $song;
     }

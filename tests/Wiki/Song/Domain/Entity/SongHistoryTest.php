@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -56,6 +57,10 @@ class SongHistoryTest extends TestCase
         $this->assertSame(
             $createSongHistory->toStatus,
             $songHistory->toStatus()
+        );
+        $this->assertSame(
+            (string)$createSongHistory->subjectName,
+            (string)$songHistory->subjectName()
         );
         $this->assertSame(
             $createSongHistory->recordedAt,
@@ -113,6 +118,7 @@ class SongHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $toStatus = ApprovalStatus::Pending;
+        $subjectName = new SongName('Dynamite');
         $recordedAt = new DateTimeImmutable();
 
         $songHistory = new SongHistory(
@@ -123,6 +129,7 @@ class SongHistoryTest extends TestCase
             null,
             null,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
 
@@ -143,6 +150,7 @@ class SongHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
+        $subjectName = new SongName('Dynamite');
         $recordedAt = new DateTimeImmutable();
 
         new SongHistory(
@@ -153,6 +161,7 @@ class SongHistoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
     }
@@ -174,6 +183,7 @@ class SongHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $subjectName = new SongName('Dynamite');
         $recordedAt = new DateTimeImmutable();
 
         $songHistory = new SongHistory(
@@ -184,6 +194,7 @@ class SongHistoryTest extends TestCase
             $draftSongIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
 
@@ -195,6 +206,7 @@ class SongHistoryTest extends TestCase
             draftSongIdentifier: $draftSongIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            subjectName: $subjectName,
             recordedAt: $recordedAt,
             songHistory: $songHistory,
         );
@@ -214,6 +226,7 @@ readonly class SongHistoryTestData
         public ?SongIdentifier       $draftSongIdentifier,
         public ApprovalStatus        $fromStatus,
         public ApprovalStatus        $toStatus,
+        public SongName              $subjectName,
         public DateTimeImmutable     $recordedAt,
         public SongHistory           $songHistory,
     ) {

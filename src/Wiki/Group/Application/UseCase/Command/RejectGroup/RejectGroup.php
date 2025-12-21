@@ -6,18 +6,23 @@ namespace Source\Wiki\Group\Application\UseCase\Command\RejectGroup;
 
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class RejectGroup implements RejectGroupInterface
+readonly class RejectGroup implements RejectGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface $groupRepository,
+        private GroupRepositoryInterface        $groupRepository,
+        private GroupHistoryRepositoryInterface $groupHistoryRepository,
+        private GroupHistoryFactoryInterface    $groupHistoryFactory,
     ) {
     }
 
@@ -51,9 +56,21 @@ class RejectGroup implements RejectGroupInterface
             throw new InvalidStatusException();
         }
 
+        $previousStatus = $group->status();
         $group->setStatus(ApprovalStatus::Rejected);
 
         $this->groupRepository->saveDraft($group);
+
+        $history = $this->groupHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $group->editorIdentifier(),
+            $group->publishedGroupIdentifier(),
+            $group->groupIdentifier(),
+            $previousStatus,
+            $group->status(),
+            $group->name(),
+        );
+        $this->groupHistoryRepository->save($history);
 
         return $group;
     }

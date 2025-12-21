@@ -8,6 +8,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -15,15 +16,19 @@ use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 
 readonly class PublishTalent implements PublishTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface $talentRepository,
-        private TalentServiceInterface    $talentService,
-        private TalentFactoryInterface    $talentFactory,
+        private TalentRepositoryInterface        $talentRepository,
+        private TalentServiceInterface           $talentService,
+        private TalentFactoryInterface           $talentFactory,
+        private TalentHistoryRepositoryInterface $talentHistoryRepository,
+        private TalentHistoryFactoryInterface    $talentHistoryFactory,
     ) {
     }
 
@@ -97,6 +102,18 @@ readonly class PublishTalent implements PublishTalentInterface
         $publishedTalent->setRelevantVideoLinks($talent->relevantVideoLinks());
 
         $this->talentRepository->save($publishedTalent);
+
+        $history = $this->talentHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $talent->editorIdentifier(),
+            $talent->publishedTalentIdentifier(),
+            $talent->talentIdentifier(),
+            $talent->status(),
+            null,
+            $talent->name(),
+        );
+        $this->talentHistoryRepository->save($history);
+
         $this->talentRepository->deleteDraft($talent);
 
         return $publishedTalent;

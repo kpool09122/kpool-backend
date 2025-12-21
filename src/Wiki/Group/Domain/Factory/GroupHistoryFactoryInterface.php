@@ -6,6 +6,7 @@ namespace Source\Wiki\Group\Domain\Factory;
 
 use Source\Wiki\Group\Domain\Entity\GroupHistory;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -17,6 +18,7 @@ interface GroupHistoryFactoryInterface
         ?GroupIdentifier $groupIdentifier,
         ?GroupIdentifier $draftGroupIdentifier,
         ?ApprovalStatus $fromStatus,
-        ApprovalStatus $toStatus,
+        ?ApprovalStatus $toStatus,
+        GroupName $subjectName,
     ): GroupHistory;
 }

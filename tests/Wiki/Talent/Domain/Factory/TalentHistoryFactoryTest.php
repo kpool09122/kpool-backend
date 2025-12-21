@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactory;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,6 +42,7 @@ class TalentHistoryFactoryTest extends TestCase
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $subjectName = new TalentName('채영');
 
         $talentHistoryFactory = $this->app->make(TalentHistoryFactoryInterface::class);
         $talentHistory = $talentHistoryFactory->create(
@@ -50,6 +52,7 @@ class TalentHistoryFactoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $subjectName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$talentHistory->historyIdentifier()));
@@ -59,6 +62,7 @@ class TalentHistoryFactoryTest extends TestCase
         $this->assertNull($talentHistory->draftTalentIdentifier());
         $this->assertSame($fromStatus, $talentHistory->fromStatus());
         $this->assertSame($toStatus, $talentHistory->toStatus());
+        $this->assertSame((string)$subjectName, (string)$talentHistory->subjectName());
         $this->assertNotNull($talentHistory->recordedAt());
     }
 
@@ -74,6 +78,7 @@ class TalentHistoryFactoryTest extends TestCase
         $draftTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
+        $subjectName = new TalentName('채영');
 
         $talentHistoryFactory = $this->app->make(TalentHistoryFactoryInterface::class);
         $talentHistory = $talentHistoryFactory->create(
@@ -83,6 +88,7 @@ class TalentHistoryFactoryTest extends TestCase
             $draftTalentIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$talentHistory->historyIdentifier()));
@@ -92,6 +98,7 @@ class TalentHistoryFactoryTest extends TestCase
         $this->assertSame((string)$draftTalentIdentifier, (string)$talentHistory->draftTalentIdentifier());
         $this->assertNull($talentHistory->fromStatus());
         $this->assertSame($toStatus, $talentHistory->toStatus());
+        $this->assertSame((string)$subjectName, (string)$talentHistory->subjectName());
         $this->assertNotNull($talentHistory->recordedAt());
     }
 }

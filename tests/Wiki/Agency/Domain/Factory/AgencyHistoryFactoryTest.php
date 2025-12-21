@@ -9,6 +9,7 @@ use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactory;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -41,6 +42,7 @@ class AgencyHistoryFactoryTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $agencyName = new AgencyName('JYP엔터테인먼트');
 
         $agencyHistoryFactory = $this->app->make(AgencyHistoryFactoryInterface::class);
         $agencyHistory = $agencyHistoryFactory->create(
@@ -50,6 +52,7 @@ class AgencyHistoryFactoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $agencyName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$agencyHistory->historyIdentifier()));
@@ -60,6 +63,7 @@ class AgencyHistoryFactoryTest extends TestCase
         $this->assertSame($fromStatus, $agencyHistory->fromStatus());
         $this->assertSame($toStatus, $agencyHistory->toStatus());
         $this->assertNotNull($agencyHistory->recordedAt());
+        $this->assertSame($agencyName, $agencyHistory->subjectName());
     }
 
     /**
@@ -74,6 +78,7 @@ class AgencyHistoryFactoryTest extends TestCase
         $draftAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
+        $agencyName = new AgencyName('JYP엔터테인먼트');
 
         $agencyHistoryFactory = $this->app->make(AgencyHistoryFactoryInterface::class);
         $agencyHistory = $agencyHistoryFactory->create(
@@ -83,6 +88,7 @@ class AgencyHistoryFactoryTest extends TestCase
             $draftAgencyIdentifier,
             $fromStatus,
             $toStatus,
+            $agencyName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$agencyHistory->historyIdentifier()));

@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactory;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,6 +42,7 @@ class SongHistoryFactoryTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $subjectName = new SongName('Dynamite');
 
         $songHistoryFactory = $this->app->make(SongHistoryFactoryInterface::class);
         $songHistory = $songHistoryFactory->create(
@@ -50,6 +52,7 @@ class SongHistoryFactoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $subjectName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$songHistory->historyIdentifier()));
@@ -59,6 +62,7 @@ class SongHistoryFactoryTest extends TestCase
         $this->assertNull($songHistory->draftSongIdentifier());
         $this->assertSame($fromStatus, $songHistory->fromStatus());
         $this->assertSame($toStatus, $songHistory->toStatus());
+        $this->assertSame((string)$subjectName, (string)$songHistory->subjectName());
         $this->assertNotNull($songHistory->recordedAt());
     }
 
@@ -74,6 +78,7 @@ class SongHistoryFactoryTest extends TestCase
         $draftSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
+        $subjectName = new SongName('Dynamite');
 
         $songHistoryFactory = $this->app->make(SongHistoryFactoryInterface::class);
         $songHistory = $songHistoryFactory->create(
@@ -83,6 +88,7 @@ class SongHistoryFactoryTest extends TestCase
             $draftSongIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
         );
 
         $this->assertTrue(UlidValidator::isValid((string)$songHistory->historyIdentifier()));
@@ -92,6 +98,7 @@ class SongHistoryFactoryTest extends TestCase
         $this->assertSame((string)$draftSongIdentifier, (string)$songHistory->draftSongIdentifier());
         $this->assertNull($songHistory->fromStatus());
         $this->assertSame($toStatus, $songHistory->toStatus());
+        $this->assertSame((string)$subjectName, (string)$songHistory->subjectName());
         $this->assertNotNull($songHistory->recordedAt());
     }
 }

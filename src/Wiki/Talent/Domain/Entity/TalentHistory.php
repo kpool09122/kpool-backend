@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 readonly class TalentHistory
 {
@@ -20,7 +21,8 @@ readonly class TalentHistory
         private ?TalentIdentifier       $talentIdentifier,
         private ?TalentIdentifier       $draftTalentIdentifier,
         private ?ApprovalStatus         $fromStatus,
-        private ApprovalStatus          $toStatus,
+        private ?ApprovalStatus         $toStatus,
+        private TalentName              $subjectName,
         private DateTimeImmutable       $recordedAt
     ) {
         $this->validate($talentIdentifier, $draftTalentIdentifier);
@@ -66,6 +68,11 @@ readonly class TalentHistory
     public function toStatus(): ?ApprovalStatus
     {
         return $this->toStatus;
+    }
+
+    public function subjectName(): TalentName
+    {
+        return $this->subjectName;
     }
 
     public function recordedAt(): DateTimeImmutable

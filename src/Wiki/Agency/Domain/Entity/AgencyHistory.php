@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -20,7 +21,8 @@ readonly class AgencyHistory
         private ?AgencyIdentifier       $agencyIdentifier,
         private ?AgencyIdentifier       $draftAgencyIdentifier,
         private ?ApprovalStatus         $fromStatus,
-        private ApprovalStatus          $toStatus,
+        private ?ApprovalStatus          $toStatus,
+        private AgencyName              $subjectName,
         private DateTimeImmutable       $recordedAt
     ) {
         $this->validate($agencyIdentifier, $draftAgencyIdentifier);
@@ -66,6 +68,11 @@ readonly class AgencyHistory
     public function toStatus(): ?ApprovalStatus
     {
         return $this->toStatus;
+    }
+
+    public function subjectName(): AgencyName
+    {
+        return $this->subjectName;
     }
 
     public function recordedAt(): DateTimeImmutable

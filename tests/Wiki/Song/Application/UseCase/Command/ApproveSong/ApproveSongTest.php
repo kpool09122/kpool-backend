@@ -24,6 +24,9 @@ use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
+use Source\Wiki\Song\Domain\Entity\SongHistory;
+use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -32,6 +35,7 @@ use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
+use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\StrTestHelper;
@@ -52,6 +56,10 @@ class ApproveSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $songService = Mockery::mock(SongServiceInterface::class);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $this->assertInstanceOf(ApproveSong::class, $approveSong);
     }
@@ -67,10 +75,12 @@ class ApproveSongTest extends TestCase
      */
     public function testProcess(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -94,8 +104,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $song = $approveSong->process($input);
         $this->assertNotSame($dummyApproveSong->status, $song->status());
@@ -112,28 +134,31 @@ class ApproveSongTest extends TestCase
      */
     public function testWhenNotFoundMember(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
-            $songIdentifier,
-            $publishedSongIdentifier,
+            $dummyApproveSong->songIdentifier,
+            $dummyApproveSong->publishedSongIdentifier,
             $principal,
         );
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
-            ->with($songIdentifier)
+            ->with($dummyApproveSong->songIdentifier)
             ->andReturn(null);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(SongNotFoundException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -150,7 +175,7 @@ class ApproveSongTest extends TestCase
      */
     public function testInvalidStatus(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
+        $dummyApproveSong = $this->createDummyApproveSong(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
@@ -161,36 +186,20 @@ class ApproveSongTest extends TestCase
             $principal,
         );
 
-        // ステータスがApprovedの場合は例外が発生する
-        $status = ApprovalStatus::Approved;
-        $song = new DraftSong(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $dummyApproveSong->translationSetIdentifier,
-            $dummyApproveSong->editorIdentifier,
-            $dummyApproveSong->language,
-            $dummyApproveSong->name,
-            $dummyApproveSong->agencyIdentifier,
-            $dummyApproveSong->belongIdentifiers,
-            $dummyApproveSong->lyricist,
-            $dummyApproveSong->composer,
-            $dummyApproveSong->releaseDate,
-            $dummyApproveSong->overView,
-            $dummyApproveSong->coverImagePath,
-            $dummyApproveSong->musicVideoLink,
-            $status,
-        );
-
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
             ->once()
             ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($song);
+            ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(InvalidStatusException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -231,8 +240,13 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(true);
 
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(ExistsApprovedButNotTranslatedSongException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -267,9 +281,13 @@ class ApproveSongTest extends TestCase
             ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -287,10 +305,12 @@ class ApproveSongTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -314,8 +334,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $result = $approveSong->process($input);
@@ -353,9 +385,13 @@ class ApproveSongTest extends TestCase
             ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -373,11 +409,14 @@ class ApproveSongTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
-
+        $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            agencyId: $agencyId,
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -401,8 +440,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $result = $approveSong->process($input);
@@ -440,9 +491,13 @@ class ApproveSongTest extends TestCase
             ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -460,12 +515,16 @@ class ApproveSongTest extends TestCase
      */
     public function testAuthorizedGroupActor(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyApproveSong->belongIdentifiers);
-
+        $groupId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$groupId], []);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            agencyId: $agencyId,
+            belongIds: [$groupId],
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -489,8 +548,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $result = $approveSong->process($input);
@@ -528,9 +599,13 @@ class ApproveSongTest extends TestCase
             ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -548,12 +623,16 @@ class ApproveSongTest extends TestCase
      */
     public function testAuthorizedTalentActor(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyApproveSong->belongIdentifiers);
-
+        $groupId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$groupId], []);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            agencyId: $agencyId,
+            belongIds: [$groupId],
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -577,8 +656,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $result = $approveSong->process($input);
@@ -616,9 +707,13 @@ class ApproveSongTest extends TestCase
             ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -636,12 +731,16 @@ class ApproveSongTest extends TestCase
      */
     public function testAuthorizedTalentActorWithMe(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyApproveSong->belongIdentifiers);
-
+        $talentId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [], $belongIds);
+        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            agencyId: $agencyId,
+            belongIds: [$talentId],
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -665,8 +764,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $result = $approveSong->process($input);
@@ -685,10 +796,12 @@ class ApproveSongTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+
+        $dummyApproveSong = $this->createDummyApproveSong(
+            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+        );
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -712,8 +825,20 @@ class ApproveSongTest extends TestCase
             ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
             ->andReturn(false);
 
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyApproveSong->history);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyApproveSong->history)
+            ->andReturn(null);
+
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $approveSong = $this->app->make(ApproveSongInterface::class);
         $result = $approveSong->process($input);
@@ -749,9 +874,13 @@ class ApproveSongTest extends TestCase
             ->andReturn($dummyApproveSong->song);
 
         $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
         $this->expectException(UnauthorizedException::class);
         $approveSong = $this->app->make(ApproveSongInterface::class);
@@ -761,20 +890,30 @@ class ApproveSongTest extends TestCase
     /**
      * ダミーデータを作成するヘルパーメソッド
      *
+     * @param string|null $agencyId
+     * @param string[]|null $belongIds
+     * @param ApprovalStatus $status
+     * @param EditorIdentifier|null $operatorIdentifier
      * @return ApproveSongTestData
      */
-    private function createDummyApproveSong(): ApproveSongTestData
-    {
+    private function createDummyApproveSong(
+        ?string $agencyId = null,
+        ?array $belongIds = null,
+        ApprovalStatus $status = ApprovalStatus::UnderReview,
+        ?EditorIdentifier $operatorIdentifier = null,
+    ): ApproveSongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-        ];
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
+        $belongIdentifiers = $belongIds !== null
+            ? array_map(static fn ($id) => new BelongIdentifier($id), $belongIds)
+            : [
+                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUlid()),
+            ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -782,7 +921,6 @@ class ApproveSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/before.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
 
-        $status = ApprovalStatus::UnderReview;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $song = new DraftSong(
             $songIdentifier,
@@ -802,6 +940,19 @@ class ApproveSongTest extends TestCase
             $status,
         );
 
+        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUlid());
+        $history = new SongHistory(
+            $historyIdentifier,
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $song->editorIdentifier(),
+            $song->publishedSongIdentifier(),
+            $song->songIdentifier(),
+            ApprovalStatus::UnderReview,
+            ApprovalStatus::Approved,
+            $song->name(),
+            new DateTimeImmutable('now'),
+        );
+
         return new ApproveSongTestData(
             $songIdentifier,
             $publishedSongIdentifier,
@@ -819,6 +970,8 @@ class ApproveSongTest extends TestCase
             $status,
             $translationSetIdentifier,
             $song,
+            $historyIdentifier,
+            $history,
         );
     }
 }
@@ -833,22 +986,24 @@ readonly class ApproveSongTestData
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        public SongIdentifier      $songIdentifier,
-        public SongIdentifier      $publishedSongIdentifier,
-        public EditorIdentifier    $editorIdentifier,
-        public Language            $language,
-        public SongName            $name,
-        public AgencyIdentifier    $agencyIdentifier,
-        public array               $belongIdentifiers,
-        public Lyricist            $lyricist,
-        public Composer            $composer,
-        public ReleaseDate         $releaseDate,
-        public Overview            $overView,
-        public ImagePath           $coverImagePath,
-        public ExternalContentLink $musicVideoLink,
-        public ApprovalStatus      $status,
+        public SongIdentifier           $songIdentifier,
+        public SongIdentifier           $publishedSongIdentifier,
+        public EditorIdentifier         $editorIdentifier,
+        public Language                 $language,
+        public SongName                 $name,
+        public AgencyIdentifier         $agencyIdentifier,
+        public array                    $belongIdentifiers,
+        public Lyricist                 $lyricist,
+        public Composer                 $composer,
+        public ReleaseDate              $releaseDate,
+        public Overview                 $overView,
+        public ImagePath                $coverImagePath,
+        public ExternalContentLink      $musicVideoLink,
+        public ApprovalStatus           $status,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public DraftSong $song,
+        public DraftSong                $song,
+        public SongHistoryIdentifier    $historyIdentifier,
+        public SongHistory              $history,
     ) {
     }
 }

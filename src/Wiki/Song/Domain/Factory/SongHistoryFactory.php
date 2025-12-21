@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 
 readonly class SongHistoryFactory implements SongHistoryFactoryInterface
 {
@@ -25,7 +26,8 @@ readonly class SongHistoryFactory implements SongHistoryFactoryInterface
         ?SongIdentifier $songIdentifier,
         ?SongIdentifier $draftSongIdentifier,
         ?ApprovalStatus $fromStatus,
-        ApprovalStatus $toStatus,
+        ?ApprovalStatus $toStatus,
+        SongName $subjectName,
     ): SongHistory {
         return new SongHistory(
             new SongHistoryIdentifier($this->ulidGenerator->generate()),
@@ -35,6 +37,7 @@ readonly class SongHistoryFactory implements SongHistoryFactoryInterface
             $draftSongIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             new DateTimeImmutable('now'),
         );
     }

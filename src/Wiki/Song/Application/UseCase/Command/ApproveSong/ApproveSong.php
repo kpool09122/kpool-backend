@@ -8,19 +8,24 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
+use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 
-class ApproveSong implements ApproveSongInterface
+readonly class ApproveSong implements ApproveSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
-        private SongServiceInterface    $songService,
+        private SongRepositoryInterface        $songRepository,
+        private SongServiceInterface           $songService,
+        private SongHistoryRepositoryInterface $songHistoryRepository,
+        private SongHistoryFactoryInterface    $songHistoryFactory,
     ) {
     }
 
@@ -69,9 +74,21 @@ class ApproveSong implements ApproveSongInterface
             throw new ExistsApprovedButNotTranslatedSongException();
         }
 
+        $previousStatus = $song->status();
         $song->setStatus(ApprovalStatus::Approved);
 
         $this->songRepository->saveDraft($song);
+
+        $history = $this->songHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $song->editorIdentifier(),
+            $song->publishedSongIdentifier(),
+            $song->songIdentifier(),
+            $previousStatus,
+            $song->status(),
+            $song->name(),
+        );
+        $this->songHistoryRepository->save($history);
 
         return $song;
     }

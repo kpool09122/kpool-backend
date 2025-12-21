@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -113,6 +114,7 @@ class AgencyHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $toStatus = ApprovalStatus::Pending;
+        $agencyName = new AgencyName('JYP엔터테인먼트');
         $recordedAt = new DateTimeImmutable();
 
         $agencyHistory = new AgencyHistory(
@@ -123,6 +125,7 @@ class AgencyHistoryTest extends TestCase
             null,
             null,
             $toStatus,
+            $agencyName,
             $recordedAt,
         );
 
@@ -143,6 +146,7 @@ class AgencyHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
+        $agencyName = new AgencyName('JYP엔터테인먼트');
         $recordedAt = new DateTimeImmutable();
 
         new AgencyHistory(
@@ -153,6 +157,7 @@ class AgencyHistoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $agencyName,
             $recordedAt,
         );
     }
@@ -174,6 +179,7 @@ class AgencyHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $agencyName = new AgencyName('JYP엔터테인먼트');
         $recordedAt = new DateTimeImmutable();
 
         $agencyHistory = new AgencyHistory(
@@ -184,6 +190,7 @@ class AgencyHistoryTest extends TestCase
             $draftAgencyIdentifier,
             $fromStatus,
             $toStatus,
+            $agencyName,
             $recordedAt,
         );
 

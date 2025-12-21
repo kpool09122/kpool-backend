@@ -9,6 +9,7 @@ use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
 use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 
@@ -25,7 +26,8 @@ readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
         ?AgencyIdentifier $agencyIdentifier,
         ?AgencyIdentifier $draftAgencyIdentifier,
         ?ApprovalStatus $fromStatus,
-        ApprovalStatus $toStatus,
+        ?ApprovalStatus $toStatus,
+        AgencyName $subjectName,
     ): AgencyHistory {
         return new AgencyHistory(
             new AgencyHistoryIdentifier($this->ulidGenerator->generate()),
@@ -35,6 +37,7 @@ readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
             $draftAgencyIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             new DateTimeImmutable('now'),
         );
     }

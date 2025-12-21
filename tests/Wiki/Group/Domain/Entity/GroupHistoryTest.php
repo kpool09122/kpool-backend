@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use Source\Wiki\Group\Domain\Entity\GroupHistory;
 use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -56,6 +57,10 @@ class GroupHistoryTest extends TestCase
         $this->assertSame(
             $createGroupHistory->toStatus,
             $groupHistory->toStatus()
+        );
+        $this->assertSame(
+            (string)$createGroupHistory->subjectName,
+            (string)$groupHistory->subjectName()
         );
         $this->assertSame(
             $createGroupHistory->recordedAt,
@@ -113,6 +118,7 @@ class GroupHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $toStatus = ApprovalStatus::Pending;
+        $subjectName = new GroupName('TWICE');
         $recordedAt = new DateTimeImmutable();
 
         $groupHistory = new GroupHistory(
@@ -123,6 +129,7 @@ class GroupHistoryTest extends TestCase
             null,
             null,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
 
@@ -143,6 +150,7 @@ class GroupHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
+        $subjectName = new GroupName('TWICE');
         $recordedAt = new DateTimeImmutable();
 
         new GroupHistory(
@@ -153,6 +161,7 @@ class GroupHistoryTest extends TestCase
             null,
             $fromStatus,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
     }
@@ -174,6 +183,7 @@ class GroupHistoryTest extends TestCase
         $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
+        $subjectName = new GroupName('TWICE');
         $recordedAt = new DateTimeImmutable();
 
         $groupHistory = new GroupHistory(
@@ -184,6 +194,7 @@ class GroupHistoryTest extends TestCase
             $draftGroupIdentifier,
             $fromStatus,
             $toStatus,
+            $subjectName,
             $recordedAt,
         );
 
@@ -195,6 +206,7 @@ class GroupHistoryTest extends TestCase
             draftGroupIdentifier: $draftGroupIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            subjectName: $subjectName,
             recordedAt: $recordedAt,
             groupHistory: $groupHistory,
         );
@@ -214,6 +226,7 @@ readonly class GroupHistoryTestData
         public ?GroupIdentifier       $draftGroupIdentifier,
         public ApprovalStatus         $fromStatus,
         public ApprovalStatus         $toStatus,
+        public GroupName              $subjectName,
         public DateTimeImmutable      $recordedAt,
         public GroupHistory           $groupHistory,
     ) {

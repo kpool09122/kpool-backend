@@ -6,11 +6,14 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -18,6 +21,8 @@ readonly class SubmitAgency implements SubmitAgencyInterface
 {
     public function __construct(
         private AgencyRepositoryInterface $agencyRepository,
+        private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
+        private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
     ) {
     }
 
@@ -52,9 +57,21 @@ readonly class SubmitAgency implements SubmitAgencyInterface
             throw new InvalidStatusException();
         }
 
+        $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::UnderReview);
 
         $this->agencyRepository->saveDraft($agency);
+
+        $history = $this->agencyHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $agency->editorIdentifier(),
+            $agency->publishedAgencyIdentifier(),
+            $agency->agencyIdentifier(),
+            $previousStatus,
+            $agency->status(),
+            $agency->name(),
+        );
+        $this->agencyHistoryRepository->save($history);
 
         return $agency;
     }
