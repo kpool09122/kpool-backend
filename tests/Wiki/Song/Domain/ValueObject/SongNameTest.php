@@ -35,6 +35,17 @@ class SongNameTest extends TestCase
     }
 
     /**
+     * 異常系：空白が渡された場合、例外がスローされること.
+     *
+     * @return void
+     */
+    public function testWhenOnlySpace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new SongName('    ');
+    }
+
+    /**
      * 異常系：最大文字数を超えた場合、例外がスローされること.
      *
      * @return void

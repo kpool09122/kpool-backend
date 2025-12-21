@@ -71,6 +71,17 @@ class EmailTest extends TestCase
     }
 
     /**
+     * 異常系: メールアドレスが空城の場合、例外をスローすること.
+     *
+     * @return void
+     */
+    public function testSpace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new Email('    ');
+    }
+
+    /**
      * 正常系:メールアドレスのローカルパートの最大文字数を許容できること.
      * ローカルパート(@の前):64文字.
      */

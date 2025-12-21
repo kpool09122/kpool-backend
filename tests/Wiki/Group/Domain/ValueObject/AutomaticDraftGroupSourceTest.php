@@ -31,6 +31,15 @@ class AutomaticDraftGroupSourceTest extends TestCase
     }
 
     /**
+     * 異常系: 空文字の時、例外がスローされること.
+     */
+    public function testWithOnlySpaceThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new AutomaticDraftGroupSource('    ');
+    }
+
+    /**
      * 異常系: 最大文字数を超えた場合、例外がスローされること.
      */
     public function testWithTooLongValueThrowsException(): void

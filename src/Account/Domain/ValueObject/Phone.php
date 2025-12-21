@@ -44,9 +44,8 @@ class Phone extends StringBaseValue
     private function normalize(string $value): string
     {
         $trimmed = trim($value);
-        // remove common separators; keep leading plus if present
-        $normalized = preg_replace('/[\\s\\-()]/', '', $trimmed) ?? '';
 
-        return $normalized;
+        // remove common separators; keep leading plus if present
+        return preg_replace('/[\\s\\-()]/', '', $trimmed) ?? '';
     }
 }

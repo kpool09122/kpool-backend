@@ -35,6 +35,17 @@ class AutomaticDraftAgencySourceTest extends TestCase
     }
 
     /**
+     * 異常系: 空白時、例外がスローされること.
+     *
+     * @return void
+     */
+    public function testWithOnlySpaceThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new AutomaticDraftAgencySource('    ');
+    }
+
+    /**
      * 異常系: 最大文字数を超えた場合、例外がスローされること.
      *
      * @return void

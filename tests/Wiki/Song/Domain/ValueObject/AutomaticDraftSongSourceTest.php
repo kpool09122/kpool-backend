@@ -24,6 +24,12 @@ class AutomaticDraftSongSourceTest extends TestCase
         new AutomaticDraftSongSource('');
     }
 
+    public function testWithOnluSpaceThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new AutomaticDraftSongSource('    ');
+    }
+
     public function testWithTooLongValueThrowsException(): void
     {
         $this->expectException(InvalidArgumentException::class);
