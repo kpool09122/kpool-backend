@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 
 readonly class SongHistory
 {
@@ -20,7 +21,8 @@ readonly class SongHistory
         private ?SongIdentifier       $songIdentifier,
         private ?SongIdentifier       $draftSongIdentifier,
         private ?ApprovalStatus       $fromStatus,
-        private ApprovalStatus        $toStatus,
+        private ?ApprovalStatus       $toStatus,
+        private SongName              $subjectName,
         private DateTimeImmutable     $recordedAt
     ) {
         $this->validate($songIdentifier, $draftSongIdentifier);
@@ -66,6 +68,11 @@ readonly class SongHistory
     public function toStatus(): ?ApprovalStatus
     {
         return $this->toStatus;
+    }
+
+    public function subjectName(): SongName
+    {
+        return $this->subjectName;
     }
 
     public function recordedAt(): DateTimeImmutable

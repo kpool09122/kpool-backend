@@ -8,6 +8,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 
 interface SongHistoryFactoryInterface
 {
@@ -17,6 +18,7 @@ interface SongHistoryFactoryInterface
         ?SongIdentifier $songIdentifier,
         ?SongIdentifier $draftSongIdentifier,
         ?ApprovalStatus $fromStatus,
-        ApprovalStatus $toStatus,
+        ?ApprovalStatus $toStatus,
+        SongName $subjectName,
     ): SongHistory;
 }

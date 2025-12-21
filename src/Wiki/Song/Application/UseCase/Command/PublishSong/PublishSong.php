@@ -8,21 +8,26 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 
 readonly class PublishSong implements PublishSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
-        private SongServiceInterface    $songService,
-        private SongFactoryInterface    $songFactory,
+        private SongRepositoryInterface        $songRepository,
+        private SongServiceInterface           $songService,
+        private SongFactoryInterface           $songFactory,
+        private SongHistoryRepositoryInterface $songHistoryRepository,
+        private SongHistoryFactoryInterface    $songHistoryFactory,
     ) {
     }
 
@@ -103,6 +108,18 @@ readonly class PublishSong implements PublishSongInterface
         }
 
         $this->songRepository->save($publishedSong);
+
+        $history = $this->songHistoryFactory->create(
+            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            $song->editorIdentifier(),
+            $song->publishedSongIdentifier(),
+            $song->songIdentifier(),
+            $song->status(),
+            null,
+            $song->name(),
+        );
+        $this->songHistoryRepository->save($history);
+
         $this->songRepository->deleteDraft($song);
 
         return $publishedSong;
