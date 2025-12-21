@@ -34,4 +34,16 @@ class OAuthCodeTest extends TestCase
 
         new OAuthCode('');
     }
+
+    /**
+     * 異常系: 空白の時、例外がスローされること.
+     *
+     * @return void
+     */
+    public function testThrowsExceptionWhenCodeIsOnlySpace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new OAuthCode('    ');
+    }
 }

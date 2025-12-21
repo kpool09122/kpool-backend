@@ -11,11 +11,6 @@ class ContactName extends StringBaseValue
 {
     public const int MAX_LENGTH = 32;
 
-    public function __construct(string $name)
-    {
-        parent::__construct(trim($name));
-    }
-
     protected function validate(
         string $value,
     ): void {

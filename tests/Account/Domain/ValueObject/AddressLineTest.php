@@ -35,6 +35,17 @@ class AddressLineTest extends TestCase
     }
 
     /**
+     * 異常系: 空白の場合、例外がスローされること.
+     *
+     * @return void
+     */
+    public function testWhenOnlySpace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new AddressLine('    ');
+    }
+
+    /**
      * 異常系: 空白のみの場合、例外がスローされること.
      *
      * @return void

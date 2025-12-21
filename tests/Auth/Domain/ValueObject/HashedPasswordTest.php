@@ -66,6 +66,18 @@ class HashedPasswordTest extends TestCase
     }
 
     /**
+     * 異常系: 空白の場合、例外がスローされること.
+     *
+     * @return void
+     */
+    public function testConstructWithOnlySpaceThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new HashedPassword('    ');
+    }
+
+    /**
      * 異常系: 不適切な値の場合、例外がスローされること.
      *
      * @return void

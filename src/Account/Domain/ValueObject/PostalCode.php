@@ -11,11 +11,6 @@ class PostalCode extends StringBaseValue
 {
     public const int MAX_LENGTH = 16;
 
-    public function __construct(string $value)
-    {
-        parent::__construct(trim($value));
-    }
-
     protected function validate(string $value): void
     {
         if ($value === '') {

@@ -24,6 +24,12 @@ class AutomaticDraftTalentSourceTest extends TestCase
         new AutomaticDraftTalentSource('');
     }
 
+    public function testWithOnlySpaceThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new AutomaticDraftTalentSource('     ');
+    }
+
     public function testWithTooLongValueThrowsException(): void
     {
         $this->expectException(InvalidArgumentException::class);

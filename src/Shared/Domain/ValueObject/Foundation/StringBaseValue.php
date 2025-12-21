@@ -12,7 +12,7 @@ abstract class StringBaseValue implements Stringable
     public function __construct(
         protected readonly string $value
     ) {
-        $this->validate($value);
+        $this->validate(trim($value));
     }
 
     public function __toString(): string
