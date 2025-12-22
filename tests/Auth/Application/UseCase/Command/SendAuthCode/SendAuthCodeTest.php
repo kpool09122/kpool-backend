@@ -61,7 +61,8 @@ class SendAuthCodeTest extends TestCase
     public function testProcess(): void
     {
         $email = new Email('user@example.com');
-        $input = new SendAuthCodeInput($email);
+        $language = Language::KOREAN;
+        $input = new SendAuthCodeInput($email, $language);
 
         $generatedAt = new DateTimeImmutable();
         $authCode = new AuthCode('123456');
@@ -80,7 +81,7 @@ class SendAuthCodeTest extends TestCase
             ->andReturn($authCode);
         $authCodeService->shouldReceive('send')
             ->once()
-            ->with($session)
+            ->with($email, $language, $session)
             ->andReturnNull();
 
         $authCodeSessionFactory = Mockery::mock(AuthCodeSessionFactoryInterface::class);
@@ -133,7 +134,7 @@ class SendAuthCodeTest extends TestCase
             $emailVerifiedAt,
         );
 
-        $input = new SendAuthCodeInput($email);
+        $input = new SendAuthCodeInput($email, $language);
 
         $userRepository = Mockery::mock(UserRepositoryInterface::class);
         $userRepository->shouldReceive('findByEmail')
@@ -144,7 +145,7 @@ class SendAuthCodeTest extends TestCase
         $authCodeService = Mockery::mock(AuthCodeServiceInterface::class);
         $authCodeService->shouldReceive('notifyConflict')
             ->once()
-            ->with($email)
+            ->with($email, $language)
             ->andReturnNull();
         $authCodeService->shouldNotReceive('generateCode');
         $authCodeService->shouldNotReceive('send');

@@ -25,7 +25,7 @@ readonly class SendAuthCode implements SendAuthCodeInterface
         $user = $this->userRepository->findByEmail($email);
 
         if ($user !== null) {
-            $this->authCodeService->notifyConflict($email);
+            $this->authCodeService->notifyConflict($email, $input->language());
 
             return;
         }
@@ -33,6 +33,6 @@ readonly class SendAuthCode implements SendAuthCodeInterface
         $code = $this->authCodeService->generateCode($email);
         $session = $this->authCodeSessionFactory->create($email, $code);
         $this->authCodeSessionRepository->save($session);
-        $this->authCodeService->send($session);
+        $this->authCodeService->send($email, $input->language(), $session);
     }
 }
