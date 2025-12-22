@@ -15,7 +15,7 @@ PHPUNIT_ARGS = $(PHPUNIT) $(if $(filter),--filter=$(filter)) --coverage-html cov
 
 define RUN_TEST_COMMAND_UNIX
 set -e; \
-trap "$(if $(keepdb),,docker-compose stop testing_db && docker-compose rm -v -f testing_db)" EXIT; \
+trap "$(if $(keepdb),,docker-compose stop testing_db redis && docker-compose rm -v -f testing_db redis)" EXIT; \
 $(call DOCKER_RUN,$(PHPUNIT_ARGS))
 endef
 
@@ -40,7 +40,7 @@ check: cs-fix phpstan test ## Run code style fix, static analysis, and all tests
 
 # Run all PHPUnit tests (DB tests + non-DB tests). Usage: `make test [filter=TestClassName] [keepdb=1]`
 test:
-	docker-compose up -d testing_db
+	docker-compose up -d testing_db redis
 	$(MAKE) wait-for-test-db
 	@$(RUN_TEST_COMMAND)
 

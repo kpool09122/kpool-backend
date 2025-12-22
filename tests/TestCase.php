@@ -91,7 +91,8 @@ abstract class TestCase extends OrchestraTestCase
      */
     protected function defineEnvironment($app): void
     {
-        // Intentionally left blank; DB settings are provided via config and phpunit.xml env vars
+        // Auth設定: 正しいUserモデルを使用
+        $app['config']->set('auth.providers.users.model', \Application\Models\Auth\User::class);
     }
 
     /**
