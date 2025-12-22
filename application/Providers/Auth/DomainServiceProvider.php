@@ -8,7 +8,9 @@ use Illuminate\Support\ServiceProvider;
 use Source\Auth\Domain\Factory\AuthCodeSessionFactory;
 use Source\Auth\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Auth\Domain\Factory\UserFactoryInterface;
+use Source\Auth\Domain\Service\AuthServiceInterface;
 use Source\Auth\Infrastructure\Factory\UserFactory;
+use Source\Auth\Infrastructure\Service\AuthService;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -16,5 +18,6 @@ class DomainServiceProvider extends ServiceProvider
     {
         $this->app->singleton(AuthCodeSessionFactoryInterface::class, AuthCodeSessionFactory::class);
         $this->app->singleton(UserFactoryInterface::class, UserFactory::class);
+        $this->app->singleton(AuthServiceInterface::class, AuthService::class);
     }
 }

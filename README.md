@@ -17,6 +17,10 @@ DB_DATABASE=kpool
 DB_USERNAME=kpool
 DB_PASSWORD=secret
 
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
 # Application Environment
 APP_ENV=local
 APP_DEBUG=true
