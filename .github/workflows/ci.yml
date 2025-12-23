@@ -9,7 +9,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
+    services:
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+
+    env:
+      REDIS_HOST: 127.0.0.1
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
@@ -18,7 +27,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.4'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo, pdo_mysql, phar, tokenizer, xml, xmlreader, xmlwriter
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, json, pdo, phar, tokenizer, xmlreader, xmlwriter, redis
         tools: composer:v2
 
     - name: Install MeCab

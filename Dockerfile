@@ -11,9 +11,9 @@ RUN set -eux; \
         zip \
         unzip \
         mecab \
-        mecab-ipadic-utf8 \
-    docker-php-ext-install zip pdo pdo_pgsql \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+        mecab-ipadic-utf8; \
+    docker-php-ext-install zip pdo pdo_pgsql; \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # PCOVとRedis拡張のインストール
 RUN set -eux; \
