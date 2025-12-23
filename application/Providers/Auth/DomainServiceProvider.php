@@ -9,10 +9,12 @@ use Source\Auth\Domain\Factory\AuthCodeSessionFactory;
 use Source\Auth\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Auth\Domain\Factory\UserFactoryInterface;
 use Source\Auth\Domain\Repository\AuthCodeSessionRepositoryInterface;
+use Source\Auth\Domain\Repository\UserRepositoryInterface;
 use Source\Auth\Domain\Service\AuthCodeServiceInterface;
 use Source\Auth\Domain\Service\AuthServiceInterface;
 use Source\Auth\Infrastructure\Factory\UserFactory;
 use Source\Auth\Infrastructure\Repository\AuthCodeSessionRepository;
+use Source\Auth\Infrastructure\Repository\UserRepository;
 use Source\Auth\Infrastructure\Service\AuthCodeService;
 use Source\Auth\Infrastructure\Service\AuthService;
 
@@ -23,6 +25,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AuthCodeSessionFactoryInterface::class, AuthCodeSessionFactory::class);
         $this->app->singleton(AuthCodeSessionRepositoryInterface::class, AuthCodeSessionRepository::class);
         $this->app->singleton(UserFactoryInterface::class, UserFactory::class);
+        $this->app->singleton(UserRepositoryInterface::class, UserRepository::class);
         $this->app->singleton(AuthServiceInterface::class, AuthService::class);
         $this->app->singleton(AuthCodeServiceInterface::class, AuthCodeService::class);
     }
