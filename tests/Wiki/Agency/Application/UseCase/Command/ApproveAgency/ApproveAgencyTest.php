@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
@@ -70,7 +71,7 @@ class ApproveAgencyTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -131,7 +132,7 @@ class ApproveAgencyTest extends TestCase
         $dummyApproveAgency = $this->createDummyApproveAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -171,7 +172,7 @@ class ApproveAgencyTest extends TestCase
         $dummyApproveAgency = $this->createDummyApproveAgency(null, ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -212,7 +213,7 @@ class ApproveAgencyTest extends TestCase
         $dummyApproveAgency = $this->createDummyApproveAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -257,7 +258,7 @@ class ApproveAgencyTest extends TestCase
         $dummyApproveAgency = $this->createDummyApproveAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -297,7 +298,7 @@ class ApproveAgencyTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -360,7 +361,7 @@ class ApproveAgencyTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -401,7 +402,7 @@ class ApproveAgencyTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
             agencyId: $agencyId,
@@ -465,7 +466,7 @@ class ApproveAgencyTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -508,7 +509,7 @@ class ApproveAgencyTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
         $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
@@ -548,7 +549,7 @@ class ApproveAgencyTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -610,7 +611,7 @@ class ApproveAgencyTest extends TestCase
         $dummyApproveAgency = $this->createDummyApproveAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,

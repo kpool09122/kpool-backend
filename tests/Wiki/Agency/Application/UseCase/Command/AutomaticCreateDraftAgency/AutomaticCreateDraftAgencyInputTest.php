@@ -6,6 +6,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgen
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -35,6 +36,7 @@ class AutomaticCreateDraftAgencyInputTest extends TestCase
         );
         $principal = new Principal(
             new PrincipalIdentifier('01F8MECHZX3TBDSZ7XRADM79XV'),
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             Role::ADMINISTRATOR,
             null,
             [],

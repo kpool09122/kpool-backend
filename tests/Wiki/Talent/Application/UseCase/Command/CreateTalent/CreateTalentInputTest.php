@@ -6,6 +6,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -57,7 +58,7 @@ class CreateTalentInputTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateTalentInput(
             $publishedTalentIdentifier,

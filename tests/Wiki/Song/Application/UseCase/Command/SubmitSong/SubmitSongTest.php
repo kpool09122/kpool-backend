@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -72,7 +73,7 @@ class SubmitSongTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummySubmitSong = $this->createDummySubmitSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -125,7 +126,7 @@ class SubmitSongTest extends TestCase
         $dummySubmitSong = $this->createDummySubmitSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitSongInput(
             $dummySubmitSong->songIdentifier,
@@ -163,7 +164,7 @@ class SubmitSongTest extends TestCase
         $dummySubmitSong = $this->createDummySubmitSong(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitSongInput(
             $dummySubmitSong->songIdentifier,
@@ -200,7 +201,7 @@ class SubmitSongTest extends TestCase
     public function testProcessWithCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $dummySubmitSong = $this->createDummySubmitSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -254,7 +255,7 @@ class SubmitSongTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummySubmitSong = $this->createDummySubmitSong(
             agencyId: $agencyId,
@@ -310,7 +311,7 @@ class SubmitSongTest extends TestCase
         $agencyId = StrTestHelper::generateUlid();
         $belongIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $dummySubmitSong = $this->createDummySubmitSong(
             agencyId: $agencyId,
@@ -367,7 +368,7 @@ class SubmitSongTest extends TestCase
         $agencyId = StrTestHelper::generateUlid();
         $belongIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
 
         $dummySubmitSong = $this->createDummySubmitSong(
             agencyId: $agencyId,
@@ -422,7 +423,7 @@ class SubmitSongTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummySubmitSong = $this->createDummySubmitSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -476,7 +477,7 @@ class SubmitSongTest extends TestCase
         $dummySubmitSong = $this->createDummySubmitSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new SubmitSongInput(
             $dummySubmitSong->songIdentifier,

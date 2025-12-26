@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
@@ -25,7 +26,7 @@ class ApproveSongInputTest extends TestCase
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $songIdentifier,

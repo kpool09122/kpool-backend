@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Application\UseCase\Command\EditGroup;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -40,7 +41,7 @@ class EditGroupInputTest extends TestCase
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditGroupInput(
             $groupIdentifier,

@@ -6,6 +6,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\PublishGroup;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -76,7 +77,7 @@ class PublishGroupTest extends TestCase
     public function testProcessWhenAlreadyPublished(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: true,
@@ -153,7 +154,7 @@ class PublishGroupTest extends TestCase
     public function testProcessForTheFirstTime(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: false,
@@ -234,7 +235,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -275,7 +276,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -317,7 +318,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -362,7 +363,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup(hasPublishedGroup: true);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -412,7 +413,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -450,7 +451,7 @@ class PublishGroupTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -525,7 +526,7 @@ class PublishGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -564,7 +565,7 @@ class PublishGroupTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             agencyId: $agencyId,
@@ -638,7 +639,7 @@ class PublishGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -677,7 +678,7 @@ class PublishGroupTest extends TestCase
     {
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
@@ -752,7 +753,7 @@ class PublishGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -792,7 +793,7 @@ class PublishGroupTest extends TestCase
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
@@ -864,7 +865,7 @@ class PublishGroupTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -936,7 +937,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,

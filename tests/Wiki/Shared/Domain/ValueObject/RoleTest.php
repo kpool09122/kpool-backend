@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Shared\Domain\ValueObject;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -43,7 +44,7 @@ class RoleTest extends TestCase
     public function testCanAdministratorAlwaysTrue(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
         $resource = new ResourceIdentifier(ResourceType::AGENCY);
 
         foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
@@ -58,8 +59,8 @@ class RoleTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
-        $notOwningAgencyActor = new Principal($principalIdentifier, Role::AGENCY_ACTOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $notOwningAgencyActor = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, null, [], []);
 
         // Agency 自身
         $agencyOwned = new ResourceIdentifier(ResourceType::AGENCY, $agencyId);
@@ -112,7 +113,7 @@ class RoleTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId1 = StrTestHelper::generateUlid();
         $groupId2 = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId1], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId1], []);
 
         $groupOwned = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId1]);
         $groupNotOwned = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId2]);
@@ -131,7 +132,7 @@ class RoleTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $talentInGroup = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId]);
         $talentNoGroup = new ResourceIdentifier(ResourceType::TALENT);
@@ -158,7 +159,7 @@ class RoleTest extends TestCase
     public function testCanGroupActorCannotApproveAgency(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [StrTestHelper::generateUlid()], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [StrTestHelper::generateUlid()], []);
         $agency = new ResourceIdentifier(ResourceType::AGENCY);
 
         $this->assertFalse(Role::GROUP_ACTOR->can(Action::APPROVE, $agency, $principal));
@@ -171,7 +172,7 @@ class RoleTest extends TestCase
     public function testCanGroupActorCanEditAgency(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [], []);
         $agency = new ResourceIdentifier(ResourceType::AGENCY);
 
         $this->assertTrue(Role::GROUP_ACTOR->can(Action::EDIT, $agency, $principal));
@@ -185,7 +186,7 @@ class RoleTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $groupId = StrTestHelper::generateUlid();
         $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         // TALENT リソース（自分自身のTalentのみ承認可能）
         $ownTalent = new ResourceIdentifier(ResourceType::TALENT, null, [$groupId], [$talentId]);
@@ -218,7 +219,7 @@ class RoleTest extends TestCase
     public function testCanCollaboratorBasicOnly(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
         $group = new ResourceIdentifier(ResourceType::GROUP);
 
         $this->assertFalse(Role::COLLABORATOR->can(Action::APPROVE, $group, $principal));
@@ -232,7 +233,7 @@ class RoleTest extends TestCase
     public function testCanSeniorCollaboratorAlwaysTrue(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
         $resource = new ResourceIdentifier(ResourceType::AGENCY);
 
         foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {
@@ -246,7 +247,7 @@ class RoleTest extends TestCase
     public function testCanNoneAlwaysFalse(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
         $resource = new ResourceIdentifier(ResourceType::AGENCY);
 
         foreach ([Action::CREATE, Action::EDIT, Action::SUBMIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH] as $action) {

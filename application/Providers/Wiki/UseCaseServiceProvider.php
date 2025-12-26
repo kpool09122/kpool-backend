@@ -7,6 +7,8 @@ namespace Application\Providers\Wiki;
 use Illuminate\Support\ServiceProvider;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControl;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInterface;
+use Source\Wiki\AccessControl\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
+use Source\Wiki\AccessControl\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgency;
@@ -115,5 +117,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectSongInterface::class, RejectSong::class);
         $this->app->singleton(PublishSongInterface::class, PublishSong::class);
         $this->app->singleton(TranslateSongInterface::class, TranslateSong::class);
+        $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
     }
 }

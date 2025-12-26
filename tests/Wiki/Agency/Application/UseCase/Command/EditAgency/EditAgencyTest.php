@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\EditAgency;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
@@ -59,7 +60,7 @@ class EditAgencyTest extends TestCase
         $dummyAgency = $this->createDummyEditAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -107,7 +108,7 @@ class EditAgencyTest extends TestCase
         $dummyAgency = $this->createDummyEditAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -143,7 +144,7 @@ class EditAgencyTest extends TestCase
         $dummyAgency = $this->createDummyEditAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -184,7 +185,7 @@ class EditAgencyTest extends TestCase
 
         $agencyId = (string) $dummyAgency->agencyIdentifier;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -225,7 +226,7 @@ class EditAgencyTest extends TestCase
 
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -267,7 +268,7 @@ class EditAgencyTest extends TestCase
         $groupId = StrTestHelper::generateUlid();
         $talentId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -304,7 +305,7 @@ class EditAgencyTest extends TestCase
         $dummyAgency = $this->createDummyEditAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -343,7 +344,7 @@ class EditAgencyTest extends TestCase
         $dummyAgency = $this->createDummyEditAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new EditAgencyInput(
             $dummyAgency->agencyIdentifier,

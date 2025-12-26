@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Application\UseCase\Command\PublishGroup;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
@@ -25,7 +26,7 @@ class PublishGroupInputTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $groupIdentifier,

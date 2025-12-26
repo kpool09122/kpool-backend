@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -71,7 +72,7 @@ class CreateTalentTest extends TestCase
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -142,7 +143,7 @@ class CreateTalentTest extends TestCase
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -203,7 +204,7 @@ class CreateTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string)$createTalentInfo->agencyIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [],  []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, [],  []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -265,7 +266,7 @@ class CreateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string)$createTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $createTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds,  []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $groupIds,  []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -328,7 +329,7 @@ class CreateTalentTest extends TestCase
         $agencyId = (string)$createTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $createTalentInfo->groupIdentifiers);
         $talentId = (string)$createTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds,  [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $groupIds,  [$talentId]);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -388,7 +389,7 @@ class CreateTalentTest extends TestCase
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -447,7 +448,7 @@ class CreateTalentTest extends TestCase
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,

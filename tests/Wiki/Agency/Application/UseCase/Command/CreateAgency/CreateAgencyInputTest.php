@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -48,7 +49,7 @@ class CreateAgencyInputTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateAgencyInput(
             $publishedAgencyIdentifier,

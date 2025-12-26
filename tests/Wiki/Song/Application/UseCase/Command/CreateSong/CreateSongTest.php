@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -69,7 +70,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -142,7 +143,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -203,7 +204,7 @@ class CreateSongTest extends TestCase
         $agencyId = (string)$createDummyCreateSong->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -265,7 +266,7 @@ class CreateSongTest extends TestCase
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $createDummyCreateSong->belongIdentifiers);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -327,7 +328,7 @@ class CreateSongTest extends TestCase
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $createDummyCreateSong->belongIdentifiers);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -387,7 +388,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -446,7 +447,7 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,

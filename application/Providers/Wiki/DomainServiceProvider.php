@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Application\Providers\Wiki;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Wiki\AccessControl\Domain\Factory\PrincipalFactoryInterface;
+use Source\Wiki\AccessControl\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\AccessControl\Infrastructure\Factory\PrincipalFactory;
+use Source\Wiki\AccessControl\Infrastructure\Repository\PrincipalRepository;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactory;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactory;
@@ -67,5 +71,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
+        $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
+        $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
     }
 }

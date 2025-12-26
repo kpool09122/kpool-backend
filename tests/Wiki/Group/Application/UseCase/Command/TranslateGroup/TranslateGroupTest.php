@@ -6,6 +6,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\TranslateGroup;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -63,7 +64,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -114,7 +115,7 @@ class TranslateGroupTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateGroupInput(
             $groupIdentifier,
@@ -149,7 +150,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -185,7 +186,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -240,7 +241,7 @@ class TranslateGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
 
@@ -274,7 +275,7 @@ class TranslateGroupTest extends TestCase
         $agencyId = (string) $dummyTranslateGroup->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
 
@@ -326,7 +327,7 @@ class TranslateGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
 
@@ -359,7 +360,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], []);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
 
@@ -412,7 +413,7 @@ class TranslateGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
 
@@ -446,7 +447,7 @@ class TranslateGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], [$memberId]);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
 
@@ -498,7 +499,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -552,7 +553,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,

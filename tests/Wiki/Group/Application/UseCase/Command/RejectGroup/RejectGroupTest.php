@@ -7,6 +7,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\RejectGroup;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -68,7 +69,7 @@ class RejectGroupTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -122,7 +123,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -160,7 +161,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -198,7 +199,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -237,7 +238,7 @@ class RejectGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -275,7 +276,7 @@ class RejectGroupTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             agencyId: $agencyId,
@@ -331,7 +332,7 @@ class RejectGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -369,7 +370,7 @@ class RejectGroupTest extends TestCase
     {
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             groupId: $groupId,
@@ -428,6 +429,7 @@ class RejectGroupTest extends TestCase
         $memberId = StrTestHelper::generateUlid();
         $principal = new Principal(
             $principalIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             Role::TALENT_ACTOR,
             null,
             [$anotherGroupId],
@@ -473,6 +475,7 @@ class RejectGroupTest extends TestCase
         $memberId = StrTestHelper::generateUlid();
         $principal = new Principal(
             $principalIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             Role::TALENT_ACTOR,
             null,
             [$groupId],
@@ -531,7 +534,7 @@ class RejectGroupTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -585,7 +588,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,

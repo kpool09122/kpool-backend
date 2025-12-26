@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -74,7 +75,7 @@ class RejectTalentTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -127,7 +128,7 @@ class RejectTalentTest extends TestCase
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectTalentInput(
             $talentIdentifier,
@@ -166,7 +167,7 @@ class RejectTalentTest extends TestCase
         $rejectTalentInfo = $this->createRejectTalentInfo(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -205,7 +206,7 @@ class RejectTalentTest extends TestCase
         $rejectTalentInfo = $this->createRejectTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -243,7 +244,7 @@ class RejectTalentTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -299,7 +300,7 @@ class RejectTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -344,7 +345,7 @@ class RejectTalentTest extends TestCase
 
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $rejectTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -397,7 +398,7 @@ class RejectTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -442,7 +443,7 @@ class RejectTalentTest extends TestCase
 
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $rejectTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $groupIds, []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -496,7 +497,7 @@ class RejectTalentTest extends TestCase
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUlid();
         $anotherTalentId = StrTestHelper::generateUlid(); // 別のTalent IDを使用
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -542,7 +543,7 @@ class RejectTalentTest extends TestCase
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $rejectTalentInfo->groupIdentifiers);
         $talentId = (string) $rejectTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,
@@ -592,7 +593,7 @@ class RejectTalentTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -647,7 +648,7 @@ class RejectTalentTest extends TestCase
         $rejectTalentInfo = $this->createRejectTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new RejectTalentInput(
             $rejectTalentInfo->talentIdentifier,

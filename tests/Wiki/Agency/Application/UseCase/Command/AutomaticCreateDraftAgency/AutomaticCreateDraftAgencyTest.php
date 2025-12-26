@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgen
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
@@ -139,7 +140,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        return new Principal($principalIdentifier, $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
     }
 
     private function makeDraftAgency(): DraftAgency

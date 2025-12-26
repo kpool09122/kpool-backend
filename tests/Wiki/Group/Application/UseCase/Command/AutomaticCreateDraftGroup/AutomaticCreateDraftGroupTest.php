@@ -6,6 +6,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
@@ -140,7 +141,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        return new Principal($principalIdentifier, $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
     }
 
     private function makeDraftGroup(): DraftGroup

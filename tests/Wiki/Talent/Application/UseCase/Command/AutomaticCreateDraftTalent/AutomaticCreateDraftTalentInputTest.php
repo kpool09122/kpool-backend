@@ -6,6 +6,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTale
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -39,6 +40,7 @@ class AutomaticCreateDraftTalentInputTest extends TestCase
         );
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             Role::ADMINISTRATOR,
             null,
             [],

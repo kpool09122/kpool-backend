@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
@@ -25,7 +26,7 @@ class ApproveAgencyInputTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveAgencyInput(
             $agencyIdentifier,

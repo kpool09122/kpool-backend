@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup;
 
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -35,6 +36,7 @@ class AutomaticCreateDraftGroupInputTest extends TestCase
 
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             Role::ADMINISTRATOR,
             null,
             [],

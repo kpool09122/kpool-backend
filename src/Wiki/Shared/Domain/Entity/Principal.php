@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Shared\Domain\Entity;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
 
@@ -11,6 +12,7 @@ class Principal
 {
     /**
      * @param PrincipalIdentifier $principalIdentifier
+     * @param IdentityIdentifier $identityIdentifier
      * @param Role $role
      * @param string|null $agencyId
      * @param string[] $groupIds
@@ -18,6 +20,7 @@ class Principal
      */
     public function __construct(
         private readonly PrincipalIdentifier $principalIdentifier,
+        private readonly IdentityIdentifier  $identityIdentifier,
         private Role                         $role,
         private readonly ?string             $agencyId,
         private readonly array               $groupIds,
@@ -28,6 +31,11 @@ class Principal
     public function principalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
+    }
+
+    public function identityIdentifier(): IdentityIdentifier
+    {
+        return $this->identityIdentifier;
     }
 
     public function role(): Role

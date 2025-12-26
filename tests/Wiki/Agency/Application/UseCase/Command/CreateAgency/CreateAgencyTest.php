@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
@@ -427,7 +428,7 @@ DESC);
         );
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, $role, $agencyScopeId, $groupIds, $talentIds);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, $agencyScopeId, $groupIds, $talentIds);
 
         return new CreateAgencyTestData(
             $publishedAgencyIdentifier,

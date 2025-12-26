@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Shared\Domain\Entity;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Role;
@@ -20,6 +21,7 @@ class PrincipalTest extends TestCase
     public function test__construct(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
         $role = Role::AGENCY_ACTOR;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [
@@ -29,12 +31,14 @@ class PrincipalTest extends TestCase
         $memberIds = [StrTestHelper::generateUlid()];
         $principal = new Principal(
             $principalIdentifier,
+            $identityIdentifier,
             $role,
             $agencyId,
             $groupIds,
             $memberIds,
         );
         $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
+        $this->assertSame((string)$identityIdentifier, (string)$principal->identityIdentifier());
         $this->assertSame($role->value, $principal->role()->value);
         $this->assertSame($agencyId, $principal->agencyId());
         $this->assertSame($groupIds, $principal->groupIds());
@@ -42,6 +46,7 @@ class PrincipalTest extends TestCase
 
         $principal = new Principal(
             $principalIdentifier,
+            $identityIdentifier,
             $role,
             null,
             [],
@@ -60,6 +65,7 @@ class PrincipalTest extends TestCase
     public function testSetRole(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
         $role = Role::AGENCY_ACTOR;
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [
@@ -69,6 +75,7 @@ class PrincipalTest extends TestCase
         $memberIds = [StrTestHelper::generateUlid()];
         $principal = new Principal(
             $principalIdentifier,
+            $identityIdentifier,
             $role,
             $agencyId,
             $groupIds,

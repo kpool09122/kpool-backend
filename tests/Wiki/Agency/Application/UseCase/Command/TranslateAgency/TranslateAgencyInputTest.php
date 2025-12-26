@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
@@ -19,7 +20,7 @@ class TranslateAgencyInputTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateAgencyInput($agencyIdentifier, $publishedAgencyIdentifier, $principal);
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());

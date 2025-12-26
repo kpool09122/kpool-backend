@@ -6,6 +6,7 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -41,6 +42,7 @@ class AutomaticCreateDraftSongInputTest extends TestCase
         );
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             Role::ADMINISTRATOR,
             null,
             [],

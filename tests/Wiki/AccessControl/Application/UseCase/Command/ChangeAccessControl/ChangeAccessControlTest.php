@@ -6,6 +6,7 @@ namespace Tests\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessContr
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\AccessControl\Application\Exception\ActorNotFoundException;
 use Source\Wiki\AccessControl\Application\Exception\UnauthorizedChangingACException;
 use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControl;
@@ -56,6 +57,7 @@ class ChangeAccessControlTest extends TestCase
 
         $principal = new Principal(
             $principalIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
             $oldRole,
             null,
             [],

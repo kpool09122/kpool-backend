@@ -7,6 +7,7 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\Entity\Principal;
@@ -149,7 +150,7 @@ class AutomaticCreateDraftSongTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        return new Principal($principalIdentifier, $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
     }
 
     private function makeDraftSong(): DraftSong
