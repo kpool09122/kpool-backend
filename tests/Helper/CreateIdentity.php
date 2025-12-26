@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-class CreateUser
+class CreateIdentity
 {
     /**
      * @param array{
@@ -26,7 +26,7 @@ class CreateUser
     {
         DB::table('users')->insert([
             'id' => (string) $identityIdentifier,
-            'username' => $overrides['username'] ?? 'test-user',
+            'username' => $overrides['username'] ?? 'test-identity',
             'email' => $overrides['email'] ?? 'test@example.com',
             'language' => $overrides['language'] ?? 'ja',
             'profile_image' => $overrides['profile_image'] ?? null,
@@ -34,20 +34,6 @@ class CreateUser
             'email_verified_at' => isset($overrides['email_verified_at'])
                 ? $overrides['email_verified_at']->format('Y-m-d H:i:s')
                 : null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    public static function createServiceRole(
-        IdentityIdentifier $identityIdentifier,
-        string $service,
-        string $role
-    ): void {
-        DB::table('user_service_roles')->insert([
-            'user_id' => (string) $identityIdentifier,
-            'service' => $service,
-            'role' => $role,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
