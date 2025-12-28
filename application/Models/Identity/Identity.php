@@ -25,7 +25,7 @@ class Identity extends Authenticatable
 {
     public $incrementing = false;
 
-    protected $table = 'users';
+    protected $table = 'identities';
 
     protected $keyType = 'string';
 
@@ -55,6 +55,6 @@ class Identity extends Authenticatable
      */
     public function socialConnections(): HasMany
     {
-        return $this->hasMany(IdentitySocialConnection::class, 'user_id', 'id');
+        return $this->hasMany(IdentitySocialConnection::class, 'identity_id', 'id');
     }
 }

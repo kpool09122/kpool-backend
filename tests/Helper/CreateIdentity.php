@@ -24,7 +24,7 @@ class CreateIdentity
      */
     public static function create(IdentityIdentifier $identityIdentifier, array $overrides = []): void
     {
-        DB::table('users')->insert([
+        DB::table('identities')->insert([
             'id' => (string) $identityIdentifier,
             'username' => $overrides['username'] ?? 'test-identity',
             'email' => $overrides['email'] ?? 'test@example.com',
@@ -44,8 +44,9 @@ class CreateIdentity
         SocialProvider $provider,
         string $providerUserId
     ): void {
-        DB::table('user_social_connections')->insert([
-            'user_id' => (string) $identityIdentifier,
+        DB::table('identity_social_connections')->insert([
+            'id' => StrTestHelper::generateUlid(),
+            'identity_id' => (string) $identityIdentifier,
             'provider' => $provider->value,
             'provider_user_id' => $providerUserId,
             'created_at' => now(),

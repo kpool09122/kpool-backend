@@ -16,7 +16,7 @@ use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Tests\Helper\CreateUser;
+use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -60,7 +60,7 @@ class AuthServiceTest extends TestCase
     public function testLogin(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
-        CreateUser::create($identityIdentifier);
+        CreateIdentity::create($identityIdentifier);
 
         $identity = $this->createIdentityEntity($identityIdentifier);
 
@@ -81,7 +81,7 @@ class AuthServiceTest extends TestCase
     public function testLogout(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
-        CreateUser::create($identityIdentifier);
+        CreateIdentity::create($identityIdentifier);
 
         $identity = $this->createIdentityEntity($identityIdentifier);
 
@@ -104,7 +104,7 @@ class AuthServiceTest extends TestCase
     public function testIsLoggedInWhenAuthenticated(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
-        CreateUser::create($identityIdentifier);
+        CreateIdentity::create($identityIdentifier);
 
         $identity = $this->createIdentityEntity($identityIdentifier);
 

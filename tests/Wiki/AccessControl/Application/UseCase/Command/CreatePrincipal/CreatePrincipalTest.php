@@ -35,7 +35,6 @@ class CreatePrincipalTest extends TestCase
 
         $input = new CreatePrincipalInput(
             $identityIdentifier,
-            $role,
         );
 
         $expectedPrincipal = new Principal(
@@ -55,13 +54,7 @@ class CreatePrincipalTest extends TestCase
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
         $principalFactory->shouldReceive('create')
-            ->with(
-                $identityIdentifier,
-                $role,
-                null,
-                [],
-                [],
-            )
+            ->with($identityIdentifier)
             ->once()
             ->andReturn($expectedPrincipal);
 
@@ -93,7 +86,6 @@ class CreatePrincipalTest extends TestCase
 
         $input = new CreatePrincipalInput(
             $identityIdentifier,
-            $role,
         );
 
         $existingPrincipal = new Principal(

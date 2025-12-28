@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property string $user_id
+ * @property string $id
+ * @property string $identity_id
  * @property string $provider
  * @property string $provider_user_id
  * @property ?Carbon $created_at
@@ -19,10 +19,15 @@ use Illuminate\Support\Carbon;
  */
 class IdentitySocialConnection extends Model
 {
-    protected $table = 'user_social_connections';
+    public $incrementing = false;
+
+    protected $table = 'identity_social_connections';
+
+    protected $keyType = 'string';
 
     protected $fillable = [
-        'user_id',
+        'id',
+        'identity_id',
         'provider',
         'provider_user_id',
     ];
@@ -32,6 +37,6 @@ class IdentitySocialConnection extends Model
      */
     public function identity(): BelongsTo
     {
-        return $this->belongsTo(Identity::class, 'user_id', 'id');
+        return $this->belongsTo(Identity::class, 'identity_id', 'id');
     }
 }

@@ -142,7 +142,7 @@ class IdentityRepositoryTest extends TestCase
         $repository = $this->app->make(IdentityRepositoryInterface::class);
         $repository->save($identity);
 
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseHas('identities', [
             'id' => (string) $identityIdentifier,
             'username' => 'new-identity',
             'email' => 'newidentity@example.com',
@@ -150,8 +150,8 @@ class IdentityRepositoryTest extends TestCase
             'profile_image' => '/images/profile.jpg',
         ]);
 
-        $this->assertDatabaseHas('user_social_connections', [
-            'user_id' => (string) $identityIdentifier,
+        $this->assertDatabaseHas('identity_social_connections', [
+            'identity_id' => (string) $identityIdentifier,
             'provider' => 'google',
             'provider_user_id' => 'google-new-identity',
         ]);
@@ -195,7 +195,7 @@ class IdentityRepositoryTest extends TestCase
         $repository = $this->app->make(IdentityRepositoryInterface::class);
         $repository->save($updatedIdentity);
 
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseHas('identities', [
             'id' => (string) $identityIdentifier,
             'username' => 'updated-identity',
             'email' => 'updated@example.com',

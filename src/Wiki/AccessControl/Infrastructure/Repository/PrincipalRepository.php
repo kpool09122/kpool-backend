@@ -16,6 +16,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()
+            ->with('groups')
             ->where('id', (string) $principalIdentifier)
             ->first();
 
@@ -29,6 +30,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()
+            ->with('groups')
             ->where('identity_id', (string) $identityIdentifier)
             ->first();
 
@@ -41,16 +43,17 @@ class PrincipalRepository implements PrincipalRepositoryInterface
 
     public function save(Principal $principal): void
     {
-        PrincipalEloquent::query()->updateOrCreate(
+        $eloquent = PrincipalEloquent::query()->updateOrCreate(
             ['id' => (string) $principal->principalIdentifier()],
             [
                 'identity_id' => (string) $principal->identityIdentifier(),
                 'role' => $principal->role()->value,
                 'agency_id' => $principal->agencyId(),
-                'group_ids' => $principal->groupIds(),
                 'talent_ids' => $principal->talentIds(),
             ]
         );
+
+        $eloquent->groups()->sync($principal->groupIds());
     }
 
     private function toDomainEntity(PrincipalEloquent $eloquent): Principal
@@ -60,7 +63,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             new IdentityIdentifier($eloquent->identity_id),
             Role::from($eloquent->role),
             $eloquent->agency_id,
-            $eloquent->group_ids,
+            $eloquent->groups->pluck('id')->all(),
             $eloquent->talent_ids,
         );
     }

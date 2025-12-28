@@ -17,6 +17,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Symfony\Component\Uid\Ulid;
 
 class IdentityRepository implements IdentityRepositoryInterface
 {
@@ -79,6 +80,7 @@ class IdentityRepository implements IdentityRepositoryInterface
 
         foreach ($socialConnections as $socialConnection) {
             $eloquent->socialConnections()->create([
+                'id' => Ulid::generate(),
                 'provider' => $socialConnection->provider()->value,
                 'provider_user_id' => $socialConnection->providerUserId(),
             ]);
