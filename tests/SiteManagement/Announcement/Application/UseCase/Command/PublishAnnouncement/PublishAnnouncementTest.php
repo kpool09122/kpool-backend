@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\PublishA
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\PublishAnnouncement\PublishAnnouncement;
@@ -21,6 +22,11 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Entity\User;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use Source\SiteManagement\User\Domain\ValueObject\Role;
+use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,23 +49,190 @@ class PublishAnnouncementTest extends TestCase
     }
 
     /**
-     * 正常系：正しくAnnouncement Entityが削除されること.
+     * 正常系：正しくAnnouncement Entityが公開されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testProcess(): void
+    {
+        $dummy = $this->createDummyPublishAnnouncementData();
+
+        $input = new PublishAnnouncementInput(
+            $dummy->userIdentifier,
+            $dummy->translationSetIdentifier,
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findById')
+            ->with($dummy->userIdentifier)
+            ->once()
+            ->andReturn($dummy->user);
+
+        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
+        $announcementRepository->shouldReceive('findDraftsByTranslationSetIdentifier')
+            ->once()
+            ->with($dummy->translationSetIdentifier)
+            ->andReturn([$dummy->jaDraftAnnouncement, $dummy->koDraftAnnouncement, $dummy->enDraftAnnouncement]);
+        $announcementRepository->shouldReceive('save')
+            ->once()
+            ->with($dummy->koAnnouncement)
+            ->andReturn(null);
+        $announcementRepository->shouldReceive('save')
+            ->once()
+            ->with($dummy->jaAnnouncement)
+            ->andReturn(null);
+        $announcementRepository->shouldReceive('save')
+            ->once()
+            ->with($dummy->enAnnouncement)
+            ->andReturn(null);
+        $announcementRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($dummy->koDraftAnnouncement)
+            ->andReturn(null);
+        $announcementRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($dummy->jaDraftAnnouncement)
+            ->andReturn(null);
+        $announcementRepository->shouldReceive('deleteDraft')
+            ->once()
+            ->with($dummy->enDraftAnnouncement)
+            ->andReturn(null);
+
+        $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
+        $announcementFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                $dummy->translationSetIdentifier,
+                Language::KOREAN,
+                $dummy->category,
+                $dummy->koTitle,
+                $dummy->koContent,
+                $dummy->publishedDate,
+            )
+            ->andReturn($dummy->koAnnouncement);
+        $announcementFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                $dummy->translationSetIdentifier,
+                Language::JAPANESE,
+                $dummy->category,
+                $dummy->jaTitle,
+                $dummy->jaContent,
+                $dummy->publishedDate,
+            )
+            ->andReturn($dummy->jaAnnouncement);
+        $announcementFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                $dummy->translationSetIdentifier,
+                Language::ENGLISH,
+                $dummy->category,
+                $dummy->enTitle,
+                $dummy->enContent,
+                $dummy->publishedDate,
+            )
+            ->andReturn($dummy->enAnnouncement);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $announcements = $publishAnnouncement->process($input);
+        $this->assertSame((string) $dummy->jaAnnouncementIdentifier, (string) $announcements[0]->announcementIdentifier());
+        $this->assertSame((string) $dummy->koAnnouncementIdentifier, (string) $announcements[1]->announcementIdentifier());
+        $this->assertSame((string) $dummy->enAnnouncementIdentifier, (string) $announcements[2]->announcementIdentifier());
+    }
+
+    /**
+     * 異常系：ADMIN以外のユーザーはUnauthorizedExceptionがスローされること
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcess(): void
+    public function testProcessThrowsUnauthorizedExceptionForNonAdmin(): void
     {
+        $this->expectException(UnauthorizedException::class);
+
+        $dummy = $this->createDummyPublishAnnouncementData(Role::NONE);
+
+        $input = new PublishAnnouncementInput(
+            $dummy->userIdentifier,
+            $dummy->translationSetIdentifier,
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findById')
+            ->with($dummy->userIdentifier)
+            ->once()
+            ->andReturn($dummy->user);
+
+        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
+        $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $publishAnnouncement->process($input);
+    }
+
+    /**
+     * 正常系：指定したTranslationSetIDに紐づくAnnouncementが存在しない場合、空配列が返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundAnnouncement(): void
+    {
+        $dummy = $this->createDummyPublishAnnouncementData();
+
+        $input = new PublishAnnouncementInput(
+            $dummy->userIdentifier,
+            $dummy->translationSetIdentifier,
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findById')
+            ->with($dummy->userIdentifier)
+            ->once()
+            ->andReturn($dummy->user);
+
+        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
+        $announcementRepository->shouldReceive('findDraftsByTranslationSetIdentifier')
+            ->once()
+            ->with($dummy->translationSetIdentifier)
+            ->andReturn([]);
+
+        $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
+        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
+        $publishAnnouncements = $publishAnnouncement->process($input);
+        $this->assertEmpty($publishAnnouncements);
+    }
+
+    /**
+     * @param Role $role
+     * @return PublishAnnouncementTestData
+     */
+    private function createDummyPublishAnnouncementData(Role $role = Role::ADMIN): PublishAnnouncementTestData
+    {
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $category = Category::UPDATES;
         $publishedDate = new PublishedDate(new DateTimeImmutable());
-        $input = new PublishAnnouncementInput(
-            $translationSetIdentifier,
+
+        $user = new User(
+            $userIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            $role,
         );
 
-        $jaDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $japanese = Language::JAPANESE;
         $jaTitle = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $jaContent = new Content('いつもk-poolをご利用いただき、ありがとうございます！
 K-popを愛するすべてのファンの皆さまに、もっと「推し活」を楽しんでいただくための新機能、**「グローバル投票」**が本日よりスタートしました！🎉
@@ -83,28 +256,27 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 この「グローバル投票」機能が、ファンの皆さまの熱い想いを一つにし、アーティストをさらに大きなステージへと押し上げるきっかけになることを願っています。
 今すぐ投票に参加して、あなたの愛を"推し"に届けましょう！
 これからもk-poolをよろしくお願いいたします。');
+        $jaDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $jaDraftAnnouncement = new DraftAnnouncement(
             $jaDraftIdentifier,
             $translationSetIdentifier,
-            $japanese,
+            Language::JAPANESE,
             $category,
             $jaTitle,
             $jaContent,
             $publishedDate,
         );
+        $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $jaAnnouncement = new Announcement(
             $jaAnnouncementIdentifier,
             $translationSetIdentifier,
-            $japanese,
+            Language::JAPANESE,
             $category,
             $jaTitle,
             $jaContent,
             $publishedDate,
         );
 
-        $koDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $korean = Language::KOREAN;
         $koTitle = new Title('🏆 당신의 한 표가 최애를 빛나게 합니다! 새로운 기능 「글로벌 투표」 시작!');
         $koContent = new Content('항상 k-pool을 이용해 주셔서 감사합니다!
 K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁게 하실 수 있도록 새로운 기능인 **「글로벌 투표」**가 오늘부터 시작되었습니다! 🎉
@@ -128,28 +300,27 @@ K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁�
 이 「글로벌 투표」 기능이 팬 여러분의 뜨거운 마음을 하나로 모아, 아티스트를 더욱 큰 무대로 이끌어 올리는 계기가 되기를 바랍니다.
 지금 바로 투표에 참여하여 당신의 사랑을 "최애"에게 전하세요!
 앞으로도 k-pool을 잘 부탁드립니다.');
+        $koDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $koDraftAnnouncement = new DraftAnnouncement(
             $koDraftIdentifier,
             $translationSetIdentifier,
-            $korean,
+            Language::KOREAN,
             $category,
             $koTitle,
             $koContent,
             $publishedDate,
         );
+        $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $koAnnouncement = new Announcement(
             $koAnnouncementIdentifier,
             $translationSetIdentifier,
-            $korean,
+            Language::KOREAN,
             $category,
             $koTitle,
             $koContent,
             $publishedDate,
         );
 
-        $enDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $english = Language::ENGLISH;
         $enTitle = new Title('🏆 Your Vote Makes Your Favorite Shine! The New "Global Voting" F');
         $enContent = new Content('Thank you for always using k-pool!
 To help all K-pop fans enjoy their fan activities even more, our new feature, **"Global Voting,"** launches today! 🎉
@@ -173,124 +344,75 @@ For detailed instructions, please check the guide below.
     We hope this "Global Voting" feature will unite the passionate support of fans everywhere and become a force that lifts artists to even bigger stages.
     Join a vote now and deliver your love to your favorite artist!
     Thank you for your continued support of k-pool.');
+        $enDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $enDraftAnnouncement = new DraftAnnouncement(
             $enDraftIdentifier,
             $translationSetIdentifier,
-            $english,
+            Language::ENGLISH,
             $category,
             $enTitle,
             $enContent,
             $publishedDate,
         );
+        $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $enAnnouncement = new Announcement(
             $enAnnouncementIdentifier,
             $translationSetIdentifier,
-            $english,
+            Language::ENGLISH,
             $category,
             $enTitle,
             $enContent,
             $publishedDate,
         );
 
-        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $announcementRepository->shouldReceive('findDraftsByTranslationSetIdentifier')
-            ->once()
-            ->with($translationSetIdentifier)
-            ->andReturn([$jaDraftAnnouncement, $koDraftAnnouncement, $enDraftAnnouncement]);
-        $announcementRepository->shouldReceive('save')
-            ->once()
-            ->with($koAnnouncement)
-            ->andReturn(null);
-        $announcementRepository->shouldReceive('save')
-            ->once()
-            ->with($jaAnnouncement)
-            ->andReturn(null);
-        $announcementRepository->shouldReceive('save')
-            ->once()
-            ->with($enAnnouncement)
-            ->andReturn(null);
-        $announcementRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($koDraftAnnouncement)
-            ->andReturn(null);
-        $announcementRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($jaDraftAnnouncement)
-            ->andReturn(null);
-        $announcementRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($enDraftAnnouncement)
-            ->andReturn(null);
-
-        $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
-        $announcementFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                $translationSetIdentifier,
-                $korean,
-                $category,
-                $koTitle,
-                $koContent,
-                $publishedDate,
-            )
-            ->andReturn($koAnnouncement);
-        $announcementFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                $translationSetIdentifier,
-                $japanese,
-                $category,
-                $jaTitle,
-                $jaContent,
-                $publishedDate,
-            )
-            ->andReturn($jaAnnouncement);
-        $announcementFactory->shouldReceive('create')
-            ->once()
-            ->with(
-                $translationSetIdentifier,
-                $english,
-                $category,
-                $enTitle,
-                $enContent,
-                $publishedDate,
-            )
-            ->andReturn($enAnnouncement);
-
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
-        $deleteAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
-        $announcements = $deleteAnnouncement->process($input);
-        $this->assertSame((string)$jaAnnouncementIdentifier, (string)$announcements[0]->announcementIdentifier());
-        $this->assertSame((string)$koAnnouncementIdentifier, (string)$announcements[1]->announcementIdentifier());
-        $this->assertSame((string)$enAnnouncementIdentifier, (string)$announcements[2]->announcementIdentifier());
-    }
-
-    /**
-     * 正常系：指定したTranslationSetIDに紐づくAnnouncementが存在しない場合、空配列が返却されること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testWhenNotFoundAnnouncement(): void
-    {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $input = new PublishAnnouncementInput(
+        return new PublishAnnouncementTestData(
+            $userIdentifier,
             $translationSetIdentifier,
+            $category,
+            $publishedDate,
+            $user,
+            $jaTitle,
+            $jaContent,
+            $jaDraftAnnouncement,
+            $jaAnnouncementIdentifier,
+            $jaAnnouncement,
+            $koTitle,
+            $koContent,
+            $koDraftAnnouncement,
+            $koAnnouncementIdentifier,
+            $koAnnouncement,
+            $enTitle,
+            $enContent,
+            $enDraftAnnouncement,
+            $enAnnouncementIdentifier,
+            $enAnnouncement,
         );
+    }
+}
 
-        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $announcementRepository->shouldReceive('findDraftsByTranslationSetIdentifier')
-            ->once()
-            ->with($translationSetIdentifier)
-            ->andReturn([]);
-
-        $announcementFactory = Mockery::mock(AnnouncementFactoryInterface::class);
-
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $this->app->instance(AnnouncementFactoryInterface::class, $announcementFactory);
-        $publishAnnouncement = $this->app->make(PublishAnnouncementInterface::class);
-        $publishAnnouncements = $publishAnnouncement->process($input);
-        $this->assertEmpty($publishAnnouncements);
+readonly class PublishAnnouncementTestData
+{
+    public function __construct(
+        public UserIdentifier $userIdentifier,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public Category $category,
+        public PublishedDate $publishedDate,
+        public User $user,
+        public Title $jaTitle,
+        public Content $jaContent,
+        public DraftAnnouncement $jaDraftAnnouncement,
+        public AnnouncementIdentifier $jaAnnouncementIdentifier,
+        public Announcement $jaAnnouncement,
+        public Title $koTitle,
+        public Content $koContent,
+        public DraftAnnouncement $koDraftAnnouncement,
+        public AnnouncementIdentifier $koAnnouncementIdentifier,
+        public Announcement $koAnnouncement,
+        public Title $enTitle,
+        public Content $enContent,
+        public DraftAnnouncement $enDraftAnnouncement,
+        public AnnouncementIdentifier $enAnnouncementIdentifier,
+        public Announcement $enAnnouncement,
+    ) {
     }
 }

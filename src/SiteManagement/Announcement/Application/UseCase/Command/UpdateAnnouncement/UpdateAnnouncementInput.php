@@ -9,16 +9,23 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 
 readonly class UpdateAnnouncementInput implements UpdateAnnouncementInputPort
 {
     public function __construct(
+        private UserIdentifier         $userIdentifier,
         private AnnouncementIdentifier $announcementIdentifier,
-        private Category $category,
-        private Title $title,
-        private Content $content,
-        private PublishedDate $publishedDate,
+        private Category               $category,
+        private Title                  $title,
+        private Content                $content,
+        private PublishedDate          $publishedDate,
     ) {
+    }
+
+    public function userIdentifier(): UserIdentifier
+    {
+        return $this->userIdentifier;
     }
 
     public function announcementIdentifier(): AnnouncementIdentifier

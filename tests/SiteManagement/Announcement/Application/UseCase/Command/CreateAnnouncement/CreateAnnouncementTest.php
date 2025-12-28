@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\CreateAnnouncement\CreateAnnouncement;
@@ -21,6 +22,11 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Entity\User;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use Source\SiteManagement\User\Domain\ValueObject\Role;
+use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,13 +47,111 @@ class CreateAnnouncementTest extends TestCase
     }
 
     /**
-     * 正常系：正しくAgency Entityが作成されること.
+     * 正常系：正しくAnnouncement Entityが作成されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testProcess(): void
+    {
+        $dummy = $this->createDummyCreateAnnouncementData();
+
+        $input = new CreateAnnouncementInput(
+            $dummy->userIdentifier,
+            $dummy->translationSetIdentifier,
+            $dummy->language,
+            $dummy->category,
+            $dummy->title,
+            $dummy->content,
+            $dummy->publishedDate,
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findById')
+            ->with($dummy->userIdentifier)
+            ->once()
+            ->andReturn($dummy->user);
+
+        $announcementFactory = Mockery::mock(DraftAnnouncementFactoryInterface::class);
+        $announcementFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                $dummy->translationSetIdentifier,
+                $dummy->language,
+                $dummy->category,
+                $dummy->title,
+                $dummy->content,
+                $dummy->publishedDate
+            )
+            ->andReturn($dummy->draftAnnouncement);
+
+        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
+        $announcementRepository->shouldReceive('saveDraft')
+            ->once()
+            ->with($dummy->draftAnnouncement)
+            ->andReturn(null);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
+        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
+        $announcement = $createAnnouncement->process($input);
+
+        $this->assertTrue(UlidValidator::isValid((string) $announcement->announcementIdentifier()));
+        $this->assertSame((string) $dummy->translationSetIdentifier, (string) $announcement->translationSetIdentifier());
+        $this->assertSame($dummy->language->value, $announcement->translation()->value);
+        $this->assertSame($dummy->category->value, $announcement->category()->value);
+        $this->assertSame((string) $dummy->title, (string) $announcement->title());
+        $this->assertSame((string) $dummy->content, (string) $announcement->content());
+        $this->assertSame($dummy->publishedDate->value(), $announcement->publishedDate()->value());
+    }
+
+    /**
+     * 異常系：ADMIN以外のユーザーはUnauthorizedExceptionがスローされること
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcess(): void
+    public function testProcessThrowsUnauthorizedExceptionForNonAdmin(): void
     {
+        $this->expectException(UnauthorizedException::class);
+
+        $dummy = $this->createDummyCreateAnnouncementData(Role::NONE);
+
+        $input = new CreateAnnouncementInput(
+            $dummy->userIdentifier,
+            $dummy->translationSetIdentifier,
+            $dummy->language,
+            $dummy->category,
+            $dummy->title,
+            $dummy->content,
+            $dummy->publishedDate,
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findById')
+            ->with($dummy->userIdentifier)
+            ->once()
+            ->andReturn($dummy->user);
+
+        $announcementFactory = Mockery::mock(DraftAnnouncementFactoryInterface::class);
+        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
+        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
+        $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
+        $createAnnouncement->process($input);
+    }
+
+    /**
+     * @param Role $role
+     * @return CreateAnnouncementTestData
+     */
+    private function createDummyCreateAnnouncementData(Role $role = Role::ADMIN): CreateAnnouncementTestData
+    {
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
@@ -75,17 +179,15 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 今すぐ投票に参加して、あなたの愛を"推し"に届けましょう！
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
-        $input = new CreateAnnouncementInput(
-            $translationSetIdentifier,
-            $language,
-            $category,
-            $title,
-            $content,
-            $publishedDate,
+
+        $user = new User(
+            $userIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            $role,
         );
 
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $announcement = new DraftAnnouncement(
+        $draftAnnouncement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,
             $language,
@@ -94,28 +196,35 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $content,
             $publishedDate,
         );
-        $announcementFactory = Mockery::mock(DraftAnnouncementFactoryInterface::class);
-        $announcementFactory->shouldReceive('create')
-            ->once()
-            ->with($translationSetIdentifier, $language, $category, $title, $content, $publishedDate)
-            ->andReturn($announcement);
 
-        $announcementRepository = Mockery::mock(AnnouncementRepositoryInterface::class);
-        $announcementRepository->shouldReceive('saveDraft')
-            ->once()
-            ->with($announcement)
-            ->andReturn(null);
+        return new CreateAnnouncementTestData(
+            $userIdentifier,
+            $translationSetIdentifier,
+            $language,
+            $category,
+            $title,
+            $content,
+            $publishedDate,
+            $user,
+            $announcementIdentifier,
+            $draftAnnouncement,
+        );
+    }
+}
 
-        $this->app->instance(DraftAnnouncementFactoryInterface::class, $announcementFactory);
-        $this->app->instance(AnnouncementRepositoryInterface::class, $announcementRepository);
-        $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
-        $announcement = $createAnnouncement->process($input);
-        $this->assertTrue(UlidValidator::isValid((string)$announcement->announcementIdentifier()));
-        $this->assertSame((string)$translationSetIdentifier, (string)$announcement->translationSetIdentifier());
-        $this->assertSame($language->value, $announcement->translation()->value);
-        $this->assertSame($category->value, $announcement->category()->value);
-        $this->assertSame((string)$title, (string)$announcement->title());
-        $this->assertSame((string)$content, (string)$announcement->content());
-        $this->assertSame($publishedDate->value(), $announcement->publishedDate()->value());
+readonly class CreateAnnouncementTestData
+{
+    public function __construct(
+        public UserIdentifier $userIdentifier,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public Language $language,
+        public Category $category,
+        public Title $title,
+        public Content $content,
+        public PublishedDate $publishedDate,
+        public User $user,
+        public AnnouncementIdentifier $announcementIdentifier,
+        public DraftAnnouncement $draftAnnouncement,
+    ) {
     }
 }

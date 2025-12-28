@@ -9,12 +9,15 @@ use Source\SiteManagement\Announcement\Application\Service\TranslationServiceInt
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
 readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
 {
     public function __construct(
         private AnnouncementRepositoryInterface $announcementRepository,
         private TranslationServiceInterface     $translationService,
+        private UserRepositoryInterface         $userRepository,
     ) {
     }
 
@@ -22,9 +25,15 @@ readonly class TranslateAnnouncement implements TranslateAnnouncementInterface
      * @param TranslateAnnouncementInputPort $input
      * @return DraftAnnouncement[]
      * @throws AnnouncementNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(TranslateAnnouncementInputPort $input): array
     {
+        $user = $this->userRepository->findById($input->userIdentifier());
+        if (! $user?->isAdmin()) {
+            throw new UnauthorizedException();
+        }
+
         $announcement = $this->announcementRepository->findDraftById($input->announcementIdentifier());
 
         if ($announcement === null) {

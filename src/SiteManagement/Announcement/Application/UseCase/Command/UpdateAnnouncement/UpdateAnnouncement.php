@@ -7,11 +7,14 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateA
 use Source\SiteManagement\Announcement\Application\UseCase\Exception\AnnouncementNotFoundException;
 use Source\SiteManagement\Announcement\Domain\Entity\DraftAnnouncement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
-class UpdateAnnouncement implements UpdateAnnouncementInterface
+readonly class UpdateAnnouncement implements UpdateAnnouncementInterface
 {
     public function __construct(
         private AnnouncementRepositoryInterface $announcementRepository,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 
@@ -19,9 +22,15 @@ class UpdateAnnouncement implements UpdateAnnouncementInterface
      * @param UpdateAnnouncementInputPort $input
      * @return DraftAnnouncement
      * @throws AnnouncementNotFoundException
+     * @throws UnauthorizedException
      */
     public function process(UpdateAnnouncementInputPort $input): DraftAnnouncement
     {
+        $user = $this->userRepository->findById($input->userIdentifier());
+        if (! $user?->isAdmin()) {
+            throw new UnauthorizedException();
+        }
+
         $announcement = $this->announcementRepository->findDraftById($input->announcementIdentifier());
 
         if ($announcement === null) {

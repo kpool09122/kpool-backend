@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\EditAnnouncement;
+namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement;
 
 use DateTimeImmutable;
 use Source\SiteManagement\Announcement\Application\UseCase\Command\UpdateAnnouncement\UpdateAnnouncementInput;
@@ -11,10 +11,11 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class EditAnnouncementInputTest extends TestCase
+class UpdateAnnouncementInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -23,6 +24,7 @@ class EditAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -50,6 +52,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new UpdateAnnouncementInput(
+            $userIdentifier,
             $announcementIdentifier,
             $category,
             $title,

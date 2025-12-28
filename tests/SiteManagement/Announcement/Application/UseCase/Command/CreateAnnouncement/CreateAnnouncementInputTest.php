@@ -12,6 +12,7 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Category;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Content;
 use Source\SiteManagement\Announcement\Domain\ValueObject\PublishedDate;
 use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
+use Source\SiteManagement\User\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -24,6 +25,7 @@ class CreateAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
@@ -52,6 +54,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 これからもk-poolをよろしくお願いいたします。');
         $publishedDate = new PublishedDate(new DateTimeImmutable());
         $input = new CreateAnnouncementInput(
+            $userIdentifier,
             $translationSetIdentifier,
             $language,
             $category,
@@ -59,11 +62,12 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $content,
             $publishedDate,
         );
-        $this->assertSame((string)$translationSetIdentifier, (string)$input->translationSetIdentifier());
+        $this->assertSame($userIdentifier, $input->userIdentifier());
+        $this->assertSame((string) $translationSetIdentifier, (string) $input->translationSetIdentifier());
         $this->assertSame($language->value, $input->language()->value);
         $this->assertSame($category->value, $input->category()->value);
-        $this->assertSame((string)$title, (string)$input->title());
-        $this->assertSame((string)$content, (string)$input->content());
+        $this->assertSame((string) $title, (string) $input->title());
+        $this->assertSame((string) $content, (string) $input->content());
         $this->assertSame($publishedDate->value(), $input->publishedDate()->value());
     }
 }
