@@ -9,7 +9,9 @@ use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -23,6 +25,7 @@ readonly class RejectAgency implements RejectAgencyInterface
         private AgencyRepositoryInterface        $agencyRepository,
         private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
         private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
+        private PrincipalRepositoryInterface     $principalRepository,
     ) {
     }
 
@@ -32,6 +35,7 @@ readonly class RejectAgency implements RejectAgencyInterface
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(RejectAgencyInputPort $input): DraftAgency
     {
@@ -41,7 +45,11 @@ readonly class RejectAgency implements RejectAgencyInterface
             throw new AgencyNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
+
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),
@@ -62,7 +70,7 @@ readonly class RejectAgency implements RejectAgencyInterface
         $this->agencyRepository->saveDraft($agency);
 
         $history = $this->agencyHistoryFactory->create(
-            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            new EditorIdentifier((string)$input->principalIdentifier()),
             $agency->editorIdentifier(),
             $agency->publishedAgencyIdentifier(),
             $agency->agencyIdentifier(),

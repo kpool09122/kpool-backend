@@ -6,7 +6,6 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgen
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -15,8 +14,6 @@ use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencySource;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -34,18 +31,11 @@ class AutomaticCreateDraftAgencyInputTest extends TestCase
             new Description('auto generated'),
             new AutomaticDraftAgencySource('webhook::draft'),
         );
-        $principal = new Principal(
-            new PrincipalIdentifier('01F8MECHZX3TBDSZ7XRADM79XV'),
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
-            Role::ADMINISTRATOR,
-            null,
-            [],
-            [],
-        );
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        $input = new AutomaticCreateDraftAgencyInput($payload, $principal);
+        $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
 
         $this->assertSame($payload, $input->payload());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

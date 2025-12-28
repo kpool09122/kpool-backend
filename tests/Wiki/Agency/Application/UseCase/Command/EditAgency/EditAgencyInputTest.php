@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Application\UseCase\Command\EditAgency;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -44,9 +41,7 @@ class EditAgencyInputTest extends TestCase
 * **있지 (ITZY)**
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditAgencyInput(
             $agencyIdentifier,
@@ -54,13 +49,13 @@ class EditAgencyInputTest extends TestCase
             $CEO,
             $foundedIn,
             $description,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$CEO, (string)$input->CEO());
         $this->assertSame($foundedIn->value(), $input->foundedIn()->value());
         $this->assertSame((string)$description, (string)$input->description());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

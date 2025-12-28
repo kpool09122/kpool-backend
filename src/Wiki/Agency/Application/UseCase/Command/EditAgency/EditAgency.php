@@ -7,17 +7,20 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\EditAgency;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class EditAgency implements EditAgencyInterface
+readonly class EditAgency implements EditAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface $agencyRepository,
-        private NormalizationServiceInterface   $normalizationService,
+        private AgencyRepositoryInterface     $agencyRepository,
+        private NormalizationServiceInterface $normalizationService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -26,6 +29,7 @@ class EditAgency implements EditAgencyInterface
      * @return DraftAgency
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(EditAgencyInputPort $input): DraftAgency
     {
@@ -35,7 +39,10 @@ class EditAgency implements EditAgencyInterface
             throw new AgencyNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),

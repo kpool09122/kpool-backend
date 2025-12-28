@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Application\UseCase\Command\PublishAgency;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -24,17 +21,15 @@ class PublishAgencyInputTest extends TestCase
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishAgencyInput(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame((string)$publishedAgencyIdentifier, (string)$input->publishedAgencyIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

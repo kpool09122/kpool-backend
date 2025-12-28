@@ -7,7 +7,9 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAge
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyInterface
@@ -15,6 +17,7 @@ readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyI
     public function __construct(
         private AutomaticDraftAgencyCreationServiceInterface $automaticDraftAgencyCreationService,
         private AgencyRepositoryInterface                    $agencyRepository,
+        private PrincipalRepositoryInterface                 $principalRepository,
     ) {
     }
 
@@ -22,10 +25,15 @@ readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyI
      * @param AutomaticCreateDraftAgencyInputPort $input
      * @return DraftAgency
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(AutomaticCreateDraftAgencyInputPort $input): DraftAgency
     {
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
 
         $role = $principal->role();
         if ($role !== Role::ADMINISTRATOR && $role !== Role::SENIOR_COLLABORATOR) {

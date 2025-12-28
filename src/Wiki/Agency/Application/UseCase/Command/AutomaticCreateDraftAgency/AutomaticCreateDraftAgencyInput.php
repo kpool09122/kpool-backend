@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class AutomaticCreateDraftAgencyInput implements AutomaticCreateDraftAgencyInputPort
 {
     public function __construct(
         private AutomaticDraftAgencyCreationPayload $payload,
-        private Principal $principal,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class AutomaticCreateDraftAgencyInput implements AutomaticCreateDraftAg
         return $this->payload;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

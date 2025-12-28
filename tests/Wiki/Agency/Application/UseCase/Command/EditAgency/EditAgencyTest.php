@@ -22,7 +22,9 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -68,8 +70,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('saveDraft')
@@ -81,6 +89,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agencyIdentifier)
             ->andReturn($dummyAgency->agency);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $editAgency = $this->app->make(EditAgencyInterface::class);
         $agency = $editAgency->process($input);
@@ -102,6 +111,7 @@ class EditAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundAgency(): void
     {
@@ -116,8 +126,11 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftById')
@@ -125,6 +138,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agencyIdentifier)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->expectException(AgencyNotFoundException::class);
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -138,6 +152,7 @@ class EditAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithCollaborator(): void
     {
@@ -152,8 +167,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftById')
@@ -165,6 +186,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agency)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -178,6 +200,7 @@ class EditAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
     {
@@ -193,8 +216,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftById')
@@ -206,6 +235,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agency)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -219,6 +249,7 @@ class EditAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithGroupActor(): void
     {
@@ -234,8 +265,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftById')
@@ -247,6 +284,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agency)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -260,6 +298,7 @@ class EditAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithTalentActor(): void
     {
@@ -276,8 +315,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $this->expectException(UnauthorizedException::class);
 
@@ -286,6 +331,8 @@ class EditAgencyTest extends TestCase
             ->once()
             ->with($dummyAgency->agencyIdentifier)
             ->andReturn($dummyAgency->agency);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -299,6 +346,7 @@ class EditAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -313,8 +361,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftById')
@@ -326,6 +380,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agency)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $editAgency = $this->app->make(EditAgencyInterface::class);
@@ -338,6 +393,7 @@ class EditAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
@@ -352,8 +408,14 @@ class EditAgencyTest extends TestCase
             $dummyAgency->CEO,
             $dummyAgency->foundedIn,
             $dummyAgency->description,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftById')
@@ -361,6 +423,7 @@ class EditAgencyTest extends TestCase
             ->with($dummyAgency->agencyIdentifier)
             ->andReturn($dummyAgency->agency);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $this->expectException(UnauthorizedException::class);

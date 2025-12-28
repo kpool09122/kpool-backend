@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\RejectAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class RejectAgencyInput implements RejectAgencyInputPort
 {
     public function __construct(
-        private AgencyIdentifier $agencyIdentifier,
-        private Principal $principal,
+        private AgencyIdentifier    $agencyIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class RejectAgencyInput implements RejectAgencyInputPort
         return $this->agencyIdentifier;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

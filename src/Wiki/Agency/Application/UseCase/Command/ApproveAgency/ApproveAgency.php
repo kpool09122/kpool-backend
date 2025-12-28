@@ -11,7 +11,9 @@ use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -26,6 +28,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         private AgencyServiceInterface           $agencyService,
         private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
         private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
+        private PrincipalRepositoryInterface     $principalRepository,
     ) {
     }
 
@@ -36,6 +39,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
      * @throws ExistsApprovedButNotTranslatedAgencyException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(ApproveAgencyInputPort $input): DraftAgency
     {
@@ -45,7 +49,11 @@ readonly class ApproveAgency implements ApproveAgencyInterface
             throw new AgencyNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),
@@ -74,7 +82,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         $this->agencyRepository->saveDraft($agency);
 
         $history = $this->agencyHistoryFactory->create(
-            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            new EditorIdentifier((string)$input->principalIdentifier()),
             $agency->editorIdentifier(),
             $agency->publishedAgencyIdentifier(),
             $agency->agencyIdentifier(),
