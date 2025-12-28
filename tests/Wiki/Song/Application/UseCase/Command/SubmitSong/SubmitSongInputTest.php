@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSongInput;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Tests\Helper\StrTestHelper;

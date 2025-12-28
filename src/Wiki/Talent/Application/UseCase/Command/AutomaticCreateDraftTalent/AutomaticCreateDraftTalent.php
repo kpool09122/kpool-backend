@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent;
 
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\AutomaticDraftTalentCreationServiceInterface;

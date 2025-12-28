@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Application\UseCase\Command\TranslateTalent;
 
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalentInput;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Tests\Helper\StrTestHelper;

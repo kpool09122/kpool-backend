@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 
 readonly class AutomaticCreateDraftAgencyInput implements AutomaticCreateDraftAgencyInputPort
 {

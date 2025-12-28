@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\AutomaticDraftSongCreationServiceInterface;

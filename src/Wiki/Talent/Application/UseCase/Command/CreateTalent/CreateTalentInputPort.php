@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;

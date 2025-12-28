@@ -6,7 +6,7 @@ namespace Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessCont
 
 use Source\Wiki\AccessControl\Application\Exception\ActorNotFoundException;
 use Source\Wiki\AccessControl\Application\Exception\UnauthorizedChangingACException;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 
 interface ChangeAccessControlInterface
 {

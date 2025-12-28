@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;

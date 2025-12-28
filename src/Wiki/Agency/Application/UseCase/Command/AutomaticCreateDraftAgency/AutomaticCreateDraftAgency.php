@@ -7,8 +7,8 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAge
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 
 readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyInterface
 {

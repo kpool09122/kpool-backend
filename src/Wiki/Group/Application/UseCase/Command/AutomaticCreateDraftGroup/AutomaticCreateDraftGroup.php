@@ -7,8 +7,8 @@ namespace Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGrou
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 
 readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInterface
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Application\UseCase\Command\RejectGroup;
 
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 
 readonly class RejectGroupInput implements RejectGroupInputPort
 {

@@ -7,9 +7,9 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

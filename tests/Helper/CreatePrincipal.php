@@ -7,8 +7,8 @@ namespace Tests\Helper;
 use Illuminate\Support\Facades\DB;
 use JsonException;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 
 class CreatePrincipal
 {

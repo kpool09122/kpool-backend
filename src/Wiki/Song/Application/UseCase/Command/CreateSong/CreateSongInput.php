@@ -6,7 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;

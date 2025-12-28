@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\EditTalent;
 
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;

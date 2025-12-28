@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 
 interface SubmitAgencyInputPort
 {
