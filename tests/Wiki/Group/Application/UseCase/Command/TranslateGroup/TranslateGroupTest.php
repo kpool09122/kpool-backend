@@ -24,7 +24,9 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -58,6 +60,7 @@ class TranslateGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -68,8 +71,14 @@ class TranslateGroupTest extends TestCase
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -95,6 +104,7 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->jaGroup);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -109,17 +119,17 @@ class TranslateGroupTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws UnauthorizedException
      */
     public function testWhenAgencyNotFound(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateGroupInput(
             $groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -144,6 +154,7 @@ class TranslateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedRole(): void
     {
@@ -154,8 +165,14 @@ class TranslateGroupTest extends TestCase
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -165,6 +182,7 @@ class TranslateGroupTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -180,6 +198,7 @@ class TranslateGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
@@ -190,8 +209,14 @@ class TranslateGroupTest extends TestCase
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -217,6 +242,7 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->jaGroup);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -234,6 +260,7 @@ class TranslateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedAgencyScope(): void
     {
@@ -243,7 +270,13 @@ class TranslateGroupTest extends TestCase
         $anotherAgencyId = StrTestHelper::generateUlid();
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
-        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
+        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -253,6 +286,7 @@ class TranslateGroupTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -268,6 +302,7 @@ class TranslateGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
     {
@@ -277,7 +312,13 @@ class TranslateGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
-        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
+        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -303,6 +344,7 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->jaGroup);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -320,6 +362,7 @@ class TranslateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedGroupScope(): void
     {
@@ -329,7 +372,13 @@ class TranslateGroupTest extends TestCase
         $anotherGroupId = StrTestHelper::generateUlid();
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
-        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
+        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -339,6 +388,7 @@ class TranslateGroupTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -354,6 +404,7 @@ class TranslateGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedGroupActor(): void
     {
@@ -362,7 +413,13 @@ class TranslateGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], []);
 
-        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
+        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -388,6 +445,7 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->jaGroup);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -405,6 +463,7 @@ class TranslateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedMemberScope(): void
     {
@@ -415,7 +474,13 @@ class TranslateGroupTest extends TestCase
         $memberId = StrTestHelper::generateUlid();
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
 
-        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
+        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -425,6 +490,7 @@ class TranslateGroupTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -440,6 +506,7 @@ class TranslateGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedMemberActor(): void
     {
@@ -449,7 +516,13 @@ class TranslateGroupTest extends TestCase
         $memberId = StrTestHelper::generateUlid();
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], [$memberId]);
 
-        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principal);
+        $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -475,6 +548,7 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->jaGroup);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -493,6 +567,7 @@ class TranslateGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -503,8 +578,14 @@ class TranslateGroupTest extends TestCase
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -530,6 +611,7 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->jaGroup);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -547,6 +629,7 @@ class TranslateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedNoneRole(): void
     {
@@ -557,8 +640,14 @@ class TranslateGroupTest extends TestCase
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findById')
@@ -568,6 +657,7 @@ class TranslateGroupTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 

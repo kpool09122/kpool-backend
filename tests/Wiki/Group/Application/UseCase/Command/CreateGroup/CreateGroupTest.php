@@ -25,7 +25,9 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -59,6 +61,7 @@ class CreateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -90,8 +93,14 @@ class CreateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -148,6 +157,7 @@ class CreateGroupTest extends TestCase
             ->with($group)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -172,6 +182,7 @@ class CreateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedCollaborator(): void
     {
@@ -199,8 +210,14 @@ class CreateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -239,6 +256,7 @@ class CreateGroupTest extends TestCase
             ->with($group)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -253,6 +271,7 @@ class CreateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
     {
@@ -281,8 +300,14 @@ class CreateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -321,6 +346,7 @@ class CreateGroupTest extends TestCase
             ->with($group)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -335,6 +361,7 @@ class CreateGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -362,8 +389,14 @@ class CreateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -402,6 +435,7 @@ class CreateGroupTest extends TestCase
             ->with($group)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -415,6 +449,7 @@ class CreateGroupTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
@@ -442,12 +477,19 @@ class CreateGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 

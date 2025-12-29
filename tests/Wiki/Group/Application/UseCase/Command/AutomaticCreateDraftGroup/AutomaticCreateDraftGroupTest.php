@@ -22,7 +22,9 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -36,12 +38,20 @@ class AutomaticCreateDraftGroupTest extends TestCase
      * 正常系: ActorがAdministratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::ADMINISTRATOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
         $draftGroup = $this->makeDraftGroup();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -55,10 +65,11 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->with($draftGroup)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
         $this->app->instance(GroupRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftGroupInput($payload, $principal);
+        $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
 
         $result = $useCase->process($input);
@@ -69,12 +80,20 @@ class AutomaticCreateDraftGroupTest extends TestCase
      * 正常系: ActorがSenior Collaboratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
         $draftGroup = $this->makeDraftGroup();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -88,10 +107,11 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->with($draftGroup)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
         $this->app->instance(GroupRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftGroupInput($payload, $principal);
+        $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
 
         $result = $useCase->process($input);
@@ -102,19 +122,28 @@ class AutomaticCreateDraftGroupTest extends TestCase
      * 異常系: ActorがAdministratorかSenior Collaboratorでない場合は、例外がスローされること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::AGENCY_ACTOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
         $repository = Mockery::mock(GroupRepositoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
         $this->app->instance(GroupRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftGroupInput($payload, $principal);
+        $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
 
         $this->expectException(UnauthorizedException::class);
@@ -137,10 +166,8 @@ class AutomaticCreateDraftGroupTest extends TestCase
         );
     }
 
-    private function makePrincipal(Role $role): Principal
+    private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-
         return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
     }
 

@@ -7,7 +7,9 @@ namespace Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGrou
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInterface
@@ -15,6 +17,7 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
     public function __construct(
         private AutomaticDraftGroupCreationServiceInterface $automaticDraftGroupCreationService,
         private GroupRepositoryInterface $groupRepository,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -22,10 +25,14 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
      * @param AutomaticCreateDraftGroupInputPort $input
      * @return DraftGroup
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(AutomaticCreateDraftGroupInputPort $input): DraftGroup
     {
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
 
         $role = $principal->role();
         if ($role !== Role::ADMINISTRATOR && $role !== Role::SENIOR_COLLABORATOR) {

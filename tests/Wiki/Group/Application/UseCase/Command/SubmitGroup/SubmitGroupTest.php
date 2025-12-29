@@ -27,8 +27,10 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -65,6 +67,7 @@ class SubmitGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -77,8 +80,14 @@ class SubmitGroupTest extends TestCase
 
         $input = new SubmitGroupInput(
             $dummySubmitGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('saveDraft')
@@ -100,6 +109,7 @@ class SubmitGroupTest extends TestCase
             ->with($dummySubmitGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -116,6 +126,7 @@ class SubmitGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundGroup(): void
     {
@@ -126,8 +137,12 @@ class SubmitGroupTest extends TestCase
 
         $input = new SubmitGroupInput(
             $dummySubmitGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
+
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
             ->once()
@@ -137,6 +152,7 @@ class SubmitGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -152,6 +168,7 @@ class SubmitGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testInvalidStatus(): void
     {
@@ -162,8 +179,14 @@ class SubmitGroupTest extends TestCase
 
         $input = new SubmitGroupInput(
             $dummySubmitGroup->groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -174,6 +197,7 @@ class SubmitGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -190,6 +214,7 @@ class SubmitGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithCollaborator(): void
     {
@@ -200,10 +225,13 @@ class SubmitGroupTest extends TestCase
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
         );
 
-        $input = new SubmitGroupInput(
-            $dummySubmitGroup->groupIdentifier,
-            $principal,
-        );
+        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -225,6 +253,7 @@ class SubmitGroupTest extends TestCase
             ->with($dummySubmitGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -243,6 +272,7 @@ class SubmitGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
     {
@@ -255,10 +285,13 @@ class SubmitGroupTest extends TestCase
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
         );
 
-        $input = new SubmitGroupInput(
-            $dummySubmitGroup->groupIdentifier,
-            $principal,
-        );
+        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -280,6 +313,7 @@ class SubmitGroupTest extends TestCase
             ->with($dummySubmitGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -298,6 +332,7 @@ class SubmitGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithGroupActor(): void
     {
@@ -310,10 +345,13 @@ class SubmitGroupTest extends TestCase
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
         );
 
-        $input = new SubmitGroupInput(
-            $dummySubmitGroup->groupIdentifier,
-            $principal,
-        );
+        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -335,6 +373,7 @@ class SubmitGroupTest extends TestCase
             ->with($dummySubmitGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -353,6 +392,7 @@ class SubmitGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithMemberActor(): void
     {
@@ -366,10 +406,13 @@ class SubmitGroupTest extends TestCase
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
         );
 
-        $input = new SubmitGroupInput(
-            $dummySubmitGroup->groupIdentifier,
-            $principal,
-        );
+        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -391,6 +434,7 @@ class SubmitGroupTest extends TestCase
             ->with($dummySubmitGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -409,6 +453,7 @@ class SubmitGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -419,10 +464,13 @@ class SubmitGroupTest extends TestCase
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
         );
 
-        $input = new SubmitGroupInput(
-            $dummySubmitGroup->groupIdentifier,
-            $principal,
-        );
+        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -444,6 +492,7 @@ class SubmitGroupTest extends TestCase
             ->with($dummySubmitGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -460,8 +509,8 @@ class SubmitGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
-     * @throws UnauthorizedException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
@@ -470,10 +519,13 @@ class SubmitGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
-        $input = new SubmitGroupInput(
-            $dummySubmitGroup->groupIdentifier,
-            $principal,
-        );
+        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -484,6 +536,7 @@ class SubmitGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);

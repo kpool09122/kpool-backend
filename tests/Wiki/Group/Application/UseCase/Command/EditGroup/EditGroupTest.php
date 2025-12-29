@@ -23,7 +23,9 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -57,6 +59,7 @@ class EditGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -86,8 +89,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -125,6 +134,7 @@ class EditGroupTest extends TestCase
             ->with($groupIdentifier)
             ->andReturn($group);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $editGroup = $this->app->make(EditGroupInterface::class);
@@ -149,6 +159,7 @@ class EditGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundGroup(): void
     {
@@ -176,8 +187,11 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -187,6 +201,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->expectException(GroupNotFoundException::class);
@@ -201,6 +216,7 @@ class EditGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithCollaborator(): void
     {
@@ -224,8 +240,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -260,6 +282,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -274,6 +297,7 @@ class EditGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
     {
@@ -298,8 +322,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -334,6 +364,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -348,6 +379,7 @@ class EditGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithGroupActor(): void
     {
@@ -371,8 +403,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -407,6 +445,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -421,6 +460,7 @@ class EditGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithMemberActor(): void
     {
@@ -445,8 +485,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -481,6 +527,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -495,6 +542,7 @@ class EditGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -518,8 +566,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -554,6 +608,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 
@@ -567,6 +622,7 @@ class EditGroupTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
@@ -590,8 +646,14 @@ class EditGroupTest extends TestCase
             $description,
             $songIdentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
@@ -622,6 +684,7 @@ class EditGroupTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
 

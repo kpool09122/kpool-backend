@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Application\UseCase\Command\TranslateGroup;
 
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class TranslateGroupInput implements TranslateGroupInputPort
 {
     public function __construct(
-        private GroupIdentifier  $groupIdentifier,
-        private Principal $principal,
+        private GroupIdentifier     $groupIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class TranslateGroupInput implements TranslateGroupInputPort
         return $this->groupIdentifier;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

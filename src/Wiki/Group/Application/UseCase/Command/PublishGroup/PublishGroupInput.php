@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Application\UseCase\Command\PublishGroup;
 
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class PublishGroupInput implements PublishGroupInputPort
 {
     public function __construct(
-        private GroupIdentifier  $groupIdentifier,
-        private ?GroupIdentifier $publishedGroupIdentifier,
-        private Principal $principal,
+        private GroupIdentifier     $groupIdentifier,
+        private ?GroupIdentifier    $publishedGroupIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -26,8 +26,8 @@ readonly class PublishGroupInput implements PublishGroupInputPort
         return $this->publishedGroupIdentifier;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

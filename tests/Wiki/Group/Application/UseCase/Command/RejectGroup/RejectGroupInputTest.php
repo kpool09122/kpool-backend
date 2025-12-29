@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Application\UseCase\Command\RejectGroup;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -25,14 +22,13 @@ class RejectGroupInputTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectGroupInput(
             $groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
 
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

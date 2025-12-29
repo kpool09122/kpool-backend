@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup;
 
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class AutomaticCreateDraftGroupInput implements AutomaticCreateDraftGroupInputPort
 {
     public function __construct(
         private AutomaticDraftGroupCreationPayload $payload,
-        private Principal $principal,
+        private PrincipalIdentifier                $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class AutomaticCreateDraftGroupInput implements AutomaticCreateDraftGro
         return $this->payload;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup;
 
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -14,8 +13,6 @@ use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -34,18 +31,11 @@ class AutomaticCreateDraftGroupInputTest extends TestCase
             new AutomaticDraftGroupSource('webhook::draft'),
         );
 
-        $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUlid()),
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
-            Role::ADMINISTRATOR,
-            null,
-            [],
-            [],
-        );
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        $input = new AutomaticCreateDraftGroupInput($payload, $principal);
+        $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
 
         $this->assertSame($payload, $input->payload());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

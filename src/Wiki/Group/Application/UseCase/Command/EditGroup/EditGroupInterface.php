@@ -6,6 +6,7 @@ namespace Source\Wiki\Group\Application\UseCase\Command\EditGroup;
 
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface EditGroupInterface
@@ -15,6 +16,7 @@ interface EditGroupInterface
      * @return DraftGroup
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(EditGroupInputPort $input): DraftGroup;
 }

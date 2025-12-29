@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Application\UseCase\Command\EditGroup;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -41,7 +38,6 @@ class EditGroupInputTest extends TestCase
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditGroupInput(
             $groupIdentifier,
@@ -50,7 +46,7 @@ class EditGroupInputTest extends TestCase
             $description,
             $songIndentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
@@ -58,6 +54,6 @@ class EditGroupInputTest extends TestCase
         $this->assertSame($description, $input->description());
         $this->assertSame($songIndentifiers, $input->songIdentifiers());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }
