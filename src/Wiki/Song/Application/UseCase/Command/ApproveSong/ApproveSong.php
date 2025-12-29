@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -26,6 +28,7 @@ readonly class ApproveSong implements ApproveSongInterface
         private SongServiceInterface           $songService,
         private SongHistoryRepositoryInterface $songHistoryRepository,
         private SongHistoryFactoryInterface    $songHistoryFactory,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -36,6 +39,7 @@ readonly class ApproveSong implements ApproveSongInterface
      * @throws ExistsApprovedButNotTranslatedSongException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(ApproveSongInputPort $input): DraftSong
     {
@@ -49,7 +53,10 @@ readonly class ApproveSong implements ApproveSongInterface
             throw new InvalidStatusException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $agencyId = (string) $song->agencyIdentifier();
         $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,
@@ -80,7 +87,7 @@ readonly class ApproveSong implements ApproveSongInterface
         $this->songRepository->saveDraft($song);
 
         $history = $this->songHistoryFactory->create(
-            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            new EditorIdentifier((string)$input->principalIdentifier()),
             $song->editorIdentifier(),
             $song->publishedSongIdentifier(),
             $song->songIdentifier(),

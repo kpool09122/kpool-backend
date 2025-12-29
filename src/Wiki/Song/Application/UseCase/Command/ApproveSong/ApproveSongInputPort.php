@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 
 interface ApproveSongInputPort
@@ -13,5 +13,5 @@ interface ApproveSongInputPort
 
     public function publishedSongIdentifier(): ?SongIdentifier;
 
-    public function principal(): Principal;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

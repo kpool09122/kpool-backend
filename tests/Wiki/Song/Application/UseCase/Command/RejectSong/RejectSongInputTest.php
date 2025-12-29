@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Application\UseCase\Command\RejectSong;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSongInput;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
@@ -23,15 +20,13 @@ class RejectSongInputTest extends TestCase
     public function test__construct(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectSongInput(
             $songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

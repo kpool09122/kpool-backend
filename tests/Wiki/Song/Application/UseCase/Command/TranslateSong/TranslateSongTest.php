@@ -13,7 +13,9 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -48,6 +50,8 @@ class TranslateSongTest extends TestCase
      */
     public function test__construct(): void
     {
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $songService = Mockery::mock(TranslationServiceInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $songService);
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -63,6 +67,7 @@ class TranslateSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -73,8 +78,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -100,6 +111,7 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->jaSong);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -115,18 +127,21 @@ class TranslateSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenSongNotFound(): void
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateSongInput(
             $songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -136,6 +151,7 @@ class TranslateSongTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -150,6 +166,7 @@ class TranslateSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedRole(): void
     {
@@ -160,8 +177,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -171,6 +194,7 @@ class TranslateSongTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -186,6 +210,7 @@ class TranslateSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
@@ -196,8 +221,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -223,6 +254,7 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->jaSong);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -236,6 +268,7 @@ class TranslateSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedAgencyScope(): void
     {
@@ -247,8 +280,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -258,6 +297,7 @@ class TranslateSongTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -273,6 +313,7 @@ class TranslateSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
     {
@@ -284,8 +325,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -311,6 +358,7 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->jaSong);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -324,6 +372,7 @@ class TranslateSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedGroupScope(): void
     {
@@ -336,8 +385,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -347,6 +402,7 @@ class TranslateSongTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -362,6 +418,7 @@ class TranslateSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedGroupActor(): void
     {
@@ -374,8 +431,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -401,6 +464,7 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->jaSong);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -414,6 +478,7 @@ class TranslateSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedTalentScope(): void
     {
@@ -426,8 +491,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -437,6 +508,7 @@ class TranslateSongTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -452,6 +524,7 @@ class TranslateSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedTalentActor(): void
     {
@@ -464,8 +537,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -491,6 +570,7 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->jaSong);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -505,6 +585,7 @@ class TranslateSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -515,8 +596,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -542,6 +629,7 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->jaSong);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -555,6 +643,7 @@ class TranslateSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedNoneRole(): void
     {
@@ -565,8 +654,14 @@ class TranslateSongTest extends TestCase
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
@@ -576,6 +671,7 @@ class TranslateSongTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 

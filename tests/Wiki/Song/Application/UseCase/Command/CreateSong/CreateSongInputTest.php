@@ -6,10 +6,7 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInput;
@@ -50,7 +47,6 @@ class CreateSongInputTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateSongInput(
             $publishedSongIdentifier,
@@ -65,7 +61,7 @@ class CreateSongInputTest extends TestCase
             $overView,
             $base64EncodedCoverImage,
             $musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$publishedSongIdentifier, (string)$input->publishedSongIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
@@ -79,6 +75,6 @@ class CreateSongInputTest extends TestCase
         $this->assertSame((string)$overView, (string)$input->overView());
         $this->assertSame($base64EncodedCoverImage, $input->base64EncodedCoverImage());
         $this->assertSame($musicVideoLink, $input->musicVideoLink());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

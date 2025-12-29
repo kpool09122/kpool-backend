@@ -14,7 +14,9 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -47,6 +49,8 @@ class EditSongTest extends TestCase
     public function test__construct(): void
     {
         // TODO: 各実装クラス作ったら削除する
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $this->app->instance(ImageServiceInterface::class, $imageService);
@@ -62,6 +66,7 @@ class EditSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -81,8 +86,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             $dummyEditSong->base64EncodedCoverImage,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
@@ -100,6 +111,7 @@ class EditSongTest extends TestCase
             ->with($dummyEditSong->songIdentifier)
             ->andReturn($dummyEditSong->song);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $editSong = $this->app->make(EditSongInterface::class);
@@ -126,13 +138,13 @@ class EditSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundSong(): void
     {
         $dummyEditSong = $this->createDummyEditSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditSongInput(
             $dummyEditSong->songIdentifier,
@@ -145,8 +157,11 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             $dummyEditSong->base64EncodedCoverImage,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -156,6 +171,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->expectException(SongNotFoundException::class);
@@ -170,6 +186,7 @@ class EditSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithCollaborator(): void
     {
@@ -189,8 +206,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             null,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -204,6 +227,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -218,6 +242,7 @@ class EditSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
     {
@@ -238,8 +263,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             null,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -253,6 +284,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -267,6 +299,7 @@ class EditSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithGroupActor(): void
     {
@@ -288,8 +321,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             null,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -303,6 +342,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -317,6 +357,7 @@ class EditSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithTalentActor(): void
     {
@@ -338,8 +379,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             null,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -353,6 +400,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -367,6 +415,7 @@ class EditSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -386,8 +435,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             null,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -401,6 +456,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 
@@ -414,6 +470,7 @@ class EditSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
@@ -433,8 +490,14 @@ class EditSongTest extends TestCase
             $dummyEditSong->overView,
             null,
             $dummyEditSong->musicVideoLink,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -444,6 +507,7 @@ class EditSongTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
 

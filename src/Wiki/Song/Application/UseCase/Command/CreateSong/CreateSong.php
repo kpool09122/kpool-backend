@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -19,6 +21,7 @@ readonly class CreateSong implements CreateSongInterface
         private DraftSongFactoryInterface $songFactory,
         private SongRepositoryInterface $songRepository,
         private ImageServiceInterface $imageService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -26,10 +29,14 @@ readonly class CreateSong implements CreateSongInterface
      * @param CreateSongInputPort $input
      * @return DraftSong
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(CreateSongInputPort $input): DraftSong
     {
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $agencyId = (string) $input->agencyIdentifier();
         $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,

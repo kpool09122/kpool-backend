@@ -13,8 +13,10 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -56,6 +58,8 @@ class PublishSongTest extends TestCase
     public function test__construct(): void
     {
         // TODO: 各実装クラス作ったら削除する
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -78,6 +82,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWhenAlreadyPublished(): void
     {
@@ -92,8 +97,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -130,6 +141,7 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -158,6 +170,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessForTheFirstTime(): void
     {
@@ -172,8 +185,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -212,6 +231,7 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -240,19 +260,23 @@ class PublishSongTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundSong(): void
     {
         $dummyPublishSong = $this->createDummyPublishSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -264,6 +288,7 @@ class PublishSongTest extends TestCase
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -281,19 +306,22 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testInvalidStatus(): void
     {
         $dummyPublishSong = $this->createDummyPublishSong(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -305,6 +333,7 @@ class PublishSongTest extends TestCase
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -323,6 +352,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testHasApprovedButNotTranslatedSong(): void
     {
@@ -334,8 +364,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -352,6 +388,7 @@ class PublishSongTest extends TestCase
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -369,6 +406,7 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundPublishedSong(): void
     {
@@ -380,8 +418,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -402,6 +446,7 @@ class PublishSongTest extends TestCase
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -419,6 +464,7 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedRole(): void
     {
@@ -430,8 +476,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -439,10 +491,13 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
 
+        $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
@@ -458,6 +513,7 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedAgencyScope(): void
     {
@@ -470,8 +526,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -479,10 +541,13 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
 
+        $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
@@ -499,6 +564,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
     {
@@ -515,8 +581,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -555,6 +627,7 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -572,6 +645,7 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedGroupScope(): void
     {
@@ -585,8 +659,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -594,10 +674,13 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
 
+        $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
@@ -614,6 +697,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedGroupActor(): void
     {
@@ -631,8 +715,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -671,6 +761,7 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -688,6 +779,7 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedTalentScope(): void
     {
@@ -701,8 +793,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -710,10 +808,13 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
 
+        $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
@@ -730,6 +831,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedTalentActor(): void
     {
@@ -747,8 +849,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -787,6 +895,7 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -805,6 +914,7 @@ class PublishSongTest extends TestCase
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -819,8 +929,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -859,6 +975,7 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -878,6 +995,7 @@ class PublishSongTest extends TestCase
      * @throws BindingResolutionException
      * @throws SongNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedNoneRole(): void
     {
@@ -889,8 +1007,14 @@ class PublishSongTest extends TestCase
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
             $dummyPublishSong->publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftById')
@@ -902,6 +1026,7 @@ class PublishSongTest extends TestCase
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
