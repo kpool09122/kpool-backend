@@ -170,6 +170,51 @@ class SubmitTalentTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $submitTalentInfo = $this->createSubmitTalentInfo();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new SubmitTalentInput(
+            $submitTalentInfo->talentIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($submitTalentInfo->talentIdentifier)
+            ->andReturn($submitTalentInfo->draftTalent);
+
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $submitTalent = $this->app->make(SubmitTalentInterface::class);
+        $submitTalent->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがPendingかRejected以外の場合、例外がスローされること.
      *
      * @return void

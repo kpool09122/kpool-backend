@@ -321,6 +321,54 @@ class PublishSongTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws SongNotFoundException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyPublishSong = $this->createDummyPublishSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new PublishSongInput(
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $publishSong = $this->app->make(PublishSongInterface::class);
+        $publishSong->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

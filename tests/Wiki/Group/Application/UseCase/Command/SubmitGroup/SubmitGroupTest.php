@@ -162,6 +162,51 @@ class SubmitGroupTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummySubmitGroup = $this->createDummySubmitGroup();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new SubmitGroupInput(
+            $dummySubmitGroup->groupIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummySubmitGroup->groupIdentifier)
+            ->andReturn($dummySubmitGroup->group);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $submitGroup = $this->app->make(SubmitGroupInterface::class);
+        $submitGroup->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがPendingかRejected以外の場合、例外がスローされること.
      *
      * @return void

@@ -150,6 +150,37 @@ class AutomaticCreateDraftGroupTest extends TestCase
         $useCase->process($input);
     }
 
+    /**
+     * 異常系: 指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $payload = $this->makePayload();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
+        $repository = Mockery::mock(GroupRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
+        $this->app->instance(GroupRepositoryInterface::class, $repository);
+
+        $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
+        $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase->process($input);
+    }
+
     private function makePayload(): AutomaticDraftGroupCreationPayload
     {
         return new AutomaticDraftGroupCreationPayload(

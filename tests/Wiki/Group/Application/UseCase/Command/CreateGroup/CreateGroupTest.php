@@ -497,4 +497,54 @@ class CreateGroupTest extends TestCase
         $useCase = $this->app->make(CreateGroupInterface::class);
         $useCase->process($input);
     }
+
+    /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translation = Language::KOREAN;
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test description');
+        $songIdentifiers = [];
+        $base64EncodedImage = null;
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new CreateGroupInput(
+            $editorIdentifier,
+            $publishedGroupIdentifier,
+            $translation,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $base64EncodedImage,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase = $this->app->make(CreateGroupInterface::class);
+        $useCase->process($input);
+    }
 }

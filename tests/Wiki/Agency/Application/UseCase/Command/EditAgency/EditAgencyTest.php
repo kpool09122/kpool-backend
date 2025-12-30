@@ -146,6 +146,48 @@ class EditAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyAgency = $this->createDummyEditAgency();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new EditAgencyInput(
+            $dummyAgency->agencyIdentifier,
+            $dummyAgency->name,
+            $dummyAgency->CEO,
+            $dummyAgency->foundedIn,
+            $dummyAgency->description,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyAgency->agencyIdentifier)
+            ->andReturn($dummyAgency->agency);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->expectException(PrincipalNotFoundException::class);
+        $editAgency = $this->app->make(EditAgencyInterface::class);
+        $editAgency->process($input);
+    }
+
+    /**
      * 正常系：COLLABORATORがAgencyを編集できること.
      *
      * @return void

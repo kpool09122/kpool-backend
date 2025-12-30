@@ -308,6 +308,54 @@ class ApproveTalentTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws InvalidStatusException
+     * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $approveTalentInfo = $this->createApproveTalentInfo();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new ApproveTalentInput(
+            $approveTalentInfo->talentIdentifier,
+            $approveTalentInfo->publishedTalentIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($approveTalentInfo->talentIdentifier)
+            ->andReturn($approveTalentInfo->draftTalent);
+
+        $talentService = Mockery::mock(TalentServiceInterface::class);
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentServiceInterface::class, $talentService);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $approveTalent = $this->app->make(ApproveTalentInterface::class);
+        $approveTalent->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

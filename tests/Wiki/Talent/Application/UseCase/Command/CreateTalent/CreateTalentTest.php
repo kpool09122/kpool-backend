@@ -537,6 +537,53 @@ class CreateTalentTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $createTalentInfo = $this->createCreateTalentInfo();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new CreateTalentInput(
+            $createTalentInfo->publishedTalentIdentifier,
+            $createTalentInfo->editorIdentifier,
+            $createTalentInfo->language,
+            $createTalentInfo->name,
+            $createTalentInfo->realName,
+            $createTalentInfo->agencyIdentifier,
+            $createTalentInfo->groupIdentifiers,
+            $createTalentInfo->birthday,
+            $createTalentInfo->career,
+            $createTalentInfo->base64EncodedImage,
+            $createTalentInfo->relevantVideoLinks,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase = $this->app->make(CreateTalentInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * @return CreateTalentTestData
      * @throws ExceedMaxRelevantVideoLinksException
      */

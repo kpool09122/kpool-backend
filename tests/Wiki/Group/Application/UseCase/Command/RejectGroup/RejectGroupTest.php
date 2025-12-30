@@ -164,6 +164,51 @@ class RejectGroupTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyRejectGroup = $this->createDummyRejectGroup();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new RejectGroupInput(
+            $dummyRejectGroup->groupIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyRejectGroup->groupIdentifier)
+            ->andReturn($dummyRejectGroup->group);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $rejectGroup = $this->app->make(RejectGroupInterface::class);
+        $rejectGroup->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

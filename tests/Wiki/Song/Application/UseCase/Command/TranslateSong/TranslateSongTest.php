@@ -161,6 +161,48 @@ class TranslateSongTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     * @throws SongNotFoundException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyTranslateSong = $this->createDummyTranslateSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new TranslateSongInput(
+            $dummyTranslateSong->songIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyTranslateSong->songIdentifier)
+            ->andReturn($dummyTranslateSong->song);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $translateSong = $this->app->make(TranslateSongInterface::class);
+        $translateSong->process($input);
+    }
+
+    /**
      * 異常系：翻訳権限がないロール（Collaborator）の場合、例外がスローされること.
      *
      * @return void

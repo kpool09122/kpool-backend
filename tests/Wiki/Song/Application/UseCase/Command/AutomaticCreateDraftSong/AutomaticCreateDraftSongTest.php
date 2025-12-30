@@ -175,6 +175,37 @@ class AutomaticCreateDraftSongTest extends TestCase
         $useCase->process($input);
     }
 
+    /**
+     * 異常系: 指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $payload = $this->makePayload();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
+        $repository = Mockery::mock(SongRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
+        $this->app->instance(SongRepositoryInterface::class, $repository);
+
+        $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
+        $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase->process($input);
+    }
+
     private function makePayload(): AutomaticDraftSongCreationPayload
     {
         return new AutomaticDraftSongCreationPayload(

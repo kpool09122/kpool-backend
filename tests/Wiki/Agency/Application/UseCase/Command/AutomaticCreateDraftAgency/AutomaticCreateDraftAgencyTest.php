@@ -122,6 +122,39 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $payload = $this->makePayload();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
+        $repository = Mockery::mock(AgencyRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
+        $this->app->instance(AgencyRepositoryInterface::class, $repository);
+
+        $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
+        $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase->process($input);
+    }
+
+    /**
      * 異常系: ActorがAdministratorかSenior Collaboratorでない場合は、例外がスローされること.
      *
      * @throws BindingResolutionException

@@ -164,6 +164,48 @@ class TranslateTalentTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $translateTalentInfo = $this->createTranslateTalentInfo();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new TranslateTalentInput(
+            $translateTalentInfo->talentIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findById')
+            ->with($translateTalentInfo->talentIdentifier)
+            ->once()
+            ->andReturn($translateTalentInfo->talent);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $translateTalent = $this->app->make(TranslateTalentInterface::class);
+        $translateTalent->process($input);
+    }
+
+    /**
      * 異常系：承認権限がないロール（Collaborator）の場合、例外がスローされること.
      *
      * @return void
