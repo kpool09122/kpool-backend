@@ -30,11 +30,14 @@ use Source\Wiki\Talent\Application\UseCase\Command\PublishTalent\PublishTalentIn
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Entity\TalentHistory;
+use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -45,6 +48,7 @@ use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -77,6 +81,7 @@ class PublishTalentTest extends TestCase
 
     /**
      * 正常系：正しく変更されたTalentが公開されること（すでに一度公開されたことがある場合）.
+     * スナップショットが保存されることも確認.
      *
      * @return void
      * @throws BindingResolutionException
@@ -176,11 +181,27 @@ class PublishTalentTest extends TestCase
             ->with($publishTalentInfo->history)
             ->andReturn(null);
 
+        // スナップショットのモック
+        $snapshot = $publishTalentInfo->snapshot;
+        $talentSnapshotFactory = Mockery::mock(TalentSnapshotFactoryInterface::class);
+        $talentSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($publishedTalent)
+            ->andReturn($snapshot);
+
+        $talentSnapshotRepository = Mockery::mock(TalentSnapshotRepositoryInterface::class);
+        $talentSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($snapshot)
+            ->andReturn(null);
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+        $this->app->instance(TalentSnapshotFactoryInterface::class, $talentSnapshotFactory);
+        $this->app->instance(TalentSnapshotRepositoryInterface::class, $talentSnapshotRepository);
         $publishTalent = $this->app->make(PublishTalentInterface::class);
         $publishedTalent = $publishTalent->process($input);
         $this->assertSame((string)$publishTalentInfo->publishedTalentIdentifier, (string)$publishedTalent->talentIdentifier());
@@ -1355,6 +1376,24 @@ class PublishTalentTest extends TestCase
             new \DateTimeImmutable(),
         );
 
+        // スナップショット（公開済みTalentからスナップショットを作成）
+        $snapshot = new TalentSnapshot(
+            new TalentSnapshotIdentifier(StrTestHelper::generateUlid()),
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $language,
+            $name,
+            $realName,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $imageLink,
+            $relevantVideoLinks,
+            new Version(1),
+            new \DateTimeImmutable(),
+        );
+
         return new PublishTalentTestData(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
@@ -1377,6 +1416,7 @@ class PublishTalentTest extends TestCase
             $talent,
             $historyIdentifier,
             $history,
+            $snapshot,
         );
     }
 }
@@ -1413,6 +1453,7 @@ readonly class PublishTalentTestData
         public DraftTalent              $draftTalent,
         public TalentHistoryIdentifier  $historyIdentifier,
         public TalentHistory            $history,
+        public TalentSnapshot           $snapshot,
     ) {
     }
 }

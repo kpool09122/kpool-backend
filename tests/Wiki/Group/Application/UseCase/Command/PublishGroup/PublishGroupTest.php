@@ -18,16 +18,20 @@ use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInter
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Entity\GroupHistory;
+use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
+use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -52,7 +56,6 @@ class PublishGroupTest extends TestCase
      */
     public function test__construct(): void
     {
-        // TODO: 各実装クラス作ったら削除する
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $groupService = Mockery::mock(GroupServiceInterface::class);
@@ -63,6 +66,10 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $groupSnapshotFactory = Mockery::mock(GroupSnapshotFactoryInterface::class);
+        $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
+        $groupSnapshotRepository = Mockery::mock(GroupSnapshotRepositoryInterface::class);
+        $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $this->assertInstanceOf(PublishGroup::class, $publishGroup);
     }
@@ -134,11 +141,26 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（既存の公開済みGroupがある場合はスナップショットを保存）
+        $groupSnapshotFactory = Mockery::mock(GroupSnapshotFactoryInterface::class);
+        $groupSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishGroup->publishedGroup)
+            ->andReturn($dummyPublishGroup->snapshot);
+
+        $groupSnapshotRepository = Mockery::mock(GroupSnapshotRepositoryInterface::class);
+        $groupSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->snapshot)
+            ->andReturn(null);
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
+        $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
@@ -221,12 +243,21 @@ class PublishGroupTest extends TestCase
             ->with($dummyPublishGroup->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（初回公開時はスナップショットを保存しない）
+        $groupSnapshotFactory = Mockery::mock(GroupSnapshotFactoryInterface::class);
+        $groupSnapshotFactory->shouldNotReceive('create');
+
+        $groupSnapshotRepository = Mockery::mock(GroupSnapshotRepositoryInterface::class);
+        $groupSnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
+        $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
@@ -1205,6 +1236,22 @@ class PublishGroupTest extends TestCase
             new \DateTimeImmutable(),
         );
 
+        // 公開済みGroupのスナップショット（更新時用）
+        $snapshot = new GroupSnapshot(
+            new GroupSnapshotIdentifier(StrTestHelper::generateUlid()),
+            $publishedGroup->groupIdentifier(),
+            $publishedGroup->translationSetIdentifier(),
+            $publishedGroup->language(),
+            $publishedGroup->name(),
+            $publishedGroup->normalizedName(),
+            $publishedGroup->agencyIdentifier(),
+            $publishedGroup->description(),
+            $publishedGroup->songIdentifiers(),
+            $publishedGroup->imagePath(),
+            $publishedGroup->version(),
+            new \DateTimeImmutable('2024-01-01 00:00:00'),
+        );
+
         return new PublishGroupTestData(
             $groupIdentifier,
             $publishedGroupIdentifier,
@@ -1225,6 +1272,7 @@ class PublishGroupTest extends TestCase
             $publishedVersion,
             $historyIdentifier,
             $history,
+            $snapshot,
         );
     }
 }
@@ -1258,6 +1306,7 @@ readonly class PublishGroupTestData
         public Version                  $publishedVersion,
         public GroupHistoryIdentifier   $historyIdentifier,
         public GroupHistory             $history,
+        public GroupSnapshot            $snapshot,
     ) {
     }
 }

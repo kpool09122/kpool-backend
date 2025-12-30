@@ -17,15 +17,19 @@ use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyIn
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInterface;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
+use Source\Wiki\Agency\Domain\Entity\AgencySnapshot;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Factory\AgencySnapshotFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
+use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
@@ -62,6 +66,10 @@ class PublishAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $this->assertInstanceOf(PublishAgency::class, $publishAgency);
     }
@@ -133,11 +141,26 @@ class PublishAgencyTest extends TestCase
             ->with($dummyPublishAgency->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（既存の公開済みAgencyがある場合はスナップショットを保存）
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishAgency->publishedAgency)
+            ->andReturn($dummyPublishAgency->snapshot);
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishAgency->snapshot)
+            ->andReturn(null);
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $result = $publishAgency->process($input);
         $this->assertSame((string) $dummyPublishAgency->publishedAgencyIdentifier, (string) $result->agencyIdentifier());
@@ -220,12 +243,21 @@ class PublishAgencyTest extends TestCase
             ->with($dummyPublishAgency->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（初回公開時はスナップショットを保存しない）
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $result = $publishAgency->process($input);
         $this->assertSame((string) $dummyPublishAgency->publishedAgencyIdentifier, (string) $result->agencyIdentifier());
@@ -272,11 +304,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $this->expectException(AgencyNotFoundException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -317,11 +357,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $this->expectException(InvalidStatusException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -371,11 +419,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $this->expectException(ExistsApprovedButNotTranslatedAgencyException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -428,11 +484,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $this->expectException(AgencyNotFoundException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -476,11 +540,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -554,12 +626,21 @@ class PublishAgencyTest extends TestCase
             ->with($dummyPublishAgency->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（初回公開時はスナップショットを保存しない）
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -606,11 +687,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
@@ -687,12 +776,21 @@ class PublishAgencyTest extends TestCase
             ->with($dummyPublishAgency->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（初回公開時はスナップショットを保存しない）
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -737,11 +835,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
@@ -788,11 +894,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
@@ -867,12 +981,21 @@ class PublishAgencyTest extends TestCase
             ->with($dummyPublishAgency->history)
             ->andReturn(null);
 
+        // スナップショット関連のモック（初回公開時はスナップショットを保存しない）
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -916,11 +1039,19 @@ class PublishAgencyTest extends TestCase
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
@@ -1030,6 +1161,22 @@ DESC);
             new DateTimeImmutable('now'),
         );
 
+        // 公開済みAgencyのスナップショット（更新時用）
+        $snapshot = new AgencySnapshot(
+            new AgencySnapshotIdentifier(StrTestHelper::generateUlid()),
+            $publishedAgency->agencyIdentifier(),
+            $publishedAgency->translationSetIdentifier(),
+            $publishedAgency->language(),
+            $publishedAgency->name(),
+            $publishedAgency->normalizedName(),
+            $publishedAgency->CEO(),
+            $publishedAgency->normalizedCEO(),
+            $publishedAgency->foundedIn(),
+            $publishedAgency->description(),
+            $publishedAgency->version(),
+            new DateTimeImmutable('2024-01-01 00:00:00'),
+        );
+
         return new PublishAgencyTestData(
             $agencyIdentifier,
             $publishedAgencyIdentifier,
@@ -1050,6 +1197,7 @@ DESC);
             $exVersion,
             $historyIdentifier,
             $history,
+            $snapshot,
         );
     }
 }
@@ -1079,6 +1227,7 @@ readonly class PublishAgencyTestData
         public Version $exVersion,
         public AgencyHistoryIdentifier $historyIdentifier,
         public AgencyHistory $history,
+        public AgencySnapshot $snapshot,
     ) {
     }
 }

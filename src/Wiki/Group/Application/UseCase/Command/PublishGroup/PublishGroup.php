@@ -9,8 +9,10 @@ use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -25,12 +27,14 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class PublishGroup implements PublishGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface        $groupRepository,
-        private GroupServiceInterface           $groupService,
-        private GroupFactoryInterface           $groupFactory,
-        private GroupHistoryRepositoryInterface $groupHistoryRepository,
-        private GroupHistoryFactoryInterface    $groupHistoryFactory,
-        private PrincipalRepositoryInterface    $principalRepository,
+        private GroupRepositoryInterface         $groupRepository,
+        private GroupServiceInterface            $groupService,
+        private GroupFactoryInterface            $groupFactory,
+        private GroupHistoryRepositoryInterface  $groupHistoryRepository,
+        private GroupHistoryFactoryInterface     $groupHistoryFactory,
+        private GroupSnapshotFactoryInterface    $groupSnapshotFactory,
+        private GroupSnapshotRepositoryInterface $groupSnapshotRepository,
+        private PrincipalRepositoryInterface     $principalRepository,
     ) {
     }
 
@@ -82,6 +86,11 @@ readonly class PublishGroup implements PublishGroupInterface
             if ($publishedGroup === null) {
                 throw new GroupNotFoundException();
             }
+
+            // スナップショット保存（更新前の状態を保存）
+            $snapshot = $this->groupSnapshotFactory->create($publishedGroup);
+            $this->groupSnapshotRepository->save($snapshot);
+
             $publishedGroup->setName($group->name());
             $publishedGroup->setNormalizedName($group->normalizedName());
             $publishedGroup->updateVersion();

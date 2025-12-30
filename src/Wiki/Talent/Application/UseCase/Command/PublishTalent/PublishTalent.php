@@ -19,19 +19,23 @@ use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 
 readonly class PublishTalent implements PublishTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface        $talentRepository,
-        private TalentServiceInterface           $talentService,
-        private TalentFactoryInterface           $talentFactory,
-        private TalentHistoryRepositoryInterface $talentHistoryRepository,
-        private TalentHistoryFactoryInterface    $talentHistoryFactory,
-        private PrincipalRepositoryInterface     $principalRepository,
+        private TalentRepositoryInterface         $talentRepository,
+        private TalentServiceInterface            $talentService,
+        private TalentFactoryInterface            $talentFactory,
+        private TalentHistoryRepositoryInterface  $talentHistoryRepository,
+        private TalentHistoryFactoryInterface     $talentHistoryFactory,
+        private TalentSnapshotFactoryInterface    $talentSnapshotFactory,
+        private TalentSnapshotRepositoryInterface $talentSnapshotRepository,
+        private PrincipalRepositoryInterface      $principalRepository,
     ) {
     }
 
@@ -89,6 +93,11 @@ readonly class PublishTalent implements PublishTalentInterface
             if ($publishedTalent === null) {
                 throw new TalentNotFoundException();
             }
+
+            // スナップショット保存（更新前の状態を保存）
+            $snapshot = $this->talentSnapshotFactory->create($publishedTalent);
+            $this->talentSnapshotRepository->save($snapshot);
+
             $publishedTalent->setName($talent->name());
             $publishedTalent->updateVersion();
         } else {

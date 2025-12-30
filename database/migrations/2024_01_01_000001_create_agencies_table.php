@@ -40,6 +40,23 @@ return new class extends Migration
             $table->text('status')->comment('公開ステータス');
             $table->timestamps();
         });
+
+        Schema::create('agency_snapshots', static function (Blueprint $table) {
+            $table->string('id', 26)->primary()->comment('スナップショットID');
+            $table->string('agency_id', 26)->index()->comment('公開済み事務所ID');
+            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->string('language', 8)->comment('翻訳言語');
+            $table->string('name', 32)->comment('事務所名');
+            $table->string('normalized_name', 32)->comment('正規化された事務所名');
+            $table->string('CEO', 32)->comment('CEO名')->default('');
+            $table->string('normalized_CEO', 32)->comment('正規化されたCEO名')->default('');
+            $table->date('founded_in')->nullable()->comment('設立年');
+            $table->text('description')->comment('概要')->default('');
+            $table->unsignedInteger('version')->comment('バージョン');
+            $table->dateTime('created_at')->comment('作成日時');
+
+            $table->unique(['agency_id', 'version']);
+        });
     }
 
     /**
@@ -47,7 +64,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('agency_snapshots');
+        Schema::dropIfExists('draft_agencies');
         Schema::dropIfExists('agencies');
-        Schema::dropIfExists('agencies_pending');
     }
 }; 

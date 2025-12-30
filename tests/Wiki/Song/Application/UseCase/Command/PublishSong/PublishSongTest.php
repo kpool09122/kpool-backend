@@ -30,10 +30,13 @@ use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSongInterfac
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
+use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\SongSnapshotFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
@@ -44,6 +47,7 @@ use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
+use Source\Wiki\Song\Domain\ValueObject\SongSnapshotIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -76,6 +80,7 @@ class PublishSongTest extends TestCase
 
     /**
      * 正常系：正しく変更されたSongが公開されること（すでに一度公開されたことがある場合）.
+     * スナップショットが保存されることも確認.
      *
      * @return void
      * @throws BindingResolutionException
@@ -141,11 +146,27 @@ class PublishSongTest extends TestCase
             ->with($dummyPublishSong->history)
             ->andReturn(null);
 
+        // スナップショットのモック
+        $snapshot = $dummyPublishSong->snapshot;
+        $songSnapshotFactory = Mockery::mock(SongSnapshotFactoryInterface::class);
+        $songSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishSong->publishedSong)
+            ->andReturn($snapshot);
+
+        $songSnapshotRepository = Mockery::mock(SongSnapshotRepositoryInterface::class);
+        $songSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($snapshot)
+            ->andReturn(null);
+
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
+        $this->app->instance(SongSnapshotFactoryInterface::class, $songSnapshotFactory);
+        $this->app->instance(SongSnapshotRepositoryInterface::class, $songSnapshotRepository);
         $publishSong = $this->app->make(PublishSongInterface::class);
         $publishedSong = $publishSong->process($input);
         $this->assertSame((string)$dummyPublishSong->publishedSongIdentifier, (string)$publishedSong->songIdentifier());
@@ -1148,6 +1169,25 @@ class PublishSongTest extends TestCase
             new \DateTimeImmutable(),
         );
 
+        // スナップショット（公開済みSongからスナップショットを作成）
+        $snapshot = new SongSnapshot(
+            new SongSnapshotIdentifier(StrTestHelper::generateUlid()),
+            $publishedSongIdentifier,
+            $translationSetIdentifier,
+            $language,
+            $publishedName,
+            $publishedAgencyIdentifier,
+            $publishedBelongIdentifiers,
+            $publishedLyricist,
+            $publishedComposer,
+            $publishedReleaseDate,
+            $publishedOverView,
+            $publishedCoverImagePath,
+            $publishedMusicVideoLink,
+            $publishedVersion,
+            new DateTimeImmutable(),
+        );
+
         return new PublishSongTestData(
             $songIdentifier,
             $publishedSongIdentifier,
@@ -1171,6 +1211,7 @@ class PublishSongTest extends TestCase
             $publishedVersion,
             $historyIdentifier,
             $history,
+            $snapshot,
         );
     }
 }
@@ -1207,6 +1248,7 @@ readonly class PublishSongTestData
         public Version                  $publishedVersion,
         public SongHistoryIdentifier    $historyIdentifier,
         public SongHistory              $history,
+        public SongSnapshot             $snapshot,
     ) {
     }
 }

@@ -18,18 +18,22 @@ use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Factory\SongSnapshotFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 
 readonly class PublishSong implements PublishSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface        $songRepository,
-        private SongServiceInterface           $songService,
-        private SongFactoryInterface           $songFactory,
-        private SongHistoryRepositoryInterface $songHistoryRepository,
-        private SongHistoryFactoryInterface    $songHistoryFactory,
+        private SongRepositoryInterface         $songRepository,
+        private SongServiceInterface            $songService,
+        private SongFactoryInterface            $songFactory,
+        private SongHistoryRepositoryInterface  $songHistoryRepository,
+        private SongHistoryFactoryInterface     $songHistoryFactory,
+        private SongSnapshotFactoryInterface    $songSnapshotFactory,
+        private SongSnapshotRepositoryInterface $songSnapshotRepository,
         private PrincipalRepositoryInterface    $principalRepository,
     ) {
     }
@@ -88,6 +92,11 @@ readonly class PublishSong implements PublishSongInterface
             if ($publishedSong === null) {
                 throw new SongNotFoundException();
             }
+
+            // スナップショット保存（更新前の状態を保存）
+            $snapshot = $this->songSnapshotFactory->create($publishedSong);
+            $this->songSnapshotRepository->save($snapshot);
+
             $publishedSong->setName($song->name());
             $publishedSong->updateVersion();
         } else {
