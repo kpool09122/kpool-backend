@@ -57,8 +57,12 @@ use Source\Wiki\Talent\Domain\Factory\TalentFactory;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactory;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactory;
+use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
+use Source\Wiki\Talent\Infrastructure\Adapters\Repository\TalentSnapshotRepository;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -66,6 +70,8 @@ class DomainServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TalentFactoryInterface::class, TalentFactory::class);
         $this->app->singleton(TalentHistoryFactoryInterface::class, TalentHistoryFactory::class);
+        $this->app->singleton(TalentSnapshotFactoryInterface::class, TalentSnapshotFactory::class);
+        $this->app->singleton(TalentSnapshotRepositoryInterface::class, TalentSnapshotRepository::class);
         $this->app->singleton(TalentServiceInterface::class, TalentService::class);
         $this->app->singleton(GroupFactoryInterface::class, GroupFactory::class);
         $this->app->singleton(GroupHistoryFactoryInterface::class, GroupHistoryFactory::class);
