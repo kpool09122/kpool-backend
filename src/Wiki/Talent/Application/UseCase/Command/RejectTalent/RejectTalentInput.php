@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\RejectTalent;
 
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 readonly class RejectTalentInput implements RejectTalentInputPort
 {
     public function __construct(
-        private TalentIdentifier $talentIdentifier,
-        private Principal        $principal,
+        private TalentIdentifier    $talentIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class RejectTalentInput implements RejectTalentInputPort
         return $this->talentIdentifier;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

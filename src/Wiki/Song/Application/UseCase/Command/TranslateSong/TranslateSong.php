@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\TranslateSong;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -19,6 +21,7 @@ readonly class TranslateSong implements TranslateSongInterface
     public function __construct(
         private SongRepositoryInterface $songRepository,
         private TranslationServiceInterface $translationService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -27,6 +30,7 @@ readonly class TranslateSong implements TranslateSongInterface
      * @return DraftSong[]
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(TranslateSongInputPort $input): array
     {
@@ -36,7 +40,10 @@ readonly class TranslateSong implements TranslateSongInterface
             throw new SongNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()

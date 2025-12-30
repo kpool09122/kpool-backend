@@ -6,7 +6,7 @@ namespace Source\Wiki\Agency\Domain\Service;
 
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
 
 interface AutomaticDraftAgencyCreationServiceInterface
 {

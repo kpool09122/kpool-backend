@@ -43,6 +43,8 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSong;
@@ -115,5 +117,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectSongInterface::class, RejectSong::class);
         $this->app->singleton(PublishSongInterface::class, PublishSong::class);
         $this->app->singleton(TranslateSongInterface::class, TranslateSong::class);
+        $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
     }
 }

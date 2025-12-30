@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\PublishSong;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -19,6 +20,7 @@ interface PublishSongInterface
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedSongException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(PublishSongInputPort $input): Song;
 }

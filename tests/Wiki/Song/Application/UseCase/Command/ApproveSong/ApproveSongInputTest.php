@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInput;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -25,15 +23,14 @@ class ApproveSongInputTest extends TestCase
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveSongInput(
             $songIdentifier,
             $publishedSongIdentifier,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
         $this->assertSame((string)$publishedSongIdentifier, (string)$input->publishedSongIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

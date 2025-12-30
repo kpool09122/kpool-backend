@@ -7,14 +7,17 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -36,15 +39,42 @@ use Tests\TestCase;
 class AutomaticCreateDraftSongTest extends TestCase
 {
     /**
+     * 正常系: インスタンスが生成されること
+     *
+     * @throws BindingResolutionException
+     * @return void
+     */
+    public function test__construct(): void
+    {
+        // TODO: 各実装クラス作ったら削除する
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
+        $repository = Mockery::mock(SongRepositoryInterface::class);
+        $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
+        $this->app->instance(SongRepositoryInterface::class, $repository);
+        $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
+        $this->assertInstanceOf(AutomaticCreateDraftSongInterface::class, $useCase);
+    }
+
+    /**
      * 正常系: ActorがAdministratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::ADMINISTRATOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
         $draftSong = $this->makeDraftSong();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -58,10 +88,11 @@ class AutomaticCreateDraftSongTest extends TestCase
             ->with($draftSong)
             ->andReturnNull();
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
         $this->app->instance(SongRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftSongInput($payload, $principal);
+        $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
 
         $result = $useCase->process($input);
@@ -73,12 +104,20 @@ class AutomaticCreateDraftSongTest extends TestCase
      * 正常系: ActorがSenior Collaboratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
         $draftSong = $this->makeDraftSong();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -92,10 +131,11 @@ class AutomaticCreateDraftSongTest extends TestCase
             ->with($draftSong)
             ->andReturnNull();
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
         $this->app->instance(SongRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftSongInput($payload, $principal);
+        $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
 
         $result = $useCase->process($input);
@@ -107,19 +147,28 @@ class AutomaticCreateDraftSongTest extends TestCase
      * 異常系: ActorがAdministratorかSenior Collaboratorでない場合は、例外がスローされること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::AGENCY_ACTOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
         $repository = Mockery::mock(SongRepositoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
         $this->app->instance(SongRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftSongInput($payload, $principal);
+        $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
 
         $this->expectException(UnauthorizedException::class);
@@ -145,11 +194,9 @@ class AutomaticCreateDraftSongTest extends TestCase
         );
     }
 
-    private function makePrincipal(Role $role): Principal
+    private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-
-        return new Principal($principalIdentifier, $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
     }
 
     private function makeDraftSong(): DraftSong

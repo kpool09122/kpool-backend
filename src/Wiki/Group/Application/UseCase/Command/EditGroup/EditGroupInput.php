@@ -9,7 +9,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class EditGroupInput implements EditGroupInputPort
 {
@@ -20,16 +20,16 @@ readonly class EditGroupInput implements EditGroupInputPort
      * @param Description $description
      * @param list<SongIdentifier> $songIdentifiers
      * @param string|null $base64EncodedImage
-     * @param Principal $principal
+     * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private GroupIdentifier  $groupIdentifier,
-        private GroupName        $name,
-        private AgencyIdentifier $agencyIdentifier,
-        private Description      $description,
-        private array            $songIdentifiers,
-        private ?string          $base64EncodedImage,
-        private Principal        $principal,
+        private GroupIdentifier     $groupIdentifier,
+        private GroupName           $name,
+        private AgencyIdentifier    $agencyIdentifier,
+        private Description         $description,
+        private array               $songIdentifiers,
+        private ?string             $base64EncodedImage,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -66,8 +66,8 @@ readonly class EditGroupInput implements EditGroupInputPort
         return $this->base64EncodedImage;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

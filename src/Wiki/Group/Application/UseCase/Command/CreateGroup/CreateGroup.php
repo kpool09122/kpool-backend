@@ -8,17 +8,20 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class CreateGroup implements CreateGroupInterface
+readonly class CreateGroup implements CreateGroupInterface
 {
     public function __construct(
-        private ImageServiceInterface $imageService,
+        private ImageServiceInterface      $imageService,
         private DraftGroupFactoryInterface $groupFactory,
-        private GroupRepositoryInterface $groupRepository,
+        private GroupRepositoryInterface   $groupRepository,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -26,10 +29,14 @@ class CreateGroup implements CreateGroupInterface
      * @param CreateGroupInputPort $input
      * @return DraftGroup
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(CreateGroupInputPort $input): DraftGroup
     {
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::GROUP,
             agencyId: (string) $input->agencyIdentifier(),

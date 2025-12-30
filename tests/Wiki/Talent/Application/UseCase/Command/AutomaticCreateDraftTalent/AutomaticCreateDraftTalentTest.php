@@ -7,14 +7,17 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTale
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
@@ -41,12 +44,20 @@ class AutomaticCreateDraftTalentTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::ADMINISTRATOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
         $draftTalent = $this->makeDraftTalent();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftTalentCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -60,10 +71,11 @@ class AutomaticCreateDraftTalentTest extends TestCase
             ->with($draftTalent)
             ->andReturnNull();
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
         $this->app->instance(TalentRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftTalentInput($payload, $principal);
+        $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
 
         $result = $useCase->process($input);
@@ -75,12 +87,20 @@ class AutomaticCreateDraftTalentTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
         $draftTalent = $this->makeDraftTalent();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftTalentCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -94,10 +114,11 @@ class AutomaticCreateDraftTalentTest extends TestCase
             ->with($draftTalent)
             ->andReturnNull();
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
         $this->app->instance(TalentRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftTalentInput($payload, $principal);
+        $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
 
         $result = $useCase->process($input);
@@ -108,19 +129,28 @@ class AutomaticCreateDraftTalentTest extends TestCase
      * 異常系: ActorがAdministratorかSenior Collaboratorでない場合は、例外がスローされること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::AGENCY_ACTOR);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftTalentCreationServiceInterface::class);
         $repository = Mockery::mock(TalentRepositoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
         $this->app->instance(TalentRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftTalentInput($payload, $principal);
+        $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
 
         $this->expectException(UnauthorizedException::class);
@@ -144,11 +174,9 @@ class AutomaticCreateDraftTalentTest extends TestCase
         );
     }
 
-    private function makePrincipal(Role $role): Principal
+    private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-
-        return new Principal($principalIdentifier, $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
     }
 
     /**

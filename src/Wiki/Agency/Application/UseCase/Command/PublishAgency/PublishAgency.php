@@ -12,7 +12,9 @@ use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -28,6 +30,7 @@ readonly class PublishAgency implements PublishAgencyInterface
         private AgencyFactoryInterface           $agencyFactory,
         private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
         private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
+        private PrincipalRepositoryInterface     $principalRepository,
     ) {
     }
 
@@ -38,6 +41,7 @@ readonly class PublishAgency implements PublishAgencyInterface
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedAgencyException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(PublishAgencyInputPort $input): Agency
     {
@@ -51,7 +55,10 @@ readonly class PublishAgency implements PublishAgencyInterface
             throw new InvalidStatusException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),
@@ -93,7 +100,7 @@ readonly class PublishAgency implements PublishAgencyInterface
         $this->agencyRepository->save($publishedAgency);
 
         $history = $this->agencyHistoryFactory->create(
-            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            new EditorIdentifier((string)$input->principalIdentifier()),
             $agency->editorIdentifier(),
             $agency->publishedAgencyIdentifier(),
             $agency->agencyIdentifier(),

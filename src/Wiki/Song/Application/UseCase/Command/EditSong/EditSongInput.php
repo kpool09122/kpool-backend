@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -28,20 +28,20 @@ readonly class EditSongInput implements EditSongInputPort
      * @param Overview $overview
      * @param ?string $base64EncodedCoverImage
      * @param ?ExternalContentLink $musicVideoLink
-     * @param Principal $principal
+     * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private SongIdentifier $songIdentifier,
-        private SongName $name,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private array $belongIdentifiers,
-        private Lyricist $lyricist,
-        private Composer $composer,
-        private ?ReleaseDate $releaseDate,
-        private Overview $overview,
-        private ?string $base64EncodedCoverImage,
+        private SongIdentifier       $songIdentifier,
+        private SongName             $name,
+        private ?AgencyIdentifier    $agencyIdentifier,
+        private array                $belongIdentifiers,
+        private Lyricist             $lyricist,
+        private Composer             $composer,
+        private ?ReleaseDate         $releaseDate,
+        private Overview             $overview,
+        private ?string              $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
-        private Principal $principal,
+        private PrincipalIdentifier  $principalIdentifier,
     ) {
     }
 
@@ -98,8 +98,8 @@ readonly class EditSongInput implements EditSongInputPort
         return $this->musicVideoLink;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

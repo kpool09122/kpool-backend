@@ -6,9 +6,9 @@ namespace Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessCont
 
 use Source\Wiki\AccessControl\Application\Exception\ActorNotFoundException;
 use Source\Wiki\AccessControl\Application\Exception\UnauthorizedChangingACException;
-use Source\Wiki\AccessControl\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Shared\Domain\Entity\Principal;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 
 class ChangeAccessControl implements ChangeAccessControlInterface
 {

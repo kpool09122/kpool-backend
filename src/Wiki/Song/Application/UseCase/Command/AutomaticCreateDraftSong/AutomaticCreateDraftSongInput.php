@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
 
 readonly class AutomaticCreateDraftSongInput implements AutomaticCreateDraftSongInputPort
 {
     public function __construct(
         private AutomaticDraftSongCreationPayload $payload,
-        private Principal $principal,
+        private PrincipalIdentifier               $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class AutomaticCreateDraftSongInput implements AutomaticCreateDraftSong
         return $this->payload;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

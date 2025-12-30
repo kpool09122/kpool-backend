@@ -9,7 +9,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface EditAgencyInputPort
 {
@@ -23,5 +23,5 @@ interface EditAgencyInputPort
 
     public function description(): Description;
 
-    public function principal(): Principal;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

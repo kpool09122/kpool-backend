@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\EditTalent;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -16,8 +18,9 @@ use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 readonly class EditTalent implements EditTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface $talentRepository,
-        private ImageServiceInterface     $imageService,
+        private TalentRepositoryInterface    $talentRepository,
+        private ImageServiceInterface        $imageService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -26,6 +29,7 @@ readonly class EditTalent implements EditTalentInterface
      * @return DraftTalent
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(EditTalentInputPort $input): DraftTalent
     {
@@ -35,7 +39,10 @@ readonly class EditTalent implements EditTalentInterface
             throw new TalentNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $groupIds = array_map(
             static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
@@ -30,21 +30,21 @@ readonly class CreateTalentInput implements CreateTalentInputPort
      * @param Career $career
      * @param string|null $base64EncodedImage
      * @param RelevantVideoLinks $relevantVideoLinks
-     * @param Principal $principal
+     * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
         private ?TalentIdentifier  $publishedTalentIdentifier,
-        private EditorIdentifier   $editorIdentifier,
-        private Language           $language,
-        private TalentName         $name,
-        private RealName           $realName,
-        private ?AgencyIdentifier  $agencyIdentifier,
-        private array              $groupIdentifiers,
-        private ?Birthday          $birthday,
-        private Career             $career,
-        private ?string            $base64EncodedImage,
-        private RelevantVideoLinks $relevantVideoLinks,
-        private Principal          $principal,
+        private EditorIdentifier    $editorIdentifier,
+        private Language            $language,
+        private TalentName          $name,
+        private RealName            $realName,
+        private ?AgencyIdentifier   $agencyIdentifier,
+        private array               $groupIdentifiers,
+        private ?Birthday           $birthday,
+        private Career              $career,
+        private ?string             $base64EncodedImage,
+        private RelevantVideoLinks  $relevantVideoLinks,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -106,8 +106,8 @@ readonly class CreateTalentInput implements CreateTalentInputPort
         return $this->relevantVideoLinks;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

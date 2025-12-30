@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl;
 
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 
 interface ChangeAccessControlInputPort
 {

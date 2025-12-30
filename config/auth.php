@@ -19,7 +19,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => Application\Models\Auth\User::class,
+            'model' => Application\Models\Identity\Identity::class,
         ],
     ],
 

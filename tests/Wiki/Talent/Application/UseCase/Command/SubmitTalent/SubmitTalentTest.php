@@ -8,16 +8,19 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalentInput;
@@ -51,6 +54,8 @@ class SubmitTalentTest extends TestCase
     public function test__construct(): void
     {
         // TODO: 各実装クラス作ったら削除する
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
@@ -70,11 +75,12 @@ class SubmitTalentTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -82,8 +88,14 @@ class SubmitTalentTest extends TestCase
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('saveDraft')
@@ -105,6 +117,7 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -121,18 +134,21 @@ class SubmitTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundTalent(): void
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -143,6 +159,7 @@ class SubmitTalentTest extends TestCase
         $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -160,18 +177,25 @@ class SubmitTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testInvalidStatus(): void
     {
         $submitTalentInfo = $this->createSubmitTalentInfo(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -182,6 +206,7 @@ class SubmitTalentTest extends TestCase
         $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -200,11 +225,12 @@ class SubmitTalentTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -212,8 +238,14 @@ class SubmitTalentTest extends TestCase
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -235,6 +267,7 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -254,12 +287,13 @@ class SubmitTalentTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
     {
         $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
@@ -268,8 +302,14 @@ class SubmitTalentTest extends TestCase
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -291,6 +331,7 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -310,13 +351,14 @@ class SubmitTalentTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithGroupActor(): void
     {
         $agencyId = StrTestHelper::generateUlid();
         $groupIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $groupIds, []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
@@ -326,8 +368,14 @@ class SubmitTalentTest extends TestCase
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -349,6 +397,7 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -368,6 +417,7 @@ class SubmitTalentTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithTalentActor(): void
     {
@@ -375,7 +425,7 @@ class SubmitTalentTest extends TestCase
         $groupIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
         $talentId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
@@ -386,8 +436,14 @@ class SubmitTalentTest extends TestCase
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -409,6 +465,7 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -428,11 +485,12 @@ class SubmitTalentTest extends TestCase
      * @throws InvalidStatusException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -440,8 +498,14 @@ class SubmitTalentTest extends TestCase
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -463,6 +527,7 @@ class SubmitTalentTest extends TestCase
             ->with($submitTalentInfo->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -482,18 +547,25 @@ class SubmitTalentTest extends TestCase
      * @throws UnauthorizedException
      * @throws InvalidStatusException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -504,6 +576,7 @@ class SubmitTalentTest extends TestCase
         $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);

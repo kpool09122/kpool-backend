@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface ApproveAgencyInputPort
 {
@@ -13,5 +13,5 @@ interface ApproveAgencyInputPort
 
     public function publishedAgencyIdentifier(): ?AgencyIdentifier;
 
-    public function principal(): Principal;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

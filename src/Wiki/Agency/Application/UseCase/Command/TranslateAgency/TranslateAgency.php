@@ -9,6 +9,8 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -17,8 +19,9 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class TranslateAgency implements TranslateAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface   $agencyRepository,
-        private TranslationServiceInterface $translationService,
+        private AgencyRepositoryInterface    $agencyRepository,
+        private TranslationServiceInterface  $translationService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -27,6 +30,7 @@ readonly class TranslateAgency implements TranslateAgencyInterface
      * @return DraftAgency[]
      * @throws AgencyNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(TranslateAgencyInputPort $input): array
     {
@@ -36,7 +40,11 @@ readonly class TranslateAgency implements TranslateAgencyInterface
             throw new AgencyNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
+
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\RejectSong;
 
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -23,6 +25,7 @@ readonly class RejectSong implements RejectSongInterface
         private SongRepositoryInterface        $songRepository,
         private SongHistoryRepositoryInterface $songHistoryRepository,
         private SongHistoryFactoryInterface    $songHistoryFactory,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -32,6 +35,7 @@ readonly class RejectSong implements RejectSongInterface
      * @throws SongNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(RejectSongInputPort $input): DraftSong
     {
@@ -45,7 +49,10 @@ readonly class RejectSong implements RejectSongInterface
             throw new InvalidStatusException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,
             $song->belongIdentifiers()
@@ -67,7 +74,7 @@ readonly class RejectSong implements RejectSongInterface
         $this->songRepository->saveDraft($song);
 
         $history = $this->songHistoryFactory->create(
-            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            new EditorIdentifier((string)$input->principalIdentifier()),
             $song->editorIdentifier(),
             $song->publishedSongIdentifier(),
             $song->songIdentifier(),

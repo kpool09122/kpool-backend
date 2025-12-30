@@ -12,7 +12,9 @@ use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -28,6 +30,7 @@ readonly class PublishGroup implements PublishGroupInterface
         private GroupFactoryInterface           $groupFactory,
         private GroupHistoryRepositoryInterface $groupHistoryRepository,
         private GroupHistoryFactoryInterface    $groupHistoryFactory,
+        private PrincipalRepositoryInterface    $principalRepository,
     ) {
     }
 
@@ -38,6 +41,7 @@ readonly class PublishGroup implements PublishGroupInterface
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedGroupException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(PublishGroupInputPort $input): Group
     {
@@ -51,7 +55,10 @@ readonly class PublishGroup implements PublishGroupInterface
             throw new InvalidStatusException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::GROUP,
             agencyId: $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
@@ -95,7 +102,7 @@ readonly class PublishGroup implements PublishGroupInterface
         $this->groupRepository->save($publishedGroup);
 
         $history = $this->groupHistoryFactory->create(
-            new EditorIdentifier((string)$input->principal()->principalIdentifier()),
+            new EditorIdentifier((string)$input->principalIdentifier()),
             $group->editorIdentifier(),
             $group->publishedGroupIdentifier(),
             $group->groupIdentifier(),

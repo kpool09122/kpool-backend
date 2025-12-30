@@ -10,8 +10,8 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateGroupInput implements CreateGroupInputPort
 {
@@ -24,18 +24,18 @@ readonly class CreateGroupInput implements CreateGroupInputPort
      * @param Description $description
      * @param SongIdentifier[] $songIdentifiers
      * @param string|null $base64EncodedImage
-     * @param Principal $principal
+     * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private EditorIdentifier $editorIdentifier,
-        private ?GroupIdentifier $publishedGroupIdentifier,
-        private Language         $language,
-        private GroupName        $name,
-        private AgencyIdentifier $agencyIdentifier,
-        private Description      $description,
-        private array            $songIdentifiers,
-        private ?string          $base64EncodedImage,
-        private Principal        $principal,
+        private EditorIdentifier    $editorIdentifier,
+        private ?GroupIdentifier    $publishedGroupIdentifier,
+        private Language            $language,
+        private GroupName           $name,
+        private AgencyIdentifier    $agencyIdentifier,
+        private Description         $description,
+        private array               $songIdentifiers,
+        private ?string             $base64EncodedImage,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -82,8 +82,8 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         return $this->base64EncodedImage;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

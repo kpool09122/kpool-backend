@@ -7,6 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgen
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
@@ -21,12 +22,14 @@ use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencySource;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,12 +39,21 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      * 正常系: ActorがAdministratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::ADMINISTRATOR);
         $draftAgency = $this->makeDraftAgency();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -55,10 +67,11 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->with($draftAgency)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
         $this->app->instance(AgencyRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftAgencyInput($payload, $principal);
+        $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
         $result = $useCase->process($input);
@@ -69,12 +82,21 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      * 正常系: ActorがSenior Collaboratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR);
         $draftAgency = $this->makeDraftAgency();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
         $service->shouldReceive('create')
@@ -88,10 +110,11 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->with($draftAgency)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
         $this->app->instance(AgencyRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftAgencyInput($payload, $principal);
+        $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
         $result = $useCase->process($input);
@@ -102,19 +125,29 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      * 異常系: ActorがAdministratorかSenior Collaboratorでない場合は、例外がスローされること.
      *
      * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, null, [], []);
+
         $payload = $this->makePayload();
-        $principal = $this->makePrincipal(Role::AGENCY_ACTOR);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
         $repository = Mockery::mock(AgencyRepositoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
         $this->app->instance(AgencyRepositoryInterface::class, $repository);
 
-        $input = new AutomaticCreateDraftAgencyInput($payload, $principal);
+        $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
         $this->expectException(UnauthorizedException::class);
@@ -133,13 +166,6 @@ class AutomaticCreateDraftAgencyTest extends TestCase
 가수 겸 음악プロデューサー인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다.'),
             new AutomaticDraftAgencySource('news::12345'),
         );
-    }
-
-    private function makePrincipal(Role $role): Principal
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-
-        return new Principal($principalIdentifier, $role, null, [], []);
     }
 
     private function makeDraftAgency(): DraftAgency

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\RejectTalent;
 
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -23,6 +25,7 @@ readonly class RejectTalent implements RejectTalentInterface
         private TalentRepositoryInterface        $talentRepository,
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
         private TalentHistoryFactoryInterface    $talentHistoryFactory,
+        private PrincipalRepositoryInterface     $principalRepository,
     ) {
     }
 
@@ -32,6 +35,7 @@ readonly class RejectTalent implements RejectTalentInterface
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(RejectTalentInputPort $input): DraftTalent
     {
@@ -41,7 +45,10 @@ readonly class RejectTalent implements RejectTalentInterface
             throw new TalentNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $groupIds = array_map(
             static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
@@ -68,7 +75,7 @@ readonly class RejectTalent implements RejectTalentInterface
         $this->talentRepository->saveDraft($talent);
 
         $history = $this->talentHistoryFactory->create(
-            new EditorIdentifier((string) $input->principal()->principalIdentifier()),
+            new EditorIdentifier((string) $input->principalIdentifier()),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),

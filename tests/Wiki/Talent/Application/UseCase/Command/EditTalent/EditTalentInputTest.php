@@ -6,9 +6,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\EditTalent;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalentInput;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -51,9 +49,7 @@ class EditTalentInputTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditTalentInput(
             $talentIdentifier,
@@ -65,7 +61,7 @@ class EditTalentInputTest extends TestCase
             $career,
             $base64EncodedImage,
             $relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$talentIdentifier, (string)$input->talentIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
@@ -75,6 +71,6 @@ class EditTalentInputTest extends TestCase
         $this->assertSame($birthday, $input->birthday());
         $this->assertSame($career, $input->career());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

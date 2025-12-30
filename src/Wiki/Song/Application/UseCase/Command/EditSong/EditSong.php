@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -18,6 +20,7 @@ readonly class EditSong implements EditSongInterface
     public function __construct(
         private SongRepositoryInterface $songRepository,
         private ImageServiceInterface $imageService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -26,6 +29,7 @@ readonly class EditSong implements EditSongInterface
      * @return DraftSong
      * @throws SongNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(EditSongInputPort $input): DraftSong
     {
@@ -35,7 +39,10 @@ readonly class EditSong implements EditSongInterface
             throw new SongNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $agencyId = (string) $input->agencyIdentifier();
         $belongIds = array_map(
             static fn ($belongIdentifier) => (string) $belongIdentifier,

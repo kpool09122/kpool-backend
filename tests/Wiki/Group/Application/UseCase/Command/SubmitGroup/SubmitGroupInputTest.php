@@ -6,9 +6,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\SubmitGroup;
 
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInput;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -24,14 +22,13 @@ class SubmitGroupInputTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $groupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
 
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

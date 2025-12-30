@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -14,12 +16,13 @@ use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
-class CreateTalent implements CreateTalentInterface
+readonly class CreateTalent implements CreateTalentInterface
 {
     public function __construct(
-        private DraftTalentFactoryInterface $talentFactory,
-        private TalentRepositoryInterface   $talentRepository,
-        private ImageServiceInterface       $imageService,
+        private DraftTalentFactoryInterface  $talentFactory,
+        private TalentRepositoryInterface    $talentRepository,
+        private ImageServiceInterface        $imageService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -28,10 +31,14 @@ class CreateTalent implements CreateTalentInterface
      * @return DraftTalent
      * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(CreateTalentInputPort $input): DraftTalent
     {
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $groupIds = array_map(
             static fn ($groupIdentifier) => (string) $groupIdentifier,
             $input->groupIdentifiers()

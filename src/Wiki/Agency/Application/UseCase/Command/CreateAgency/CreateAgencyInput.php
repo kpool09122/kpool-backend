@@ -10,8 +10,8 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateAgencyInput implements CreateAgencyInputPort
 {
@@ -23,17 +23,17 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
      * @param CEO $CEO
      * @param ?FoundedIn $foundedIn
      * @param Description $description
-     * @param Principal $principal
+     * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private ?AgencyIdentifier $publishedAgencyIdentifier,
-        private EditorIdentifier  $editorIdentifier,
-        private Language          $language,
-        private AgencyName        $name,
-        private CEO               $CEO,
-        private ?FoundedIn        $foundedIn,
-        private Description       $description,
-        private Principal         $principal,
+        private ?AgencyIdentifier   $publishedAgencyIdentifier,
+        private EditorIdentifier    $editorIdentifier,
+        private Language            $language,
+        private AgencyName          $name,
+        private CEO                 $CEO,
+        private ?FoundedIn          $foundedIn,
+        private Description         $description,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -72,8 +72,8 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
         return $this->description;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

@@ -25,6 +25,10 @@ use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupService;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Infrastructure\Adapters\Repository\GroupRepository;
+use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Infrastructure\Factory\PrincipalFactory;
+use Source\Wiki\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactory;
@@ -67,5 +71,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
+        $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
+        $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
     }
 }

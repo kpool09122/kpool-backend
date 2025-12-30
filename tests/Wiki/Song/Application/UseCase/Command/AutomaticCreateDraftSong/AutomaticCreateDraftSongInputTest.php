@@ -7,10 +7,8 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInput;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
@@ -39,17 +37,11 @@ class AutomaticCreateDraftSongInputTest extends TestCase
             new Overview('Auto-generated overview.'),
             new AutomaticDraftSongSource('webhook::song'),
         );
-        $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUlid()),
-            Role::ADMINISTRATOR,
-            null,
-            [],
-            [],
-        );
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        $input = new AutomaticCreateDraftSongInput($payload, $principal);
+        $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
 
         $this->assertSame($payload, $input->payload());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

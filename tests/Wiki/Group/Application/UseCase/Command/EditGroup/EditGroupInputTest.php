@@ -10,9 +10,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,7 +38,6 @@ class EditGroupInputTest extends TestCase
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
 
         $input = new EditGroupInput(
             $groupIdentifier,
@@ -49,7 +46,7 @@ class EditGroupInputTest extends TestCase
             $description,
             $songIndentifiers,
             $base64EncodedImage,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
@@ -57,6 +54,6 @@ class EditGroupInputTest extends TestCase
         $this->assertSame($description, $input->description());
         $this->assertSame($songIndentifiers, $input->songIdentifiers());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

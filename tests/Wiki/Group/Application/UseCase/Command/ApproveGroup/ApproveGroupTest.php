@@ -7,6 +7,7 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\ApproveGroup;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -27,13 +28,15 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\Role;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -68,11 +71,12 @@ class ApproveGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveGroup = $this->createDummyApproveGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -81,8 +85,14 @@ class ApproveGroupTest extends TestCase
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('saveDraft')
@@ -110,6 +120,7 @@ class ApproveGroupTest extends TestCase
             ->with($dummyApproveGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -127,19 +138,23 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundGroup(): void
     {
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -151,6 +166,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -167,19 +183,23 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testInvalidStatus(): void
     {
         $dummyApproveGroup = $this->createDummyApproveGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -191,6 +211,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -209,19 +230,26 @@ class ApproveGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testHasApprovedButNotTranslatedAgency(): void
     {
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -238,6 +266,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -255,19 +284,26 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedRole(): void
     {
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -279,6 +315,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -296,6 +333,7 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedGroupScope(): void
     {
@@ -303,13 +341,19 @@ class ApproveGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -321,6 +365,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -339,12 +384,13 @@ class ApproveGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedGroupActor(): void
     {
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::GROUP_ACTOR, null, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $dummyApproveGroup = $this->createDummyApproveGroup(
             groupId: $groupId,
@@ -354,8 +400,14 @@ class ApproveGroupTest extends TestCase
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('saveDraft')
@@ -383,6 +435,7 @@ class ApproveGroupTest extends TestCase
             ->with($dummyApproveGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -400,6 +453,7 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedMemberScope(): void
     {
@@ -408,13 +462,19 @@ class ApproveGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherGroupId = StrTestHelper::generateUlid();
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -426,6 +486,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -444,13 +505,14 @@ class ApproveGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedMemberActor(): void
     {
         $groupId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
 
         $dummyApproveGroup = $this->createDummyApproveGroup(
             groupId: $groupId,
@@ -460,8 +522,14 @@ class ApproveGroupTest extends TestCase
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('saveDraft')
@@ -489,6 +557,7 @@ class ApproveGroupTest extends TestCase
             ->with($dummyApproveGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -506,6 +575,7 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedAgencyScope(): void
     {
@@ -513,13 +583,19 @@ class ApproveGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
         $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -531,6 +607,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -549,12 +626,13 @@ class ApproveGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
     {
         $agencyId = StrTestHelper::generateUlid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyApproveGroup = $this->createDummyApproveGroup(
             agencyId: $agencyId,
@@ -564,8 +642,14 @@ class ApproveGroupTest extends TestCase
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('saveDraft')
@@ -593,6 +677,7 @@ class ApproveGroupTest extends TestCase
             ->with($dummyApproveGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -611,11 +696,12 @@ class ApproveGroupTest extends TestCase
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyApproveGroup = $this->createDummyApproveGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -624,8 +710,14 @@ class ApproveGroupTest extends TestCase
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('saveDraft')
@@ -653,6 +745,7 @@ class ApproveGroupTest extends TestCase
             ->with($dummyApproveGroup->history)
             ->andReturn(null);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
@@ -670,19 +763,26 @@ class ApproveGroupTest extends TestCase
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
      * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedNoneRole(): void
     {
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('findDraftById')
@@ -694,6 +794,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);

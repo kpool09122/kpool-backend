@@ -7,21 +7,29 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\Publish
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
 readonly class PublishAnnouncement implements PublishAnnouncementInterface
 {
     public function __construct(
         private AnnouncementRepositoryInterface $announcementRepository,
         private AnnouncementFactoryInterface $announcementFactory,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 
     /**
-     * @param PublishAnnouncementInputPort $input
      * @return Announcement[]
+     * @throws UnauthorizedException
      */
     public function process(PublishAnnouncementInputPort $input): array
     {
+        $user = $this->userRepository->findById($input->userIdentifier());
+        if (! $user?->isAdmin()) {
+            throw new UnauthorizedException();
+        }
+
         $announcements = $this->announcementRepository->findDraftsByTranslationSetIdentifier($input->translationSetIdentifier());
 
         $publishedAnnouncements = [];

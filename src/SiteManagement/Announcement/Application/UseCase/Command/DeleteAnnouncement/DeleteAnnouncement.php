@@ -6,20 +6,28 @@ namespace Source\SiteManagement\Announcement\Application\UseCase\Command\DeleteA
 
 use Source\SiteManagement\Announcement\Domain\Entity\Announcement;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 
 class DeleteAnnouncement implements DeleteAnnouncementInterface
 {
     public function __construct(
         private AnnouncementRepositoryInterface $announcementRepository,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 
     /**
-     * @param DeleteAnnouncementInputPort $input
      * @return Announcement[]
+     * @throws UnauthorizedException
      */
     public function process(DeleteAnnouncementInputPort $input): array
     {
+        $user = $this->userRepository->findById($input->userIdentifier());
+        if (! $user?->isAdmin()) {
+            throw new UnauthorizedException();
+        }
+
         $announcements = $this->announcementRepository->findByTranslationSetIdentifier($input->translationSetIdentifier());
 
         $deletedAnnouncements = [];

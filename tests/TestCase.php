@@ -35,8 +35,8 @@ abstract class TestCase extends OrchestraTestCase
             \Application\Providers\SharedServiceProvider::class,
             \Application\Providers\SiteManagement\DomainServiceProvider::class,
             \Application\Providers\SiteManagement\UseCaseServiceProvider::class,
-            \Application\Providers\Auth\UseCaseServiceProvider::class,
-            \Application\Providers\Auth\DomainServiceProvider::class,
+            \Application\Providers\Identity\UseCaseServiceProvider::class,
+            \Application\Providers\Identity\DomainServiceProvider::class,
             \Application\Providers\Account\UseCaseServiceProvider::class,
             \Application\Providers\Account\DomainServiceProvider::class,
             \Application\Providers\Monetization\UseCaseServiceProvider::class,
@@ -91,8 +91,8 @@ abstract class TestCase extends OrchestraTestCase
      */
     protected function defineEnvironment($app): void
     {
-        // Auth設定: 正しいUserモデルを使用
-        $app['config']->set('auth.providers.users.model', \Application\Models\Auth\User::class);
+        // Auth設定: 正しいIdentityモデルを使用
+        $app['config']->set('auth.providers.users.model', \Application\Models\Identity\Identity::class);
     }
 
     /**

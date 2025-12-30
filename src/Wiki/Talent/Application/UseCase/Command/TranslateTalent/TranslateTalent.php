@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
@@ -14,11 +16,12 @@ use Source\Wiki\Talent\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
-class TranslateTalent implements TranslateTalentInterface
+readonly class TranslateTalent implements TranslateTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface   $talentRepository,
-        private TranslationServiceInterface $translationService,
+        private TalentRepositoryInterface    $talentRepository,
+        private TranslationServiceInterface  $translationService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -27,6 +30,7 @@ class TranslateTalent implements TranslateTalentInterface
      * @return DraftTalent[]
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(TranslateTalentInputPort $input): array
     {
@@ -36,7 +40,10 @@ class TranslateTalent implements TranslateTalentInterface
             throw new TalentNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $groupIds = array_map(
             fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent;
 
-use Source\Wiki\Shared\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 readonly class ApproveTalentInput implements ApproveTalentInputPort
 {
     public function __construct(
-        private TalentIdentifier  $talentIdentifier,
-        private ?TalentIdentifier $publishedTalentIdentifier,
-        private Principal         $principal,
+        private TalentIdentifier    $talentIdentifier,
+        private ?TalentIdentifier   $publishedTalentIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -26,8 +26,8 @@ readonly class ApproveTalentInput implements ApproveTalentInputPort
         return $this->publishedTalentIdentifier;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

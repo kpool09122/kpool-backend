@@ -9,16 +9,19 @@ use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class TranslateGroup implements TranslateGroupInterface
+readonly class TranslateGroup implements TranslateGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface $groupRepository,
-        private TranslationServiceInterface $translationService,
+        private GroupRepositoryInterface     $groupRepository,
+        private TranslationServiceInterface  $translationService,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -27,6 +30,7 @@ class TranslateGroup implements TranslateGroupInterface
      * @return DraftGroup[]
      * @throws GroupNotFoundException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(TranslateGroupInputPort $input): array
     {
@@ -36,7 +40,10 @@ class TranslateGroup implements TranslateGroupInterface
             throw new GroupNotFoundException();
         }
 
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::GROUP,
             agencyId: $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,

@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Identity\Application\UseCase\Command\RegisterUser;
+
+use PHPUnit\Framework\TestCase;
+use Source\Identity\Application\UseCase\Command\RegisterUser\RegisterUserInput;
+use Source\Identity\Domain\ValueObject\PlainPassword;
+use Source\Identity\Domain\ValueObject\UserName;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Language;
+
+class RegisterUserInputTest extends TestCase
+{
+    public function test__construct(): void
+    {
+        $userName = new UserName('userName');
+        $email = new Email('user@example.com');
+        $language = Language::KOREAN;
+        $password = new PlainPassword('PlainPass1!');
+        $confirmedPassword = new PlainPassword('PlainPass1!');
+        $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
+
+
+        $input = new RegisterUserInput(
+            $userName,
+            $email,
+            $language,
+            $password,
+            $confirmedPassword,
+            $base64EncodedImage,
+        );
+
+        $this->assertSame($userName, $input->userName());
+        $this->assertSame($email, $input->email());
+        $this->assertSame($language, $input->language());
+        $this->assertSame($password, $input->password());
+        $this->assertSame($confirmedPassword, $input->confirmedPassword());
+        $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
+    }
+}
