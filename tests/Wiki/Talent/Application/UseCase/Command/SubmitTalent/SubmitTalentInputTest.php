@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Talent\Application\UseCase\Command\SubmitTalent;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalentInput;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
@@ -23,16 +20,14 @@ class SubmitTalentInputTest extends TestCase
     public function test__construct(): void
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitTalentInput(
             $talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
 
         $this->assertSame((string) $talentIdentifier, (string) $input->talentIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

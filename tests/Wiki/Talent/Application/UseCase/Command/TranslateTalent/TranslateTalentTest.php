@@ -13,7 +13,9 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -49,6 +51,8 @@ class TranslateTalentTest extends TestCase
      */
     public function test__construct(): void
     {
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -65,6 +69,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -75,8 +80,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -102,6 +113,7 @@ class TranslateTalentTest extends TestCase
             ->once()
             ->andReturn($translateTalentInfo->jaTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
@@ -118,18 +130,21 @@ class TranslateTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenTalentNotFound(): void
     {
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -139,6 +154,7 @@ class TranslateTalentTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -154,6 +170,7 @@ class TranslateTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedRole(): void
     {
@@ -164,8 +181,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -175,6 +198,7 @@ class TranslateTalentTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -191,6 +215,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
     {
@@ -201,8 +226,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -228,6 +259,7 @@ class TranslateTalentTest extends TestCase
             ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
             ->andReturn($translateTalentInfo->jaTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -246,6 +278,7 @@ class TranslateTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedAgencyScope(): void
     {
@@ -257,9 +290,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
 
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -269,6 +307,7 @@ class TranslateTalentTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -285,6 +324,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
     {
@@ -297,8 +337,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -324,6 +370,7 @@ class TranslateTalentTest extends TestCase
             ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
             ->andReturn($translateTalentInfo->jaTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -342,6 +389,7 @@ class TranslateTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedGroupScope(): void
     {
@@ -354,9 +402,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
 
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -366,6 +419,7 @@ class TranslateTalentTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -382,6 +436,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedGroupActor(): void
     {
@@ -394,8 +449,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -421,6 +482,7 @@ class TranslateTalentTest extends TestCase
             ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
             ->andReturn($translateTalentInfo->jaTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -440,6 +502,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedTalentScope(): void
     {
@@ -453,8 +516,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -464,6 +533,7 @@ class TranslateTalentTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -480,6 +550,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testAuthorizedTalentActor(): void
     {
@@ -493,8 +564,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -520,6 +597,7 @@ class TranslateTalentTest extends TestCase
             ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
             ->andReturn($translateTalentInfo->jaTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -539,6 +617,7 @@ class TranslateTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -549,8 +628,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -576,6 +661,7 @@ class TranslateTalentTest extends TestCase
             ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
             ->andReturn($translateTalentInfo->jaTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -594,6 +680,7 @@ class TranslateTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedNoneRole(): void
     {
@@ -604,8 +691,14 @@ class TranslateTalentTest extends TestCase
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
@@ -615,6 +708,7 @@ class TranslateTalentTest extends TestCase
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 

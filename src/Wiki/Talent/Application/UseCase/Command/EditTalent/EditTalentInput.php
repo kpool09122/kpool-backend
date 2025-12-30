@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\EditTalent;
 
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
@@ -26,19 +26,19 @@ readonly class EditTalentInput implements EditTalentInputPort
      * @param Career $career
      * @param string|null $base64EncodedImage
      * @param RelevantVideoLinks $relevantVideoLinks
-     * @param Principal $principal
+     * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private TalentIdentifier   $talentIdentifier,
-        private TalentName         $name,
-        private RealName           $realName,
-        private ?AgencyIdentifier $agencyIdentifier,
-        private array              $groupIdentifiers,
-        private ?Birthday          $birthday,
-        private Career             $career,
-        private ?string            $base64EncodedImage,
-        private RelevantVideoLinks $relevantVideoLinks,
-        private Principal          $principal,
+        private TalentIdentifier    $talentIdentifier,
+        private TalentName          $name,
+        private RealName            $realName,
+        private ?AgencyIdentifier   $agencyIdentifier,
+        private array               $groupIdentifiers,
+        private ?Birthday           $birthday,
+        private Career              $career,
+        private ?string             $base64EncodedImage,
+        private RelevantVideoLinks  $relevantVideoLinks,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -90,8 +90,8 @@ readonly class EditTalentInput implements EditTalentInputPort
         return $this->relevantVideoLinks;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

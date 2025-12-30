@@ -6,10 +6,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTale
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInput;
@@ -38,18 +35,11 @@ class AutomaticCreateDraftTalentInputTest extends TestCase
             new Career('Auto generated career'),
             new AutomaticDraftTalentSource('webhook::talent'),
         );
-        $principal = new Principal(
-            new PrincipalIdentifier(StrTestHelper::generateUlid()),
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
-            Role::ADMINISTRATOR,
-            null,
-            [],
-            [],
-        );
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
 
-        $input = new AutomaticCreateDraftTalentInput($payload, $principal);
+        $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
 
         $this->assertSame($payload, $input->payload());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

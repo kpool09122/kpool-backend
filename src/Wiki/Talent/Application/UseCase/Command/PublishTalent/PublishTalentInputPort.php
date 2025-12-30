@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\PublishTalent;
 
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 interface PublishTalentInputPort
@@ -13,5 +13,5 @@ interface PublishTalentInputPort
 
     public function publishedTalentIdentifier(): ?TalentIdentifier;
 
-    public function principal(): Principal;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

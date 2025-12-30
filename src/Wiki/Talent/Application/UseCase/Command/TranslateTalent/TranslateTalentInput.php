@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent;
 
-use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 readonly class TranslateTalentInput implements TranslateTalentInputPort
 {
     public function __construct(
-        private TalentIdentifier $talentIdentifier,
-        private Principal        $principal,
+        private TalentIdentifier    $talentIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -20,8 +20,8 @@ readonly class TranslateTalentInput implements TranslateTalentInputPort
         return $this->talentIdentifier;
     }
 
-    public function principal(): Principal
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->principal;
+        return $this->principalIdentifier;
     }
 }

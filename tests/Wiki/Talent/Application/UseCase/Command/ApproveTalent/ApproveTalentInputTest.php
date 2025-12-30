@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Talent\Application\UseCase\Command\ApproveTalent;
 
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalentInput;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
@@ -24,17 +21,15 @@ class ApproveTalentInputTest extends TestCase
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveTalentInput(
             $talentIdentifier,
             $publishedTalentIdentifier,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$talentIdentifier, (string)$input->talentIdentifier());
         $this->assertSame((string)$publishedTalentIdentifier, (string)$input->publishedTalentIdentifier());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

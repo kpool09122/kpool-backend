@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\PublishTalent;
 
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -21,6 +22,7 @@ interface PublishTalentInterface
      * @throws ExistsApprovedButNotTranslatedTalentException
      * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(PublishTalentInputPort $input): Talent;
 }

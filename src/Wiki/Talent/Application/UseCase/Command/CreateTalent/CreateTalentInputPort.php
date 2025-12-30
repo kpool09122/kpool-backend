@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
@@ -43,5 +43,5 @@ interface CreateTalentInputPort
 
     public function relevantVideoLinks(): RelevantVideoLinks;
 
-    public function principal(): Principal;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

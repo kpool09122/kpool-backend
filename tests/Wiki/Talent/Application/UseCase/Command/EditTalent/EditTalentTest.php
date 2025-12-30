@@ -14,7 +14,9 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -48,6 +50,8 @@ class EditTalentTest extends TestCase
     public function test__construct(): void
     {
         // TODO: 各実装クラス作ったら削除する
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $this->app->instance(ImageServiceInterface::class, $imageService);
@@ -64,6 +68,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -82,8 +87,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
@@ -101,6 +112,7 @@ class EditTalentTest extends TestCase
             ->with($editTalentInfo->talentIdentifier)
             ->andReturn($editTalentInfo->draftTalent);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $editTalent = $this->app->make(EditTalentInterface::class);
@@ -127,6 +139,7 @@ class EditTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundTalent(): void
     {
@@ -145,8 +158,11 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('findById');
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -156,6 +172,7 @@ class EditTalentTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -172,6 +189,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithCollaborator(): void
     {
@@ -190,8 +208,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -209,6 +233,7 @@ class EditTalentTest extends TestCase
             ->with($editTalentInfo->base64EncodedImage)
             ->andReturn($editTalentInfo->imageLink);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -224,6 +249,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
     {
@@ -243,8 +269,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -262,6 +294,7 @@ class EditTalentTest extends TestCase
             ->with($editTalentInfo->base64EncodedImage)
             ->andReturn($editTalentInfo->imageLink);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -277,6 +310,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithGroupActor(): void
     {
@@ -297,8 +331,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -316,6 +356,7 @@ class EditTalentTest extends TestCase
             ->with($editTalentInfo->base64EncodedImage)
             ->andReturn($editTalentInfo->imageLink);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -331,6 +372,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithTalentActor(): void
     {
@@ -352,8 +394,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -371,6 +419,7 @@ class EditTalentTest extends TestCase
             ->with($editTalentInfo->base64EncodedImage)
             ->andReturn($editTalentInfo->imageLink);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -386,6 +435,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -404,8 +454,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -423,6 +479,7 @@ class EditTalentTest extends TestCase
             ->with($editTalentInfo->base64EncodedImage)
             ->andReturn($editTalentInfo->imageLink);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 
@@ -438,6 +495,7 @@ class EditTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws ExceedMaxRelevantVideoLinksException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessWithNoneRole(): void
     {
@@ -456,8 +514,14 @@ class EditTalentTest extends TestCase
             $editTalentInfo->career,
             $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftById')
@@ -467,6 +531,7 @@ class EditTalentTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
 

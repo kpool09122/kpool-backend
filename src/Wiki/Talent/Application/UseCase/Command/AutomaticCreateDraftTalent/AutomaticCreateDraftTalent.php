@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent;
 
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
@@ -15,6 +17,7 @@ readonly class AutomaticCreateDraftTalent implements AutomaticCreateDraftTalentI
     public function __construct(
         private AutomaticDraftTalentCreationServiceInterface $automaticDraftTalentCreationService,
         private TalentRepositoryInterface $talentRepository,
+        private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
 
@@ -22,10 +25,14 @@ readonly class AutomaticCreateDraftTalent implements AutomaticCreateDraftTalentI
      * @param AutomaticCreateDraftTalentInputPort $input
      * @return DraftTalent
      * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
      */
     public function process(AutomaticCreateDraftTalentInputPort $input): DraftTalent
     {
-        $principal = $input->principal();
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
 
         $role = $principal->role();
         if ($role !== Role::ADMINISTRATOR && $role !== Role::SENIOR_COLLABORATOR) {

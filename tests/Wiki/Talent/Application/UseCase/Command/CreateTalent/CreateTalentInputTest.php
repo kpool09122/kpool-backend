@@ -6,10 +6,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInput;
@@ -56,9 +53,7 @@ class CreateTalentInputTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateTalentInput(
             $publishedTalentIdentifier,
@@ -72,7 +67,7 @@ class CreateTalentInputTest extends TestCase
             $career,
             $base64EncodedImage,
             $relevantVideoLinks,
-            $principal,
+            $principalIdentifier,
         );
         $this->assertSame((string)$publishedTalentIdentifier, (string)$input->publishedTalentIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
@@ -84,6 +79,6 @@ class CreateTalentInputTest extends TestCase
         $this->assertSame($birthday, $input->birthday());
         $this->assertSame($career, $input->career());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
-        $this->assertSame($principal, $input->principal());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }
