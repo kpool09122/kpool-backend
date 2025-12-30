@@ -9,8 +9,10 @@ use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgenc
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
+use Source\Wiki\Agency\Domain\Factory\AgencySnapshotFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -25,12 +27,14 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class PublishAgency implements PublishAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface        $agencyRepository,
-        private AgencyServiceInterface           $agencyService,
-        private AgencyFactoryInterface           $agencyFactory,
-        private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
-        private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
-        private PrincipalRepositoryInterface     $principalRepository,
+        private AgencyRepositoryInterface         $agencyRepository,
+        private AgencyServiceInterface            $agencyService,
+        private AgencyFactoryInterface            $agencyFactory,
+        private AgencyHistoryRepositoryInterface  $agencyHistoryRepository,
+        private AgencyHistoryFactoryInterface     $agencyHistoryFactory,
+        private AgencySnapshotFactoryInterface    $agencySnapshotFactory,
+        private AgencySnapshotRepositoryInterface $agencySnapshotRepository,
+        private PrincipalRepositoryInterface      $principalRepository,
     ) {
     }
 
@@ -82,6 +86,11 @@ readonly class PublishAgency implements PublishAgencyInterface
             if ($publishedAgency === null) {
                 throw new AgencyNotFoundException();
             }
+
+            // スナップショット保存（更新前の状態を保存）
+            $snapshot = $this->agencySnapshotFactory->create($publishedAgency);
+            $this->agencySnapshotRepository->save($snapshot);
+
             $publishedAgency->setName($agency->name());
             $publishedAgency->setNormalizedName($agency->normalizedName());
             $publishedAgency->updateVersion();
