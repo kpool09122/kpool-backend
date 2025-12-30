@@ -106,6 +106,46 @@ class CreateAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyCreateAgency = $this->createDummyCreateAgencyData();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new CreateAgencyInput(
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->editorIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $createAgency = $this->app->make(CreateAgencyInterface::class);
+        $createAgency->process($input);
+    }
+
+    /**
      * 正常系：COLLABORATORがAgencyを作成できること.
      *
      * @return void

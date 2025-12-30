@@ -149,6 +149,48 @@ class TranslateGroupTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyTranslateGroup = $this->createDummyTranslateGroup();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new TranslateGroupInput(
+            $dummyTranslateGroup->groupIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
+            ->with($dummyTranslateGroup->groupIdentifier)
+            ->once()
+            ->andReturn($dummyTranslateGroup->group);
+
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $translateGroup = $this->app->make(TranslateGroupInterface::class);
+        $translateGroup->process($input);
+    }
+
+    /**
      * 異常系：翻訳権限がないロール（Collaborator）の場合、例外がスローされること.
      *
      * @return void

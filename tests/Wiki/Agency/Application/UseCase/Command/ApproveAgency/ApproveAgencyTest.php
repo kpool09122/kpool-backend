@@ -175,6 +175,53 @@ class ApproveAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyApproveAgency = $this->createDummyApproveAgency();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new ApproveAgencyInput(
+            $dummyApproveAgency->agencyIdentifier,
+            $dummyApproveAgency->publishedAgencyIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyApproveAgency->agencyIdentifier)
+            ->andReturn($dummyApproveAgency->agency);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->expectException(PrincipalNotFoundException::class);
+        $approveAgency = $this->app->make(ApproveAgencyInterface::class);
+        $approveAgency->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

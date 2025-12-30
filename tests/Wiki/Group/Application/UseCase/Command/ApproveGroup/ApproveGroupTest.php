@@ -177,6 +177,53 @@ class ApproveGroupTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyApproveGroup = $this->createDummyApproveGroup();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new ApproveGroupInput(
+            $dummyApproveGroup->groupIdentifier,
+            $dummyApproveGroup->publishedGroupIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyApproveGroup->groupIdentifier)
+            ->andReturn($dummyApproveGroup->group);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->expectException(PrincipalNotFoundException::class);
+        $approveGroup = $this->app->make(ApproveGroupInterface::class);
+        $approveGroup->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

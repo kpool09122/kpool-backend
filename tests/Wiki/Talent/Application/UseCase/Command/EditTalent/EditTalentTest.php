@@ -182,6 +182,56 @@ class EditTalentTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws ExceedMaxRelevantVideoLinksException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $editTalentInfo = $this->createEditTalentInfo();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new EditTalentInput(
+            $editTalentInfo->talentIdentifier,
+            $editTalentInfo->name,
+            $editTalentInfo->realName,
+            $editTalentInfo->agencyIdentifier,
+            $editTalentInfo->groupIdentifiers,
+            $editTalentInfo->birthday,
+            $editTalentInfo->career,
+            $editTalentInfo->base64EncodedImage,
+            $editTalentInfo->relevantVideoLinks,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($editTalentInfo->talentIdentifier)
+            ->andReturn($editTalentInfo->draftTalent);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $editTalent = $this->app->make(EditTalentInterface::class);
+        $editTalent->process($input);
+    }
+
+    /**
      * 正常系：COLLABORATORがメンバーを編集できること.
      *
      * @return void

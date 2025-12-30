@@ -168,6 +168,51 @@ class RejectSongTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws SongNotFoundException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyRejectSong = $this->createDummyRejectSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new RejectSongInput(
+            $dummyRejectSong->songIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyRejectSong->songIdentifier)
+            ->andReturn($dummyRejectSong->song);
+
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $rejectSong = $this->app->make(RejectSongInterface::class);
+        $rejectSong->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

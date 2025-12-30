@@ -210,6 +210,79 @@ class EditGroupTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $name = new GroupName('TWICE');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $description = new Description('test description');
+        $songIdentifiers = [];
+        $base64EncodedImage = null;
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new EditGroupInput(
+            $groupIdentifier,
+            $name,
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $base64EncodedImage,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $translation = Language::KOREAN;
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $status = ApprovalStatus::Pending;
+        $imagePath = new ImagePath('/resources/public/images/before.webp');
+        $group = new DraftGroup(
+            $groupIdentifier,
+            $publishedGroupIdentifier,
+            $translationSetIdentifier,
+            $editorIdentifier,
+            $translation,
+            $name,
+            'twice',
+            $agencyIdentifier,
+            $description,
+            $songIdentifiers,
+            $imagePath,
+            $status,
+        );
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($groupIdentifier)
+            ->andReturn($group);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $editGroup = $this->app->make(EditGroupInterface::class);
+        $editGroup->process($input);
+    }
+
+    /**
      * 正常系：COLLABORATORがグループを編集できること.
      *
      * @return void

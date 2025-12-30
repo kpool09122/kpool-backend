@@ -537,6 +537,53 @@ class CreateSongTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $createDummyCreateSong = $this->createDummyCreateSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new CreateSongInput(
+            $createDummyCreateSong->publishedSongIdentifier,
+            $createDummyCreateSong->editorIdentifier,
+            $createDummyCreateSong->language,
+            $createDummyCreateSong->name,
+            $createDummyCreateSong->agencyIdentifier,
+            $createDummyCreateSong->belongIdentifiers,
+            $createDummyCreateSong->lyricist,
+            $createDummyCreateSong->composer,
+            $createDummyCreateSong->releaseDate,
+            $createDummyCreateSong->overView,
+            $createDummyCreateSong->base64EncodedCoverImage,
+            $createDummyCreateSong->musicVideoLink,
+            $principalIdentifier
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase = $this->app->make(CreateSongInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * ダミーデータを作成するヘルパーメソッド
      *
      * @return CreateSongTestData

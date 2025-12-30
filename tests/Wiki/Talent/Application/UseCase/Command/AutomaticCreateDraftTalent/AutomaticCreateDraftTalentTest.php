@@ -157,6 +157,36 @@ class AutomaticCreateDraftTalentTest extends TestCase
         $useCase->process($input);
     }
 
+    /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $payload = $this->makePayload();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $service = Mockery::mock(AutomaticDraftTalentCreationServiceInterface::class);
+        $repository = Mockery::mock(TalentRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
+        $this->app->instance(TalentRepositoryInterface::class, $repository);
+
+        $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
+        $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase->process($input);
+    }
+
     private function makePayload(): AutomaticDraftTalentCreationPayload
     {
         return new AutomaticDraftTalentCreationPayload(

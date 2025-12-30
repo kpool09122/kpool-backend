@@ -180,6 +180,57 @@ class EditSongTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     * @throws SongNotFoundException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyEditSong = $this->createDummyEditSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new EditSongInput(
+            $dummyEditSong->songIdentifier,
+            $dummyEditSong->name,
+            $dummyEditSong->agencyIdentifier,
+            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->lyricist,
+            $dummyEditSong->composer,
+            $dummyEditSong->releaseDate,
+            $dummyEditSong->overView,
+            $dummyEditSong->base64EncodedCoverImage,
+            $dummyEditSong->musicVideoLink,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyEditSong->songIdentifier)
+            ->andReturn($dummyEditSong->song);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $editSong = $this->app->make(EditSongInterface::class);
+        $editSong->process($input);
+    }
+
+    /**
      * 正常系：COLLABORATORが曲を編集できること.
      *
      * @return void

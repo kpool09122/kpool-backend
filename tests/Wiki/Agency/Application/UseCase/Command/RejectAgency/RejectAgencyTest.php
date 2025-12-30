@@ -160,6 +160,50 @@ class RejectAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyRejectAgency = $this->createDummyRejectAgency();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new RejectAgencyInput(
+            $dummyRejectAgency->agencyIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findDraftById')
+            ->once()
+            ->with($dummyRejectAgency->agencyIdentifier)
+            ->andReturn($dummyRejectAgency->agency);
+
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->expectException(PrincipalNotFoundException::class);
+        $useCase = $this->app->make(RejectAgencyInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
      *
      * @return void

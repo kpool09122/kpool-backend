@@ -148,6 +148,48 @@ class TranslateAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testWhenNotFoundPrincipal(): void
+    {
+        $dummyTranslateAgency = $this->createDummyTranslateAgency();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+
+        $input = new TranslateAgencyInput(
+            $dummyTranslateAgency->agencyIdentifier,
+            $dummyTranslateAgency->publishedAgencyIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->with($dummyTranslateAgency->agencyIdentifier)
+            ->once()
+            ->andReturn($dummyTranslateAgency->agency);
+
+        $agencyService = Mockery::mock(TranslationServiceInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(TranslationServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->expectException(PrincipalNotFoundException::class);
+        $translateAgency = $this->app->make(TranslateAgencyInterface::class);
+        $translateAgency->process($input);
+    }
+
+    /**
      * 異常系：翻訳権限がないロール（Collaborator）の場合、例外がスローされること.
      *
      * @return void
