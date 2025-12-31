@@ -20,7 +20,7 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 readonly class TalentFactory implements TalentFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
@@ -37,7 +37,7 @@ readonly class TalentFactory implements TalentFactoryInterface
         TalentName               $name,
     ): Talent {
         return new Talent(
-            new TalentIdentifier($this->ulidGenerator->generate()),
+            new TalentIdentifier($this->generator->generate()),
             $translationSetIdentifier,
             $language,
             $name,

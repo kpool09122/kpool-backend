@@ -11,7 +11,6 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -87,7 +86,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
         $this->talentRepository->saveDraft($talent);
 
         $history = $this->talentHistoryFactory->create(
-            new EditorIdentifier((string)$input->principalIdentifier()),
+            $input->principalIdentifier(),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),

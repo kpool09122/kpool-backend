@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 final readonly class AutomaticDraftTalentCreationPayload
 {
@@ -13,7 +13,7 @@ final readonly class AutomaticDraftTalentCreationPayload
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        private EditorIdentifier           $editorIdentifier,
+        private PrincipalIdentifier        $editorIdentifier,
         private Language                   $language,
         private TalentName                 $name,
         private RealName                   $realName,
@@ -25,7 +25,7 @@ final readonly class AutomaticDraftTalentCreationPayload
     ) {
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }

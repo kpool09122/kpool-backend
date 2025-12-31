@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\RejectTalent\RejectTalent;
@@ -83,7 +82,7 @@ class RejectTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new RejectTalentInput(
@@ -325,7 +324,7 @@ class RejectTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new RejectTalentInput(
@@ -434,7 +433,7 @@ class RejectTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
@@ -548,7 +547,7 @@ class RejectTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
@@ -663,7 +662,7 @@ class RejectTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $agencyId = (string) $rejectTalentInfo->agencyIdentifier;
@@ -730,7 +729,7 @@ class RejectTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $rejectTalentInfo = $this->createRejectTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new RejectTalentInput(
@@ -826,17 +825,17 @@ class RejectTalentTest extends TestCase
      * ダミーデータを作成するヘルパーメソッド
      *
      * @param ApprovalStatus $status
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return RejectTalentTestData
      * @throws ExceedMaxRelevantVideoLinksException
      */
     private function createRejectTalentInfo(
         ApprovalStatus $status = ApprovalStatus::UnderReview,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): RejectTalentTestData {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -880,7 +879,7 @@ class RejectTalentTest extends TestCase
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new TalentHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),
@@ -928,7 +927,7 @@ readonly class RejectTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

@@ -16,7 +16,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInterface;
@@ -190,7 +189,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
     private function makePayload(): AutomaticDraftTalentCreationPayload
     {
         return new AutomaticDraftTalentCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('テストタレント'),
             new RealName('Test Talent'),
@@ -219,7 +218,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
             new TalentIdentifier(StrTestHelper::generateUuid()),
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('テストタレント'),
             new RealName('Test Talent'),

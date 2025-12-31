@@ -19,7 +19,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalent;
@@ -598,7 +597,7 @@ class EditTalentTest extends TestCase
     {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -676,7 +675,7 @@ readonly class EditTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

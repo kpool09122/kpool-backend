@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AutomaticDraftTalentCreationPayload;
 use Source\Wiki\Talent\Domain\ValueObject\AutomaticDraftTalentSource;
@@ -25,7 +25,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
 {
     public function test__construct(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = new TalentName('山田 太郎');
         $realName = new RealName('Yamada Taro');
@@ -68,7 +68,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
     public function testAllowsOptionalFields(): void
     {
         $payload = new AutomaticDraftTalentCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new TalentName('Sample Talent'),
             new RealName('Sample Name'),

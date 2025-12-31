@@ -14,14 +14,14 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 readonly class TalentSnapshotFactory implements TalentSnapshotFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(Talent $talent): TalentSnapshot
     {
         return new TalentSnapshot(
-            new TalentSnapshotIdentifier($this->ulidGenerator->generate()),
+            new TalentSnapshotIdentifier($this->generator->generate()),
             $talent->talentIdentifier(),
             $talent->translationSetIdentifier(),
             $talent->language(),

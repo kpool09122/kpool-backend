@@ -17,7 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
@@ -31,7 +31,7 @@ readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
         AgencyName $subjectName,
     ): AgencyHistory {
         return new AgencyHistory(
-            new AgencyHistoryIdentifier($this->ulidGenerator->generate()),
+            new AgencyHistoryIdentifier($this->generator->generate()),
             $editorIdentifier,
             $submitterIdentifier,
             $agencyIdentifier,

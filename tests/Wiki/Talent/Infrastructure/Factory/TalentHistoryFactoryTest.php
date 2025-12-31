@@ -7,7 +7,7 @@ namespace Tests\Wiki\Talent\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
@@ -37,8 +37,8 @@ class TalentHistoryFactoryTest extends TestCase
      */
     public function testCreateWithTalentIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
@@ -74,7 +74,7 @@ class TalentHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftTalentIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $draftTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;

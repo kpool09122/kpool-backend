@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -97,7 +96,7 @@ class PublishTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $publishTalentInfo = $this->createPublishTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishTalentInput(
@@ -234,7 +233,7 @@ class PublishTalentTest extends TestCase
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $talent = new DraftTalent(
@@ -737,7 +736,7 @@ class PublishTalentTest extends TestCase
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $talent = new DraftTalent(
@@ -906,7 +905,7 @@ class PublishTalentTest extends TestCase
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $talent = new DraftTalent(
@@ -1077,7 +1076,7 @@ class PublishTalentTest extends TestCase
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $talent = new DraftTalent(
@@ -1196,7 +1195,7 @@ class PublishTalentTest extends TestCase
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $talent = new DraftTalent(
@@ -1365,11 +1364,11 @@ class PublishTalentTest extends TestCase
      */
     private function createPublishTalentInfo(
         bool $hasPublishedTalent = true,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): PublishTalentTestData {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -1414,7 +1413,7 @@ class PublishTalentTest extends TestCase
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new TalentHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $talent->editorIdentifier(),
             $hasPublishedTalent ? $publishedTalentIdentifier : null,
             $talent->talentIdentifier(),
@@ -1482,7 +1481,7 @@ readonly class PublishTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

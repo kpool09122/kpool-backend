@@ -18,7 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 readonly class GroupFactory implements GroupFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface        $ulidGenerator,
+        private UuidGeneratorInterface        $generator,
         private NormalizationServiceInterface $normalizationService,
     ) {
     }
@@ -37,7 +37,7 @@ readonly class GroupFactory implements GroupFactoryInterface
         $normalizedName = $this->normalizationService->normalize((string)$name, $language);
 
         return new Group(
-            new GroupIdentifier($this->ulidGenerator->generate()),
+            new GroupIdentifier($this->generator->generate()),
             $translationSetIdentifier,
             $language,
             $name,

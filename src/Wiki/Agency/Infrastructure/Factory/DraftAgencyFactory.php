@@ -17,7 +17,7 @@ use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
-class DraftAgencyFactory implements DraftAgencyFactoryInterface
+readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
 {
     public function __construct(
         private UuidGeneratorInterface        $generator,

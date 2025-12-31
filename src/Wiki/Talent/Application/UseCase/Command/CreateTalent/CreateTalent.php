@@ -54,7 +54,7 @@ readonly class CreateTalent implements CreateTalentInterface
         }
 
         $talent = $this->talentFactory->create(
-            $input->editorIdentifier(),
+            $input->principalIdentifier(),
             $input->language(),
             $input->name(),
         );

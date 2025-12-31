@@ -18,7 +18,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -766,7 +765,7 @@ class TranslateTalentTest extends TestCase
     private function createTranslateTalentInfo(): TranslateTalentTestData
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
@@ -931,7 +930,7 @@ readonly class TranslateTalentTestData
     public function __construct(
         public TalentIdentifier         $talentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier        $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

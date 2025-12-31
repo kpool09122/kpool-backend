@@ -8,7 +8,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
@@ -24,7 +24,7 @@ class DraftTalent
      * @param TalentIdentifier $talentIdentifier
      * @param TalentIdentifier|null $publishedTalentIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param EditorIdentifier $editorIdentifier
+     * @param PrincipalIdentifier $editorIdentifier
      * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
@@ -40,7 +40,7 @@ class DraftTalent
         private readonly TalentIdentifier         $talentIdentifier,
         private ?TalentIdentifier                 $publishedTalentIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly EditorIdentifier         $editorIdentifier,
+        private readonly PrincipalIdentifier      $editorIdentifier,
         private readonly Language                 $language,
         private TalentName                        $name,
         private RealName                          $realName,
@@ -74,7 +74,7 @@ class DraftTalent
         return $this->translationSetIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }

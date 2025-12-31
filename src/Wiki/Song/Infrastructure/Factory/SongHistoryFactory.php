@@ -17,7 +17,7 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 readonly class SongHistoryFactory implements SongHistoryFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
@@ -31,7 +31,7 @@ readonly class SongHistoryFactory implements SongHistoryFactoryInterface
         SongName $subjectName,
     ): SongHistory {
         return new SongHistory(
-            new SongHistoryIdentifier($this->ulidGenerator->generate()),
+            new SongHistoryIdentifier($this->generator->generate()),
             $editorIdentifier,
             $submitterIdentifier,
             $songIdentifier,

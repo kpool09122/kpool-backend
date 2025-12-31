@@ -14,14 +14,14 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 readonly class AgencySnapshotFactory implements AgencySnapshotFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(Agency $agency): AgencySnapshot
     {
         return new AgencySnapshot(
-            new AgencySnapshotIdentifier($this->ulidGenerator->generate()),
+            new AgencySnapshotIdentifier($this->generator->generate()),
             $agency->agencyIdentifier(),
             $agency->translationSetIdentifier(),
             $agency->language(),

@@ -10,7 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -245,7 +245,7 @@ class DraftTalentTest extends TestCase
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -318,7 +318,7 @@ readonly class DraftTalentTestData
         public TalentIdentifier         $talentIdentifier,
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier        $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

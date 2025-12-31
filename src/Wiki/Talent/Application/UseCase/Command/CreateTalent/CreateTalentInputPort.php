@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -19,8 +18,6 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 interface CreateTalentInputPort
 {
     public function publishedTalentIdentifier(): ?TalentIdentifier;
-
-    public function editorIdentifier(): EditorIdentifier;
 
     public function language(): Language;
 

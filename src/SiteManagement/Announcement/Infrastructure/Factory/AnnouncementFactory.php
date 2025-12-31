@@ -18,7 +18,7 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 readonly class AnnouncementFactory implements AnnouncementFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
@@ -40,7 +40,7 @@ readonly class AnnouncementFactory implements AnnouncementFactoryInterface
         PublishedDate            $publishedDate,
     ): Announcement {
         return new Announcement(
-            new AnnouncementIdentifier($this->ulidGenerator->generate()),
+            new AnnouncementIdentifier($this->generator->generate()),
             $translationSetIdentifier,
             $language,
             $category,

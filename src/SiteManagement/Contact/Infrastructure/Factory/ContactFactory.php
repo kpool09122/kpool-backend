@@ -13,10 +13,10 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 
-class ContactFactory implements ContactFactoryInterface
+readonly class ContactFactory implements ContactFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
@@ -27,7 +27,7 @@ class ContactFactory implements ContactFactoryInterface
         Content $content,
     ): Contact {
         return new Contact(
-            new ContactIdentifier($this->ulidGenerator->generate()),
+            new ContactIdentifier($this->generator->generate()),
             $category,
             $contactName,
             $email,
