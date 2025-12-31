@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
 class UserIdentifier extends StringBaseValue
@@ -20,7 +20,7 @@ class UserIdentifier extends StringBaseValue
     protected function validate(
         string $value,
     ): void {
-        if (! UlidValidator::isValid($value)) {
+        if (! UuidValidator::isValid($value)) {
             throw new InvalidArgumentException();
         }
     }

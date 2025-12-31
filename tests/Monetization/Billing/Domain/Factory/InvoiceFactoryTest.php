@@ -16,7 +16,7 @@ use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Monetization\Shared\ValueObject\Percentage;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -35,18 +35,18 @@ class InvoiceFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $issuedAt = new DateTimeImmutable('2024-01-01');
         $dueDate = $issuedAt->modify('+14 days');
 
-        $generator = Mockery::mock(UlidGeneratorInterface::class);
+        $generator = Mockery::mock(UuidGeneratorInterface::class);
         $generator->shouldReceive('generate')
             ->once()
             ->andReturn((string)$invoiceIdentifier);
 
-        $this->app->instance(UlidGeneratorInterface::class, $generator);
+        $this->app->instance(UuidGeneratorInterface::class, $generator);
         $factory = $this->app->make(InvoiceFactoryInterface::class);
 
         $invoiceLines = [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)];
@@ -93,16 +93,16 @@ class InvoiceFactoryTest extends TestCase
         $issuedAt = new DateTimeImmutable('2024-01-01');
         $dueDate = $issuedAt->modify('+14 days');
 
-        $generator = Mockery::mock(UlidGeneratorInterface::class);
+        $generator = Mockery::mock(UuidGeneratorInterface::class);
         $generator->shouldNotReceive('generate');
 
-        $this->app->instance(UlidGeneratorInterface::class, $generator);
+        $this->app->instance(UuidGeneratorInterface::class, $generator);
         $factory = $this->app->make(InvoiceFactoryInterface::class);
 
         $this->expectException(DomainException::class);
         $factory->create(
-            new OrderIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new OrderIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             [],
             Currency::JPY,
             $issuedAt,
@@ -123,16 +123,16 @@ class InvoiceFactoryTest extends TestCase
         $issuedAt = new DateTimeImmutable('2024-01-01');
         $dueDate = $issuedAt->modify('+14 days');
 
-        $generator = Mockery::mock(UlidGeneratorInterface::class);
+        $generator = Mockery::mock(UuidGeneratorInterface::class);
         $generator->shouldNotReceive('generate');
 
-        $this->app->instance(UlidGeneratorInterface::class, $generator);
+        $this->app->instance(UuidGeneratorInterface::class, $generator);
         $factory = $this->app->make(InvoiceFactoryInterface::class);
 
         $this->expectException(DomainException::class);
         $factory->create(
-            new OrderIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new OrderIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             [
                 new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2),
                 new InvoiceLine('Basic plan', new Money(300, Currency::KRW), 1),

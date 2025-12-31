@@ -28,11 +28,11 @@ class TransferTest extends TestCase
      */
     public function test__construct(): void
     {
-        $transferIdentifier = new TransferIdentifier(StrTestHelper::generateUlid());
-        $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $transferIdentifier = new TransferIdentifier(StrTestHelper::generateUuid());
+        $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $settlementAccount = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
@@ -66,8 +66,8 @@ class TransferTest extends TestCase
     public function testWhenDifferentCurrency(): void
     {
         $settlementAccount = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::KRW,
@@ -269,11 +269,11 @@ class TransferTest extends TestCase
         ?string $failureReason = null,
     ): Transfer {
         return new Transfer(
-            $transferIdentifier ?? new TransferIdentifier(StrTestHelper::generateUlid()),
-            $settlementBatchIdentifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            $transferIdentifier ?? new TransferIdentifier(StrTestHelper::generateUuid()),
+            $settlementBatchIdentifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $settlementAccount ?? new SettlementAccount(
-                new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-                new UserIdentifier(StrTestHelper::generateUlid()),
+                new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+                new UserIdentifier(StrTestHelper::generateUuid()),
                 'KBank',
                 '6789',
                 Currency::JPY,

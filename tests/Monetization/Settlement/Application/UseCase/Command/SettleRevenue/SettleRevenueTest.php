@@ -106,8 +106,8 @@ class SettleRevenueTest extends TestCase
     private function createAccount(): SettlementAccount
     {
         return new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
@@ -118,7 +118,7 @@ class SettleRevenueTest extends TestCase
     private function createSchedule(): SettlementSchedule
     {
         return new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
@@ -128,7 +128,7 @@ class SettleRevenueTest extends TestCase
     private function createBatch(SettlementAccount $account): SettlementBatch
     {
         return new SettlementBatch(
-            new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $account,
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-31'),
@@ -138,7 +138,7 @@ class SettleRevenueTest extends TestCase
     private function createTransfer(SettlementBatch $batch, SettlementAccount $account): Transfer
     {
         return new Transfer(
-            new TransferIdentifier(StrTestHelper::generateUlid()),
+            new TransferIdentifier(StrTestHelper::generateUuid()),
             $batch->settlementBatchIdentifier(),
             $account,
             new Money(7260, Currency::JPY),

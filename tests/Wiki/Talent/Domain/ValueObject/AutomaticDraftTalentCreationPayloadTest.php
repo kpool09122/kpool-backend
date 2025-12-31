@@ -25,14 +25,14 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
 {
     public function test__construct(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = new TalentName('山田 太郎');
         $realName = new RealName('Yamada Taro');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1995-08-01'));
         $career = new Career('Lead vocalist of Sample Group.');
@@ -68,7 +68,7 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
     public function testAllowsOptionalFields(): void
     {
         $payload = new AutomaticDraftTalentCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new TalentName('Sample Talent'),
             new RealName('Sample Name'),

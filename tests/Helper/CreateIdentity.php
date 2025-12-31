@@ -45,7 +45,7 @@ class CreateIdentity
         string $providerUserId
     ): void {
         DB::table('identity_social_connections')->insert([
-            'id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
             'identity_id' => (string) $identityIdentifier,
             'provider' => $provider->value,
             'provider_user_id' => $providerUserId,

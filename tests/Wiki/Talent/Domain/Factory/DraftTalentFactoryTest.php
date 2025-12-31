@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
@@ -39,12 +39,12 @@ class DraftTalentFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $talentFactory = $this->app->make(DraftTalentFactoryInterface::class);
         $talent = $talentFactory->create($editorIdentifier, $language, $name);
-        $this->assertTrue(UlidValidator::isValid((string)$talent->talentIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertNull($talent->publishedTalentIdentifier());
         $this->assertSame((string)$editorIdentifier, (string)$talent->editorIdentifier());
         $this->assertSame($language->value, $talent->language()->value);

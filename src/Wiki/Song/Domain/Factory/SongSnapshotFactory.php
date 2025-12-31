@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Domain\Factory;
 
 use DateTimeImmutable;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\ValueObject\SongSnapshotIdentifier;
@@ -13,7 +13,7 @@ use Source\Wiki\Song\Domain\ValueObject\SongSnapshotIdentifier;
 readonly class SongSnapshotFactory implements SongSnapshotFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $ulidGenerator,
     ) {
     }
 

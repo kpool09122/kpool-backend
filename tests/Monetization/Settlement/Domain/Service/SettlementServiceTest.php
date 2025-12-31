@@ -35,7 +35,7 @@ class SettlementServiceTest extends TestCase
         $service = $this->app->make(SettlementServiceInterface::class);
         $account = $this->account();
         $schedule = new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
@@ -81,7 +81,7 @@ class SettlementServiceTest extends TestCase
     {
         $service = $this->app->make(SettlementServiceInterface::class);
         $schedule = new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-02-10'),
             SettlementInterval::MONTHLY,
             5
@@ -112,7 +112,7 @@ class SettlementServiceTest extends TestCase
     {
         $service = $this->app->make(SettlementServiceInterface::class);
         $schedule = new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-02-10'),
             SettlementInterval::MONTHLY,
             5
@@ -146,7 +146,7 @@ class SettlementServiceTest extends TestCase
     {
         $service = $this->app->make(SettlementServiceInterface::class);
         $schedule = new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
@@ -170,8 +170,8 @@ class SettlementServiceTest extends TestCase
     private function account(): SettlementAccount
     {
         return new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,

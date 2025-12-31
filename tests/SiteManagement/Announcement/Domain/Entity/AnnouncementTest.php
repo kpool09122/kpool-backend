@@ -25,8 +25,8 @@ class AnnouncementTest extends TestCase
      */
     public function test__construct(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');

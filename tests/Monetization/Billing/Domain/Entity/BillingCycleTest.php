@@ -22,7 +22,7 @@ class BillingCycleTest extends TestCase
      */
     public function test__construct(): void
     {
-        $billingCycleIdentifier = new BillingCycleIdentifier(StrTestHelper::generateUlid());
+        $billingCycleIdentifier = new BillingCycleIdentifier(StrTestHelper::generateUuid());
         $anchorDate = new DateTimeImmutable('now');
         $billingPeriod = BillingPeriod::ANNUAL;
         $nextBillingDate = new DateTimeImmutable('now')->modify('+ 1 month');
@@ -43,7 +43,7 @@ class BillingCycleTest extends TestCase
         $anchor = new DateTimeImmutable('2024-01-15');
 
         $cycle = new BillingCycle(
-            new BillingCycleIdentifier(StrTestHelper::generateUlid()),
+            new BillingCycleIdentifier(StrTestHelper::generateUuid()),
             $anchor,
             BillingPeriod::MONTHLY
         );
@@ -59,7 +59,7 @@ class BillingCycleTest extends TestCase
      */
     public function testAdvanceMovesNextBillingDateByPeriod(): void
     {
-        $billingCycleIdentifier = new BillingCycleIdentifier(StrTestHelper::generateUlid());
+        $billingCycleIdentifier = new BillingCycleIdentifier(StrTestHelper::generateUuid());
         $anchorDate = new DateTimeImmutable('2024-01-15');
         $cycle = new BillingCycle($billingCycleIdentifier, $anchorDate, BillingPeriod::MONTHLY);
         $cycle->advance();
@@ -94,7 +94,7 @@ class BillingCycleTest extends TestCase
     public function testIsDue(): void
     {
         $cycle = new BillingCycle(
-            new BillingCycleIdentifier(StrTestHelper::generateUlid()),
+            new BillingCycleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-15'),
             BillingPeriod::ANNUAL
         );

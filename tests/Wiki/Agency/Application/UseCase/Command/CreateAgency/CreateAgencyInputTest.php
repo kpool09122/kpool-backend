@@ -25,8 +25,8 @@ class CreateAgencyInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $name = new AgencyName('JYP엔터테인먼트');
         $language = Language::KOREAN;
         $CEO = new CEO('J.Y. Park');
@@ -45,7 +45,7 @@ class CreateAgencyInputTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.');
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new CreateAgencyInput(
             $publishedAgencyIdentifier,

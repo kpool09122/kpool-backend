@@ -19,7 +19,7 @@ class GetSongInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $input = new GetSongInput($songIdentifier, $language);
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());

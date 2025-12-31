@@ -12,21 +12,21 @@ use Tests\Helper\StrTestHelper;
 class TransferIdentifierTest extends TestCase
 {
     /**
-     * 正常系: ULID が渡されれば生成できること.
+     * 正常系: 正しくインスタンス化できること.
      *
      * @return void
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
-        $identifier = new TransferIdentifier($ulid);
+        $identifier = new TransferIdentifier($id);
 
-        $this->assertSame($ulid, (string)$identifier);
+        $this->assertSame($id, (string)$identifier);
     }
 
     /**
-     * 異常系: ULID 形式以外は例外となること.
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */

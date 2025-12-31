@@ -6,7 +6,7 @@ namespace Tests\Wiki\Agency\Domain\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -43,8 +43,8 @@ class AgencySnapshotFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -70,7 +70,7 @@ class AgencySnapshotFactoryTest extends TestCase
         $factory = $this->app->make(AgencySnapshotFactoryInterface::class);
         $snapshot = $factory->create($agency);
 
-        $this->assertTrue(UlidValidator::isValid((string)$snapshot->snapshotIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$snapshot->snapshotIdentifier()));
         $this->assertSame((string)$agencyIdentifier, (string)$snapshot->agencyIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$snapshot->translationSetIdentifier());
         $this->assertSame($language->value, $snapshot->language()->value);
@@ -93,8 +93,8 @@ class AgencySnapshotFactoryTest extends TestCase
     public function testCreateWithNullFoundedIn(): void
     {
         $agency = new Agency(
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('SM엔터테인먼트'),
             'smㅇㅌㅌㅇㅁㅌ',

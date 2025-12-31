@@ -23,7 +23,7 @@ class AutomaticCreateDraftAgencyInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftAgencyCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테インメント'),
             new CEO('J.Y. Park'),
@@ -31,7 +31,7 @@ class AutomaticCreateDraftAgencyInputTest extends TestCase
             new Description('auto generated'),
             new AutomaticDraftAgencySource('webhook::draft'),
         );
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
 

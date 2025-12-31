@@ -19,7 +19,7 @@ class GroupReadModelTest extends TestCase
      */
     public function test__construct(): void
     {
-        $groupId = StrTestHelper::generateUlid();
+        $groupId = StrTestHelper::generateUuid();
         $name = 'TWICE';
         $agencyName = 'JYP엔터테인먼트';
         $description = '### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -28,14 +28,14 @@ class GroupReadModelTest extends TestCase
 데뷔 초의 밝고 귀여운 콘셉트에서 해마다 성장을 거듭하며, 세련되고 멋진 퍼포먼스까지 다채로운 모습을 보여주고 있습니다. 중독성 있는 멜로디와 따라 하기 쉬운 안무가 특징으로, 폭넓은 세대로부터 지지를 받고 있습니다. 한국이나 일본뿐만 아니라, 세계적인 스타디움 투어를 성공시키는 등 K팝을 대표하는 최정상 그룹으로서 지금도 전 세계 팬들을 계속해서 사로잡고 있습니다. 팬덤명은 \'원스(ONCE)\'입니다.';
         $imageUrl = 'https://example.com/resources/public/images/image.webp';
         $songReadModel1 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'TT',
             new DateTimeImmutable('2016-10-24'),
             'https://example.youtube.com/watch?v=dQw4w9WgXcQ',
             'https://example.com/resources/public/images/image.webp',
         );
         $songReadModel2 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'I CAN\'T STOP ME',
             new DateTimeImmutable('2020-10-26'),
             'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',

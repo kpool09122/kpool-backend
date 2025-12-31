@@ -24,7 +24,7 @@ class SettlementScheduleTest extends TestCase
      */
     public function test__construct(): void
     {
-        $settlementScheduleIdentifier = new SettlementScheduleIdentifier(StrTestHelper::generateUlid());
+        $settlementScheduleIdentifier = new SettlementScheduleIdentifier(StrTestHelper::generateUuid());
         $anchorDate = new DateTimeImmutable();
         $interval = SettlementInterval::THRESHOLD;
         $payoutDelayDays = 0;
@@ -228,7 +228,7 @@ class SettlementScheduleTest extends TestCase
         ?Money $threshold = null,
     ): SettlementSchedule {
         return new SettlementSchedule(
-            $scheduleIdentifier ?? new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            $scheduleIdentifier ?? new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             $anchorDate ?? new DateTimeImmutable('2024-01-01'),
             $interval ?? SettlementInterval::MONTHLY,
             $payoutDelayDays ?? 0,

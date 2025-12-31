@@ -19,9 +19,9 @@ class ApproveTalentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new ApproveTalentInput(
             $talentIdentifier,

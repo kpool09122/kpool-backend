@@ -7,7 +7,7 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -92,7 +92,7 @@ class CreateAgencyTest extends TestCase
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $agency = $createAgency->process($input);
 
-        $this->assertTrue(UlidValidator::isValid((string)$agency->agencyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$agency->agencyIdentifier()));
         $this->assertSame((string)$dummyCreateAgency->publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
         $this->assertSame((string)$dummyCreateAgency->editorIdentifier, (string)$agency->editorIdentifier());
         $this->assertSame($dummyCreateAgency->language->value, $agency->language()->value);
@@ -116,7 +116,7 @@ class CreateAgencyTest extends TestCase
     {
         $dummyCreateAgency = $this->createDummyCreateAgencyData();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
@@ -197,7 +197,7 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithAgencyActor(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::AGENCY_ACTOR, $agencyId);
 
         $input = new CreateAgencyInput(
@@ -240,7 +240,7 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithGroupActor(): void
     {
-        $groupId = StrTestHelper::generateUlid();
+        $groupId = StrTestHelper::generateUuid();
         $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::GROUP_ACTOR, null, [$groupId]);
 
         $input = new CreateAgencyInput(
@@ -283,8 +283,8 @@ class CreateAgencyTest extends TestCase
      */
     public function testProcessWithTalentActor(): void
     {
-        $groupId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
         $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new CreateAgencyInput(
@@ -477,8 +477,8 @@ class CreateAgencyTest extends TestCase
         array $groupIds = [],
         array $talentIds = [],
     ): CreateAgencyTestData {
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테インメント');
         $CEO = new CEO('J.Y. Park');
@@ -499,8 +499,8 @@ class CreateAgencyTest extends TestCase
 등 세계적인 인기를 자랑하는 그룹가 多数 所属되어 있으며、K팝의 グローバル한 발전에서 중심적인 역할を 계속해서 맡고 있습니다。音楽 사업 외に 배우 マネジメントや 공연 事業도 하고 있습니다。
 DESC);
 
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $normalizedCEO = 'j.y. park';
         $status = ApprovalStatus::Pending;
@@ -533,8 +533,8 @@ DESC);
             $version,
         );
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, $agencyScopeId, $groupIds, $talentIds);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $role, $agencyScopeId, $groupIds, $talentIds);
 
         return new CreateAgencyTestData(
             $publishedAgencyIdentifier,

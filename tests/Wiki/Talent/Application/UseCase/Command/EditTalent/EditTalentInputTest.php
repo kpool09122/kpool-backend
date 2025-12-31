@@ -30,13 +30,13 @@ class EditTalentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
@@ -49,7 +49,7 @@ class EditTalentInputTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new EditTalentInput(
             $talentIdentifier,

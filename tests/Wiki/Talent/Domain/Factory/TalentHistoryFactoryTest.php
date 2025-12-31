@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactory;
@@ -37,9 +37,9 @@ class TalentHistoryFactoryTest extends TestCase
      */
     public function testCreateWithTalentIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new TalentName('채영');
@@ -55,7 +55,7 @@ class TalentHistoryFactoryTest extends TestCase
             $subjectName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$talentHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$talentHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$talentHistory->editorIdentifier());
         $this->assertSame((string)$submitterIdentifier, (string)$talentHistory->submitterIdentifier());
         $this->assertSame((string)$talentIdentifier, (string)$talentHistory->talentIdentifier());
@@ -74,8 +74,8 @@ class TalentHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftTalentIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $draftTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $draftTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new TalentName('채영');
@@ -91,7 +91,7 @@ class TalentHistoryFactoryTest extends TestCase
             $subjectName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$talentHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$talentHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$talentHistory->editorIdentifier());
         $this->assertNull($talentHistory->submitterIdentifier());
         $this->assertNull($talentHistory->talentIdentifier());

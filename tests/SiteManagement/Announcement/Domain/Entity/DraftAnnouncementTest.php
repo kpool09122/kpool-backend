@@ -25,8 +25,8 @@ class DraftAnnouncementTest extends TestCase
      */
     public function test__construct(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -78,8 +78,8 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
      */
     public function testSetCategory(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -130,8 +130,8 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
      */
     public function testSetTitle(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -182,8 +182,8 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
      */
     public function testSetFoundedIn(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -256,8 +256,8 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
      */
     public function testSetPublishedDate(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');

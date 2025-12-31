@@ -24,8 +24,8 @@ class TalentHistoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $createTalentHistory = $this->createDummyTalentHistory(
             talentIdentifier: $talentIdentifier,
             submitterIdentifier: $submitterIdentifier,
@@ -75,7 +75,7 @@ class TalentHistoryTest extends TestCase
      */
     public function testConstructWithOnlyTalentIdentifierNull(): void
     {
-        $draftTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $draftTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $createTalentHistory = $this->createDummyTalentHistory(draftTalentIdentifier: $draftTalentIdentifier);
 
         $talentHistory = $createTalentHistory->talentHistory;
@@ -114,9 +114,9 @@ class TalentHistoryTest extends TestCase
      */
     public function testConstructWithFromStatusNull(): void
     {
-        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new TalentName('채영');
         $recordedAt = new DateTimeImmutable();
@@ -147,8 +147,8 @@ class TalentHistoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('At least one of talent identifier or draft identifier must be provided.');
 
-        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
         $subjectName = new TalentName('채영');
@@ -180,8 +180,8 @@ class TalentHistoryTest extends TestCase
         ?TalentIdentifier $draftTalentIdentifier = null,
         ?EditorIdentifier $submitterIdentifier = null,
     ): TalentHistoryTestData {
-        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new TalentName('채영');

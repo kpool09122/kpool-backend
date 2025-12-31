@@ -35,7 +35,7 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testFindById(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
         $translation = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -58,7 +58,7 @@ class AgencyRepositoryTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $translation,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -91,7 +91,7 @@ class AgencyRepositoryTest extends TestCase
     {
         $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
         $agency = $agencyRepository->findById(
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
         );
         $this->assertNull($agency);
     }
@@ -104,9 +104,9 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testFindDraftById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $publishedId = StrTestHelper::generateUlid();
-        $editorId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $publishedId = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
         $translation = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -130,7 +130,7 @@ class AgencyRepositoryTest extends TestCase
         DB::table('draft_agencies')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'editor_id' => $editorId,
             'language' => $translation,
             'name' => $name,
@@ -165,7 +165,7 @@ class AgencyRepositoryTest extends TestCase
     {
         $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
         $agency = $agencyRepository->findDraftById(
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
         );
         $this->assertNull($agency);
     }
@@ -178,9 +178,9 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testSaveDraft(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $publishedId = StrTestHelper::generateUlid();
-        $editorId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $publishedId = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
@@ -202,7 +202,7 @@ class AgencyRepositoryTest extends TestCase
         $agency = new DraftAgency(
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new EditorIdentifier($editorId),
             $language,
             new AgencyName($name),
@@ -239,9 +239,9 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testDelete(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $publishedId = StrTestHelper::generateUlid();
-        $editorId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $publishedId = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -265,7 +265,7 @@ class AgencyRepositoryTest extends TestCase
         DB::table('draft_agencies')->upsert([
             'id' => $id,
             'published_id' => $publishedId,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'editor_id' => $editorId,
             'language' => $language,
             'name' => $name,
@@ -292,7 +292,7 @@ class AgencyRepositoryTest extends TestCase
         $agency = new DraftAgency(
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new EditorIdentifier($editorId),
             $language,
             new AgencyName($name),
@@ -329,7 +329,7 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testSave(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
@@ -350,7 +350,7 @@ class AgencyRepositoryTest extends TestCase
         $version = 1;
         $agency = new Agency(
             new AgencyIdentifier($id),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             $language,
             new AgencyName($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -384,12 +384,12 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSet(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         // 同じ翻訳セットの韓国語版
-        $id1 = StrTestHelper::generateUlid();
-        $publishedId1 = StrTestHelper::generateUlid();
-        $editorId1 = StrTestHelper::generateUlid();
+        $id1 = StrTestHelper::generateUuid();
+        $publishedId1 = StrTestHelper::generateUuid();
+        $editorId1 = StrTestHelper::generateUuid();
         $language1 = Language::KOREAN;
         $name1 = 'JYP엔터테인먼트';
         $normalizedName1 = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -415,9 +415,9 @@ class AgencyRepositoryTest extends TestCase
         ], 'id');
 
         // 同じ翻訳セットの日本語版
-        $id2 = StrTestHelper::generateUlid();
-        $publishedId2 = StrTestHelper::generateUlid();
-        $editorId2 = StrTestHelper::generateUlid();
+        $id2 = StrTestHelper::generateUuid();
+        $publishedId2 = StrTestHelper::generateUuid();
+        $editorId2 = StrTestHelper::generateUuid();
         $language2 = Language::JAPANESE;
         $name2 = 'JYPエンターテイメント';
         $normalizedName2 = 'jypえんたーていめんと';
@@ -443,11 +443,11 @@ class AgencyRepositoryTest extends TestCase
         ], 'id');
 
         // 異なる翻訳セットのデータ（取得されないはず）
-        $id3 = StrTestHelper::generateUlid();
-        $publishedId3 = StrTestHelper::generateUlid();
-        $editorId3 = StrTestHelper::generateUlid();
+        $id3 = StrTestHelper::generateUuid();
+        $publishedId3 = StrTestHelper::generateUuid();
+        $editorId3 = StrTestHelper::generateUuid();
         $language3 = Language::KOREAN;
-        $differentTranslationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $differentTranslationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         DB::table('draft_agencies')->upsert([
             'id' => $id3,
@@ -490,7 +490,7 @@ class AgencyRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSetWhenNoAgencies(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
         $agencies = $agencyRepository->findDraftsByTranslationSet($translationSetIdentifier);
 

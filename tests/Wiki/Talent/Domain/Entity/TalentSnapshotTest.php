@@ -58,9 +58,9 @@ class TalentSnapshotTest extends TestCase
      */
     public function test__constructWithNullAgencyIdentifier(): void
     {
-        $snapshotIdentifier = new TalentSnapshotIdentifier(StrTestHelper::generateUlid());
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new TalentSnapshotIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -99,16 +99,16 @@ class TalentSnapshotTest extends TestCase
      */
     private function createDummyTalentSnapshot(): TalentSnapshotTestData
     {
-        $snapshotIdentifier = new TalentSnapshotIdentifier(StrTestHelper::generateUlid());
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new TalentSnapshotIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1999-04-23'));
         $career = new Career('TWICE member since 2015.');

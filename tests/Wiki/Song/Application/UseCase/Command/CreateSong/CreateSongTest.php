@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -74,8 +74,8 @@ class CreateSongTest extends TestCase
     {
         $createDummyCreateSong = $this->createDummyCreateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -127,7 +127,7 @@ class CreateSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $createSong = $this->app->make(CreateSongInterface::class);
         $song = $createSong->process($input);
-        $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$song->songIdentifier()));
         $this->assertSame((string)$createDummyCreateSong->publishedSongIdentifier, (string)$song->publishedSongIdentifier());
         $this->assertSame((string)$createDummyCreateSong->editorIdentifier, (string)$song->editorIdentifier());
         $this->assertSame($createDummyCreateSong->language->value, $song->language()->value);
@@ -155,8 +155,8 @@ class CreateSongTest extends TestCase
     {
         $createDummyCreateSong = $this->createDummyCreateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -224,8 +224,8 @@ class CreateSongTest extends TestCase
         $createDummyCreateSong = $this->createDummyCreateSong();
         $agencyId = (string)$createDummyCreateSong->agencyIdentifier;
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -294,8 +294,8 @@ class CreateSongTest extends TestCase
         $agencyId = (string)$createDummyCreateSong->agencyIdentifier;
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $createDummyCreateSong->belongIdentifiers);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -364,8 +364,8 @@ class CreateSongTest extends TestCase
         $agencyId = (string)$createDummyCreateSong->agencyIdentifier;
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $createDummyCreateSong->belongIdentifiers);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -432,8 +432,8 @@ class CreateSongTest extends TestCase
     {
         $createDummyCreateSong = $this->createDummyCreateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -499,8 +499,8 @@ class CreateSongTest extends TestCase
     {
         $createDummyCreateSong = $this->createDummyCreateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -547,7 +547,7 @@ class CreateSongTest extends TestCase
     {
         $createDummyCreateSong = $this->createDummyCreateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
@@ -590,14 +590,14 @@ class CreateSongTest extends TestCase
      */
     private function createDummyCreateSong(): CreateSongTestData
     {
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
@@ -607,9 +607,9 @@ class CreateSongTest extends TestCase
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $coverImagePath = new ImagePath('/resources/public/images/before.webp');
 
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,

@@ -19,9 +19,9 @@ class PublishAgencyInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new PublishAgencyInput(
             $agencyIdentifier,

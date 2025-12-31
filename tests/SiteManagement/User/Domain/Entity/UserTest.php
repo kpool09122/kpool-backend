@@ -20,8 +20,8 @@ class UserTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $role = Role::ADMIN;
 
         $user = new User($userIdentifier, $identityIdentifier, $role);
@@ -39,8 +39,8 @@ class UserTest extends TestCase
      */
     public function testSetRole(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $role = Role::NONE;
 
         $user = new User($userIdentifier, $identityIdentifier, $role);

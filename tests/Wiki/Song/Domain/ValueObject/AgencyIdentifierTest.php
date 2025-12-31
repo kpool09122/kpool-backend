@@ -18,20 +18,20 @@ class AgencyIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $agencyIdentifier = new AgencyIdentifier($ulid);
-        $this->assertSame($ulid, (string)$agencyIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $agencyIdentifier = new AgencyIdentifier($id);
+        $this->assertSame($id, (string)$agencyIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: idが不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new AgencyIdentifier($ulid);
+        new AgencyIdentifier($id);
     }
 }

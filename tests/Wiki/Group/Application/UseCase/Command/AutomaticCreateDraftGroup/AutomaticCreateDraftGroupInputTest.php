@@ -22,16 +22,16 @@ class AutomaticCreateDraftGroupInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftGroupCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated'),
-            [new SongIdentifier(StrTestHelper::generateUlid())],
+            [new SongIdentifier(StrTestHelper::generateUuid())],
             new AutomaticDraftGroupSource('webhook::draft'),
         );
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
 

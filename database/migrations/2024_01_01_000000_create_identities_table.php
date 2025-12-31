@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('identities', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('アイデンティティID');
+            $table->uuid('id')->primary()->comment('アイデンティティID');
             $table->string('username', 32)->comment('ユーザー名');
             $table->string('email', 255)->unique()->comment('メールアドレス');
             $table->string('language', 8)->comment('言語設定');
@@ -23,8 +23,8 @@ return new class extends Migration
         });
 
         Schema::create('identity_social_connections', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('ソーシャルコネクションID');
-            $table->string('identity_id', 26)->comment('アイデンティティID');
+            $table->uuid('id')->primary()->comment('ソーシャルコネクションID');
+            $table->uuid('identity_id')->comment('アイデンティティID');
             $table->string('provider', 32)->comment('プロバイダ名');
             $table->string('provider_user_id', 255)->comment('プロバイダユーザーID');
             $table->timestamps();

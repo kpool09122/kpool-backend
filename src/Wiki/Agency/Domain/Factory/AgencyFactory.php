@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Factory;
 
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -18,7 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 readonly class AgencyFactory implements AgencyFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface        $ulidGenerator,
+        private UuidGeneratorInterface        $ulidGenerator,
         private NormalizationServiceInterface $normalizationService,
     ) {
     }

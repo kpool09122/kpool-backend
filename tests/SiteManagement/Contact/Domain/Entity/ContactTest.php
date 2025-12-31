@@ -22,7 +22,7 @@ class ContactTest extends TestCase
      */
     public function test__construct(): void
     {
-        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUlid());
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');

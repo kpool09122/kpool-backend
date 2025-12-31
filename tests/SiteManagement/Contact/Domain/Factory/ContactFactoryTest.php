@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactory;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
@@ -54,7 +54,7 @@ class ContactFactoryTest extends TestCase
             $email,
             $content,
         );
-        $this->assertTrue(UlidValidator::isValid((string)$contact->contactIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$contact->contactIdentifier()));
         $this->assertSame($category->value, $contact->category()->value);
         $this->assertSame((string)$name, (string)$contact->name());
         $this->assertSame((string)$email, (string)$contact->email());

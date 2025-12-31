@@ -18,7 +18,7 @@ class AnnouncementReadModelTest extends TestCase
      */
     public function test__construct(): void
     {
-        $announcementId = StrTestHelper::generateUlid();
+        $announcementId = StrTestHelper::generateUuid();
         $categoryName = 'Updates';
         $title = '🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！';
         $content = 'いつもk-poolをご利用いただき、ありがとうございます！

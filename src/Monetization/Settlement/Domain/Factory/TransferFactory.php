@@ -8,13 +8,13 @@ use Source\Monetization\Settlement\Domain\Entity\Transfer;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Money;
 
 readonly class TransferFactory implements TransferFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $generator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 

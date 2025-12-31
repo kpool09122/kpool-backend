@@ -18,7 +18,7 @@ class SongReadModelTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songId = StrTestHelper::generateUlid();
+        $songId = StrTestHelper::generateUuid();
         $name = 'TT';
         $releaseDate = new DateTimeImmutable('2016-10-24');
         $musicVideoLink = 'https://example.youtube.com/watch?v=dQw4w9WgXcQ';

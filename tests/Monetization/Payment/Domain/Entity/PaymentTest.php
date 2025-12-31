@@ -222,11 +222,11 @@ class PaymentTest extends TestCase
     private function createDummyPaymentTestData(
         ?Money $money = null,
     ): PaymentTestData {
-        $paymentId = new PaymentIdentifier(StrTestHelper::generateUlid());
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $paymentId = new PaymentIdentifier(StrTestHelper::generateUuid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $money ??= new Money(1000, Currency::JPY);
         $method = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'VISA **** 4242',
             true

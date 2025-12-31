@@ -20,9 +20,9 @@ class ResourceIdentifierTest extends TestCase
     public function test__construct(): void
     {
         $resourceType = ResourceType::AGENCY;
-        $agencyId = StrTestHelper::generateUlid();
-        $groupIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
-        $talentIds = [StrTestHelper::generateUlid()];
+        $agencyId = StrTestHelper::generateUuid();
+        $groupIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        $talentIds = [StrTestHelper::generateUuid()];
         $resourceIdentifier = new ResourceIdentifier(
             $resourceType,
             $agencyId,
@@ -44,8 +44,8 @@ class ResourceIdentifierTest extends TestCase
     {
         $resourceType = ResourceType::AGENCY;
         $agencyId = 'test-invalid-agency-id';
-        $groupIds = [StrTestHelper::generateUlid()];
-        $talentIds = [StrTestHelper::generateUlid()];
+        $groupIds = [StrTestHelper::generateUuid()];
+        $talentIds = [StrTestHelper::generateUuid()];
         $this->expectException(InvalidArgumentException::class);
         new ResourceIdentifier(
             $resourceType,
@@ -63,9 +63,9 @@ class ResourceIdentifierTest extends TestCase
     public function testWhenGroupIdsContainInvalid(): void
     {
         $resourceType = ResourceType::AGENCY;
-        $agencyId = StrTestHelper::generateUlid();
-        $groupIds = [StrTestHelper::generateUlid(), 'invalid-group-id'];
-        $talentIds = [StrTestHelper::generateUlid()];
+        $agencyId = StrTestHelper::generateUuid();
+        $groupIds = [StrTestHelper::generateUuid(), 'invalid-group-id'];
+        $talentIds = [StrTestHelper::generateUuid()];
         $this->expectException(InvalidArgumentException::class);
         new ResourceIdentifier(
             $resourceType,
@@ -83,8 +83,8 @@ class ResourceIdentifierTest extends TestCase
     public function testWhenTalentIdIsInvalid(): void
     {
         $resourceType = ResourceType::AGENCY;
-        $agencyId = StrTestHelper::generateUlid();
-        $groupIds = [StrTestHelper::generateUlid()];
+        $agencyId = StrTestHelper::generateUuid();
+        $groupIds = [StrTestHelper::generateUuid()];
         $talentIds = ['test-invalid-talent-id'];
         $this->expectException(InvalidArgumentException::class);
         new ResourceIdentifier(

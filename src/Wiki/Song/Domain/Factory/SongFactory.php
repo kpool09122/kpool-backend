@@ -6,7 +6,7 @@ namespace Source\Wiki\Song\Domain\Factory;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Shared\Infrastructure\Service\Ulid\UlidGenerator;
+use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -18,7 +18,7 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 readonly class SongFactory implements SongFactoryInterface
 {
     public function __construct(
-        private UlidGenerator $ulidGenerator,
+        private UuidGenerator $ulidGenerator,
     ) {
     }
 

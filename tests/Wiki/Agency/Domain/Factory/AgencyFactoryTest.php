@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactory;
@@ -38,10 +38,10 @@ class AgencyFactoryTest extends TestCase
     {
         $name = new AgencyName('JYP엔터테인먼트');
         $translation = Language::KOREAN;
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $agencyFactory = $this->app->make(AgencyFactoryInterface::class);
         $agency = $agencyFactory->create($translationSetIdentifier, $translation, $name);
-        $this->assertTrue(UlidValidator::isValid((string)$agency->agencyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$agency->agencyIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$agency->translationSetIdentifier());
         $this->assertSame($translation->value, $agency->language()->value);
         $this->assertSame((string)$name, (string)$agency->name());

@@ -19,10 +19,10 @@ class ApproveSongInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new ApproveSongInput(
             $songIdentifier,

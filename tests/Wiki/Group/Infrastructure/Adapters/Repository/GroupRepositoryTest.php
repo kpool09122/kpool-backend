@@ -33,14 +33,14 @@ class GroupRepositoryTest extends TestCase
      */
     public function testFindById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $translationSetId = StrTestHelper::generateUuid();
         $translation = Language::KOREAN;
         $name = 'Stray Kids';
         $normalizedName = 'stray kids';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $description = 'K-pop boy group.';
-        $songIds = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
+        $songIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $imagePath = '/images/groups/skz.png';
         $version = 3;
 
@@ -83,7 +83,7 @@ class GroupRepositoryTest extends TestCase
     public function testFindByIdWhenNotExist(): void
     {
         $repository = $this->app->make(GroupRepositoryInterface::class);
-        $group = $repository->findById(new GroupIdentifier(StrTestHelper::generateUlid()));
+        $group = $repository->findById(new GroupIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($group);
     }
@@ -94,16 +94,16 @@ class GroupRepositoryTest extends TestCase
      */
     public function testFindDraftById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $publishedId = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
-        $editorId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $publishedId = StrTestHelper::generateUuid();
+        $translationSetId = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
         $translation = Language::ENGLISH;
         $name = 'Stray Kids EN Draft';
         $normalizedName = 'stray kids en draft';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $description = 'English draft';
-        $songIds = [StrTestHelper::generateUlid()];
+        $songIds = [StrTestHelper::generateUuid()];
         $imagePath = '/images/groups/skz-en.png';
         $status = ApprovalStatus::Pending;
 
@@ -150,7 +150,7 @@ class GroupRepositoryTest extends TestCase
     public function testFindDraftByIdWhenNotExist(): void
     {
         $repository = $this->app->make(GroupRepositoryInterface::class);
-        $group = $repository->findDraftById(new GroupIdentifier(StrTestHelper::generateUlid()));
+        $group = $repository->findDraftById(new GroupIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($group);
     }
@@ -162,16 +162,16 @@ class GroupRepositoryTest extends TestCase
     public function testSave(): void
     {
         $group = new Group(
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new GroupName('TWICE'),
             'twice',
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Girl group'),
             [
-                new SongIdentifier(StrTestHelper::generateUlid()),
-                new SongIdentifier(StrTestHelper::generateUlid()),
+                new SongIdentifier(StrTestHelper::generateUuid()),
+                new SongIdentifier(StrTestHelper::generateUuid()),
             ],
             new ImagePath('/images/groups/twice.png'),
             new Version(5),
@@ -199,16 +199,16 @@ class GroupRepositoryTest extends TestCase
     public function testSaveDraft(): void
     {
         $draft = new DraftGroup(
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new GroupName('NEWJEANS'),
             'newjeans',
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('New draft'),
-            [new SongIdentifier(StrTestHelper::generateUlid())],
+            [new SongIdentifier(StrTestHelper::generateUuid())],
             new ImagePath('/images/groups/nj.png'),
             ApprovalStatus::UnderReview,
         );
@@ -236,18 +236,18 @@ class GroupRepositoryTest extends TestCase
      */
     public function testDeleteDraft(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
         $draft = new DraftGroup(
             new GroupIdentifier($id),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new GroupName('削除対象'),
             'さくじょたいしょう',
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Delete me'),
-            [new SongIdentifier(StrTestHelper::generateUlid())],
+            [new SongIdentifier(StrTestHelper::generateUuid())],
             null,
             ApprovalStatus::Pending,
         );
@@ -279,47 +279,47 @@ class GroupRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSet(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draft1 = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'editor_id' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'translation' => Language::KOREAN->value,
             'name' => '드래프트1',
             'normalized_name' => 'ㄷㄹㅍㅌ1',
-            'agency_id' => StrTestHelper::generateUlid(),
+            'agency_id' => StrTestHelper::generateUuid(),
             'description' => '첫번째',
-            'song_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'song_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'status' => ApprovalStatus::Pending->value,
         ];
 
         $draft2 = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'editor_id' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'translation' => Language::JAPANESE->value,
             'name' => 'ドラフト2',
             'normalized_name' => 'どらふと2',
-            'agency_id' => StrTestHelper::generateUlid(),
+            'agency_id' => StrTestHelper::generateUuid(),
             'description' => '二件目',
-            'song_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'song_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'status' => ApprovalStatus::Approved->value,
         ];
 
         $otherDraft = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'translation' => Language::ENGLISH->value,
             'name' => 'Other',
             'normalized_name' => 'other',
-            'agency_id' => StrTestHelper::generateUlid(),
+            'agency_id' => StrTestHelper::generateUuid(),
             'description' => 'Other set',
-            'song_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'song_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'status' => ApprovalStatus::Pending->value,
         ];
 
@@ -343,7 +343,7 @@ class GroupRepositoryTest extends TestCase
     {
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet(
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertIsArray($drafts);

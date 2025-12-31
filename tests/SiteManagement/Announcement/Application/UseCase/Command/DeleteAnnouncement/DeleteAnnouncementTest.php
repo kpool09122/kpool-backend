@@ -165,18 +165,18 @@ class DeleteAnnouncementTest extends TestCase
      */
     private function createDummyDeleteAnnouncementData(Role $role = Role::ADMIN): DeleteAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $category = Category::UPDATES;
         $publishedDate = new PublishedDate(new DateTimeImmutable());
 
         $user = new User(
             $userIdentifier,
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $role,
         );
 
-        $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $jaAnnouncement = new Announcement(
             $jaAnnouncementIdentifier,
             $translationSetIdentifier,
@@ -208,7 +208,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $publishedDate,
         );
 
-        $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $koAnnouncement = new Announcement(
             $koAnnouncementIdentifier,
             $translationSetIdentifier,
@@ -240,7 +240,7 @@ K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁�
             $publishedDate,
         );
 
-        $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $enAnnouncement = new Announcement(
             $enAnnouncementIdentifier,
             $translationSetIdentifier,

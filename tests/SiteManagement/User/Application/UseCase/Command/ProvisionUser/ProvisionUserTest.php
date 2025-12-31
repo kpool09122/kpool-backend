@@ -47,10 +47,10 @@ class ProvisionUserTest extends TestCase
      */
     public function testProcess(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $input = new ProvisionUserInput($identityIdentifier);
 
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $user = new User(
             $userIdentifier,
             $identityIdentifier,
@@ -90,10 +90,10 @@ class ProvisionUserTest extends TestCase
      */
     public function testProcessWhenUserAlreadyExists(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $input = new ProvisionUserInput($identityIdentifier);
 
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $existingUser = new User(
             $userIdentifier,
             $identityIdentifier,

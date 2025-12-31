@@ -333,7 +333,7 @@ class SocialLoginCallbackTest extends TestCase
      */
     private function createIdentity(Email $email, ?IdentityIdentifier $identityIdentifier = null, array $connections = []): Identity
     {
-        $identityIdentifier = $identityIdentifier ?? new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = $identityIdentifier ?? new IdentityIdentifier(StrTestHelper::generateUuid());
         $username = new UserName('test-user');
         $hashedPassword = HashedPassword::fromPlain(new PlainPassword('PlainPass1!'));
         $language = Language::ENGLISH;

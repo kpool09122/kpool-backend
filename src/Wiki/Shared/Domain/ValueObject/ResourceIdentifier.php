@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 
 final readonly class ResourceIdentifier
 {
@@ -61,18 +61,18 @@ final readonly class ResourceIdentifier
         array $groupIds,
         array $talentIds,
     ): void {
-        if ($agencyId !== null && ! UlidValidator::isValid($agencyId)) {
+        if ($agencyId !== null && ! UuidValidator::isValid($agencyId)) {
             throw new InvalidArgumentException('Agency id is invalid.');
         }
 
         foreach ($groupIds as $gid) {
-            if (! is_string($gid) || ! UlidValidator::isValid($gid)) {
+            if (! is_string($gid) || ! UuidValidator::isValid($gid)) {
                 throw new InvalidArgumentException('Group ids contain invalid value.');
             }
         }
 
         foreach ($talentIds as $tid) {
-            if (! is_string($tid) || ! UlidValidator::isValid($tid)) {
+            if (! is_string($tid) || ! UuidValidator::isValid($tid)) {
                 throw new InvalidArgumentException('Talent ids contain invalid value.');
             }
         }

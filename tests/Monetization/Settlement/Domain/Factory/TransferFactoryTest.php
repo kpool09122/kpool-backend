@@ -26,10 +26,10 @@ class TransferFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $settlementAccount = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'kBank',
             '0124',
             Currency::KRW,

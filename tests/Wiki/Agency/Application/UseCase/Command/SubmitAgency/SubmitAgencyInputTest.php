@@ -19,8 +19,8 @@ class SubmitAgencyInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new SubmitAgencyInput(
             $agencyIdentifier,

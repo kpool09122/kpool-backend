@@ -74,9 +74,9 @@ class SongTest extends TestCase
         $this->assertSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
 
         $newBelongIdentifier = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $createSong->song->setBelongIdentifiers($newBelongIdentifier);
         $this->assertNotSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
@@ -215,14 +215,14 @@ class SongTest extends TestCase
      */
     private function createDummySong(): SongTestData
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');

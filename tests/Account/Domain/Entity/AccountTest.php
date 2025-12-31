@@ -70,7 +70,7 @@ class AccountTest extends TestCase
      */
     public function testNoOwner(): void
     {
-        $memberships = [new AccountMembership(new UserIdentifier(StrTestHelper::generateUlid()), AccountRole::MEMBER)];
+        $memberships = [new AccountMembership(new UserIdentifier(StrTestHelper::generateUuid()), AccountRole::MEMBER)];
         $this->expectException(DomainException::class);
         $this->createDummyAccountTestData($memberships);
     }
@@ -85,7 +85,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 
@@ -122,7 +122,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 
@@ -161,7 +161,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $nonMember = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 
@@ -260,7 +260,7 @@ class AccountTest extends TestCase
         array $memberships = [],
         ?DeletionReadinessChecklist $deletionReadiness = null
     ): AccountTestData {
-        $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
+        $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
@@ -291,7 +291,7 @@ class AccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUlid());
+        $userId = new UserIdentifier(StrTestHelper::generateUuid());
         if ($memberships === []) {
             $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
         }

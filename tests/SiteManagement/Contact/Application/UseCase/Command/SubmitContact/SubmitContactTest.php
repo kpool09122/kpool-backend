@@ -64,7 +64,7 @@ class SubmitContactTest extends TestCase
             $content,
         );
 
-        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUlid());
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
             $category,
@@ -120,7 +120,7 @@ class SubmitContactTest extends TestCase
             $content,
         );
 
-        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUlid());
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
             $category,
@@ -174,7 +174,7 @@ class SubmitContactTest extends TestCase
             $content,
         );
 
-        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUlid());
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
             $category,

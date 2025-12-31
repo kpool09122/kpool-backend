@@ -86,8 +86,8 @@ class PublishAgencyTest extends TestCase
      */
     public function testProcessWhenAlreadyPublished(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             hasPublishedAgency: true,
@@ -186,8 +186,8 @@ class PublishAgencyTest extends TestCase
      */
     public function testProcessForTheFirstTime(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             hasPublishedAgency: false,
@@ -282,8 +282,8 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -335,7 +335,7 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -390,8 +390,8 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency(status: ApprovalStatus::Approved);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -444,8 +444,8 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -505,8 +505,8 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency(hasPublishedAgency: true);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -570,8 +570,8 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -625,8 +625,8 @@ class PublishAgencyTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -716,9 +716,9 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -773,9 +773,9 @@ class PublishAgencyTest extends TestCase
      */
     public function testProcessWithAgencyActor(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $agencyId = StrTestHelper::generateUuid();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             agencyId: $agencyId,
@@ -864,9 +864,9 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -922,10 +922,10 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -980,8 +980,8 @@ class PublishAgencyTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -1069,8 +1069,8 @@ class PublishAgencyTest extends TestCase
     {
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -1128,10 +1128,10 @@ class PublishAgencyTest extends TestCase
         bool $hasPublishedAgency = false,
         ?EditorIdentifier $operatorIdentifier = null,
     ): PublishAgencyTestData {
-        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'JYPㅇㅌㅌㅇㅁㅌ';
@@ -1203,10 +1203,10 @@ DESC);
             $version,
         );
 
-        $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new AgencyHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
             $agency->editorIdentifier(),
             $hasPublishedAgency ? $publishedAgencyIdentifier : null,
             $agency->agencyIdentifier(),
@@ -1218,7 +1218,7 @@ DESC);
 
         // 公開済みAgencyのスナップショット（更新時用）
         $snapshot = new AgencySnapshot(
-            new AgencySnapshotIdentifier(StrTestHelper::generateUlid()),
+            new AgencySnapshotIdentifier(StrTestHelper::generateUuid()),
             $publishedAgency->agencyIdentifier(),
             $publishedAgency->translationSetIdentifier(),
             $publishedAgency->language(),

@@ -29,8 +29,8 @@ class CreatePrincipalTest extends TestCase
      */
     public function testProcess(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $role = Role::NONE;
 
         $input = new CreatePrincipalInput(
@@ -80,8 +80,8 @@ class CreatePrincipalTest extends TestCase
      */
     public function testProcessThrowsExceptionWhenPrincipalAlreadyExists(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $role = Role::NONE;
 
         $input = new CreatePrincipalInput(

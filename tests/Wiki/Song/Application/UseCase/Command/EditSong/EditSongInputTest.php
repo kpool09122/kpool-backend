@@ -28,12 +28,12 @@ class EditSongInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
@@ -42,7 +42,7 @@ class EditSongInputTest extends TestCase
         $base64EncodedCoverImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new EditSongInput(
             $songIdentifier,

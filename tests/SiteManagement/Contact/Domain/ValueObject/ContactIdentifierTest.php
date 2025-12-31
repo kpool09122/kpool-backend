@@ -18,20 +18,20 @@ class ContactIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $contactIdentifier = new ContactIdentifier($ulid);
-        $this->assertSame($ulid, (string)$contactIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $contactIdentifier = new ContactIdentifier($id);
+        $this->assertSame($id, (string)$contactIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new ContactIdentifier($ulid);
+        new ContactIdentifier($id);
     }
 }

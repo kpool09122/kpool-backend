@@ -6,7 +6,7 @@ namespace Tests\Wiki\Song\Domain\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -48,14 +48,14 @@ class SongSnapshotFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
@@ -84,7 +84,7 @@ class SongSnapshotFactoryTest extends TestCase
         $factory = $this->app->make(SongSnapshotFactoryInterface::class);
         $snapshot = $factory->create($song);
 
-        $this->assertTrue(UlidValidator::isValid((string)$snapshot->snapshotIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$snapshot->snapshotIdentifier()));
         $this->assertSame((string)$songIdentifier, (string)$snapshot->songIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$snapshot->translationSetIdentifier());
         $this->assertSame($language->value, $snapshot->language()->value);
@@ -110,8 +110,8 @@ class SongSnapshotFactoryTest extends TestCase
     public function testCreateWithNullAgencyIdentifier(): void
     {
         $song = new Song(
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('TT'),
             null,

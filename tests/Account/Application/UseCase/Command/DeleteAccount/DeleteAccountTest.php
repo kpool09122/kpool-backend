@@ -173,7 +173,7 @@ class DeleteAccountTest extends TestCase
     private function createDummyAccountTestData(
         ?DeletionReadinessChecklist $deletionReadiness = null
     ): DeleteAccountTestData {
-        $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
+        $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
@@ -204,7 +204,7 @@ class DeleteAccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUlid());
+        $userId = new UserIdentifier(StrTestHelper::generateUuid());
         $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
 
         $status = AccountStatus::ACTIVE;

@@ -20,7 +20,7 @@ class GetAgenciesOutputTest extends TestCase
     public function testOutput(): void
     {
         $readModel1 = new AgencyReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'JYPエンターテイメント',
             'J.Y. Park',
             new DateTimeImmutable('1997-04-25'),
@@ -28,7 +28,7 @@ class GetAgenciesOutputTest extends TestCase
             1,
         );
         $readModel2 = new AgencyReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'HYBE',
             'パク・ジウォン',
             new DateTimeImmutable('2005-02-01'),

@@ -52,7 +52,7 @@ class LoginTest extends TestCase
      */
     public function testProcess(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
@@ -133,7 +133,7 @@ class LoginTest extends TestCase
      */
     public function testWhenEmailIsNotVerified(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
@@ -181,7 +181,7 @@ class LoginTest extends TestCase
      */
     public function testWhenFailedToVerifyPassword(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;

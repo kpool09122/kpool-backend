@@ -85,8 +85,8 @@ class ApproveTalentTest extends TestCase
      */
     public function testProcess(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -155,8 +155,8 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -204,8 +204,8 @@ class ApproveTalentTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -272,10 +272,10 @@ class ApproveTalentTest extends TestCase
      */
     public function testWhenNotFoundTalent(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new ApproveTalentInput(
             $talentIdentifier,
@@ -320,7 +320,7 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -369,8 +369,8 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -438,8 +438,8 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -493,9 +493,9 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -543,7 +543,7 @@ class ApproveTalentTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -551,7 +551,7 @@ class ApproveTalentTest extends TestCase
 
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $approveTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -617,10 +617,10 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -668,7 +668,7 @@ class ApproveTalentTest extends TestCase
      */
     public function testAuthorizedGroupActor(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -676,7 +676,7 @@ class ApproveTalentTest extends TestCase
 
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $approveTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $groupIds, []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -742,11 +742,11 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $anotherTalentId = StrTestHelper::generateUlid(); // 別のTalent IDを使用
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $anotherTalentId = StrTestHelper::generateUuid(); // 別のTalent IDを使用
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -794,7 +794,7 @@ class ApproveTalentTest extends TestCase
      */
     public function testAuthorizedTalentActor(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -803,7 +803,7 @@ class ApproveTalentTest extends TestCase
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $approveTalentInfo->groupIdentifiers);
         $talentId = (string) $approveTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -868,8 +868,8 @@ class ApproveTalentTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -939,8 +939,8 @@ class ApproveTalentTest extends TestCase
     {
         $approveTalentInfo = $this->createApproveTalentInfo();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -983,16 +983,16 @@ class ApproveTalentTest extends TestCase
     private function createApproveTalentInfo(
         ?EditorIdentifier $operatorIdentifier = null,
     ): ApproveTalentTestData {
-        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
@@ -1008,7 +1008,7 @@ class ApproveTalentTest extends TestCase
 
         $imageLink = new ImagePath('/resources/public/images/before.webp');
 
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::UnderReview;
         $talent = new DraftTalent(
             $talentIdentifier,
@@ -1043,10 +1043,10 @@ class ApproveTalentTest extends TestCase
             $version,
         );
 
-        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new TalentHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),

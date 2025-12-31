@@ -54,12 +54,12 @@ class TalentServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedTalentWhenApprovedExists(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
 
         // 承認済みのDraftTalent (韓国語版)
-        $approvedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $approvedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $approvedTalent = new DraftTalent(
             $approvedTalentIdentifier,
             null,
@@ -68,9 +68,9 @@ class TalentServiceTest extends TestCase
             Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('트와이스 멤버'),
@@ -90,9 +90,9 @@ class TalentServiceTest extends TestCase
             Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
@@ -129,12 +129,12 @@ class TalentServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedTalentWhenNoApproved(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
 
         // Pending状態のDraftTalent (韓国語版)
-        $pendingTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $pendingTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $pendingTalent = new DraftTalent(
             $pendingTalentIdentifier,
             null,
@@ -143,9 +143,9 @@ class TalentServiceTest extends TestCase
             Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('트와이스 멤버'),
@@ -165,9 +165,9 @@ class TalentServiceTest extends TestCase
             Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
@@ -204,9 +204,9 @@ class TalentServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedTalentWhenOnlySelfIsApproved(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
 
         // 自分自身 (Approved状態だが除外される)
         $selfTalent = new DraftTalent(
@@ -217,9 +217,9 @@ class TalentServiceTest extends TestCase
             Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
@@ -255,8 +255,8 @@ class TalentServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedTalentWhenNoDrafts(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findDraftsByTranslationSet')
@@ -284,12 +284,12 @@ class TalentServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedTalentWhenMultipleApprovedExists(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
 
         // 韓国語版 (Approved)
-        $koreanTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $koreanTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $koreanTalent = new DraftTalent(
             $koreanTalentIdentifier,
             null,
@@ -298,7 +298,7 @@ class TalentServiceTest extends TestCase
             Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,
             new Career(''),
@@ -308,7 +308,7 @@ class TalentServiceTest extends TestCase
         );
 
         // 英語版 (Approved)
-        $englishTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $englishTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $englishTalent = new DraftTalent(
             $englishTalentIdentifier,
             null,
@@ -317,7 +317,7 @@ class TalentServiceTest extends TestCase
             Language::ENGLISH,
             new TalentName('Chaeyoung'),
             new RealName('Son Chaeyoung'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,
             new Career(''),
@@ -335,7 +335,7 @@ class TalentServiceTest extends TestCase
             Language::JAPANESE,
             new TalentName('チェヨン'),
             new RealName('ソン・チェヨン'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,
             new Career(''),

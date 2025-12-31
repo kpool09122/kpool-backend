@@ -73,8 +73,8 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -131,9 +131,9 @@ class TranslateSongTest extends TestCase
      */
     public function testWhenSongNotFound(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new TranslateSongInput(
             $songIdentifier,
@@ -172,7 +172,7 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -214,8 +214,8 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -258,8 +258,8 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -316,9 +316,9 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $anotherAgencyId, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -362,8 +362,8 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -420,10 +420,10 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -468,8 +468,8 @@ class TranslateSongTest extends TestCase
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyTranslateSong->belongIdentifiers);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -526,10 +526,10 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -574,8 +574,8 @@ class TranslateSongTest extends TestCase
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyTranslateSong->belongIdentifiers);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -633,8 +633,8 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -691,8 +691,8 @@ class TranslateSongTest extends TestCase
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -729,15 +729,15 @@ class TranslateSongTest extends TestCase
      */
     private function createDummyTranslateSong(): TranslateSongTestData
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
@@ -764,13 +764,13 @@ class TranslateSongTest extends TestCase
         );
 
         // 日本語版
-        $jaSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $jaSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $japanese = Language::JAPANESE;
         $jaName = new SongName('TT');
-        $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $jaBelongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $jaLyricist = new Lyricist('Black Eyed Pilseung');
         $jaComposer = new Composer('Sam Lewis');
@@ -798,13 +798,13 @@ class TranslateSongTest extends TestCase
         );
 
         // 英語版
-        $enSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $enSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $english = Language::ENGLISH;
         $enName = new SongName('TT');
-        $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $enBelongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $enLyricist = new Lyricist('Black Eyed Pilseung');
         $enComposer = new Composer('Sam Lewis');

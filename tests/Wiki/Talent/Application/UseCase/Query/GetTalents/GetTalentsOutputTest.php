@@ -21,14 +21,14 @@ class GetTalentsOutputTest extends TestCase
     public function testOutput(): void
     {
         $songReadModel1 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'Mirage',
             new DateTimeImmutable('2024-11-6'),
             'https://example1.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test1.webp',
         );
         $readModel1 = new TalentReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             '사나',
             '미나토자키 사나',
             ['TWICE', 'MISAMO'],
@@ -38,21 +38,21 @@ class GetTalentsOutputTest extends TestCase
             [$songReadModel1],
         );
         $songReadModel2 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'Killin\' Me Good',
             new DateTimeImmutable('2023-8-18'),
             'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test2.webp',
         );
         $songReadModel3 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'Stardust love song',
             new DateTimeImmutable('2022-3-6'),
             'https://example3.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test3.webp',
         );
         $readModel2 = new TalentReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             '지효',
             '박지효',
             ['TWICE'],

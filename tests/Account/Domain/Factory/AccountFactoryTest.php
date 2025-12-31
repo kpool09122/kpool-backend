@@ -30,7 +30,7 @@ use Source\Account\Domain\ValueObject\StateOrProvince;
 use Source\Account\Domain\ValueObject\TaxCategory;
 use Source\Account\Domain\ValueObject\TaxInfo;
 use Source\Account\Domain\ValueObject\TaxRegion;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Money;
@@ -90,7 +90,7 @@ class AccountFactoryTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUlid());
+        $userId = new UserIdentifier(StrTestHelper::generateUuid());
         $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
 
         $factory = $this->app->make(AccountFactoryInterface::class);
@@ -102,7 +102,7 @@ class AccountFactoryTest extends TestCase
             $memberships,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$account->accountIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$account->accountIdentifier()));
         $this->assertSame($email, $account->email());
         $this->assertSame($accountType, $account->type());
         $this->assertSame($accountName, $account->name());

@@ -64,8 +64,8 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -124,7 +124,7 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -159,7 +159,7 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -201,8 +201,8 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -245,8 +245,8 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -307,9 +307,9 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -351,10 +351,10 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -396,9 +396,9 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -439,11 +439,11 @@ class TranslateAgencyTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $dummyTranslateAgency = $this->createDummyTranslateAgency($agencyId);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -505,8 +505,8 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -567,8 +567,8 @@ class TranslateAgencyTest extends TestCase
     {
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -607,10 +607,10 @@ class TranslateAgencyTest extends TestCase
     private function createDummyTranslateAgency(
         ?string $agencyId = null,
     ): TranslateAgencyTestData {
-        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';

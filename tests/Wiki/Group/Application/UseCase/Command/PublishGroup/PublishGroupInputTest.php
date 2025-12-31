@@ -19,10 +19,10 @@ class PublishGroupInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new PublishGroupInput(
             $groupIdentifier,

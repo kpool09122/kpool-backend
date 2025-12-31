@@ -18,7 +18,7 @@ class DeleteAccountInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUlid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $input = new DeleteAccountInput($accountIdentifier);
         $this->assertSame($accountIdentifier, $input->accountIdentifier());
     }

@@ -21,21 +21,21 @@ class GetGroupsOutputTest extends TestCase
     public function testOutput(): void
     {
         $songReadModel1 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'TT',
             new DateTimeImmutable('2016-10-24'),
             'https://example1.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test1.webp',
         );
         $songReadModel2 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'I CAN\'T STOP ME',
             new DateTimeImmutable('2020-10-26'),
             'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test2.webp',
         );
         $readModel1 = new GroupReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'TWICE',
             'JYP엔터테인먼트',
             '### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
@@ -46,21 +46,21 @@ class GetGroupsOutputTest extends TestCase
             [$songReadModel1, $songReadModel2],
         );
         $songReadModel3 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'Supernova',
             new DateTimeImmutable('2024-5-13'),
             'https://example3.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test3.webp',
         );
         $songReadModel4 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'Armageddon',
             new DateTimeImmutable('2024-5-27'),
             'https://example4.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test4.webp',
         );
         $readModel2 = new GroupReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'aespa',
             'SM엔터테인먼트입니다',
             '에스파는 2020년 11월 17일에 데뷔한 한국의 4인조 걸그룹입니다. 멤버는 한국인인 **카리나**와 **윈터**, 일본인인 **지젤**, 그리고 중국인인 **닝닝**으로 구성되어 있습니다.

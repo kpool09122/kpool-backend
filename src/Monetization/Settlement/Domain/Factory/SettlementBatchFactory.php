@@ -8,12 +8,12 @@ use DateTimeImmutable;
 use Source\Monetization\Settlement\Domain\Entity\SettlementBatch;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 
 readonly class SettlementBatchFactory implements SettlementBatchFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $generator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 

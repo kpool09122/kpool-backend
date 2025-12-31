@@ -20,7 +20,7 @@ class GetAnnouncementsOutputTest extends TestCase
     public function testOutput(): void
     {
         $readModel1 = new AnnouncementReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'UPDATES',
             '🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！',
             'いつもk-poolをご利用いただき、ありがとうございます！
@@ -30,7 +30,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             new DateTimeImmutable(),
         );
         $readModel2 = new AnnouncementReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'NEWS',
             '🎬 推しの新しい魅力、見逃してない？メンバー関連動画リンク機能を追加！',
             'いつもk-poolをご利用いただき、ありがとうございます！

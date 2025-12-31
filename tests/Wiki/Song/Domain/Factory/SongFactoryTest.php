@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Song\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Song\Domain\Factory\SongFactory;
@@ -36,12 +36,12 @@ class SongFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $songFactory = $this->app->make(SongFactoryInterface::class);
         $song = $songFactory->create($translationSetIdentifier, $language, $name);
-        $this->assertTrue(UlidValidator::isValid((string)$song->songIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$song->songIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$song->translationSetIdentifier());
         $this->assertSame($language->value, $song->language()->value);
         $this->assertSame((string)$name, (string)$song->name());

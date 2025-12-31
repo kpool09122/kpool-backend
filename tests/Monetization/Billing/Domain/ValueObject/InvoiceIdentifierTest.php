@@ -18,11 +18,11 @@ class InvoiceIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
-        $identifier = new InvoiceIdentifier($ulid);
+        $identifier = new InvoiceIdentifier($id);
 
-        $this->assertSame($ulid, (string)$identifier);
+        $this->assertSame($id, (string)$identifier);
     }
 
     /**
@@ -34,6 +34,6 @@ class InvoiceIdentifierTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new InvoiceIdentifier('not-a-ulid');
+        new InvoiceIdentifier('not-a-id');
     }
 }

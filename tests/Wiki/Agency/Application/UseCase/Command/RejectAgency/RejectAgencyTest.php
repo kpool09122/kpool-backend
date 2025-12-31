@@ -69,8 +69,8 @@ class RejectAgencyTest extends TestCase
      */
     public function testProcess(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyRejectAgency = $this->createDummyRejectAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -130,8 +130,8 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -172,7 +172,7 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -216,8 +216,8 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency(null, ApprovalStatus::Approved);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -261,8 +261,8 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -306,8 +306,8 @@ class RejectAgencyTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyRejectAgency = $this->createDummyRejectAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -369,9 +369,9 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -415,9 +415,9 @@ class RejectAgencyTest extends TestCase
      */
     public function testProcessWithAgencyActor(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $agencyId = StrTestHelper::generateUuid();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyRejectAgency = $this->createDummyRejectAgency(
             agencyId: $agencyId,
@@ -480,9 +480,9 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -527,10 +527,10 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $groupId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -574,8 +574,8 @@ class RejectAgencyTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyRejectAgency = $this->createDummyRejectAgency(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -637,8 +637,8 @@ class RejectAgencyTest extends TestCase
     {
         $dummyRejectAgency = $this->createDummyRejectAgency();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new RejectAgencyInput(
             $dummyRejectAgency->agencyIdentifier,
@@ -683,10 +683,10 @@ class RejectAgencyTest extends TestCase
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         ?EditorIdentifier $operatorIdentifier = null,
     ): RejectAgencyTestData {
-        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
@@ -724,10 +724,10 @@ DESC);
             $status,
         );
 
-        $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new AgencyHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
             $agency->editorIdentifier(),
             $agency->publishedAgencyIdentifier(),
             $agency->agencyIdentifier(),

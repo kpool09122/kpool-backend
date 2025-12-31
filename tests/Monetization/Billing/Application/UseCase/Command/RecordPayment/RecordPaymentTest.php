@@ -42,8 +42,8 @@ class RecordPaymentTest extends TestCase
      */
     public function testProcessMatchesPaymentAndInvoice(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
 
         $invoice = $this->createIssuedInvoice($invoiceIdentifier, $money);
@@ -97,8 +97,8 @@ class RecordPaymentTest extends TestCase
      */
     public function testProcessThrowsWhenInvoiceNotFound(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
 
         $input = new RecordPaymentInput($invoiceIdentifier, $paymentIdentifier);
 
@@ -134,8 +134,8 @@ class RecordPaymentTest extends TestCase
      */
     public function testProcessThrowsWhenPaymentNotFound(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
 
         $invoice = $this->createIssuedInvoice($invoiceIdentifier, $money);
@@ -177,8 +177,8 @@ class RecordPaymentTest extends TestCase
      */
     public function testProcessPropagatesMatcherException(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
 
         $invoice = $this->createIssuedInvoice($invoiceIdentifier, $money);
@@ -222,8 +222,8 @@ class RecordPaymentTest extends TestCase
 
         return new Invoice(
             $invoiceIdentifier,
-            new OrderIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new OrderIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             [new InvoiceLine('Test Product', $total, 1)],
             $total,
             new Money(0, $total->currency()),
@@ -239,7 +239,7 @@ class RecordPaymentTest extends TestCase
     {
         $now = new DateTimeImmutable();
         $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'Visa **** 1234',
             true,
@@ -247,7 +247,7 @@ class RecordPaymentTest extends TestCase
 
         return new Payment(
             $paymentIdentifier,
-            new OrderIdentifier(StrTestHelper::generateUlid()),
+            new OrderIdentifier(StrTestHelper::generateUuid()),
             $money,
             $paymentMethod,
             $now,

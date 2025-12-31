@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactory;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
@@ -37,9 +37,9 @@ class GroupHistoryFactoryTest extends TestCase
      */
     public function testCreateWithGroupIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new GroupName('TWICE');
@@ -55,7 +55,7 @@ class GroupHistoryFactoryTest extends TestCase
             $subjectName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$groupHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$groupHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$groupHistory->editorIdentifier());
         $this->assertSame((string)$submitterIdentifier, (string)$groupHistory->submitterIdentifier());
         $this->assertSame((string)$groupIdentifier, (string)$groupHistory->groupIdentifier());
@@ -74,8 +74,8 @@ class GroupHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftGroupIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $draftGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $draftGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new GroupName('TWICE');
@@ -91,7 +91,7 @@ class GroupHistoryFactoryTest extends TestCase
             $subjectName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$groupHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$groupHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$groupHistory->editorIdentifier());
         $this->assertNull($groupHistory->submitterIdentifier());
         $this->assertNull($groupHistory->groupIdentifier());

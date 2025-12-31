@@ -34,16 +34,16 @@ class AgencyServiceTest extends TestCase
 
     public function testExistsApprovedButNotTranslatedAgencyWhenApprovedExists(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
 
         // Approved状態のDraftAgencyを作成（日本語版）
-        $approvedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $approvedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $approvedAgency = new DraftAgency(
             $approvedAgencyIdentifier,
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -73,16 +73,16 @@ class AgencyServiceTest extends TestCase
 
     public function testExistsApprovedButNotTranslatedAgencyWhenNoApproved(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
 
         // Pending状態のDraftAgencyを作成（韓国語版）
-        $pendingAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $pendingAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $pendingAgency = new DraftAgency(
             $pendingAgencyIdentifier,
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -112,15 +112,15 @@ class AgencyServiceTest extends TestCase
 
     public function testExistsApprovedButNotTranslatedAgencyWhenOnlySelfIsApproved(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
 
         // 自分自身がApproved状態（英語版）
         $agency = new DraftAgency(
             $agencyIdentifier,
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new AgencyName('JYP Entertainment'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -150,8 +150,8 @@ class AgencyServiceTest extends TestCase
 
     public function testExistsApprovedButNotTranslatedAgencyWhenNoDrafts(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findDraftsByTranslationSet')
@@ -172,17 +172,17 @@ class AgencyServiceTest extends TestCase
 
     public function testExistsApprovedButNotTranslatedAgencyWhenMultipleApprovedExists(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
 
         // 複数のApproved状態のDraftAgencyを作成（韓国語版）
-        $approvedAgency1Identifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $approvedAgency1Identifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $approvedAgency1 = new DraftAgency(
             $approvedAgency1Identifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -194,12 +194,12 @@ class AgencyServiceTest extends TestCase
         );
 
         // 日本語版
-        $approvedAgency2Identifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $approvedAgency2Identifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $approvedAgency2 = new DraftAgency(
             $approvedAgency2Identifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',

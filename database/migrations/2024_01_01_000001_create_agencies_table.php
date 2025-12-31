@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('agencies', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('事務所ID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->uuid('id')->primary()->comment('事務所ID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('normalized_name', 32)->comment('正規化された事務所名');
@@ -26,10 +26,10 @@ return new class extends Migration
         });
 
         Schema::create('draft_agencies', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('事務所ID');
-            $table->string('published_id', 26)->nullable()->comment('公開済み事務所ID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
-            $table->string('editor_id', 26)->comment('編集者ID');
+            $table->uuid('id')->primary()->comment('事務所ID');
+            $table->uuid('published_id')->nullable()->comment('公開済み事務所ID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->uuid('editor_id')->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('normalized_name', 32)->comment('正規化された事務所名');
@@ -42,9 +42,9 @@ return new class extends Migration
         });
 
         Schema::create('agency_snapshots', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('スナップショットID');
-            $table->string('agency_id', 26)->index()->comment('公開済み事務所ID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->uuid('id')->primary()->comment('スナップショットID');
+            $table->uuid('agency_id')->index()->comment('公開済み事務所ID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('normalized_name', 32)->comment('正規化された事務所名');

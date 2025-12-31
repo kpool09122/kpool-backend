@@ -20,7 +20,7 @@ class GetSongsOutputTest extends TestCase
     public function testOutput(): void
     {
         $readModel1 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'TT',
             ['TWICE'],
             'Sam Lewis',
@@ -31,7 +31,7 @@ class GetSongsOutputTest extends TestCase
             '/resources/public/images/test2.webp',
         );
         $readModel2 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'I CAN\'T STOP ME',
             ['TWICE'],
             'J.Y. Park',

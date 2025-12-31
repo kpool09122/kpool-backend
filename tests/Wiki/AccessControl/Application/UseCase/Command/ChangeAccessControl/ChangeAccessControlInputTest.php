@@ -20,7 +20,7 @@ class ChangeAccessControlInputTest extends TestCase
     public function test__construct(): void
     {
         $holdingRole = Role::ADMINISTRATOR;
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $targetRole = Role::TALENT_ACTOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,

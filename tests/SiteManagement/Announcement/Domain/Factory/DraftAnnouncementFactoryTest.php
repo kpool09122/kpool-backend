@@ -6,7 +6,7 @@ namespace Tests\SiteManagement\Announcement\Domain\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactory;
@@ -40,7 +40,7 @@ class DraftAnnouncementFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $category = Category::UPDATES;
         $language = Language::JAPANESE;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -76,7 +76,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $content,
             $publishedDate,
         );
-        $this->assertTrue(UlidValidator::isValid((string)$announcement->announcementIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$announcement->announcementIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$announcement->translationSetIdentifier());
         $this->assertSame($language->value, $announcement->translation()->value);
         $this->assertSame($category->value, $announcement->category()->value);

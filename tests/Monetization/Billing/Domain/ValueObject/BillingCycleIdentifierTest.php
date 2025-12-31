@@ -18,11 +18,11 @@ class BillingCycleIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
-        $identifier = new BillingCycleIdentifier($ulid);
+        $identifier = new BillingCycleIdentifier($id);
 
-        $this->assertSame($ulid, (string)$identifier);
+        $this->assertSame($id, (string)$identifier);
     }
 
     /**
@@ -34,6 +34,6 @@ class BillingCycleIdentifierTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new BillingCycleIdentifier('not-a-ulid');
+        new BillingCycleIdentifier('not-a-id');
     }
 }

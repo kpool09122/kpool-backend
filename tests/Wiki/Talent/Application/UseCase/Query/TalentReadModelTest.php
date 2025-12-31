@@ -19,7 +19,7 @@ class TalentReadModelTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentId = StrTestHelper::generateUlid();
+        $talentId = StrTestHelper::generateUuid();
         $name = '채영';
         $realName = '손채영';
         $groupNames = ['TWICE', 'MISAMO'];
@@ -30,14 +30,14 @@ class TalentReadModelTest extends TestCase
 지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.';
         $imageUrl = 'https://example.com/resources/public/images/image.webp';
         $songReadModel1 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'TT',
             new DateTimeImmutable('2016-10-24'),
             'https://example.youtube.com/watch?v=dQw4w9WgXcQ',
             'https://example.com/resources/public/images/image.webp',
         );
         $songReadModel2 = new SongReadModel(
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
             'I CAN\'T STOP ME',
             new DateTimeImmutable('2020-10-26'),
             'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',

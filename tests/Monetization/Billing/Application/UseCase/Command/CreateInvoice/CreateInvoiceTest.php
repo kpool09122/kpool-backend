@@ -40,8 +40,8 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessCreatesInvoiceWithProductAndShipping(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -175,8 +175,8 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessWithZeroShippingCost(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -253,8 +253,8 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessWithMultipleLines(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Product A',
@@ -338,8 +338,8 @@ class CreateInvoiceTest extends TestCase
      */
     public function testProcessRejectsEmptyLines(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $shippingCost = new Money(500, Currency::JPY);
 
         $input = new CreateInvoiceInput(
@@ -385,8 +385,8 @@ class CreateInvoiceTest extends TestCase
         $dueDate = $issuedAt->modify('+14 days');
 
         return new Invoice(
-            new InvoiceIdentifier(StrTestHelper::generateUlid()),
-            new OrderIdentifier(StrTestHelper::generateUlid()),
+            new InvoiceIdentifier(StrTestHelper::generateUuid()),
+            new OrderIdentifier(StrTestHelper::generateUuid()),
             $customerIdentifier,
             [new InvoiceLine('Test', new Money(1000, $currency), 1)],
             new Money(1000, $currency),

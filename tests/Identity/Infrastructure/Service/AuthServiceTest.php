@@ -59,7 +59,7 @@ class AuthServiceTest extends TestCase
      */
     public function testLogin(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
         $identity = $this->createIdentityEntity($identityIdentifier);
@@ -80,7 +80,7 @@ class AuthServiceTest extends TestCase
      */
     public function testLogout(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
         $identity = $this->createIdentityEntity($identityIdentifier);
@@ -103,7 +103,7 @@ class AuthServiceTest extends TestCase
      */
     public function testIsLoggedInWhenAuthenticated(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
         $identity = $this->createIdentityEntity($identityIdentifier);

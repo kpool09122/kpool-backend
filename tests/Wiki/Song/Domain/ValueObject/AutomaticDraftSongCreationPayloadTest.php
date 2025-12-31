@@ -23,13 +23,13 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
 {
     public function test__construct(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::ENGLISH;
         $name = new SongName('Sample Song');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('Composer One');
         $composer = new Composer('Arranger Two');
@@ -65,7 +65,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
     public function testAllowsOptionalFields(): void
     {
         $payload = new AutomaticDraftSongCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new SongName('Optional Song'),
             null,

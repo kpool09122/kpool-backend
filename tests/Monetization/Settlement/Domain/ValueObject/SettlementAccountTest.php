@@ -21,8 +21,8 @@ class SettlementAccountTest extends TestCase
      */
     public function test__construct(): void
     {
-        $accountId = new SettlementAccountIdentifier(StrTestHelper::generateUlid());
-        $ownerId = new UserIdentifier(StrTestHelper::generateUlid());
+        $accountId = new SettlementAccountIdentifier(StrTestHelper::generateUuid());
+        $ownerId = new UserIdentifier(StrTestHelper::generateUuid());
 
         $account = new SettlementAccount(
             $accountId,
@@ -51,8 +51,8 @@ class SettlementAccountTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '12A4',
             Currency::USD,
@@ -70,8 +70,8 @@ class SettlementAccountTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             '',
             '0000',
             Currency::KRW,

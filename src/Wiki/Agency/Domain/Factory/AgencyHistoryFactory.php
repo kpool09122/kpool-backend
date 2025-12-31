@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Domain\Factory;
 
 use DateTimeImmutable;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -16,7 +16,7 @@ use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $ulidGenerator,
     ) {
     }
 

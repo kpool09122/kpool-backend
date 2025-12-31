@@ -24,8 +24,8 @@ class SongHistoryTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $createSongHistory = $this->createDummySongHistory(
             songIdentifier: $songIdentifier,
             submitterIdentifier: $submitterIdentifier,
@@ -75,7 +75,7 @@ class SongHistoryTest extends TestCase
      */
     public function testConstructWithOnlySongIdentifierNull(): void
     {
-        $draftSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $draftSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $createSongHistory = $this->createDummySongHistory(draftSongIdentifier: $draftSongIdentifier);
 
         $songHistory = $createSongHistory->songHistory;
@@ -114,9 +114,9 @@ class SongHistoryTest extends TestCase
      */
     public function testConstructWithFromStatusNull(): void
     {
-        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new SongName('Dynamite');
         $recordedAt = new DateTimeImmutable();
@@ -146,8 +146,8 @@ class SongHistoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
         $subjectName = new SongName('Dynamite');
@@ -179,8 +179,8 @@ class SongHistoryTest extends TestCase
         ?SongIdentifier $draftSongIdentifier = null,
         ?EditorIdentifier $submitterIdentifier = null,
     ): SongHistoryTestData {
-        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new SongName('Dynamite');

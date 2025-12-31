@@ -41,7 +41,7 @@ class GetAgenciesTest extends TestCase
      */
     public function testProcess(): void
     {
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $normalizedName = 'jypえんたーていめんと';
@@ -52,7 +52,7 @@ class GetAgenciesTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifier,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -62,7 +62,7 @@ class GetAgenciesTest extends TestCase
             'description' => $description,
             'version' => $version,
         ], 'id');
-        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUuid());
         $name2 = 'HYBE';
         $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
@@ -72,7 +72,7 @@ class GetAgenciesTest extends TestCase
         $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -115,7 +115,7 @@ class GetAgenciesTest extends TestCase
      */
     public function testProcessUsingSearchWords(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $normalizedName = 'jypえんたーていめんと';
@@ -126,7 +126,7 @@ class GetAgenciesTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -136,7 +136,7 @@ class GetAgenciesTest extends TestCase
             'description' => $description,
             'version' => $version,
         ], 'id');
-        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUuid());
         $name2 = 'HYBE';
         $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
@@ -146,7 +146,7 @@ class GetAgenciesTest extends TestCase
         $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -188,7 +188,7 @@ class GetAgenciesTest extends TestCase
      */
     public function testProcessWithLimit(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $normalizedName = 'jypえんたーていめんと';
@@ -199,7 +199,7 @@ class GetAgenciesTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -209,7 +209,7 @@ class GetAgenciesTest extends TestCase
             'description' => $description,
             'version' => $version,
         ], 'id');
-        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUuid());
         $name2 = 'HYBE';
         $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
@@ -219,7 +219,7 @@ class GetAgenciesTest extends TestCase
         $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -261,7 +261,7 @@ class GetAgenciesTest extends TestCase
      */
     public function testProcessUsingSort(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $normalizedName = 'jypえんたーていめんと';
@@ -272,7 +272,7 @@ class GetAgenciesTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -282,7 +282,7 @@ class GetAgenciesTest extends TestCase
             'description' => $description,
             'version' => $version,
         ], 'id');
-        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUuid());
         $name2 = 'HYBE';
         $normalizedName2 = 'hybe';
         $CEO2 = 'パク・ジウォン';
@@ -292,7 +292,7 @@ class GetAgenciesTest extends TestCase
         $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -346,7 +346,7 @@ class GetAgenciesTest extends TestCase
      */
     public function testProcessWhenDifferentTranslation(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $name = 'JYPエンターテイメント';
         $normalizedName = 'jypえんたーていめんと';
@@ -357,7 +357,7 @@ class GetAgenciesTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -367,7 +367,7 @@ class GetAgenciesTest extends TestCase
             'description' => $description,
             'version' => $version,
         ], 'id');
-        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer2 = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language2 = Language::KOREAN;
         $name2 = 'HYBE';
         $normalizedName2 = 'hybe';
@@ -378,7 +378,7 @@ class GetAgenciesTest extends TestCase
         $version2 = 2;
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language2->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,

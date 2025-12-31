@@ -26,8 +26,8 @@ class CreateInvoiceInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -87,8 +87,8 @@ class CreateInvoiceInputTest extends TestCase
      */
     public function testWithNullOptionalParameters(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',

@@ -29,12 +29,12 @@ class CreateTalentSnapshot
     {
         DB::table('talent_snapshots')->insert([
             'id' => $snapshotId,
-            'talent_id' => $overrides['talent_id'] ?? StrTestHelper::generateUlid(),
-            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUlid(),
+            'talent_id' => $overrides['talent_id'] ?? StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? '채영',
             'real_name' => $overrides['real_name'] ?? '손채영',
-            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUlid(),
+            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
             'group_identifiers' => json_encode($overrides['group_identifiers'] ?? []),
             'birthday' => $overrides['birthday'] ?? '1999-04-23',
             'career' => $overrides['career'] ?? 'TWICE member since 2015.',

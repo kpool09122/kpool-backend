@@ -19,7 +19,7 @@ class GetGroupInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $langauge = Language::KOREAN;
         $input = new GetGroupInput($groupIdentifier, $langauge);
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());

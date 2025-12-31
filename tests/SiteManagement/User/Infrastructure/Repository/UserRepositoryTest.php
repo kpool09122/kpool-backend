@@ -40,8 +40,8 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdReturnsUser(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
         CreateUser::create($userIdentifier, $identityIdentifier, ['role' => Role::ADMIN]);
 
@@ -65,7 +65,7 @@ class UserRepositoryTest extends TestCase
     public function testFindByIdReturnsNullWhenNotFound(): void
     {
         $repository = $this->app->make(UserRepositoryInterface::class);
-        $result = $repository->findById(new UserIdentifier(StrTestHelper::generateUlid()));
+        $result = $repository->findById(new UserIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
     }
@@ -79,8 +79,8 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdentityIdentifierReturnsUser(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
         CreateUser::create($userIdentifier, $identityIdentifier, ['role' => Role::NONE]);
 
@@ -104,7 +104,7 @@ class UserRepositoryTest extends TestCase
     public function testFindByIdentityIdentifierReturnsNullWhenNotFound(): void
     {
         $repository = $this->app->make(UserRepositoryInterface::class);
-        $result = $repository->findByIdentityIdentifier(new IdentityIdentifier(StrTestHelper::generateUlid()));
+        $result = $repository->findByIdentityIdentifier(new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
     }
@@ -118,8 +118,8 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveCreatesNewUser(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
         $user = new User(
@@ -147,8 +147,8 @@ class UserRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveUpdatesExistingUser(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
         CreateUser::create($userIdentifier, $identityIdentifier, ['role' => Role::NONE]);
 
@@ -180,8 +180,8 @@ class UserRepositoryTest extends TestCase
         $repository = $this->app->make(UserRepositoryInterface::class);
 
         foreach (Role::cases() as $role) {
-            $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-            $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+            $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+            $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
             CreateIdentity::create($identityIdentifier, ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']);
 
             $user = new User(

@@ -6,7 +6,7 @@ namespace Tests\Wiki\Talent\Domain\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -48,15 +48,15 @@ class TalentSnapshotFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1999-04-23'));
         $career = new Career('TWICE member since 2015.');
@@ -84,7 +84,7 @@ class TalentSnapshotFactoryTest extends TestCase
         $factory = $this->app->make(TalentSnapshotFactoryInterface::class);
         $snapshot = $factory->create($talent);
 
-        $this->assertTrue(UlidValidator::isValid((string)$snapshot->snapshotIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$snapshot->snapshotIdentifier()));
         $this->assertSame((string)$talentIdentifier, (string)$snapshot->talentIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$snapshot->translationSetIdentifier());
         $this->assertSame($language->value, $snapshot->language()->value);
@@ -109,8 +109,8 @@ class TalentSnapshotFactoryTest extends TestCase
     public function testCreateWithNullAgencyIdentifier(): void
     {
         $talent = new Talent(
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('채영'),
             new RealName(''),

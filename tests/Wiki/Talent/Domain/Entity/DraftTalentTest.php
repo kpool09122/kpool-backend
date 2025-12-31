@@ -62,7 +62,7 @@ class DraftTalentTest extends TestCase
         $draftTalentInfo = $this->createDummyDraftTalent();
         $this->assertSame((string)$draftTalentInfo->publishedTalentIdentifier, (string)$draftTalentInfo->talent->publishedTalentIdentifier());
 
-        $newPublishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $newPublishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $draftTalentInfo->talent->setPublishedTalentIdentifier($newPublishedTalentIdentifier);
         $this->assertNotSame((string)$draftTalentInfo->publishedTalentIdentifier, (string)$draftTalentInfo->talent->publishedTalentIdentifier());
         $this->assertSame((string)$newPublishedTalentIdentifier, (string)$draftTalentInfo->talent->publishedTalentIdentifier());
@@ -113,7 +113,7 @@ class DraftTalentTest extends TestCase
         $draftTalentInfo = $this->createDummyDraftTalent();
         $this->assertSame((string)$draftTalentInfo->agencyIdentifier, (string)$draftTalentInfo->talent->agencyIdentifier());
 
-        $newAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $newAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $draftTalentInfo->talent->setAgencyIdentifier($newAgencyIdentifier);
         $this->assertNotSame((string)$draftTalentInfo->agencyIdentifier, (string)$draftTalentInfo->talent->agencyIdentifier());
         $this->assertSame((string)$newAgencyIdentifier, (string)$draftTalentInfo->talent->agencyIdentifier());
@@ -131,9 +131,9 @@ class DraftTalentTest extends TestCase
         $this->assertSame($draftTalentInfo->groupIdentifiers, $draftTalentInfo->talent->groupIdentifiers());
 
         $newGroupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $draftTalentInfo->talent->setGroupIdentifiers($newGroupIdentifiers);
         $this->assertNotSame($draftTalentInfo->groupIdentifiers, $draftTalentInfo->talent->groupIdentifiers());
@@ -242,17 +242,17 @@ class DraftTalentTest extends TestCase
      */
     private function createDummyDraftTalent(): DraftTalentTestData
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
