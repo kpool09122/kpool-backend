@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -85,7 +84,7 @@ class ApproveSongTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveSong = $this->createDummyApproveSong(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -395,7 +394,7 @@ class ApproveSongTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveSong = $this->createDummyApproveSong(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -517,7 +516,7 @@ class ApproveSongTest extends TestCase
 
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -641,7 +640,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
             belongIds: [$groupId],
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -765,7 +764,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
             belongIds: [$groupId],
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -889,7 +888,7 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
             belongIds: [$talentId],
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -958,7 +957,7 @@ class ApproveSongTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyApproveSong = $this->createDummyApproveSong(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveSongInput(
@@ -1066,18 +1065,18 @@ class ApproveSongTest extends TestCase
      * @param string|null $agencyId
      * @param string[]|null $belongIds
      * @param ApprovalStatus $status
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return ApproveSongTestData
      */
     private function createDummyApproveSong(
         ?string $agencyId = null,
         ?array $belongIds = null,
         ApprovalStatus $status = ApprovalStatus::UnderReview,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): ApproveSongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
@@ -1116,7 +1115,7 @@ class ApproveSongTest extends TestCase
         $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new SongHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $song->editorIdentifier(),
             $song->publishedSongIdentifier(),
             $song->songIdentifier(),
@@ -1161,7 +1160,7 @@ readonly class ApproveSongTestData
     public function __construct(
         public SongIdentifier           $songIdentifier,
         public SongIdentifier           $publishedSongIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier       $editorIdentifier,
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,

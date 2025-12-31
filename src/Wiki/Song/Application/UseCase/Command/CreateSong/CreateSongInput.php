@@ -6,7 +6,6 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
@@ -21,7 +20,6 @@ readonly class CreateSongInput implements CreateSongInputPort
 {
     /**
      * @param SongIdentifier|null $publishedSongIdentifier
-     * @param EditorIdentifier $editorIdentifier
      * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
@@ -36,7 +34,6 @@ readonly class CreateSongInput implements CreateSongInputPort
      */
     public function __construct(
         private ?SongIdentifier      $publishedSongIdentifier,
-        private EditorIdentifier     $editorIdentifier,
         private Language             $language,
         private SongName             $name,
         private ?AgencyIdentifier    $agencyIdentifier,
@@ -54,11 +51,6 @@ readonly class CreateSongInput implements CreateSongInputPort
     public function publishedSongIdentifier(): ?SongIdentifier
     {
         return $this->publishedSongIdentifier;
-    }
-
-    public function editorIdentifier(): EditorIdentifier
-    {
-        return $this->editorIdentifier;
     }
 
     public function language(): Language

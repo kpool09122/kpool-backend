@@ -9,7 +9,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -25,7 +25,7 @@ class DraftSong
      * @param SongIdentifier $songIdentifier
      * @param SongIdentifier|null $publishedSongIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param EditorIdentifier $editorIdentifier
+     * @param PrincipalIdentifier $editorIdentifier
      * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
@@ -42,7 +42,7 @@ class DraftSong
         private readonly SongIdentifier           $songIdentifier,
         private ?SongIdentifier                   $publishedSongIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly EditorIdentifier         $editorIdentifier,
+        private readonly PrincipalIdentifier      $editorIdentifier,
         private readonly Language                 $language,
         private SongName                          $name,
         private ?AgencyIdentifier                 $agencyIdentifier,
@@ -77,7 +77,7 @@ class DraftSong
         return $this->translationSetIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }

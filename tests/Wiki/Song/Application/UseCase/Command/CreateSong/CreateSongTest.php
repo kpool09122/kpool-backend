@@ -20,7 +20,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
@@ -79,7 +78,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -108,7 +106,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($createDummyCreateSong->editorIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -160,7 +158,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -189,7 +186,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($createDummyCreateSong->editorIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -229,7 +226,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -258,7 +254,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($createDummyCreateSong->editorIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -299,7 +295,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -328,7 +323,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($createDummyCreateSong->editorIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -369,7 +364,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -398,7 +392,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($createDummyCreateSong->editorIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -437,7 +431,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -466,7 +459,7 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($createDummyCreateSong->editorIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -504,7 +497,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -551,7 +543,6 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
-            $createDummyCreateSong->editorIdentifier,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -591,7 +582,7 @@ class CreateSongTest extends TestCase
     private function createDummyCreateSong(): CreateSongTestData
     {
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -679,9 +670,9 @@ readonly class CreateSongTestData
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        public SongIdentifier      $publishedSongIdentifier,
-        public EditorIdentifier    $editorIdentifier,
-        public Language            $language,
+        public SongIdentifier       $publishedSongIdentifier,
+        public PrincipalIdentifier  $editorIdentifier,
+        public Language             $language,
         public SongName            $name,
         public AgencyIdentifier    $agencyIdentifier,
         public array               $belongIdentifiers,

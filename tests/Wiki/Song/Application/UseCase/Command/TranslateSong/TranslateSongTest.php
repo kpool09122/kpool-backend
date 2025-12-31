@@ -18,7 +18,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -730,7 +729,7 @@ class TranslateSongTest extends TestCase
     private function createDummyTranslateSong(): TranslateSongTestData
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
@@ -865,7 +864,7 @@ readonly class TranslateSongTestData
      */
     public function __construct(
         public SongIdentifier           $songIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier       $editorIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $language,
         public SongName                 $name,

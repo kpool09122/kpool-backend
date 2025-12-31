@@ -7,7 +7,7 @@ namespace Source\Wiki\Song\Domain\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
@@ -16,8 +16,8 @@ readonly class SongHistory
 {
     public function __construct(
         private SongHistoryIdentifier $historyIdentifier,
-        private EditorIdentifier      $editorIdentifier,
-        private ?EditorIdentifier     $submitterIdentifier,
+        private PrincipalIdentifier   $editorIdentifier,
+        private ?PrincipalIdentifier  $submitterIdentifier,
         private ?SongIdentifier       $songIdentifier,
         private ?SongIdentifier       $draftSongIdentifier,
         private ?ApprovalStatus       $fromStatus,
@@ -40,12 +40,12 @@ readonly class SongHistory
         return $this->historyIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }
 
-    public function submitterIdentifier(): ?EditorIdentifier
+    public function submitterIdentifier(): ?PrincipalIdentifier
     {
         return $this->submitterIdentifier;
     }

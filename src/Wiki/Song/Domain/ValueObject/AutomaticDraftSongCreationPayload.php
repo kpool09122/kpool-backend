@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 final readonly class AutomaticDraftSongCreationPayload
 {
@@ -13,7 +13,7 @@ final readonly class AutomaticDraftSongCreationPayload
      * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
-        private EditorIdentifier         $editorIdentifier,
+        private PrincipalIdentifier      $editorIdentifier,
         private Language                 $language,
         private SongName                 $name,
         private ?AgencyIdentifier        $agencyIdentifier,
@@ -26,7 +26,7 @@ final readonly class AutomaticDraftSongCreationPayload
     ) {
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }

@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
@@ -96,7 +95,7 @@ class PublishSongTest extends TestCase
 
         $dummyPublishSong = $this->createDummyPublishSong(
             hasPublishedSong: true,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishSongInput(
@@ -200,7 +199,7 @@ class PublishSongTest extends TestCase
 
         $dummyPublishSong = $this->createDummyPublishSong(
             hasPublishedSong: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishSongInput(
@@ -641,7 +640,7 @@ class PublishSongTest extends TestCase
 
         $dummyPublishSong = $this->createDummyPublishSong(
             hasPublishedSong: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
 
@@ -774,7 +773,7 @@ class PublishSongTest extends TestCase
 
         $dummyPublishSong = $this->createDummyPublishSong(
             hasPublishedSong: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
         $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
@@ -908,7 +907,7 @@ class PublishSongTest extends TestCase
 
         $dummyPublishSong = $this->createDummyPublishSong(
             hasPublishedSong: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
         $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
@@ -992,7 +991,7 @@ class PublishSongTest extends TestCase
 
         $dummyPublishSong = $this->createDummyPublishSong(
             hasPublishedSong: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishSongInput(
@@ -1111,17 +1110,17 @@ class PublishSongTest extends TestCase
      *
      * @param ApprovalStatus $status
      * @param bool $hasPublishedSong
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return PublishSongTestData
      */
     private function createDummyPublishSong(
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         bool $hasPublishedSong = false,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): PublishSongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -1207,7 +1206,7 @@ class PublishSongTest extends TestCase
         $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new SongHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $draftSong->editorIdentifier(),
             $hasPublishedSong ? $publishedSongIdentifier : null,
             $draftSong->songIdentifier(),
@@ -1276,7 +1275,7 @@ readonly class PublishSongTestData
     public function __construct(
         public SongIdentifier           $songIdentifier,
         public SongIdentifier           $publishedSongIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier       $editorIdentifier,
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,

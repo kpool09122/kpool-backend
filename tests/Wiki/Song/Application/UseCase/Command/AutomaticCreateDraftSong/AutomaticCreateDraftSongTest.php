@@ -16,7 +16,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInterface;
@@ -209,7 +208,7 @@ class AutomaticCreateDraftSongTest extends TestCase
     private function makePayload(): AutomaticDraftSongCreationPayload
     {
         return new AutomaticDraftSongCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Auto Song'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
@@ -236,7 +235,7 @@ class AutomaticCreateDraftSongTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUuid()),
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Auto Song'),
             null,

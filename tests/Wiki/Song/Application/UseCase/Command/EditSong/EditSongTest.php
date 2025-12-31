@@ -19,7 +19,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
@@ -576,7 +575,7 @@ class EditSongTest extends TestCase
     {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -646,7 +645,7 @@ readonly class EditSongTestData
     public function __construct(
         public SongIdentifier      $songIdentifier,
         public SongIdentifier      $publishedSongIdentifier,
-        public EditorIdentifier    $editorIdentifier,
+        public PrincipalIdentifier       $editorIdentifier,
         public Language            $language,
         public SongName            $name,
         public AgencyIdentifier    $agencyIdentifier,
