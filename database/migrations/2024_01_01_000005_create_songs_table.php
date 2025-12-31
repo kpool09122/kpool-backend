@@ -12,34 +12,37 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('songs', static function (Blueprint $table) {
-            $table->uuid('id')->primary()->comment('楽曲ID');
+            $table->uuid('id')->primary()->comment('歌ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
-            $table->string('name', 64)->comment('楽曲名');
+            $table->string('name', 64)->comment('歌名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('belong_identifiers')->comment('所属グループ/タレントリスト')->default('[]');
+            $table->json('belong_identifiers')->comment('所属グループ/タレントID一覧')->default('[]');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');
+            $table->text('lyrics')->default('')->comment('歌詞');
             $table->text('overview')->comment('概要')->default('');
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->string('music_video_link', 255)->nullable()->comment('MV リンク');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('draft_songs', static function (Blueprint $table) {
-            $table->uuid('id')->primary()->comment('楽曲ID');
-            $table->uuid('published_id')->nullable()->comment('公開済み楽曲ID');
+            $table->uuid('id')->primary()->comment('歌ID');
+            $table->uuid('published_id')->nullable()->comment('公開済み歌ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->uuid('editor_id')->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('楽曲名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('belong_identifiers')->comment('所属グループ/タレントリスト')->default('[]');
+            $table->json('belong_identifiers')->comment('所属グループ/タレントID一覧')->default('[]');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');
+            $table->text('lyrics')->default('')->comment('歌詞');
             $table->text('overview')->comment('概要')->default('');
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->string('music_video_link', 255)->nullable()->comment('MV リンク');
@@ -49,10 +52,10 @@ return new class extends Migration
 
         Schema::create('song_snapshots', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('スナップショットID');
-            $table->uuid('song_id')->index()->comment('公開済み楽曲ID');
+            $table->uuid('song_id')->index()->comment('公開済み歌ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
-            $table->string('name', 64)->comment('楽曲名');
+            $table->string('name', 64)->comment('歌名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->json('belong_identifiers')->comment('所属グループ/タレントリスト')->default('[]');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
