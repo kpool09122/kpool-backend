@@ -145,7 +145,7 @@ class CreateAccountTest extends TestCase
      */
     private function createDummyAccountTestData(): CreateAccountTestData
     {
-        $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
+        $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
@@ -176,7 +176,7 @@ class CreateAccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUlid());
+        $userId = new UserIdentifier(StrTestHelper::generateUuid());
         $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
 
         $status = AccountStatus::ACTIVE;

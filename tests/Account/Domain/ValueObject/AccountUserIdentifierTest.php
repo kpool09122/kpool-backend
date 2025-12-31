@@ -18,20 +18,20 @@ class AccountUserIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $accountUserIdentifier = new UserIdentifier($ulid);
-        $this->assertSame($ulid, (string)$accountUserIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $accountUserIdentifier = new UserIdentifier($id);
+        $this->assertSame($id, (string)$accountUserIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new UserIdentifier($ulid);
+        new UserIdentifier($id);
     }
 }

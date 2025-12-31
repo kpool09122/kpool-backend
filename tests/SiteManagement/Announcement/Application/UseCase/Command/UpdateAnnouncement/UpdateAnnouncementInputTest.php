@@ -24,8 +24,8 @@ class UpdateAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
         $content = new Content('いつもk-poolをご利用いただき、ありがとうございます！

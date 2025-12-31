@@ -12,7 +12,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -41,10 +41,10 @@ class PaymentFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $money = new Money(100, Currency::KRW);
         $method = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'VISA **** 4242',
             true,
@@ -58,7 +58,7 @@ class PaymentFactoryTest extends TestCase
             $createdAt,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$payment->paymentId()));
+        $this->assertTrue(UuidValidator::isValid((string)$payment->paymentId()));
         $this->assertSame($orderIdentifier, $payment->orderIdentifier());
         $this->assertSame($money, $payment->money());
         $this->assertSame($method, $payment->paymentMethod());

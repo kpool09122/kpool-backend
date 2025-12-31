@@ -21,9 +21,9 @@ class WithdrawFromMembershipInputTest extends TestCase
      */
     public function test_construct(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUlid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $accountMembership = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 

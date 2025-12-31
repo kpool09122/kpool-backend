@@ -12,7 +12,7 @@ use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Domain\ValueObject\UserName;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\TestCase;
@@ -45,7 +45,7 @@ class IdentityFactoryTest extends TestCase
         $plainPassword = new PlainPassword('user-password');
         $identityFactory = $this->app->make(IdentityFactoryInterface::class);
         $identity = $identityFactory->create($name, $email, $language, $plainPassword);
-        $this->assertTrue(UlidValidator::isValid((string)$identity->identityIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$identity->identityIdentifier()));
         $this->assertSame((string)$email, (string)$identity->email());
         $this->assertSame($language, $identity->language());
         $this->assertTrue(password_verify((string) $plainPassword, (string) $identity->hashedPassword()));
@@ -71,7 +71,7 @@ class IdentityFactoryTest extends TestCase
 
         $identity = $identityFactory->createFromSocialProfile($profile);
 
-        $this->assertTrue(UlidValidator::isValid((string)$identity->identityIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$identity->identityIdentifier()));
         $this->assertSame((string)$email, (string)$identity->email());
         $this->assertSame(Language::ENGLISH, $identity->language());
         $this->assertSame($name, (string)$identity->username());

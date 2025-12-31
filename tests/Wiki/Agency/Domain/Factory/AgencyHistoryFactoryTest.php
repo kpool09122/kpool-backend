@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactory;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -37,9 +37,9 @@ class AgencyHistoryFactoryTest extends TestCase
      */
     public function testCreateWithAgencyIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $agencyName = new AgencyName('JYP엔터테인먼트');
@@ -55,7 +55,7 @@ class AgencyHistoryFactoryTest extends TestCase
             $agencyName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$agencyHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$agencyHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$agencyHistory->editorIdentifier());
         $this->assertSame((string)$submitterIdentifier, (string)$agencyHistory->submitterIdentifier());
         $this->assertSame((string)$agencyIdentifier, (string)$agencyHistory->agencyIdentifier());
@@ -74,8 +74,8 @@ class AgencyHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftAgencyIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $draftAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $draftAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
         $agencyName = new AgencyName('JYP엔터테인먼트');
@@ -91,7 +91,7 @@ class AgencyHistoryFactoryTest extends TestCase
             $agencyName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$agencyHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$agencyHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$agencyHistory->editorIdentifier());
         $this->assertNull($agencyHistory->submitterIdentifier());
         $this->assertNull($agencyHistory->agencyIdentifier());

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Domain\Factory;
 
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -17,7 +17,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 readonly class GroupFactory implements GroupFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface        $ulidGenerator,
         private NormalizationServiceInterface $normalizationService,
     ) {
     }

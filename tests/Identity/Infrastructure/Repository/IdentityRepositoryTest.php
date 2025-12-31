@@ -46,7 +46,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByEmailReturnsIdentity(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = 'findbyemail@example.com';
         CreateIdentity::create($identityIdentifier, ['email' => $email]);
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::GOOGLE, 'google-user-123');
@@ -87,7 +87,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySocialConnectionReturnsIdentity(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $providerUserId = 'line-user-456';
         CreateIdentity::create($identityIdentifier, ['email' => 'social@example.com']);
         CreateIdentity::createSocialConnection($identityIdentifier, SocialProvider::LINE, $providerUserId);
@@ -124,7 +124,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveCreatesNewIdentity(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('newidentity@example.com');
         $emailVerifiedAt = new DateTimeImmutable('2024-01-01 12:00:00');
 
@@ -175,7 +175,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveUpdatesExistingIdentity(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier, [
             'email' => 'original@example.com',
             'username' => 'original-identity',
@@ -213,7 +213,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveAndFindIdentityWithNullEmailVerifiedAt(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('unverified@example.com');
 
         $identity = new Identity(
@@ -245,7 +245,7 @@ class IdentityRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveAndFindIdentityWithMultipleSocialConnections(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('multisocial@example.com');
 
         $identity = new Identity(

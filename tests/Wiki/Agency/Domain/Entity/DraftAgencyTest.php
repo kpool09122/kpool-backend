@@ -55,7 +55,7 @@ class DraftAgencyTest extends TestCase
 
         $this->assertSame((string)$createDraftAgency->publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
 
-        $newPublishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $newPublishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $agency->setPublishedAgencyIdentifier($newPublishedAgencyIdentifier);
         $this->assertNotSame((string)$createDraftAgency->publishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
         $this->assertSame((string)$newPublishedAgencyIdentifier, (string)$agency->publishedAgencyIdentifier());
@@ -197,10 +197,10 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
      */
     private function createDummyDraftAgency(): DraftAgencyTestData
     {
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';

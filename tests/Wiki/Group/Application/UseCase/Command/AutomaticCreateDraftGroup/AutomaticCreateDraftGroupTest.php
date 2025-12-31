@@ -43,7 +43,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
         $draftGroup = $this->makeDraftGroup();
 
@@ -85,7 +85,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
         $draftGroup = $this->makeDraftGroup();
 
@@ -127,7 +127,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     public function testProcessWithUnauthorizedRole(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -159,7 +159,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     public function testWhenNotFoundPrincipal(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -184,14 +184,14 @@ class AutomaticCreateDraftGroupTest extends TestCase
     private function makePayload(): AutomaticDraftGroupCreationPayload
     {
         return new AutomaticDraftGroupCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated group profile'),
             [
-                new SongIdentifier(StrTestHelper::generateUlid()),
-                new SongIdentifier(StrTestHelper::generateUlid()),
+                new SongIdentifier(StrTestHelper::generateUuid()),
+                new SongIdentifier(StrTestHelper::generateUuid()),
             ],
             new AutomaticDraftGroupSource('news::12345'),
         );
@@ -199,24 +199,24 @@ class AutomaticCreateDraftGroupTest extends TestCase
 
     private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
     {
-        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $role, null, [], []);
     }
 
     private function makeDraftGroup(): DraftGroup
     {
         return new DraftGroup(
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
             null,
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
             'twice',
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated group'),
             [
-                new SongIdentifier(StrTestHelper::generateUlid()),
-                new SongIdentifier(StrTestHelper::generateUlid()),
+                new SongIdentifier(StrTestHelper::generateUuid()),
+                new SongIdentifier(StrTestHelper::generateUuid()),
             ],
             null,
             ApprovalStatus::Pending,

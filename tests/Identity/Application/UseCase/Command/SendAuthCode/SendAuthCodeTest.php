@@ -113,7 +113,7 @@ class SendAuthCodeTest extends TestCase
      */
     public function testWhenEmailAlreadyExists(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;

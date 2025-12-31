@@ -30,7 +30,7 @@ class SettlementBatchTest extends TestCase
      */
     public function test__construct(): void
     {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $account = $this->createAccount();
         $start = new DateTimeImmutable('now');
         $end = new DateTimeImmutable('now');
@@ -253,7 +253,7 @@ class SettlementBatchTest extends TestCase
      */
     public function testCannotConstructPaidWithTransferFromDifferentAccount(): void
     {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $batchAccount = $this->createAccount();
         $otherAccount = $this->createAccount();
         $transfer = $this->createTransferMock(
@@ -284,7 +284,7 @@ class SettlementBatchTest extends TestCase
      */
     public function testCannotConstructPaidWithTransferAmountMismatch(): void
     {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $account = $this->createAccount();
         $transfer = $this->createTransferMock(
             identifier: $identifier,
@@ -314,7 +314,7 @@ class SettlementBatchTest extends TestCase
      */
     public function testCannotConstructPaidWithUnsentTransfer(): void
     {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $account = $this->createAccount();
         $transfer = $this->createTransferMock(
             identifier: $identifier,
@@ -344,7 +344,7 @@ class SettlementBatchTest extends TestCase
      */
     public function testCannotConstructPaidWithTransferWithoutSentAt(): void
     {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $account = $this->createAccount();
         $transfer = $this->createTransferMock(
             identifier: $identifier,
@@ -376,7 +376,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -415,7 +415,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -435,7 +435,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -459,7 +459,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -467,7 +467,7 @@ class SettlementBatchTest extends TestCase
             'processedAt' => new DateTimeImmutable('2024-01-16'),
         ]);
         $transfer = $this->createTransfer(
-            new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $account,
             new Money(6300, Currency::JPY),
             TransferStatus::PENDING,
@@ -485,7 +485,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -510,7 +510,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -535,7 +535,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -559,7 +559,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -599,7 +599,7 @@ class SettlementBatchTest extends TestCase
     {
         $account = $this->createAccount();
         $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             'account' => $account,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
@@ -653,7 +653,7 @@ class SettlementBatchTest extends TestCase
     public function testFailWhenAlreadyPaid(): void
     {
         $account = $this->createAccount();
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUlid());
+        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $batch = $this->createBatch([
             'identifier' => $identifier,
             'account' => $account,
@@ -700,7 +700,7 @@ class SettlementBatchTest extends TestCase
     public function testRejectsDifferentCurrencyRevenue(): void
     {
         $batch = new SettlementBatch(
-            new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $this->createAccount(),
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-15')
@@ -719,7 +719,7 @@ class SettlementBatchTest extends TestCase
     public function testRejectsFeeOverGross(): void
     {
         $batch = new SettlementBatch(
-            new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $this->createAccount(),
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-15')
@@ -739,7 +739,7 @@ class SettlementBatchTest extends TestCase
         array $values = []
     ): SettlementBatch {
         return new SettlementBatch(
-            $values['identifier'] ?? new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            $values['identifier'] ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $values['account'] ?? $this->createAccount(),
             $values['start'] ?? new DateTimeImmutable('2024-01-01'),
             $values['end'] ?? new DateTimeImmutable('2024-01-15'),
@@ -762,8 +762,8 @@ class SettlementBatchTest extends TestCase
         ?DateTimeImmutable $sentAt = null,
     ): Transfer {
         return new Transfer(
-            new TransferIdentifier(StrTestHelper::generateUlid()),
-            $identifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUlid()),
+            new TransferIdentifier(StrTestHelper::generateUuid()),
+            $identifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $account ?? $this->createAccount(),
             $amount ?? new Money(1000, Currency::JPY),
             $status ?? TransferStatus::PENDING,
@@ -791,8 +791,8 @@ class SettlementBatchTest extends TestCase
     private function createAccount(): SettlementAccount
     {
         return new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '9876',
             Currency::JPY,

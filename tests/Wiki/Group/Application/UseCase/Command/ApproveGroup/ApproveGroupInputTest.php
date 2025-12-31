@@ -19,9 +19,9 @@ class ApproveGroupInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new ApproveGroupInput(
             $groupIdentifier,

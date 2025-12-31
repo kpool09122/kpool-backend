@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Factory;
 
 use DateTimeImmutable;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
@@ -13,7 +13,7 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 readonly class TalentSnapshotFactory implements TalentSnapshotFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $ulidGenerator,
     ) {
     }
 

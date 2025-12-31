@@ -9,14 +9,14 @@ use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
 readonly class PaymentFactory implements PaymentFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $generator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 

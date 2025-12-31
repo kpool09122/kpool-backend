@@ -18,20 +18,20 @@ class GroupIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $groupIdentifier = new GroupIdentifier($ulid);
-        $this->assertSame($ulid, (string)$groupIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $groupIdentifier = new GroupIdentifier($id);
+        $this->assertSame($id, (string)$groupIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: idが不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new GroupIdentifier($ulid);
+        new GroupIdentifier($id);
     }
 }

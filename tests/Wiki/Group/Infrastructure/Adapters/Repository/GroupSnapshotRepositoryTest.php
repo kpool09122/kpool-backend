@@ -34,17 +34,17 @@ class GroupSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $groupId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'TWICE';
         $normalizedName = 'twice';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $description = 'TWICE description';
         $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
         ];
         $imagePath = '/resources/public/images/twice.webp';
         $version = 1;
@@ -91,13 +91,13 @@ class GroupSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithNullAgencyIdentifier(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $groupId = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
 
         $snapshot = new GroupSnapshot(
             new GroupSnapshotIdentifier($snapshotId),
             new GroupIdentifier($groupId),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
             'twice',
@@ -129,11 +129,11 @@ class GroupSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByGroupIdentifier(): void
     {
-        $groupId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $groupId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
 
         // バージョン1のスナップショット
-        $snapshotId1 = StrTestHelper::generateUlid();
+        $snapshotId1 = StrTestHelper::generateUuid();
         CreateGroupSnapshot::create($snapshotId1, [
             'group_id' => $groupId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -145,7 +145,7 @@ class GroupSnapshotRepositoryTest extends TestCase
         ]);
 
         // バージョン2のスナップショット
-        $snapshotId2 = StrTestHelper::generateUlid();
+        $snapshotId2 = StrTestHelper::generateUuid();
         CreateGroupSnapshot::create($snapshotId2, [
             'group_id' => $groupId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -157,8 +157,8 @@ class GroupSnapshotRepositoryTest extends TestCase
         ]);
 
         // 別のGroupのスナップショット（取得されないはず）
-        $otherGroupId = StrTestHelper::generateUlid();
-        $snapshotId3 = StrTestHelper::generateUlid();
+        $otherGroupId = StrTestHelper::generateUuid();
+        $snapshotId3 = StrTestHelper::generateUuid();
         CreateGroupSnapshot::create($snapshotId3, [
             'group_id' => $otherGroupId,
             'name' => 'aespa',
@@ -186,7 +186,7 @@ class GroupSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(GroupSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByGroupIdentifier(
-            new GroupIdentifier(StrTestHelper::generateUlid())
+            new GroupIdentifier(StrTestHelper::generateUuid())
         );
 
         $this->assertIsArray($snapshots);
@@ -202,12 +202,12 @@ class GroupSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByGroupAndVersion(): void
     {
-        $groupId = StrTestHelper::generateUlid();
-        $snapshotId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $groupId = StrTestHelper::generateUuid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $name = 'TWICE';
         $normalizedName = 'twice';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $description = 'TWICE is a South Korean girl group.';
         $imagePath = '/resources/public/images/twice.webp';
         $version = 3;
@@ -253,7 +253,7 @@ class GroupSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(GroupSnapshotRepositoryInterface::class);
         $snapshot = $repository->findByGroupAndVersion(
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
             new Version(1)
         );
 

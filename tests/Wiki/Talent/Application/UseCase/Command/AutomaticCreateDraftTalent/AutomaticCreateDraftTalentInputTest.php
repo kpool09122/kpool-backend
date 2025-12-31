@@ -25,17 +25,17 @@ class AutomaticCreateDraftTalentInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftTalentCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new TalentName('自動作成タレント'),
             new RealName('Auto Talent'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            [new GroupIdentifier(StrTestHelper::generateUlid())],
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1995-05-05')),
             new Career('Auto generated career'),
             new AutomaticDraftTalentSource('webhook::talent'),
         );
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
 

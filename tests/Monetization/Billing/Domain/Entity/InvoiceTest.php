@@ -30,9 +30,9 @@ class InvoiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $invoiceLines = [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)];
         $subtotal = new Money(1000, Currency::JPY);
         $discountAmount = new Money(100, Currency::JPY);
@@ -374,9 +374,9 @@ class InvoiceTest extends TestCase
     private function createInvoice(array $values = []): Invoice
     {
         return new Invoice(
-            $values['invoiceIdentifier'] ?? new InvoiceIdentifier(StrTestHelper::generateUlid()),
-            $values['orderIdentifier'] ?? new OrderIdentifier(StrTestHelper::generateUlid()),
-            $values['customerIdentifier'] ?? new UserIdentifier(StrTestHelper::generateUlid()),
+            $values['invoiceIdentifier'] ?? new InvoiceIdentifier(StrTestHelper::generateUuid()),
+            $values['orderIdentifier'] ?? new OrderIdentifier(StrTestHelper::generateUuid()),
+            $values['customerIdentifier'] ?? new UserIdentifier(StrTestHelper::generateUuid()),
             $values['invoiceLines'] ?? [new InvoiceLine('Standard plan', new Money(1000, Currency::KRW), 1)],
             $values['subtotal'] ?? new Money(1000, Currency::KRW),
             $values['discountAmount'] ?? new Money(100, Currency::KRW),

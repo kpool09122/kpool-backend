@@ -18,20 +18,20 @@ class EditorIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $editorIdentifier = new EditorIdentifier($ulid);
-        $this->assertSame($ulid, (string)$editorIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $editorIdentifier = new EditorIdentifier($id);
+        $this->assertSame($id, (string)$editorIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new EditorIdentifier($ulid);
+        new EditorIdentifier($id);
     }
 }

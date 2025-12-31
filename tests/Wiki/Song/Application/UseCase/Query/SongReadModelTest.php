@@ -18,7 +18,7 @@ class SongReadModelTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songId = StrTestHelper::generateUlid();
+        $songId = StrTestHelper::generateUuid();
         $name = 'TT';
         $belongingNames = ['TWICE', 'MISAMO'];
         $lyricist = '블랙아이드필승';

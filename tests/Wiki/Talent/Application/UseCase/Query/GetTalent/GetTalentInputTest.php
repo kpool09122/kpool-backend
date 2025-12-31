@@ -19,7 +19,7 @@ class GetTalentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUlid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $input = new GetTalentInput($talentIdentifier, $language);
         $this->assertSame((string)$talentIdentifier, (string)$input->talentIdentifier());

@@ -33,9 +33,9 @@ class AgencySnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $agencyId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $agencyId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -88,13 +88,13 @@ class AgencySnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithNullFoundedIn(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $agencyId = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $agencyId = StrTestHelper::generateUuid();
 
         $snapshot = new AgencySnapshot(
             new AgencySnapshotIdentifier($snapshotId),
             new AgencyIdentifier($agencyId),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('SM엔터테인먼트'),
             'smㅇㅌㅌㅇㅁㅌ',
@@ -125,11 +125,11 @@ class AgencySnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAgencyIdentifier(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
 
         // バージョン1のスナップショット
-        $snapshotId1 = StrTestHelper::generateUlid();
+        $snapshotId1 = StrTestHelper::generateUuid();
         CreateAgencySnapshot::create($snapshotId1, [
             'agency_id' => $agencyId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -143,7 +143,7 @@ class AgencySnapshotRepositoryTest extends TestCase
         ]);
 
         // バージョン2のスナップショット
-        $snapshotId2 = StrTestHelper::generateUlid();
+        $snapshotId2 = StrTestHelper::generateUuid();
         CreateAgencySnapshot::create($snapshotId2, [
             'agency_id' => $agencyId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -157,8 +157,8 @@ class AgencySnapshotRepositoryTest extends TestCase
         ]);
 
         // 別のAgencyのスナップショット（取得されないはず）
-        $otherAgencyId = StrTestHelper::generateUlid();
-        $snapshotId3 = StrTestHelper::generateUlid();
+        $otherAgencyId = StrTestHelper::generateUuid();
+        $snapshotId3 = StrTestHelper::generateUuid();
         CreateAgencySnapshot::create($snapshotId3, [
             'agency_id' => $otherAgencyId,
             'name' => 'SM엔터테인먼트',
@@ -189,7 +189,7 @@ class AgencySnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(AgencySnapshotRepositoryInterface::class);
         $snapshots = $repository->findByAgencyIdentifier(
-            new AgencyIdentifier(StrTestHelper::generateUlid())
+            new AgencyIdentifier(StrTestHelper::generateUuid())
         );
 
         $this->assertIsArray($snapshots);
@@ -205,9 +205,9 @@ class AgencySnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAgencyAndVersion(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
-        $snapshotId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
@@ -259,7 +259,7 @@ class AgencySnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(AgencySnapshotRepositoryInterface::class);
         $snapshot = $repository->findByAgencyAndVersion(
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Version(1)
         );
 

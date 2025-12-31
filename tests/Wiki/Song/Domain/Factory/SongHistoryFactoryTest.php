@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Song\Domain\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactory;
@@ -37,9 +37,9 @@ class SongHistoryFactoryTest extends TestCase
      */
     public function testCreateWithSongIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new SongName('Dynamite');
@@ -55,7 +55,7 @@ class SongHistoryFactoryTest extends TestCase
             $subjectName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$songHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$songHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$songHistory->editorIdentifier());
         $this->assertSame((string)$submitterIdentifier, (string)$songHistory->submitterIdentifier());
         $this->assertSame((string)$songIdentifier, (string)$songHistory->songIdentifier());
@@ -74,8 +74,8 @@ class SongHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftSongIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
-        $draftSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $draftSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new SongName('Dynamite');
@@ -91,7 +91,7 @@ class SongHistoryFactoryTest extends TestCase
             $subjectName,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$songHistory->historyIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$songHistory->historyIdentifier()));
         $this->assertSame((string)$editorIdentifier, (string)$songHistory->editorIdentifier());
         $this->assertNull($songHistory->submitterIdentifier());
         $this->assertNull($songHistory->songIdentifier());

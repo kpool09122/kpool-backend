@@ -35,7 +35,7 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testMarksInvoicePaidWhenCapturedPaymentMatches(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, $invoice->total());
         $paidAt = new DateTimeImmutable('+1 minute');
@@ -55,8 +55,8 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenOrderIdentifiersDiffer(): void
     {
-        $invoiceOrderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
-        $paymentOrderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $invoiceOrderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $paymentOrderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $invoice = $this->createInvoice($invoiceOrderIdentifier);
         $payment = $this->createCapturedPayment($paymentOrderIdentifier, $invoice->total());
 
@@ -74,7 +74,7 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenPaymentStatusIsNotCaptured(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, $invoice->total(), PaymentStatus::AUTHORIZED);
 
@@ -92,7 +92,7 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenPaymentAmountDiffers(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, new Money($invoice->total()->amount() - 10, Currency::JPY));
 
@@ -110,7 +110,7 @@ class PaymentMatcherServiceTest extends TestCase
      */
     public function testRejectsWhenPaymentCurrencyDiffers(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $invoice = $this->createInvoice($orderIdentifier);
         $payment = $this->createCapturedPayment($orderIdentifier, new Money($invoice->total()->amount(), Currency::KRW));
 
@@ -128,9 +128,9 @@ class PaymentMatcherServiceTest extends TestCase
         $issuedAt = new DateTimeImmutable('2024-01-01');
 
         return new Invoice(
-            new InvoiceIdentifier(StrTestHelper::generateUlid()),
+            new InvoiceIdentifier(StrTestHelper::generateUuid()),
             $orderIdentifier,
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)],
             new Money(1000, Currency::JPY),
             new Money(100, Currency::JPY),
@@ -148,11 +148,11 @@ class PaymentMatcherServiceTest extends TestCase
         ?PaymentStatus $status = null
     ): Payment {
         return new Payment(
-            new PaymentIdentifier(StrTestHelper::generateUlid()),
+            new PaymentIdentifier(StrTestHelper::generateUuid()),
             $orderIdentifier,
             $money,
             new PaymentMethod(
-                new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+                new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
                 PaymentMethodType::CARD,
                 'VISA',
                 true

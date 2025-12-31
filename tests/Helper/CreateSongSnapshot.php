@@ -30,11 +30,11 @@ class CreateSongSnapshot
     {
         DB::table('song_snapshots')->insert([
             'id' => $snapshotId,
-            'song_id' => $overrides['song_id'] ?? StrTestHelper::generateUlid(),
-            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUlid(),
+            'song_id' => $overrides['song_id'] ?? StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'TT',
-            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUlid(),
+            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
             'belong_identifiers' => json_encode($overrides['belong_identifiers'] ?? []),
             'lyricist' => $overrides['lyricist'] ?? '블랙아이드필승',
             'composer' => $overrides['composer'] ?? 'Sam Lewis',

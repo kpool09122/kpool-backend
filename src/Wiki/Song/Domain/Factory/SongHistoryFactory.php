@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Domain\Factory;
 
 use DateTimeImmutable;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
@@ -16,7 +16,7 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 readonly class SongHistoryFactory implements SongHistoryFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $ulidGenerator,
     ) {
     }
 

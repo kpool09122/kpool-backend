@@ -13,14 +13,19 @@ use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Domain\ValueObject\UserName;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
-use Symfony\Component\Uid\Ulid;
 
 class IdentityRepository implements IdentityRepositoryInterface
 {
+    public function __construct(
+        private readonly UuidGeneratorInterface $uuidGenerator,
+    ) {
+    }
+
     public function findByEmail(Email $email): ?Identity
     {
         $eloquent = IdentityEloquent::query()
@@ -80,7 +85,7 @@ class IdentityRepository implements IdentityRepositoryInterface
 
         foreach ($socialConnections as $socialConnection) {
             $eloquent->socialConnections()->create([
-                'id' => Ulid::generate(),
+                'id' => $this->uuidGenerator->generate(),
                 'provider' => $socialConnection->provider()->value,
                 'provider_user_id' => $socialConnection->providerUserId(),
             ]);

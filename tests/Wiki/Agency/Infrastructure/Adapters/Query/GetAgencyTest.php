@@ -42,7 +42,7 @@ class GetAgencyTest extends TestCase
      */
     public function testProcess(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -65,7 +65,7 @@ class GetAgencyTest extends TestCase
         $version = 1;
         DB::table('agencies')->upsert([
             'id' => (string) $agencyIdentifer,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -99,7 +99,7 @@ class GetAgencyTest extends TestCase
      */
     public function testWhenNotFoundAgency(): void
     {
-        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifer = new AgencyIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $input = new GetAgencyInput(
             $agencyIdentifer,

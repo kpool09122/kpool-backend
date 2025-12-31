@@ -86,8 +86,8 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessWhenAlreadyPublished(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: true,
@@ -186,8 +186,8 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessForTheFirstTime(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: false,
@@ -284,8 +284,8 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -330,7 +330,7 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -378,8 +378,8 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup(status: ApprovalStatus::Approved);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -425,8 +425,8 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -478,8 +478,8 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup(hasPublishedGroup: true);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -536,8 +536,8 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -584,8 +584,8 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -666,9 +666,9 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -715,9 +715,9 @@ class PublishGroupTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $agencyId = StrTestHelper::generateUuid();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             agencyId: $agencyId,
@@ -797,9 +797,9 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$anotherGroupId], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -846,9 +846,9 @@ class PublishGroupTest extends TestCase
      */
     public function testAuthorizedGroupActor(): void
     {
-        $groupId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, null, [$groupId], []);
+        $groupId = StrTestHelper::generateUuid();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
@@ -928,10 +928,10 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $memberId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -978,10 +978,10 @@ class PublishGroupTest extends TestCase
      */
     public function testAuthorizedMemberActor(): void
     {
-        $groupId = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $memberId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
+        $groupId = StrTestHelper::generateUuid();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $memberId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
@@ -1060,8 +1060,8 @@ class PublishGroupTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -1140,8 +1140,8 @@ class PublishGroupTest extends TestCase
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -1193,22 +1193,22 @@ class PublishGroupTest extends TestCase
         bool $hasPublishedGroup = false,
         ?EditorIdentifier $operatorIdentifier = null,
     ): PublishGroupTestData {
-        $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUlid());
-        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUuid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
-        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
 그룹명은 \'좋은 음악으로 한번, 멋진 퍼포먼스로 두 번 감동을 준다\'는 의미를 담고 있습니다. 그 이름처럼 데뷔곡 \'OOH-AHH하게\' 이후, \'CHEER UP\', \'TT\', \'LIKEY\', \'What is Love?\', \'FANCY\' 등 수많은 히트곡을 연달아 발표했습니다. 특히 \'TT\'에서 보여준 우는 표정을 표현한 \'TT 포즈\'는 일본에서도 사회 현상이 될 정도로 큰 인기를 얻었습니다.
 데뷔 초의 밝고 귀여운 콘셉트에서 해마다 성장을 거듭하며, 세련되고 멋진 퍼포먼스까지 다채로운 모습을 보여주고 있습니다. 중독성 있는 멜로디와 따라 하기 쉬운 안무가 특징으로, 폭넓은 세대로부터 지지를 받고 있습니다. 한국이나 일본뿐만 아니라, 세계적인 스타디움 투어를 성공시키는 등 K팝을 대표하는 최정상 그룹으로서 지금도 전 세계 팬들을 계속해서 사로잡고 있습니다. 팬덤명은 \'원스(ONCE)\'입니다.');
         $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
 
@@ -1229,7 +1229,7 @@ class PublishGroupTest extends TestCase
 
         // 公開済みのGroupエンティティ（既存データを想定）
         $exName = new GroupName('aespa');
-        $exAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $exAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $exDescription = new Description('## aespa: 가상과 현실을 넘나드는 K팝 그룹
 에스파(aespa)는 2020년 11월 17일 SM엔터테인먼트에서 데뷔한 4인조 다국적 걸그룹입니다. 그룹명 \'aespa\'는 \'Avatar X Experience\'를 표현한 \'æ\'와 양면이라는 뜻의 \'aspect\'를 결합하여 만든 이름으로, \'자신의 또 다른 자아인 아바타를 만나 새로운 세계를 경험하게 된다\'는 독특한 세계관을 가지고 있습니다.
 **멤버 구성:**
@@ -1238,8 +1238,8 @@ class PublishGroupTest extends TestCase
 데뷔곡 \'Black Mamba\'를 시작으로 \'Next Level\', \'Savage\', \'Drama\' 등 발표하는 곡마다 강렬하고 미래지향적인 사운드와 함께 독자적인 세계관을 담은 가사로 큰 사랑을 받고 있습니다. 특히, 가상 세계 \'광야(KWANGYA)\'에서 조력자 \'nævis\'와 함께 악의 존재인 \'Black Mamba\'와 맞서 싸우는 스토리는 에스파의 핵심 서사입니다.
 이처럼 에스파는 단순한 아이돌 그룹을 넘어, 메타버스라는 새로운 영역을 K팝에 접목시키며 전 세계 팬들에게 신선한 충격을 안겨주고 있는 그룹입니다.');
         $exSongIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
         ];
         $exImagePath = new ImagePath('/resources/public/images/after.webp');
         $publishedVersion = new Version(1);
@@ -1271,10 +1271,10 @@ class PublishGroupTest extends TestCase
             $version,
         );
 
-        $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new GroupHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
             $draftGroup->editorIdentifier(),
             $hasPublishedGroup ? $publishedGroupIdentifier : null,
             $draftGroup->groupIdentifier(),
@@ -1286,7 +1286,7 @@ class PublishGroupTest extends TestCase
 
         // 公開済みGroupのスナップショット（更新時用）
         $snapshot = new GroupSnapshot(
-            new GroupSnapshotIdentifier(StrTestHelper::generateUlid()),
+            new GroupSnapshotIdentifier(StrTestHelper::generateUuid()),
             $publishedGroup->groupIdentifier(),
             $publishedGroup->translationSetIdentifier(),
             $publishedGroup->language(),

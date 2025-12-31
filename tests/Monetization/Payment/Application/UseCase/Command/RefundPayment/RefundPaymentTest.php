@@ -34,7 +34,7 @@ class RefundPaymentTest extends TestCase
      */
     public function testProcessRefundsPartially(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $capturedPayment = $this->createCapturedPayment($paymentIdentifier);
         $refundAmount = new Money(400, Currency::JPY);
         $reason = 'customer_request';
@@ -79,7 +79,7 @@ class RefundPaymentTest extends TestCase
      */
     public function testProcessRefundsFully(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $capturedPayment = $this->createCapturedPayment($paymentIdentifier);
         $refundAmount = new Money(1000, Currency::JPY);
         $reason = 'order_cancelled';
@@ -124,7 +124,7 @@ class RefundPaymentTest extends TestCase
      */
     public function testProcessThrowsWhenPaymentNotFound(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $refundAmount = new Money(400, Currency::JPY);
 
         $input = new RefundPaymentInput($paymentIdentifier, $refundAmount, 'test');
@@ -151,10 +151,10 @@ class RefundPaymentTest extends TestCase
 
     private function createCapturedPayment(PaymentIdentifier $paymentIdentifier): Payment
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'Visa **** 1234',
             true,

@@ -27,12 +27,12 @@ class CreateGroupSnapshot
     {
         DB::table('group_snapshots')->insert([
             'id' => $snapshotId,
-            'group_id' => $overrides['group_id'] ?? StrTestHelper::generateUlid(),
-            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUlid(),
+            'group_id' => $overrides['group_id'] ?? StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'translation' => $overrides['translation'] ?? 'ko',
             'name' => $overrides['name'] ?? 'TWICE',
             'normalized_name' => $overrides['normalized_name'] ?? 'twice',
-            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUlid(),
+            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
             'description' => $overrides['description'] ?? 'TWICE is a South Korean girl group.',
             'song_identifiers' => json_encode($overrides['song_identifiers'] ?? []),
             'image_path' => $overrides['image_path'] ?? '/resources/public/images/twice.webp',

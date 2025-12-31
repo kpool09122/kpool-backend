@@ -12,7 +12,7 @@ use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -21,7 +21,7 @@ use Source\Shared\Domain\ValueObject\UserIdentifier;
 readonly class InvoiceFactory implements InvoiceFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $generator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 

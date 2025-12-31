@@ -16,7 +16,7 @@ class PaymentIdTest extends TestCase
      */
     public function testAcceptsUlid(): void
     {
-        $paymentId = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentId = new PaymentIdentifier(StrTestHelper::generateUuid());
 
         $this->assertNotEmpty((string)$paymentId);
     }

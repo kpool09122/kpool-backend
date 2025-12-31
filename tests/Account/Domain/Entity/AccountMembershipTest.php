@@ -14,7 +14,7 @@ class AccountMembershipTest extends TestCase
 {
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
         $role = AccountRole::OWNER;
         $membership = new AccountMembership(
             $userIdentifier,

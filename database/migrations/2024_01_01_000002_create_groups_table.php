@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('groups', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('グループID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->uuid('id')->primary()->comment('グループID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('グループ名');
             $table->string('normalized_name', 32)->comment('正規化されたグループ名');
-            $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
+            $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
             $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');
             $table->string('image_path', 255)->nullable()->comment('画像パス');
@@ -26,14 +26,14 @@ return new class extends Migration
         });
 
         Schema::create('draft_groups', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('グループID');
-            $table->string('published_id', 26)->nullable()->comment('公開済みグループID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
-            $table->string('editor_id', 26)->comment('編集者ID');
+            $table->uuid('id')->primary()->comment('グループID');
+            $table->uuid('published_id')->nullable()->comment('公開済みグループID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->uuid('editor_id')->comment('編集者ID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('グループ名');
             $table->string('normalized_name', 32)->comment('正規化されたグループ名');
-            $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
+            $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
             $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');
             $table->string('image_path', 255)->nullable()->comment('画像パス');
@@ -42,13 +42,13 @@ return new class extends Migration
         });
 
         Schema::create('group_snapshots', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('スナップショットID');
-            $table->string('group_id', 26)->index()->comment('公開済みグループID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->uuid('id')->primary()->comment('スナップショットID');
+            $table->uuid('group_id')->index()->comment('公開済みグループID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('translation', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('グループ名');
             $table->string('normalized_name', 32)->comment('正規化されたグループ名');
-            $table->string('agency_id', 26)->nullable()->comment('所属事務所ID');
+            $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
             $table->json('song_identifiers')->comment('グループの持ち歌リスト')->default('[]');
             $table->string('image_path', 255)->nullable()->comment('画像パス');

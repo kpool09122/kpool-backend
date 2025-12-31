@@ -19,8 +19,8 @@ class RecordPaymentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUlid());
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
 
         $input = new RecordPaymentInput($invoiceIdentifier, $paymentIdentifier);
 

@@ -34,10 +34,10 @@ class AuthorizePaymentTest extends TestCase
      */
     public function testProcessCreatesAndAuthorizesPayment(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'Visa **** 1234',
             true,
@@ -83,7 +83,7 @@ class AuthorizePaymentTest extends TestCase
     private function createPendingPayment(OrderIdentifier $orderIdentifier, Money $money, PaymentMethod $paymentMethod): Payment
     {
         return new Payment(
-            new PaymentIdentifier(StrTestHelper::generateUlid()),
+            new PaymentIdentifier(StrTestHelper::generateUuid()),
             $orderIdentifier,
             $money,
             $paymentMethod,

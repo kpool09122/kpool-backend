@@ -28,7 +28,7 @@ class IdentityTest extends TestCase
      */
     public function test__construct(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -126,7 +126,7 @@ class IdentityTest extends TestCase
         array               $connections = []
     ): Identity {
         return new Identity(
-            $identityIdentifier ?? new IdentityIdentifier(StrTestHelper::generateUlid()),
+            $identityIdentifier ?? new IdentityIdentifier(StrTestHelper::generateUuid()),
             $userName ?? new UserName('test-user'),
             $email ?? new Email('user@example.com'),
             $language ?? Language::JAPANESE,

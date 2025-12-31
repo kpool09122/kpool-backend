@@ -19,8 +19,8 @@ class TranslateAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $input = new TranslateAnnouncementInput(
             $userIdentifier,
             $announcementIdentifier,

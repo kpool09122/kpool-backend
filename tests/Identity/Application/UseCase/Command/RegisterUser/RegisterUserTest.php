@@ -84,7 +84,7 @@ class RegisterUserTest extends TestCase
         $session = new AuthCodeSession($email, $authCode, $verifiedAt, $verifiedAt);
 
         $identity = new Identity(
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $userName,
             $email,
             $language,
@@ -216,7 +216,7 @@ class RegisterUserTest extends TestCase
         $session = new AuthCodeSession($email, new AuthCode('123456'), $verifiedAt, $verifiedAt);
 
         $existingIdentity = new Identity(
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $userName,
             $email,
             $language,
@@ -339,7 +339,7 @@ class RegisterUserTest extends TestCase
         $identityRepository->shouldNotReceive('save');
 
         $identity = new Identity(
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $userName,
             $email,
             $language,

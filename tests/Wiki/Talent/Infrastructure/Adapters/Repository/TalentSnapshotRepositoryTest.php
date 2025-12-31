@@ -38,16 +38,16 @@ class TalentSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = '채영';
         $realName = '손채영';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new GroupIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new DateTimeImmutable('1999-04-23');
         $career = 'TWICE member since 2015.';
@@ -101,13 +101,13 @@ class TalentSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithNullAgencyIdentifier(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $talentId = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
 
         $snapshot = new TalentSnapshot(
             new TalentSnapshotIdentifier($snapshotId),
             new TalentIdentifier($talentId),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('채영'),
             new RealName(''),
@@ -142,11 +142,11 @@ class TalentSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByTalentIdentifier(): void
     {
-        $talentId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $talentId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
 
         // バージョン1のスナップショット
-        $snapshotId1 = StrTestHelper::generateUlid();
+        $snapshotId1 = StrTestHelper::generateUuid();
         CreateTalentSnapshot::create($snapshotId1, [
             'talent_id' => $talentId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -157,7 +157,7 @@ class TalentSnapshotRepositoryTest extends TestCase
         ]);
 
         // バージョン2のスナップショット
-        $snapshotId2 = StrTestHelper::generateUlid();
+        $snapshotId2 = StrTestHelper::generateUuid();
         CreateTalentSnapshot::create($snapshotId2, [
             'talent_id' => $talentId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -168,8 +168,8 @@ class TalentSnapshotRepositoryTest extends TestCase
         ]);
 
         // 別のTalentのスナップショット（取得されないはず）
-        $otherTalentId = StrTestHelper::generateUlid();
-        $snapshotId3 = StrTestHelper::generateUlid();
+        $otherTalentId = StrTestHelper::generateUuid();
+        $snapshotId3 = StrTestHelper::generateUuid();
         CreateTalentSnapshot::create($snapshotId3, [
             'talent_id' => $otherTalentId,
             'name' => '지효',
@@ -196,7 +196,7 @@ class TalentSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(TalentSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByTalentIdentifier(
-            new TalentIdentifier(StrTestHelper::generateUlid())
+            new TalentIdentifier(StrTestHelper::generateUuid())
         );
 
         $this->assertIsArray($snapshots);
@@ -212,12 +212,12 @@ class TalentSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByTalentAndVersion(): void
     {
-        $talentId = StrTestHelper::generateUlid();
-        $snapshotId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $talentId = StrTestHelper::generateUuid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $name = '채영';
         $realName = '손채영';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $birthday = '1999-04-23';
         $career = 'TWICE member since 2015.';
         $imageLink = '/resources/public/images/chaeyoung.webp';
@@ -265,7 +265,7 @@ class TalentSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(TalentSnapshotRepositoryInterface::class);
         $snapshot = $repository->findByTalentAndVersion(
-            new TalentIdentifier(StrTestHelper::generateUlid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Version(1)
         );
 

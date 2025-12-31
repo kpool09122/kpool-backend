@@ -222,14 +222,14 @@ class PublishAnnouncementTest extends TestCase
      */
     private function createDummyPublishAnnouncementData(Role $role = Role::ADMIN): PublishAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $category = Category::UPDATES;
         $publishedDate = new PublishedDate(new DateTimeImmutable());
 
         $user = new User(
             $userIdentifier,
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $role,
         );
 
@@ -256,7 +256,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 この「グローバル投票」機能が、ファンの皆さまの熱い想いを一つにし、アーティストをさらに大きなステージへと押し上げるきっかけになることを願っています。
 今すぐ投票に参加して、あなたの愛を"推し"に届けましょう！
 これからもk-poolをよろしくお願いいたします。');
-        $jaDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $jaDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $jaDraftAnnouncement = new DraftAnnouncement(
             $jaDraftIdentifier,
             $translationSetIdentifier,
@@ -266,7 +266,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
             $jaContent,
             $publishedDate,
         );
-        $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $jaAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $jaAnnouncement = new Announcement(
             $jaAnnouncementIdentifier,
             $translationSetIdentifier,
@@ -300,7 +300,7 @@ K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁�
 이 「글로벌 투표」 기능이 팬 여러분의 뜨거운 마음을 하나로 모아, 아티스트를 더욱 큰 무대로 이끌어 올리는 계기가 되기를 바랍니다.
 지금 바로 투표에 참여하여 당신의 사랑을 "최애"에게 전하세요!
 앞으로도 k-pool을 잘 부탁드립니다.');
-        $koDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $koDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $koDraftAnnouncement = new DraftAnnouncement(
             $koDraftIdentifier,
             $translationSetIdentifier,
@@ -310,7 +310,7 @@ K-POP을 사랑하는 모든 팬 여러분이 "최애 활동"을 더욱 즐겁�
             $koContent,
             $publishedDate,
         );
-        $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $koAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $koAnnouncement = new Announcement(
             $koAnnouncementIdentifier,
             $translationSetIdentifier,
@@ -344,7 +344,7 @@ For detailed instructions, please check the guide below.
     We hope this "Global Voting" feature will unite the passionate support of fans everywhere and become a force that lifts artists to even bigger stages.
     Join a vote now and deliver your love to your favorite artist!
     Thank you for your continued support of k-pool.');
-        $enDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $enDraftIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $enDraftAnnouncement = new DraftAnnouncement(
             $enDraftIdentifier,
             $translationSetIdentifier,
@@ -354,7 +354,7 @@ For detailed instructions, please check the guide below.
             $enContent,
             $publishedDate,
         );
-        $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $enAnnouncementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $enAnnouncement = new Announcement(
             $enAnnouncementIdentifier,
             $translationSetIdentifier,

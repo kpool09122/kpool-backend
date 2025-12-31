@@ -18,7 +18,7 @@ class AgencyReadModelTest extends TestCase
      */
     public function test__construct(): void
     {
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
         $foundedIn = new DateTimeImmutable('1997-04-25');

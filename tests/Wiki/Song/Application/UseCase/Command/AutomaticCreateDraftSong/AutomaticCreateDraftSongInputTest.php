@@ -26,18 +26,18 @@ class AutomaticCreateDraftSongInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftSongCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new SongName('Auto Song'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            [new BelongIdentifier(StrTestHelper::generateUlid())],
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new BelongIdentifier(StrTestHelper::generateUuid())],
             new Lyricist('Auto Lyricist'),
             new Composer('Auto Composer'),
             new ReleaseDate(new DateTimeImmutable('2023-05-10')),
             new Overview('Auto-generated overview.'),
             new AutomaticDraftSongSource('webhook::song'),
         );
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
 

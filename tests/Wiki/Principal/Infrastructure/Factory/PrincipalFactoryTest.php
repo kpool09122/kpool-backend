@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
@@ -22,14 +22,14 @@ class PrincipalFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
         $factory = $this->app->make(PrincipalFactoryInterface::class);
         $principal = $factory->create(
             $identityIdentifier,
         );
 
-        $this->assertTrue(UlidValidator::isValid((string)$principal->principalIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$principal->principalIdentifier()));
         $this->assertSame($identityIdentifier, $principal->identityIdentifier());
         $this->assertSame(Role::NONE, $principal->role());
         $this->assertNull($principal->agencyId());

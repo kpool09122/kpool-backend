@@ -30,10 +30,10 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindById(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier, $identityIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
@@ -55,7 +55,7 @@ class PrincipalRepositoryTest extends TestCase
     public function testFindByIdWhenNotFound(): void
     {
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
-        $result = $repository->findById(new PrincipalIdentifier(StrTestHelper::generateUlid()));
+        $result = $repository->findById(new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
     }
@@ -70,10 +70,10 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdentityIdentifier(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
             'role' => Role::COLLABORATOR,
         ]);
@@ -97,7 +97,7 @@ class PrincipalRepositoryTest extends TestCase
     public function testFindByIdentityIdentifierWhenNotFound(): void
     {
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
-        $result = $repository->findByIdentityIdentifier(new IdentityIdentifier(StrTestHelper::generateUlid()));
+        $result = $repository->findByIdentityIdentifier(new IdentityIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
     }
@@ -111,15 +111,15 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithNewPrincipal(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
-        $principalId = StrTestHelper::generateUlid();
-        $agencyId = StrTestHelper::generateUlid();
-        $groupId = StrTestHelper::generateUlid();
+        $principalId = StrTestHelper::generateUuid();
+        $agencyId = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
         CreateGroup::create($groupId);
         $groupIds = [$groupId];
-        $talentIds = [StrTestHelper::generateUlid()];
+        $talentIds = [StrTestHelper::generateUuid()];
 
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
@@ -156,11 +156,11 @@ class PrincipalRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithExistingPrincipal(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier);
 
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
             'role' => Role::NONE,
         ]);

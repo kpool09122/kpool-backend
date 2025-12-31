@@ -23,10 +23,10 @@ class AuthorizePaymentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'Visa **** 1234',
             true,

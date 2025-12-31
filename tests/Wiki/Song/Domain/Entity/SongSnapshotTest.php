@@ -59,9 +59,9 @@ class SongSnapshotTest extends TestCase
      */
     public function test__constructWithNullAgencyIdentifier(): void
     {
-        $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUlid());
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUuid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $belongIdentifiers = [];
@@ -102,15 +102,15 @@ class SongSnapshotTest extends TestCase
      */
     private function createDummySongSnapshot(): SongSnapshotTestData
     {
-        $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUlid());
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUuid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');

@@ -20,15 +20,15 @@ class PrincipalTest extends TestCase
      */
     public function test__construct(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $role = Role::AGENCY_ACTOR;
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $groupIds = [
-            StrTestHelper::generateUlid(),
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
+            StrTestHelper::generateUuid(),
         ];
-        $memberIds = [StrTestHelper::generateUlid()];
+        $memberIds = [StrTestHelper::generateUuid()];
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
@@ -64,15 +64,15 @@ class PrincipalTest extends TestCase
      */
     public function testSetRole(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $role = Role::AGENCY_ACTOR;
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $groupIds = [
-            StrTestHelper::generateUlid(),
-            StrTestHelper::generateUlid(),
+            StrTestHelper::generateUuid(),
+            StrTestHelper::generateUuid(),
         ];
-        $memberIds = [StrTestHelper::generateUlid()];
+        $memberIds = [StrTestHelper::generateUuid()];
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,

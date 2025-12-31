@@ -164,7 +164,7 @@ class WithdrawFromMembershipTest extends TestCase
         $nonMemberInput = new WithdrawFromMembershipInput(
             $testData->identifier,
             new AccountMembership(
-                new UserIdentifier(StrTestHelper::generateUlid()),
+                new UserIdentifier(StrTestHelper::generateUuid()),
                 AccountRole::MEMBER
             )
         );
@@ -191,7 +191,7 @@ class WithdrawFromMembershipTest extends TestCase
      */
     private function createDummyWithdrawFromMembershipTestData(): WithdrawFromMembershipTestData
     {
-        $identifier = new AccountIdentifier(StrTestHelper::generateUlid());
+        $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
@@ -223,11 +223,11 @@ class WithdrawFromMembershipTest extends TestCase
         );
 
         $ownerMembership = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             AccountRole::OWNER
         );
         $withdrawMembership = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 

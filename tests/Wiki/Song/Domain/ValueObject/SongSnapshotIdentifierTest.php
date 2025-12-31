@@ -18,13 +18,13 @@ class SongSnapshotIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
+        $ulid = StrTestHelper::generateUuid();
         $snapshotIdentifier = new SongSnapshotIdentifier($ulid);
         $this->assertSame($ulid, (string)$snapshotIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */

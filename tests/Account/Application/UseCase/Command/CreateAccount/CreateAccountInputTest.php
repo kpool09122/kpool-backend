@@ -49,7 +49,7 @@ class CreateAccountInputTest extends TestCase
         $contractInfo = $this->createContractInfo();
         $initialMembers = [
             new AccountMembership(
-                new UserIdentifier(StrTestHelper::generateUlid()),
+                new UserIdentifier(StrTestHelper::generateUuid()),
                 AccountRole::OWNER,
             ),
         ];

@@ -18,7 +18,7 @@ class PaymentMethodTest extends TestCase
      */
     public function test__construct(): void
     {
-        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUlid());
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
         $type = PaymentMethodType::CARD;
         $label = 'VISA **** 4242';
         $method = new PaymentMethod(
@@ -42,7 +42,7 @@ class PaymentMethodTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             '   ',
             true

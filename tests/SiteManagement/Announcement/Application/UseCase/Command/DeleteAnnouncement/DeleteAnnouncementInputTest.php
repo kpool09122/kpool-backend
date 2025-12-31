@@ -19,8 +19,8 @@ class DeleteAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $input = new DeleteAnnouncementInput(
             $userIdentifier,
             $translationSetIdentifier,

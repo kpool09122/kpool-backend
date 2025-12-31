@@ -18,20 +18,20 @@ class IdentityIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $identityIdentifier = new IdentityIdentifier($ulid);
-        $this->assertSame($ulid, (string)$identityIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $identityIdentifier = new IdentityIdentifier($id);
+        $this->assertSame($id, (string)$identityIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new IdentityIdentifier($ulid);
+        new IdentityIdentifier($id);
     }
 }

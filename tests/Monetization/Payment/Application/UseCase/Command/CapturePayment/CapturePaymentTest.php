@@ -35,7 +35,7 @@ class CapturePaymentTest extends TestCase
      */
     public function testProcessCapturesAuthorizedPayment(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $authorizedPayment = $this->createAuthorizedPayment($paymentIdentifier);
 
         $input = new CapturePaymentInput($paymentIdentifier);
@@ -76,7 +76,7 @@ class CapturePaymentTest extends TestCase
      */
     public function testProcessThrowsWhenPaymentNotFound(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
 
         $input = new CapturePaymentInput($paymentIdentifier);
 
@@ -108,7 +108,7 @@ class CapturePaymentTest extends TestCase
      */
     public function testProcessPropagatesGatewayException(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $authorizedPayment = $this->createAuthorizedPayment($paymentIdentifier);
 
         $input = new CapturePaymentInput($paymentIdentifier);
@@ -138,10 +138,10 @@ class CapturePaymentTest extends TestCase
 
     private function createAuthorizedPayment(PaymentIdentifier $paymentIdentifier): Payment
     {
-        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUlid());
+        $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUlid()),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             PaymentMethodType::CARD,
             'Visa **** 1234',
             true,

@@ -20,7 +20,7 @@ class RefundPaymentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
         $refundAmount = new Money(500, Currency::JPY);
         $reason = 'customer_request';
 

@@ -18,20 +18,20 @@ class PrincipalIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $principalIdentifier = new PrincipalIdentifier($ulid);
-        $this->assertSame($ulid, (string)$principalIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $principalIdentifier = new PrincipalIdentifier($id);
+        $this->assertSame($id, (string)$principalIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: idが不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new PrincipalIdentifier($ulid);
+        new PrincipalIdentifier($id);
     }
 }

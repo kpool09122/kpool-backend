@@ -7,7 +7,7 @@ namespace Tests\SiteManagement\Announcement\Application\UseCase\Command\CreateAn
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -98,7 +98,7 @@ class CreateAnnouncementTest extends TestCase
         $createAnnouncement = $this->app->make(CreateAnnouncementInterface::class);
         $announcement = $createAnnouncement->process($input);
 
-        $this->assertTrue(UlidValidator::isValid((string) $announcement->announcementIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string) $announcement->announcementIdentifier()));
         $this->assertSame((string) $dummy->translationSetIdentifier, (string) $announcement->translationSetIdentifier());
         $this->assertSame($dummy->language->value, $announcement->translation()->value);
         $this->assertSame($dummy->category->value, $announcement->category()->value);
@@ -151,8 +151,8 @@ class CreateAnnouncementTest extends TestCase
      */
     private function createDummyCreateAnnouncementData(Role $role = Role::ADMIN): CreateAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -182,11 +182,11 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 
         $user = new User(
             $userIdentifier,
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $role,
         );
 
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $draftAnnouncement = new DraftAnnouncement(
             $announcementIdentifier,
             $translationSetIdentifier,

@@ -46,7 +46,7 @@ class ChangeAccessControlTest extends TestCase
     public function testProcess(): void
     {
         $holdingRole = Role::ADMINISTRATOR;
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $oldRole = Role::COLLABORATOR;
         $targetRole = Role::ADMINISTRATOR;
         $input = new ChangeAccessControlInput(
@@ -57,7 +57,7 @@ class ChangeAccessControlTest extends TestCase
 
         $principal = new Principal(
             $principalIdentifier,
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $oldRole,
             null,
             [],
@@ -95,7 +95,7 @@ class ChangeAccessControlTest extends TestCase
     public function testUnauthorizedActor(): void
     {
         $holdingRole = Role::COLLABORATOR;
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $targetRole = Role::ADMINISTRATOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,
@@ -120,7 +120,7 @@ class ChangeAccessControlTest extends TestCase
     public function testWhenNotFoundActor(): void
     {
         $holdingRole = Role::ADMINISTRATOR;
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $targetRole = Role::ADMINISTRATOR;
         $input = new ChangeAccessControlInput(
             $holdingRole,

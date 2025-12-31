@@ -49,7 +49,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
         $draftTalent = $this->makeDraftTalent();
 
@@ -92,7 +92,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
         $draftTalent = $this->makeDraftTalent();
 
@@ -134,7 +134,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
     public function testProcessWithUnauthorizedRole(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -165,7 +165,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
     public function testWhenNotFoundPrincipal(): void
     {
         $payload = $this->makePayload();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -190,13 +190,13 @@ class AutomaticCreateDraftTalentTest extends TestCase
     private function makePayload(): AutomaticDraftTalentCreationPayload
     {
         return new AutomaticDraftTalentCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('テストタレント'),
             new RealName('Test Talent'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1998-02-10')),
             new Career('Auto generated career'),
@@ -206,7 +206,7 @@ class AutomaticCreateDraftTalentTest extends TestCase
 
     private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
     {
-        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $role, null, [], []);
     }
 
     /**
@@ -216,10 +216,10 @@ class AutomaticCreateDraftTalentTest extends TestCase
     private function makeDraftTalent(): DraftTalent
     {
         return new DraftTalent(
-            new TalentIdentifier(StrTestHelper::generateUlid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             null,
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('テストタレント'),
             new RealName('Test Talent'),

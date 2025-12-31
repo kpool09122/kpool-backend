@@ -18,7 +18,7 @@ class TalentHistoryIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
+        $ulid = StrTestHelper::generateUuid();
         $historyIdentifier = new TalentHistoryIdentifier($ulid);
         $this->assertSame($ulid, (string)$historyIdentifier);
     }

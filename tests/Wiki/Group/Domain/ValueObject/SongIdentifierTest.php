@@ -18,20 +18,20 @@ class SongIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $songIdentifier = new SongIdentifier($ulid);
-        $this->assertSame($ulid, (string)$songIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $songIdentifier = new SongIdentifier($id);
+        $this->assertSame($id, (string)$songIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: idが不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new SongIdentifier($ulid);
+        new SongIdentifier($id);
     }
 }

@@ -77,8 +77,8 @@ class RejectSongTest extends TestCase
      */
     public function testProcess(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -136,9 +136,9 @@ class RejectSongTest extends TestCase
      */
     public function testWhenNotFoundMember(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new RejectSongInput(
             $songIdentifier,
@@ -180,7 +180,7 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -225,7 +225,7 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong(status: ApprovalStatus::Approved);
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -267,8 +267,8 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -312,8 +312,8 @@ class RejectSongTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -374,9 +374,9 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $anotherAgencyId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $anotherAgencyId, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherAgencyId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $anotherAgencyId, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -420,14 +420,14 @@ class RejectSongTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
         );
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -484,10 +484,10 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -531,7 +531,7 @@ class RejectSongTest extends TestCase
      */
     public function testAuthorizedGroupActor(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -539,7 +539,7 @@ class RejectSongTest extends TestCase
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyRejectSong->belongIdentifiers);
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -596,10 +596,10 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUlid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
+        $anotherGroupId = StrTestHelper::generateUuid();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -643,7 +643,7 @@ class RejectSongTest extends TestCase
      */
     public function testAuthorizedTalentActor(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -651,7 +651,7 @@ class RejectSongTest extends TestCase
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
         $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyRejectSong->belongIdentifiers);
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -707,8 +707,8 @@ class RejectSongTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
@@ -769,8 +769,8 @@ class RejectSongTest extends TestCase
     {
         $dummyRejectSong = $this->createDummyRejectSong();
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::NONE, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -813,15 +813,15 @@ class RejectSongTest extends TestCase
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         ?EditorIdentifier $operatorIdentifier = null,
     ): RejectSongTestData {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
@@ -830,7 +830,7 @@ class RejectSongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/before.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
 
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $song = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
@@ -849,10 +849,10 @@ class RejectSongTest extends TestCase
             $status,
         );
 
-        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUlid());
+        $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new SongHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUlid()),
+            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
             $song->editorIdentifier(),
             $song->publishedSongIdentifier(),
             $song->songIdentifier(),

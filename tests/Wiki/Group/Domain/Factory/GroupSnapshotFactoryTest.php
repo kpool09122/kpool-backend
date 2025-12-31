@@ -6,7 +6,7 @@ namespace Tests\Wiki\Group\Domain\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -44,16 +44,16 @@ class GroupSnapshotFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('TWICE is a South Korean girl group.');
         $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $version = new Version(3);
@@ -74,7 +74,7 @@ class GroupSnapshotFactoryTest extends TestCase
         $factory = $this->app->make(GroupSnapshotFactoryInterface::class);
         $snapshot = $factory->create($group);
 
-        $this->assertTrue(UlidValidator::isValid((string)$snapshot->snapshotIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$snapshot->snapshotIdentifier()));
         $this->assertSame((string)$groupIdentifier, (string)$snapshot->groupIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$snapshot->translationSetIdentifier());
         $this->assertSame($language->value, $snapshot->language()->value);
@@ -97,8 +97,8 @@ class GroupSnapshotFactoryTest extends TestCase
     public function testCreateWithNullAgencyIdentifier(): void
     {
         $group = new Group(
-            new GroupIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
             'twice',

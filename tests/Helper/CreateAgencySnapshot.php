@@ -27,8 +27,8 @@ class CreateAgencySnapshot
     {
         DB::table('agency_snapshots')->insert([
             'id' => $snapshotId,
-            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUlid(),
-            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUlid(),
+            'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'JYP엔터테인먼트',
             'normalized_name' => $overrides['normalized_name'] ?? 'jypㅇㅌㅌㅇㅁㅌ',

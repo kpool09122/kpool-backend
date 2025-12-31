@@ -14,8 +14,8 @@ class TranslateSongInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new TranslateSongInput($songIdentifier, $principalIdentifier);
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());

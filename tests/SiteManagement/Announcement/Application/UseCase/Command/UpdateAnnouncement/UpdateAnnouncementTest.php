@@ -174,9 +174,9 @@ class UpdateAnnouncementTest extends TestCase
      */
     private function createDummyUpdateAnnouncementData(Role $role = Role::ADMIN): UpdateAnnouncementTestData
     {
-        $userIdentifier = new UserIdentifier(StrTestHelper::generateUlid());
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $userIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $category = Category::UPDATES;
         $title = new Title('🏆 あなたの一票が推しを輝かせる！新機能「グローバル投票」スタート！');
@@ -206,7 +206,7 @@ K-popを愛するすべてのファンの皆さまに、もっと「推し活」
 
         $user = new User(
             $userIdentifier,
-            new IdentityIdentifier(StrTestHelper::generateUlid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             $role,
         );
 

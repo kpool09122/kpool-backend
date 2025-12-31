@@ -19,7 +19,7 @@ class GetAgencyInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $input = new GetAgencyInput($agencyIdentifier, $translation);
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());

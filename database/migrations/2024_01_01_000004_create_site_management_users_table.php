@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('site_management_users', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('ユーザー ID');
-            $table->string('identity_id', 26)->comment('Identity ID');
+            $table->uuid('id')->primary()->comment('ユーザーID');
+            $table->uuid('identity_id')->comment('アイデンティティID');
             $table->string('role', 32)->comment('ロール');
             $table->timestamps();
 

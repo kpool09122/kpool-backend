@@ -6,7 +6,6 @@ namespace Tests\Helper;
 
 use Exception;
 use RuntimeException;
-use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Uid\Uuid;
 
 class StrTestHelper
@@ -90,13 +89,8 @@ class StrTestHelper
         }
     }
 
-    public static function generateUlid(): string
-    {
-        return Ulid::generate();
-    }
-
     public static function generateUuid(): string
     {
-        return (string)Uuid::v4();
+        return (string) Uuid::v7();
     }
 }

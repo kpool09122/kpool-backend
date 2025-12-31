@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Factory;
 
 use DateTimeImmutable;
-use Source\Shared\Application\Service\Ulid\UlidGeneratorInterface;
+use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
@@ -13,7 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 readonly class GroupSnapshotFactory implements GroupSnapshotFactoryInterface
 {
     public function __construct(
-        private UlidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $ulidGenerator,
     ) {
     }
 

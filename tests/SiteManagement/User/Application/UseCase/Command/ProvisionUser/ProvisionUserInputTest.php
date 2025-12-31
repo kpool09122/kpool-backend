@@ -18,7 +18,7 @@ class ProvisionUserInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUlid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $input = new ProvisionUserInput($identityIdentifier);
 
         $this->assertSame($identityIdentifier, $input->identityIdentifier());

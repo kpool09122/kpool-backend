@@ -22,14 +22,14 @@ class AutomaticDraftGroupCreationPayloadTest extends TestCase
      */
     public function test__construct(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $groupName = new GroupName('TWICE');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('auto generated group profile');
         $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
         ];
         $source = new AutomaticDraftGroupSource('news::source-id');
         $payload = new AutomaticDraftGroupCreationPayload(

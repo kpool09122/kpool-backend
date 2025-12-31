@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
-use Source\Shared\Application\Service\Ulid\UlidValidator;
+use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -26,8 +26,8 @@ class SettlementBatchFactoryTest extends TestCase
     public function testCreate(): void
     {
         $account = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::USD,
@@ -38,7 +38,7 @@ class SettlementBatchFactoryTest extends TestCase
 
         $factory = $this->app->make(SettlementBatchFactoryInterface::class);
         $batch = $factory->create($account, $start, $end);
-        $this->assertTrue(UlidValidator::isValid((string)$batch->settlementBatchIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string)$batch->settlementBatchIdentifier()));
         $this->assertSame($account, $batch->settlementAccount());
         $this->assertSame($start, $batch->periodStart());
         $this->assertSame($end, $batch->periodEnd());

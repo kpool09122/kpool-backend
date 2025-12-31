@@ -38,15 +38,15 @@ class SongSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $songId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $songId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'TT';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUlid()),
-            new BelongIdentifier(StrTestHelper::generateUlid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
+            new BelongIdentifier(StrTestHelper::generateUuid()),
         ];
         $lyricist = '블랙아이드필승';
         $composer = 'Sam Lewis';
@@ -103,13 +103,13 @@ class SongSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithNullAgencyIdentifier(): void
     {
-        $snapshotId = StrTestHelper::generateUlid();
-        $songId = StrTestHelper::generateUlid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $songId = StrTestHelper::generateUuid();
 
         $snapshot = new SongSnapshot(
             new SongSnapshotIdentifier($snapshotId),
             new SongIdentifier($songId),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('TT'),
             null,
@@ -146,11 +146,11 @@ class SongSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySongIdentifier(): void
     {
-        $songId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $songId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
 
         // バージョン1のスナップショット
-        $snapshotId1 = StrTestHelper::generateUlid();
+        $snapshotId1 = StrTestHelper::generateUuid();
         CreateSongSnapshot::create($snapshotId1, [
             'song_id' => $songId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -161,7 +161,7 @@ class SongSnapshotRepositoryTest extends TestCase
         ]);
 
         // バージョン2のスナップショット
-        $snapshotId2 = StrTestHelper::generateUlid();
+        $snapshotId2 = StrTestHelper::generateUuid();
         CreateSongSnapshot::create($snapshotId2, [
             'song_id' => $songId,
             'translation_set_identifier' => $translationSetIdentifier,
@@ -172,8 +172,8 @@ class SongSnapshotRepositoryTest extends TestCase
         ]);
 
         // 別のSongのスナップショット（取得されないはず）
-        $otherSongId = StrTestHelper::generateUlid();
-        $snapshotId3 = StrTestHelper::generateUlid();
+        $otherSongId = StrTestHelper::generateUuid();
+        $snapshotId3 = StrTestHelper::generateUuid();
         CreateSongSnapshot::create($snapshotId3, [
             'song_id' => $otherSongId,
             'name' => 'CHEER UP',
@@ -200,7 +200,7 @@ class SongSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(SongSnapshotRepositoryInterface::class);
         $snapshots = $repository->findBySongIdentifier(
-            new SongIdentifier(StrTestHelper::generateUlid())
+            new SongIdentifier(StrTestHelper::generateUuid())
         );
 
         $this->assertIsArray($snapshots);
@@ -216,11 +216,11 @@ class SongSnapshotRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindBySongAndVersion(): void
     {
-        $songId = StrTestHelper::generateUlid();
-        $snapshotId = StrTestHelper::generateUlid();
-        $translationSetIdentifier = StrTestHelper::generateUlid();
+        $songId = StrTestHelper::generateUuid();
+        $snapshotId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $name = 'TT';
-        $agencyId = StrTestHelper::generateUlid();
+        $agencyId = StrTestHelper::generateUuid();
         $lyricist = '블랙아이드필승';
         $composer = 'Sam Lewis';
         $releaseDate = '2016-10-24';
@@ -275,7 +275,7 @@ class SongSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(SongSnapshotRepositoryInterface::class);
         $snapshot = $repository->findBySongAndVersion(
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
             new Version(1)
         );
 

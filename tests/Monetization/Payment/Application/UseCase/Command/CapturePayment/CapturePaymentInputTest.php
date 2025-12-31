@@ -18,7 +18,7 @@ class CapturePaymentInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUlid());
+        $paymentIdentifier = new PaymentIdentifier(StrTestHelper::generateUuid());
 
         $input = new CapturePaymentInput($paymentIdentifier);
 

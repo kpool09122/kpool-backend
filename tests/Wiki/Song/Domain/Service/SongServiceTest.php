@@ -50,13 +50,13 @@ class SongServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedSongWhenApprovedExists(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
         // Approved状態のDraftSongを作成（テストデータ）
-        $approvedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $approvedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $approvedSong = new DraftSong(
             $approvedSongIdentifier,
             $publishedSongIdentifier,
@@ -64,10 +64,10 @@ class SongServiceTest extends TestCase
             $editorIdentifier,
             Language::KOREAN,
             new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new BelongIdentifier(StrTestHelper::generateUlid()),
-                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
             new Lyricist('블랙아이드필승'),
             new Composer('Sam Lewis'),
@@ -101,13 +101,13 @@ class SongServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedSongWhenNoApproved(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
         // Pending状態のDraftSongを作成
-        $pendingSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $pendingSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $pendingSong = new DraftSong(
             $pendingSongIdentifier,
             $publishedSongIdentifier,
@@ -115,9 +115,9 @@ class SongServiceTest extends TestCase
             $editorIdentifier,
             Language::JAPANESE,
             new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
             new Lyricist('Black Eyed Pilseung'),
             new Composer('Sam Lewis'),
@@ -151,12 +151,12 @@ class SongServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedSongWhenOnlySelfIsApproved(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $songIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
         // 自分自身がApproved
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUlid());
+        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $selfSong = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
@@ -164,10 +164,10 @@ class SongServiceTest extends TestCase
             $editorIdentifier,
             Language::ENGLISH,
             new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new BelongIdentifier(StrTestHelper::generateUlid()),
-                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
             new Lyricist('Black Eyed Pilseung'),
             new Composer('Sam Lewis'),
@@ -201,8 +201,8 @@ class SongServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedSongWhenNoDrafts(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findDraftsByTranslationSet')
@@ -227,13 +227,13 @@ class SongServiceTest extends TestCase
      */
     public function testExistsApprovedButNotTranslatedSongWhenMultipleApprovedExists(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
-        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
         // 複数のApproved状態のDraftSongを作成
-        $approvedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier1 = new EditorIdentifier(StrTestHelper::generateUlid());
+        $approvedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUuid());
+        $publishedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier1 = new EditorIdentifier(StrTestHelper::generateUuid());
         $approvedSong1 = new DraftSong(
             $approvedSongIdentifier1,
             $publishedSongIdentifier1,
@@ -241,10 +241,10 @@ class SongServiceTest extends TestCase
             $editorIdentifier1,
             Language::KOREAN,
             new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new BelongIdentifier(StrTestHelper::generateUlid()),
-                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
             new Lyricist('블랙아이드필승'),
             new Composer('Sam Lewis'),
@@ -255,9 +255,9 @@ class SongServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $approvedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUlid());
-        $publishedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUlid());
-        $editorIdentifier2 = new EditorIdentifier(StrTestHelper::generateUlid());
+        $approvedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUuid());
+        $publishedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier2 = new EditorIdentifier(StrTestHelper::generateUuid());
         $approvedSong2 = new DraftSong(
             $approvedSongIdentifier2,
             $publishedSongIdentifier2,
@@ -265,10 +265,10 @@ class SongServiceTest extends TestCase
             $editorIdentifier2,
             Language::ENGLISH,
             new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new BelongIdentifier(StrTestHelper::generateUlid()),
-                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
             new Lyricist('Black Eyed Pilseung'),
             new Composer('Sam Lewis'),

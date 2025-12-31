@@ -43,8 +43,8 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      */
     public function testProcessWithAdministrator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::ADMINISTRATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $payload = $this->makePayload();
         $draftAgency = $this->makeDraftAgency();
@@ -86,8 +86,8 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $payload = $this->makePayload();
         $draftAgency = $this->makeDraftAgency();
@@ -130,7 +130,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      */
     public function testWhenNotFoundPrincipal(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $payload = $this->makePayload();
 
@@ -162,8 +162,8 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      */
     public function testProcessWithUnauthorizedRole(): void
     {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUlid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUlid()), Role::AGENCY_ACTOR, null, [], []);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, null, [], []);
 
         $payload = $this->makePayload();
 
@@ -190,7 +190,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     private function makePayload(): AutomaticDraftAgencyCreationPayload
     {
         return new AutomaticDraftAgencyCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             new CEO('J.Y. Park'),
@@ -204,10 +204,10 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     private function makeDraftAgency(): DraftAgency
     {
         return new DraftAgency(
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             null,
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new EditorIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             'JYPㅇㅌㅌㅇㅁㅌ',

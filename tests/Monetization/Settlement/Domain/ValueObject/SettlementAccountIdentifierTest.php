@@ -12,21 +12,21 @@ use Tests\Helper\StrTestHelper;
 class SettlementAccountIdentifierTest extends TestCase
 {
     /**
-     * 正常系: ULID が指定されていればインスタンス化できること.
+     * 正常系: 正しくインスタンス化できること.
      *
      * @return void
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
-        $identifier = new SettlementAccountIdentifier($ulid);
+        $identifier = new SettlementAccountIdentifier($id);
 
-        $this->assertSame($ulid, (string)$identifier);
+        $this->assertSame($id, (string)$identifier);
     }
 
     /**
-     * 異常系: ULID 形式以外の場合は例外となること.
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */
@@ -34,6 +34,6 @@ class SettlementAccountIdentifierTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new SettlementAccountIdentifier('not-a-ulid');
+        new SettlementAccountIdentifier('not-a-id');
     }
 }

@@ -18,20 +18,20 @@ class PaymentIdentifierTest extends TestCase
      */
     public function test__construct(): void
     {
-        $ulid = StrTestHelper::generateUlid();
-        $paymentIdentifier = new PaymentIdentifier($ulid);
-        $this->assertSame($ulid, (string)$paymentIdentifier);
+        $id = StrTestHelper::generateUuid();
+        $paymentIdentifier = new PaymentIdentifier($id);
+        $this->assertSame($id, (string)$paymentIdentifier);
     }
 
     /**
-     * 異常系: ulidが不適切な場合、例外が発生すること
+     * 異常系: 値が不適切な場合、例外が発生すること
      *
      * @return void
      */
     public function testValidate(): void
     {
-        $ulid = 'invalid-ulid';
+        $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new PaymentIdentifier($ulid);
+        new PaymentIdentifier($id);
     }
 }

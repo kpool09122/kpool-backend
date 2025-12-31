@@ -51,9 +51,9 @@ class AgencySnapshotTest extends TestCase
      */
     public function test__constructWithNullFoundedIn(): void
     {
-        $snapshotIdentifier = new AgencySnapshotIdentifier(StrTestHelper::generateUlid());
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new AgencySnapshotIdentifier(StrTestHelper::generateUuid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('SM엔터테인먼트');
         $normalizedName = 'smㅇㅌㅌㅇㅁㅌ';
@@ -88,9 +88,9 @@ class AgencySnapshotTest extends TestCase
      */
     private function createDummyAgencySnapshot(): AgencySnapshotTestData
     {
-        $snapshotIdentifier = new AgencySnapshotIdentifier(StrTestHelper::generateUlid());
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new AgencySnapshotIdentifier(StrTestHelper::generateUuid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';

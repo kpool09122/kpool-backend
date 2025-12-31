@@ -52,9 +52,9 @@ class GroupSnapshotTest extends TestCase
      */
     public function test__constructWithNullAgencyIdentifier(): void
     {
-        $snapshotIdentifier = new GroupSnapshotIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new GroupSnapshotIdentifier(StrTestHelper::generateUuid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
@@ -89,17 +89,17 @@ class GroupSnapshotTest extends TestCase
      */
     private function createDummyGroupSnapshot(): GroupSnapshotTestData
     {
-        $snapshotIdentifier = new GroupSnapshotIdentifier(StrTestHelper::generateUlid());
-        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUlid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $snapshotIdentifier = new GroupSnapshotIdentifier(StrTestHelper::generateUuid());
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUlid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('TWICE is a South Korean girl group.');
         $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
         ];
         $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $version = new Version(1);

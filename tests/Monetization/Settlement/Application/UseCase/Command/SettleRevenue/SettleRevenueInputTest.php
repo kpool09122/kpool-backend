@@ -28,15 +28,15 @@ class SettleRevenueInputTest extends TestCase
     public function test__construct(): void
     {
         $account = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
             true
         );
         $schedule = new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
@@ -80,15 +80,15 @@ class SettleRevenueInputTest extends TestCase
     public function test__constructWithoutFixedFee(): void
     {
         $account = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUlid()),
-            new UserIdentifier(StrTestHelper::generateUlid()),
+            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
+            new UserIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
             true
         );
         $schedule = new SettlementSchedule(
-            new SettlementScheduleIdentifier(StrTestHelper::generateUlid()),
+            new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5

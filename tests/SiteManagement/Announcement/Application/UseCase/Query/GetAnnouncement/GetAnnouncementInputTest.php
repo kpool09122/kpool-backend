@@ -19,7 +19,7 @@ class GetAnnouncementInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUlid());
+        $announcementIdentifier = new AnnouncementIdentifier(StrTestHelper::generateUuid());
         $language = Language::JAPANESE;
         $input = new GetAnnouncementInput($announcementIdentifier, $language);
         $this->assertSame((string)$announcementIdentifier, (string)$input->announcementIdentifier());
