@@ -12,18 +12,18 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(
-        EditorIdentifier $editorIdentifier,
-        ?EditorIdentifier $submitterIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        ?PrincipalIdentifier $submitterIdentifier,
         ?AgencyIdentifier $agencyIdentifier,
         ?AgencyIdentifier $draftAgencyIdentifier,
         ?ApprovalStatus $fromStatus,
@@ -31,7 +31,7 @@ readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
         AgencyName $subjectName,
     ): AgencyHistory {
         return new AgencyHistory(
-            new AgencyHistoryIdentifier($this->ulidGenerator->generate()),
+            new AgencyHistoryIdentifier($this->generator->generate()),
             $editorIdentifier,
             $submitterIdentifier,
             $agencyIdentifier,

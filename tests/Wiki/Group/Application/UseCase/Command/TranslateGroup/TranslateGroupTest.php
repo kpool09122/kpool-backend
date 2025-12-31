@@ -29,7 +29,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -716,7 +715,7 @@ class TranslateGroupTest extends TestCase
     private function createDummyTranslateGroup(): TranslateGroupTestData
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -838,7 +837,7 @@ readonly class TranslateGroupTestData
      */
     public function __construct(
         public GroupIdentifier          $groupIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier         $editorIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $language,
         public GroupName                $name,

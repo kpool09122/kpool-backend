@@ -20,7 +20,6 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -111,7 +110,7 @@ readonly class PublishGroup implements PublishGroupInterface
         $this->groupRepository->save($publishedGroup);
 
         $history = $this->groupHistoryFactory->create(
-            new EditorIdentifier((string)$input->principalIdentifier()),
+            $input->principalIdentifier(),
             $group->editorIdentifier(),
             $group->publishedGroupIdentifier(),
             $group->groupIdentifier(),

@@ -6,7 +6,6 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
@@ -20,8 +19,6 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 interface CreateSongInputPort
 {
     public function publishedSongIdentifier(): ?SongIdentifier;
-
-    public function editorIdentifier(): EditorIdentifier;
 
     public function language(): Language;
 

@@ -13,7 +13,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencySource;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AutomaticDraftAgencyCreationPayloadTest extends TestCase
@@ -31,7 +31,7 @@ class AutomaticDraftAgencyCreationPayloadTest extends TestCase
         $description = new Description('auto generated agency profile');
         $source = new AutomaticDraftAgencySource('webhook::news');
 
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
 
         $payload = new AutomaticDraftAgencyCreationPayload(
@@ -63,7 +63,7 @@ class AutomaticDraftAgencyCreationPayloadTest extends TestCase
         $name = new AgencyName('JYP엔터테인먼트');
         $description = new Description('auto generated agency profile');
         $payload = new AutomaticDraftAgencyCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             $name,
             null,

@@ -50,7 +50,7 @@ readonly class CreateAgency implements CreateAgencyInterface
         }
 
         $agency = $this->agencyFactory->create(
-            $input->editorIdentifier(),
+            $input->principalIdentifier(),
             $input->language(),
             $input->name(),
         );

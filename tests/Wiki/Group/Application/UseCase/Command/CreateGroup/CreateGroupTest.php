@@ -30,7 +30,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -65,7 +64,6 @@ class CreateGroupTest extends TestCase
      */
     public function testProcess(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -85,7 +83,6 @@ class CreateGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new CreateGroupInput(
-            $editorIdentifier,
             $publishedGroupIdentifier,
             $translation,
             $name,
@@ -117,7 +114,7 @@ class CreateGroupTest extends TestCase
             $groupIdentifier,
             $publishedGroupIdentifier,
             $translationSetIdentifier,
-            $editorIdentifier,
+            $principalIdentifier,
             $translation,
             $name,
             $normalizedName,
@@ -144,7 +141,7 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($editorIdentifier, $translation, $name)
+            ->with($principalIdentifier, $translation, $name)
             ->andReturn($group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -166,7 +163,7 @@ class CreateGroupTest extends TestCase
         $this->assertTrue(UuidValidator::isValid((string)$group->groupIdentifier()));
         $this->assertSame((string)$publishedGroupIdentifier, (string)$group->publishedGroupIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
-        $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
+        $this->assertSame((string)$principalIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($translation->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame((string)$agencyIdentifier, (string)$group->agencyIdentifier());
@@ -186,7 +183,6 @@ class CreateGroupTest extends TestCase
      */
     public function testAuthorizedCollaborator(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -202,7 +198,6 @@ class CreateGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $input = new CreateGroupInput(
-            $editorIdentifier,
             $publishedGroupIdentifier,
             $translation,
             $name,
@@ -227,7 +222,7 @@ class CreateGroupTest extends TestCase
             $groupIdentifier,
             $publishedGroupIdentifier,
             $translationSetIdentifier,
-            $editorIdentifier,
+            $principalIdentifier,
             $translation,
             $name,
             $normalizedName,
@@ -243,7 +238,7 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($editorIdentifier, $translation, $name)
+            ->with($principalIdentifier, $translation, $name)
             ->andReturn($group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -275,7 +270,6 @@ class CreateGroupTest extends TestCase
      */
     public function testAuthorizedAgencyActor(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -292,7 +286,6 @@ class CreateGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
 
         $input = new CreateGroupInput(
-            $editorIdentifier,
             $publishedGroupIdentifier,
             $translation,
             $name,
@@ -317,7 +310,7 @@ class CreateGroupTest extends TestCase
             $groupIdentifier,
             $publishedGroupIdentifier,
             $translationSetIdentifier,
-            $editorIdentifier,
+            $principalIdentifier,
             $translation,
             $name,
             $normalizedName,
@@ -333,7 +326,7 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($editorIdentifier, $translation, $name)
+            ->with($principalIdentifier, $translation, $name)
             ->andReturn($group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -365,7 +358,6 @@ class CreateGroupTest extends TestCase
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -381,7 +373,6 @@ class CreateGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $input = new CreateGroupInput(
-            $editorIdentifier,
             $publishedGroupIdentifier,
             $translation,
             $name,
@@ -406,7 +397,7 @@ class CreateGroupTest extends TestCase
             $groupIdentifier,
             $publishedGroupIdentifier,
             $translationSetIdentifier,
-            $editorIdentifier,
+            $principalIdentifier,
             $translation,
             $name,
             $normalizedName,
@@ -422,7 +413,7 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($editorIdentifier, $translation, $name)
+            ->with($principalIdentifier, $translation, $name)
             ->andReturn($group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -453,7 +444,6 @@ class CreateGroupTest extends TestCase
      */
     public function testProcessWithNoneRole(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -469,7 +459,6 @@ class CreateGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
 
         $input = new CreateGroupInput(
-            $editorIdentifier,
             $publishedGroupIdentifier,
             $translation,
             $name,
@@ -507,7 +496,6 @@ class CreateGroupTest extends TestCase
      */
     public function testWhenNotFoundPrincipal(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -519,7 +507,6 @@ class CreateGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new CreateGroupInput(
-            $editorIdentifier,
             $publishedGroupIdentifier,
             $translation,
             $name,

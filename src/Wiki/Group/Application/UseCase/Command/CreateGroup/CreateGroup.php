@@ -48,7 +48,7 @@ readonly class CreateGroup implements CreateGroupInterface
         }
 
         $group = $this->groupFactory->create(
-            $input->editorIdentifier(),
+            $input->principalIdentifier(),
             $input->language(),
             $input->name(),
         );

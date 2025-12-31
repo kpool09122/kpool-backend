@@ -14,14 +14,14 @@ use Source\Wiki\Song\Domain\ValueObject\SongSnapshotIdentifier;
 readonly class SongSnapshotFactory implements SongSnapshotFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(Song $song): SongSnapshot
     {
         return new SongSnapshot(
-            new SongSnapshotIdentifier($this->ulidGenerator->generate()),
+            new SongSnapshotIdentifier($this->generator->generate()),
             $song->songIdentifier(),
             $song->translationSetIdentifier(),
             $song->language(),

@@ -7,7 +7,7 @@ namespace Source\Wiki\Talent\Domain\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
@@ -16,8 +16,8 @@ readonly class TalentHistory
 {
     public function __construct(
         private TalentHistoryIdentifier $historyIdentifier,
-        private EditorIdentifier        $editorIdentifier,
-        private ?EditorIdentifier       $submitterIdentifier,
+        private PrincipalIdentifier     $editorIdentifier,
+        private ?PrincipalIdentifier    $submitterIdentifier,
         private ?TalentIdentifier       $talentIdentifier,
         private ?TalentIdentifier       $draftTalentIdentifier,
         private ?ApprovalStatus         $fromStatus,
@@ -40,12 +40,12 @@ readonly class TalentHistory
         return $this->historyIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }
 
-    public function submitterIdentifier(): ?EditorIdentifier
+    public function submitterIdentifier(): ?PrincipalIdentifier
     {
         return $this->submitterIdentifier;
     }

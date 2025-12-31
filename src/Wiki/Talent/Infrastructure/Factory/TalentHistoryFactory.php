@@ -7,7 +7,7 @@ namespace Source\Wiki\Talent\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\Entity\TalentHistory;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
@@ -17,13 +17,13 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 readonly class TalentHistoryFactory implements TalentHistoryFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(
-        EditorIdentifier $editorIdentifier,
-        ?EditorIdentifier $submitterIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        ?PrincipalIdentifier $submitterIdentifier,
         ?TalentIdentifier $talentIdentifier,
         ?TalentIdentifier $draftTalentIdentifier,
         ?ApprovalStatus $fromStatus,
@@ -31,7 +31,7 @@ readonly class TalentHistoryFactory implements TalentHistoryFactoryInterface
         TalentName $subjectName,
     ): TalentHistory {
         return new TalentHistory(
-            new TalentHistoryIdentifier($this->ulidGenerator->generate()),
+            new TalentHistoryIdentifier($this->generator->generate()),
             $editorIdentifier,
             $submitterIdentifier,
             $talentIdentifier,

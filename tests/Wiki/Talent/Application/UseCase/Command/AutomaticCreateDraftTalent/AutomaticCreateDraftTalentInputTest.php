@@ -7,7 +7,6 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTale
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInput;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -25,7 +24,7 @@ class AutomaticCreateDraftTalentInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftTalentCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new TalentName('自動作成タレント'),
             new RealName('Auto Talent'),

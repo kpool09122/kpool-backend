@@ -14,14 +14,14 @@ use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 readonly class GroupSnapshotFactory implements GroupSnapshotFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(Group $group): GroupSnapshot
     {
         return new GroupSnapshot(
-            new GroupSnapshotIdentifier($this->ulidGenerator->generate()),
+            new GroupSnapshotIdentifier($this->generator->generate()),
             $group->groupIdentifier(),
             $group->translationSetIdentifier(),
             $group->language(),

@@ -40,7 +40,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -91,7 +90,7 @@ class PublishAgencyTest extends TestCase
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             hasPublishedAgency: true,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishAgencyInput(
@@ -191,7 +190,7 @@ class PublishAgencyTest extends TestCase
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             hasPublishedAgency: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishAgencyInput(
@@ -629,7 +628,7 @@ class PublishAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishAgencyInput(
@@ -779,7 +778,7 @@ class PublishAgencyTest extends TestCase
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishAgencyInput(
@@ -984,7 +983,7 @@ class PublishAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new PublishAgencyInput(
@@ -1119,19 +1118,19 @@ class PublishAgencyTest extends TestCase
      * @param string|null $agencyId
      * @param ApprovalStatus $status
      * @param bool $hasPublishedAgency
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return PublishAgencyTestData
      */
     private function createDummyPublishAgency(
         ?string $agencyId = null,
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         bool $hasPublishedAgency = false,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): PublishAgencyTestData {
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'JYPㅇㅌㅌㅇㅁㅌ';
@@ -1206,7 +1205,7 @@ DESC);
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new AgencyHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $agency->editorIdentifier(),
             $hasPublishedAgency ? $publishedAgencyIdentifier : null,
             $agency->agencyIdentifier(),
@@ -1266,7 +1265,7 @@ readonly class PublishAgencyTestData
         public AgencyIdentifier $agencyIdentifier,
         public AgencyIdentifier $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public PrincipalIdentifier $editorIdentifier,
         public Language $language,
         public AgencyName $name,
         public string $normalizedName,

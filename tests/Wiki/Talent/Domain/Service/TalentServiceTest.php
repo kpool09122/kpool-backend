@@ -12,7 +12,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
@@ -56,7 +56,7 @@ class TalentServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 承認済みのDraftTalent (韓国語版)
         $approvedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
@@ -131,7 +131,7 @@ class TalentServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // Pending状態のDraftTalent (韓国語版)
         $pendingTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
@@ -206,7 +206,7 @@ class TalentServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 自分自身 (Approved状態だが除外される)
         $selfTalent = new DraftTalent(
@@ -286,7 +286,7 @@ class TalentServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 韓国語版 (Approved)
         $koreanTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());

@@ -14,25 +14,25 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class DraftGroupFactory implements DraftGroupFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface        $ulidGenerator,
+        private UuidGeneratorInterface        $generator,
         private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
     /**
-     * @param EditorIdentifier $editorIdentifier
+     * @param PrincipalIdentifier $editorIdentifier
      * @param Language $language
      * @param GroupName $name
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftGroup
      */
     public function create(
-        EditorIdentifier          $editorIdentifier,
+        PrincipalIdentifier       $editorIdentifier,
         Language                  $language,
         GroupName                 $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
@@ -40,9 +40,9 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
         $normalizedName = $this->normalizationService->normalize((string)$name, $language);
 
         return new DraftGroup(
-            new GroupIdentifier($this->ulidGenerator->generate()),
+            new GroupIdentifier($this->generator->generate()),
             null,
-            $translationSetIdentifier ?? new TranslationSetIdentifier($this->ulidGenerator->generate()),
+            $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
             $editorIdentifier,
             $language,
             $name,

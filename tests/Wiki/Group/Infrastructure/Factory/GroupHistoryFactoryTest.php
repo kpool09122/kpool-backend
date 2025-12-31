@@ -11,7 +11,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Infrastructure\Factory\GroupHistoryFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -37,8 +37,8 @@ class GroupHistoryFactoryTest extends TestCase
      */
     public function testCreateWithGroupIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
@@ -74,7 +74,7 @@ class GroupHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftGroupIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $draftGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;

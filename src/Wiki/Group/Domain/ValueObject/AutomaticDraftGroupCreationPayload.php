@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 final readonly class AutomaticDraftGroupCreationPayload
 {
@@ -13,7 +13,7 @@ final readonly class AutomaticDraftGroupCreationPayload
      * @param SongIdentifier[] $songIdentifiers
      */
     public function __construct(
-        private EditorIdentifier          $editorIdentifier,
+        private PrincipalIdentifier       $editorIdentifier,
         private Language                  $language,
         private GroupName                 $name,
         private AgencyIdentifier          $agencyIdentifier,
@@ -23,7 +23,7 @@ final readonly class AutomaticDraftGroupCreationPayload
     ) {
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }

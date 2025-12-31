@@ -29,7 +29,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -610,7 +609,7 @@ class TranslateAgencyTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
@@ -693,7 +692,7 @@ readonly class TranslateAgencyTestData
         public AgencyIdentifier $agencyIdentifier,
         public AgencyIdentifier $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public PrincipalIdentifier $editorIdentifier,
         public Language $language,
         public AgencyName $name,
         public CEO $CEO,

@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -89,7 +88,7 @@ class ApproveTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveTalentInput(
@@ -208,7 +207,7 @@ class ApproveTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveTalentInput(
@@ -546,7 +545,7 @@ class ApproveTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $approveTalentInfo = $this->createApproveTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
@@ -671,7 +670,7 @@ class ApproveTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $approveTalentInfo = $this->createApproveTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
@@ -797,7 +796,7 @@ class ApproveTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $approveTalentInfo = $this->createApproveTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
@@ -872,7 +871,7 @@ class ApproveTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveTalentInput(
@@ -976,16 +975,16 @@ class ApproveTalentTest extends TestCase
     }
 
     /**
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return ApproveTalentTestData
      * @throws ExceedMaxRelevantVideoLinksException
      */
     private function createApproveTalentInfo(
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): ApproveTalentTestData {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -1046,7 +1045,7 @@ class ApproveTalentTest extends TestCase
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new TalentHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),
@@ -1096,7 +1095,7 @@ readonly class ApproveTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $translation,
         public TalentName               $name,
         public RealName                 $realName,

@@ -34,7 +34,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -77,7 +76,7 @@ class ApproveAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveAgencyInput(
@@ -388,7 +387,7 @@ class ApproveAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveAgencyInput(
@@ -509,7 +508,7 @@ class ApproveAgencyTest extends TestCase
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveAgencyInput(
@@ -679,7 +678,7 @@ class ApproveAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyApproveAgency = $this->createDummyApproveAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new ApproveAgencyInput(
@@ -791,12 +790,12 @@ class ApproveAgencyTest extends TestCase
     private function createDummyApproveAgency(
         ?string $agencyId = null,
         ApprovalStatus $status = ApprovalStatus::UnderReview,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): ApproveAgencyTestData {
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'JYPㅇㅌㅌㅇㅁㅌ';
@@ -837,7 +836,7 @@ DESC);
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new AgencyHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $agency->editorIdentifier(),
             null,
             $agency->agencyIdentifier(),
@@ -874,7 +873,7 @@ readonly class ApproveAgencyTestData
         public AgencyIdentifier $agencyIdentifier,
         public AgencyIdentifier $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public PrincipalIdentifier $editorIdentifier,
         public Language $language,
         public AgencyName $name,
         public CEO $CEO,

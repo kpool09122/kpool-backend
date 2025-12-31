@@ -7,7 +7,6 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\CreateSong;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInput;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -31,7 +30,6 @@ class CreateSongInputTest extends TestCase
     public function test__construct(): void
     {
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $name = new SongName('TT');
         $language = Language::KOREAN;
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -50,7 +48,6 @@ class CreateSongInputTest extends TestCase
 
         $input = new CreateSongInput(
             $publishedSongIdentifier,
-            $editorIdentifier,
             $language,
             $name,
             $agencyIdentifier,
@@ -64,7 +61,6 @@ class CreateSongInputTest extends TestCase
             $principalIdentifier,
         );
         $this->assertSame((string)$publishedSongIdentifier, (string)$input->publishedSongIdentifier());
-        $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
         $this->assertSame($language->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());

@@ -20,7 +20,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalent;
@@ -81,7 +80,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -109,7 +107,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -160,7 +158,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -188,7 +185,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -229,7 +226,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -257,7 +253,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -299,7 +295,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -327,7 +322,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -370,7 +365,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -398,7 +392,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -438,7 +432,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -466,7 +459,7 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($createTalentInfo->editorIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
@@ -505,7 +498,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -552,7 +544,6 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->editorIdentifier,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -591,7 +582,7 @@ class CreateTalentTest extends TestCase
     {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -686,7 +677,7 @@ readonly class CreateTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

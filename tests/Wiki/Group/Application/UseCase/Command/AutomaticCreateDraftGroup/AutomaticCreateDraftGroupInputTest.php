@@ -13,7 +13,6 @@ use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -22,7 +21,7 @@ class AutomaticCreateDraftGroupInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftGroupCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),

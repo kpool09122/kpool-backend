@@ -7,7 +7,7 @@ namespace Source\Wiki\Song\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
@@ -17,13 +17,13 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 readonly class SongHistoryFactory implements SongHistoryFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(
-        EditorIdentifier $editorIdentifier,
-        ?EditorIdentifier $submitterIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        ?PrincipalIdentifier $submitterIdentifier,
         ?SongIdentifier $songIdentifier,
         ?SongIdentifier $draftSongIdentifier,
         ?ApprovalStatus $fromStatus,
@@ -31,7 +31,7 @@ readonly class SongHistoryFactory implements SongHistoryFactoryInterface
         SongName $subjectName,
     ): SongHistory {
         return new SongHistory(
-            new SongHistoryIdentifier($this->ulidGenerator->generate()),
+            new SongHistoryIdentifier($this->generator->generate()),
             $editorIdentifier,
             $submitterIdentifier,
             $songIdentifier,

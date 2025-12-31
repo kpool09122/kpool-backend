@@ -19,7 +19,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -49,7 +49,7 @@ class GroupServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 承認済みのDraftGroup (韓国語版)
         $approvedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
@@ -115,7 +115,7 @@ class GroupServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // Pending状態のDraftGroup (韓国語版)
         $pendingGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
@@ -181,7 +181,7 @@ class GroupServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 自分自身 (Approved状態だが除外される)
         $selfGroup = new DraftGroup(
@@ -256,7 +256,7 @@ class GroupServiceTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 韓国語版 (Approved)
         $koreanGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());

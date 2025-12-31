@@ -7,7 +7,7 @@ namespace Tests\Wiki\Song\Domain\ValueObject;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongSource;
@@ -23,7 +23,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
 {
     public function test__construct(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::ENGLISH;
         $name = new SongName('Sample Song');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -65,7 +65,7 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
     public function testAllowsOptionalFields(): void
     {
         $payload = new AutomaticDraftSongCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new SongName('Optional Song'),
             null,

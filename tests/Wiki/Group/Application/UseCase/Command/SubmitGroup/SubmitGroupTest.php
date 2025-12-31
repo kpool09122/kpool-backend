@@ -33,7 +33,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -75,7 +74,7 @@ class SubmitGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new SubmitGroupInput(
@@ -267,7 +266,7 @@ class SubmitGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
@@ -327,7 +326,7 @@ class SubmitGroupTest extends TestCase
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
@@ -387,7 +386,7 @@ class SubmitGroupTest extends TestCase
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
             groupId: $groupId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
@@ -448,7 +447,7 @@ class SubmitGroupTest extends TestCase
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
             groupId: $groupId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
@@ -506,7 +505,7 @@ class SubmitGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
@@ -597,19 +596,19 @@ class SubmitGroupTest extends TestCase
      * @param string|null $groupId
      * @param string|null $agencyId
      * @param ApprovalStatus $status
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return SubmitGroupTestData
      */
     private function createDummySubmitGroup(
         ?string $groupId = null,
         ?string $agencyId = null,
         ApprovalStatus $status = ApprovalStatus::Pending,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): SubmitGroupTestData {
         $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
@@ -645,7 +644,7 @@ DESC);
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new GroupHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $group->editorIdentifier(),
             $group->publishedGroupIdentifier(),
             $group->groupIdentifier(),
@@ -683,7 +682,7 @@ readonly class SubmitGroupTestData
      * @param GroupIdentifier $groupIdentifier
      * @param GroupIdentifier $publishedGroupIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param EditorIdentifier $editorIdentifier
+     * @param PrincipalIdentifier $editorIdentifier
      * @param Language $language
      * @param GroupName $name
      * @param AgencyIdentifier $agencyIdentifier
@@ -699,7 +698,7 @@ readonly class SubmitGroupTestData
         public GroupIdentifier $groupIdentifier,
         public GroupIdentifier $publishedGroupIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public PrincipalIdentifier $editorIdentifier,
         public Language $language,
         public GroupName $name,
         public AgencyIdentifier $agencyIdentifier,

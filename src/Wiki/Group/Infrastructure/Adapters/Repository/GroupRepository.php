@@ -18,7 +18,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 final class GroupRepository implements GroupRepositoryInterface
@@ -160,7 +160,7 @@ final class GroupRepository implements GroupRepositoryInterface
             new GroupIdentifier($model->id),
             $model->published_id ? new GroupIdentifier($model->published_id) : null,
             new TranslationSetIdentifier($model->translation_set_identifier),
-            new EditorIdentifier($model->editor_id),
+            new PrincipalIdentifier($model->editor_id),
             Language::from($model->translation),
             new GroupName($model->name),
             $model->normalized_name,

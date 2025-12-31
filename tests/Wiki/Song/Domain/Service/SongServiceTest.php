@@ -12,7 +12,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
@@ -56,7 +56,7 @@ class SongServiceTest extends TestCase
         // Approved状態のDraftSongを作成（テストデータ）
         $approvedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approvedSong = new DraftSong(
             $approvedSongIdentifier,
             $publishedSongIdentifier,
@@ -107,7 +107,7 @@ class SongServiceTest extends TestCase
         // Pending状態のDraftSongを作成
         $pendingSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $pendingSong = new DraftSong(
             $pendingSongIdentifier,
             $publishedSongIdentifier,
@@ -156,7 +156,7 @@ class SongServiceTest extends TestCase
 
         // 自分自身がApproved
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $selfSong = new DraftSong(
             $songIdentifier,
             $publishedSongIdentifier,
@@ -233,7 +233,7 @@ class SongServiceTest extends TestCase
         // 複数のApproved状態のDraftSongを作成
         $approvedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier1 = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approvedSong1 = new DraftSong(
             $approvedSongIdentifier1,
             $publishedSongIdentifier1,
@@ -257,7 +257,7 @@ class SongServiceTest extends TestCase
 
         $approvedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier2 = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approvedSong2 = new DraftSong(
             $approvedSongIdentifier2,
             $publishedSongIdentifier2,

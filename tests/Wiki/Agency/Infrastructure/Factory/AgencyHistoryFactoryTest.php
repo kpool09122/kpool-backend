@@ -11,7 +11,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyHistoryFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -37,8 +37,8 @@ class AgencyHistoryFactoryTest extends TestCase
      */
     public function testCreateWithAgencyIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
@@ -74,7 +74,7 @@ class AgencyHistoryFactoryTest extends TestCase
      */
     public function testCreateWithDraftAgencyIdentifier(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $draftAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;

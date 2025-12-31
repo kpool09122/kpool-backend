@@ -10,13 +10,11 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateGroupInput implements CreateGroupInputPort
 {
     /**
-     * @param EditorIdentifier $editorIdentifier
      * @param GroupIdentifier|null $publishedGroupIdentifier
      * @param Language $language
      * @param GroupName $name
@@ -27,7 +25,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
      * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private EditorIdentifier    $editorIdentifier,
         private ?GroupIdentifier    $publishedGroupIdentifier,
         private Language            $language,
         private GroupName           $name,
@@ -37,11 +34,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         private ?string             $base64EncodedImage,
         private PrincipalIdentifier $principalIdentifier,
     ) {
-    }
-
-    public function editorIdentifier(): EditorIdentifier
-    {
-        return $this->editorIdentifier;
     }
 
     public function publishedGroupIdentifier(): ?GroupIdentifier

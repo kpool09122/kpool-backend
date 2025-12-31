@@ -10,14 +10,11 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface CreateAgencyInputPort
 {
     public function publishedAgencyIdentifier(): ?AgencyIdentifier;
-
-    public function editorIdentifier(): EditorIdentifier;
 
     public function language(): Language;
 

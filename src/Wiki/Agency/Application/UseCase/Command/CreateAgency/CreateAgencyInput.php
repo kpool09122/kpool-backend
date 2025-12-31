@@ -10,14 +10,12 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateAgencyInput implements CreateAgencyInputPort
 {
     /**
      * @param ?AgencyIdentifier $publishedAgencyIdentifier
-     * @param EditorIdentifier $editorIdentifier
      * @param Language $language
      * @param AgencyName $name
      * @param CEO $CEO
@@ -27,7 +25,6 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
      */
     public function __construct(
         private ?AgencyIdentifier   $publishedAgencyIdentifier,
-        private EditorIdentifier    $editorIdentifier,
         private Language            $language,
         private AgencyName          $name,
         private CEO                 $CEO,
@@ -40,11 +37,6 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
     public function publishedAgencyIdentifier(): ?AgencyIdentifier
     {
         return $this->publishedAgencyIdentifier;
-    }
-
-    public function editorIdentifier(): EditorIdentifier
-    {
-        return $this->editorIdentifier;
     }
 
     public function language(): Language

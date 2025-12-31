@@ -12,7 +12,7 @@ use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AutomaticDraftGroupCreationPayloadTest extends TestCase
@@ -22,7 +22,7 @@ class AutomaticDraftGroupCreationPayloadTest extends TestCase
      */
     public function test__construct(): void
     {
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $groupName = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());

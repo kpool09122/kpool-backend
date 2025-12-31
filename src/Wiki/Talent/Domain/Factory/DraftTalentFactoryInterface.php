@@ -6,7 +6,7 @@ namespace Source\Wiki\Talent\Domain\Factory;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
@@ -14,7 +14,7 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 interface DraftTalentFactoryInterface
 {
     /**
-     * @param EditorIdentifier $editorIdentifier
+     * @param PrincipalIdentifier $editorIdentifier
      * @param Language $language
      * @param TalentName $name
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
@@ -22,7 +22,7 @@ interface DraftTalentFactoryInterface
      * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
-        EditorIdentifier          $editorIdentifier,
+        PrincipalIdentifier       $editorIdentifier,
         Language                  $language,
         TalentName                $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,

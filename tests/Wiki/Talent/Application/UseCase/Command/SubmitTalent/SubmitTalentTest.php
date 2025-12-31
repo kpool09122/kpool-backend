@@ -19,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalent;
@@ -83,7 +82,7 @@ class SubmitTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitTalentInput(
@@ -278,7 +277,7 @@ class SubmitTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitTalentInput(
@@ -342,7 +341,7 @@ class SubmitTalentTest extends TestCase
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitTalentInput(
@@ -408,7 +407,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
             groupIds: $groupIds,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitTalentInput(
@@ -476,7 +475,7 @@ class SubmitTalentTest extends TestCase
             agencyId: $agencyId,
             groupIds: $groupIds,
             talentId: $talentId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitTalentInput(
@@ -538,7 +537,7 @@ class SubmitTalentTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitTalentInput(
@@ -638,7 +637,7 @@ class SubmitTalentTest extends TestCase
      * @param array<string>|null $groupIds
      * @param string|null $talentId
      * @param ApprovalStatus $status
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return SubmitTalentTestData
      * @throws ExceedMaxRelevantVideoLinksException
      */
@@ -647,11 +646,11 @@ class SubmitTalentTest extends TestCase
         ?array $groupIds = null,
         ?string $talentId = null,
         ApprovalStatus $status = ApprovalStatus::Pending,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): SubmitTalentTestData {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -697,7 +696,7 @@ class SubmitTalentTest extends TestCase
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new TalentHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),
@@ -745,7 +744,7 @@ readonly class SubmitTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

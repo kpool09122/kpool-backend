@@ -19,7 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 readonly class AgencyFactory implements AgencyFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface        $ulidGenerator,
+        private UuidGeneratorInterface        $generator,
         private NormalizationServiceInterface $normalizationService,
     ) {
     }
@@ -32,7 +32,7 @@ readonly class AgencyFactory implements AgencyFactoryInterface
         $normalizedName = $this->normalizationService->normalize((string)$agencyName, $language);
 
         return new Agency(
-            new AgencyIdentifier($this->ulidGenerator->generate()),
+            new AgencyIdentifier($this->generator->generate()),
             $translationSetIdentifier,
             $language,
             $agencyName,

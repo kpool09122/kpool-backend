@@ -10,14 +10,14 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class GroupHistory
 {
     public function __construct(
         private GroupHistoryIdentifier $historyIdentifier,
-        private EditorIdentifier       $editorIdentifier,
-        private ?EditorIdentifier      $submitterIdentifier,
+        private PrincipalIdentifier    $editorIdentifier,
+        private ?PrincipalIdentifier   $submitterIdentifier,
         private ?GroupIdentifier       $groupIdentifier,
         private ?GroupIdentifier       $draftGroupIdentifier,
         private ?ApprovalStatus        $fromStatus,
@@ -40,12 +40,12 @@ readonly class GroupHistory
         return $this->historyIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }
 
-    public function submitterIdentifier(): ?EditorIdentifier
+    public function submitterIdentifier(): ?PrincipalIdentifier
     {
         return $this->submitterIdentifier;
     }

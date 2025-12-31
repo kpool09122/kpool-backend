@@ -18,7 +18,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,7 +43,7 @@ class AgencyServiceTest extends TestCase
             $approvedAgencyIdentifier,
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -82,7 +82,7 @@ class AgencyServiceTest extends TestCase
             $pendingAgencyIdentifier,
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -120,7 +120,7 @@ class AgencyServiceTest extends TestCase
             $agencyIdentifier,
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new AgencyName('JYP Entertainment'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -182,7 +182,7 @@ class AgencyServiceTest extends TestCase
             $approvedAgency1Identifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -199,7 +199,7 @@ class AgencyServiceTest extends TestCase
             $approvedAgency2Identifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
