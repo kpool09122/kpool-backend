@@ -32,7 +32,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -73,7 +72,7 @@ class SubmitAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitAgencyInput(
@@ -264,7 +263,7 @@ class SubmitAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
@@ -324,7 +323,7 @@ class SubmitAgencyTest extends TestCase
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
@@ -383,7 +382,7 @@ class SubmitAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
@@ -443,7 +442,7 @@ class SubmitAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
@@ -501,7 +500,7 @@ class SubmitAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: $principalIdentifier,
         );
 
         $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
@@ -591,18 +590,18 @@ class SubmitAgencyTest extends TestCase
      *
      * @param string|null $agencyId
      * @param ApprovalStatus $status
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return SubmitAgencyTestData
      */
     private function createDummySubmitAgency(
         ?string $agencyId = null,
         ApprovalStatus $status = ApprovalStatus::Pending,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): SubmitAgencyTestData {
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
@@ -643,7 +642,7 @@ DESC);
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new AgencyHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $agency->editorIdentifier(),
             $agency->publishedAgencyIdentifier(),
             $agency->agencyIdentifier(),
@@ -680,7 +679,7 @@ readonly class SubmitAgencyTestData
         public AgencyIdentifier $agencyIdentifier,
         public AgencyIdentifier $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public PrincipalIdentifier $editorIdentifier,
         public Language $language,
         public AgencyName $name,
         public CEO $CEO,

@@ -14,7 +14,6 @@ use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencySource;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -23,7 +22,7 @@ class AutomaticCreateDraftAgencyInputTest extends TestCase
     public function testAccessors(): void
     {
         $payload = new AutomaticDraftAgencyCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테インメント'),
             new CEO('J.Y. Park'),

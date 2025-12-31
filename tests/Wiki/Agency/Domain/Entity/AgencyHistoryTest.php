@@ -11,7 +11,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ class AgencyHistoryTest extends TestCase
     public function test__construct(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $createAgencyHistory = $this->createDummyAgencyHistory(
             agencyIdentifier: $agencyIdentifier,
             submitterIdentifier: $submitterIdentifier,
@@ -111,7 +111,7 @@ class AgencyHistoryTest extends TestCase
     public function testConstructWithFromStatusNull(): void
     {
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $toStatus = ApprovalStatus::Pending;
         $agencyName = new AgencyName('JYP엔터테인먼트');
@@ -143,7 +143,7 @@ class AgencyHistoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
         $agencyName = new AgencyName('JYP엔터테인먼트');
@@ -167,16 +167,16 @@ class AgencyHistoryTest extends TestCase
      *
      * @param ?AgencyIdentifier $agencyIdentifier
      * @param ?AgencyIdentifier $draftAgencyIdentifier
-     * @param ?EditorIdentifier $submitterIdentifier
+     * @param ?PrincipalIdentifier $submitterIdentifier
      * @return AgencyHistoryTestData
      */
     private function createDummyAgencyHistory(
         ?AgencyIdentifier $agencyIdentifier = null,
         ?AgencyIdentifier $draftAgencyIdentifier = null,
-        ?EditorIdentifier $submitterIdentifier = null,
+        ?PrincipalIdentifier $submitterIdentifier = null,
     ): AgencyHistoryTestData {
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $agencyName = new AgencyName('JYP엔터테인먼트');
@@ -215,8 +215,8 @@ readonly class AgencyHistoryTestData
 {
     public function __construct(
         public AgencyHistoryIdentifier $historyIdentifier,
-        public EditorIdentifier        $editorIdentifier,
-        public ?EditorIdentifier       $submitterIdentifier,
+        public PrincipalIdentifier        $editorIdentifier,
+        public ?PrincipalIdentifier       $submitterIdentifier,
         public ?AgencyIdentifier       $agencyIdentifier,
         public ?AgencyIdentifier       $draftAgencyIdentifier,
         public ApprovalStatus          $fromStatus,

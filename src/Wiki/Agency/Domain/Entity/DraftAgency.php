@@ -12,7 +12,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class DraftAgency
 {
@@ -20,7 +20,7 @@ class DraftAgency
         private readonly AgencyIdentifier         $agencyIdentifier,
         private ?AgencyIdentifier                 $publishedAgencyIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly EditorIdentifier         $editorIdentifier,
+        private readonly PrincipalIdentifier      $editorIdentifier,
         private readonly Language                 $language,
         private AgencyName                        $name,
         private string                            $normalizedName,
@@ -52,7 +52,7 @@ class DraftAgency
         return $this->translationSetIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }

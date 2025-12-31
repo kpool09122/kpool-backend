@@ -29,7 +29,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -66,7 +65,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -120,7 +118,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -159,7 +156,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -202,7 +198,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -245,7 +240,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -289,7 +283,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -331,7 +324,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -373,7 +365,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -414,7 +405,6 @@ class CreateAgencyTest extends TestCase
 
         $input = new CreateAgencyInput(
             $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->editorIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
             $dummyCreateAgency->CEO,
@@ -448,7 +438,7 @@ class CreateAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummy->editorIdentifier, $dummy->language, $dummy->name)
+            ->with($dummy->principalIdentifier, $dummy->language, $dummy->name)
             ->andReturn($dummy->draftAgency);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -478,7 +468,7 @@ class CreateAgencyTest extends TestCase
         array $talentIds = [],
     ): CreateAgencyTestData {
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테インメント');
         $CEO = new CEO('J.Y. Park');
@@ -508,7 +498,7 @@ DESC);
             $agencyIdentifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
-            $editorIdentifier,
+            $principalIdentifier,
             $language,
             $name,
             $normalizedName,
@@ -533,12 +523,11 @@ DESC);
             $version,
         );
 
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $role, $agencyScopeId, $groupIds, $talentIds);
 
         return new CreateAgencyTestData(
             $publishedAgencyIdentifier,
-            $editorIdentifier,
+            $principalIdentifier,
             $language,
             $name,
             $normalizedName,
@@ -562,7 +551,7 @@ readonly class CreateAgencyTestData
 {
     public function __construct(
         public AgencyIdentifier $publishedAgencyIdentifier,
-        public EditorIdentifier $editorIdentifier,
+        public PrincipalIdentifier $editorIdentifier,
         public Language $language,
         public AgencyName $name,
         public string $normalizedName,

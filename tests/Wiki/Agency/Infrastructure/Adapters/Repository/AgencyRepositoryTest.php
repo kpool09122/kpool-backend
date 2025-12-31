@@ -19,7 +19,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -203,7 +203,7 @@ class AgencyRepositoryTest extends TestCase
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new EditorIdentifier($editorId),
+            new PrincipalIdentifier($editorId),
             $language,
             new AgencyName($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -293,7 +293,7 @@ class AgencyRepositoryTest extends TestCase
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new EditorIdentifier($editorId),
+            new PrincipalIdentifier($editorId),
             $language,
             new AgencyName($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',

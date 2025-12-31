@@ -10,14 +10,14 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class AgencyHistory
 {
     public function __construct(
         private AgencyHistoryIdentifier $historyIdentifier,
-        private EditorIdentifier        $editorIdentifier,
-        private ?EditorIdentifier       $submitterIdentifier,
+        private PrincipalIdentifier     $editorIdentifier,
+        private ?PrincipalIdentifier    $submitterIdentifier,
         private ?AgencyIdentifier       $agencyIdentifier,
         private ?AgencyIdentifier       $draftAgencyIdentifier,
         private ?ApprovalStatus         $fromStatus,
@@ -40,12 +40,12 @@ readonly class AgencyHistory
         return $this->historyIdentifier;
     }
 
-    public function editorIdentifier(): EditorIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }
 
-    public function submitterIdentifier(): ?EditorIdentifier
+    public function submitterIdentifier(): ?PrincipalIdentifier
     {
         return $this->submitterIdentifier;
     }

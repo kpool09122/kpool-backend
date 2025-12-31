@@ -20,7 +20,6 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -109,7 +108,7 @@ readonly class PublishAgency implements PublishAgencyInterface
         $this->agencyRepository->save($publishedAgency);
 
         $history = $this->agencyHistoryFactory->create(
-            new EditorIdentifier((string)$input->principalIdentifier()),
+            $input->principalIdentifier(),
             $agency->editorIdentifier(),
             $agency->publishedAgencyIdentifier(),
             $agency->agencyIdentifier(),

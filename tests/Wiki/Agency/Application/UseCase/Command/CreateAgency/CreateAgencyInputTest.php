@@ -11,7 +11,6 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -26,7 +25,6 @@ class CreateAgencyInputTest extends TestCase
     public function test__construct(): void
     {
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
         $name = new AgencyName('JYP엔터테인먼트');
         $language = Language::KOREAN;
         $CEO = new CEO('J.Y. Park');
@@ -49,7 +47,6 @@ class CreateAgencyInputTest extends TestCase
 
         $input = new CreateAgencyInput(
             $publishedAgencyIdentifier,
-            $editorIdentifier,
             $language,
             $name,
             $CEO,
@@ -58,7 +55,6 @@ class CreateAgencyInputTest extends TestCase
             $principalIdentifier,
         );
         $this->assertSame((string)$publishedAgencyIdentifier, (string)$input->publishedAgencyIdentifier());
-        $this->assertSame((string)$editorIdentifier, (string)$input->editorIdentifier());
         $this->assertSame($language->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$CEO, (string)$input->CEO());
