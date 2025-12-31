@@ -14,7 +14,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -41,11 +41,11 @@ class SongRepositoryTest extends TestCase
     public function testFindById(): void
     {
         $songData = $this->upsertSongRecord([
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'name' => 'Thunderous',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()],
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()],
             'lyricist' => 'Han',
             'composer' => 'Bang Chan',
             'release_date' => '2021-08-23',
@@ -90,7 +90,7 @@ class SongRepositoryTest extends TestCase
             'language' => Language::ENGLISH->value,
             'name' => 'No Release Date',
             'release_date' => null,
-            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
         ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
@@ -108,7 +108,7 @@ class SongRepositoryTest extends TestCase
     public function testFindByIdWhenNotExist(): void
     {
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $song = $repository->findById(new SongIdentifier(StrTestHelper::generateUlid()));
+        $song = $repository->findById(new SongIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($song);
     }
@@ -121,13 +121,13 @@ class SongRepositoryTest extends TestCase
     public function testFindDraftById(): void
     {
         $draftData = $this->upsertDraftSongRecord([
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+            'published_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
             'name' => 'サンプル歌',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'テスター',
             'composer' => 'コンポーザー',
             'release_date' => '2022-02-02',
@@ -174,7 +174,7 @@ class SongRepositoryTest extends TestCase
             'language' => Language::JAPANESE->value,
             'name' => 'Draft Song',
             'release_date' => null,
-            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'Tester',
             'composer' => 'Composer',
             'overview' => 'Draft Overview',
@@ -195,7 +195,7 @@ class SongRepositoryTest extends TestCase
     public function testFindDraftByIdWhenNotExist(): void
     {
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $draft = $repository->findDraftById(new SongIdentifier(StrTestHelper::generateUlid()));
+        $draft = $repository->findDraftById(new SongIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($draft);
     }
@@ -209,14 +209,14 @@ class SongRepositoryTest extends TestCase
     public function testSave(): void
     {
         $song = new Song(
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Case 143'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new BelongIdentifier(StrTestHelper::generateUlid()),
-                new BelongIdentifier(StrTestHelper::generateUlid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
+                new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
             new Lyricist('3racha'),
             new Composer('Versachoi'),
@@ -267,14 +267,14 @@ class SongRepositoryTest extends TestCase
     public function testSaveDraft(): void
     {
         $draft = new DraftSong(
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new SongName('ブルームーン'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            [new BelongIdentifier(StrTestHelper::generateUlid())],
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new BelongIdentifier(StrTestHelper::generateUuid())],
             new Lyricist('Lyricist'),
             new Composer('Composer'),
             new ReleaseDate(new DateTimeImmutable('2023-05-05')),
@@ -324,16 +324,16 @@ class SongRepositoryTest extends TestCase
      */
     public function testDeleteDraft(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
         $draft = new DraftSong(
             new SongIdentifier($id),
-            new SongIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new SongName('Delete Draft'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            [new BelongIdentifier(StrTestHelper::generateUlid())],
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new BelongIdentifier(StrTestHelper::generateUuid())],
             new Lyricist('L'),
             new Composer('C'),
             new ReleaseDate(new DateTimeImmutable('2024-04-04')),
@@ -374,17 +374,17 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSet(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draft1 = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'editor_id' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::KOREAN->value,
             'name' => '드래프트 송1',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'lyricist' => '가사',
             'composer' => '작곡',
             'release_date' => '2020-01-10',
@@ -393,14 +393,14 @@ class SongRepositoryTest extends TestCase
         ];
 
         $draft2 = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'editor_id' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
             'name' => 'ドラフトソング2',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'lyricist' => '作詞',
             'composer' => '作曲',
             'release_date' => '2021-02-11',
@@ -409,14 +409,14 @@ class SongRepositoryTest extends TestCase
         ];
 
         $otherDraft = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'name' => 'Other Draft',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUlid()]),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'lyricist' => 'Other lyricist',
             'composer' => 'Other composer',
             'release_date' => '2022-03-12',
@@ -451,14 +451,14 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSetWhenReleaseDateIsNull(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draftData = $this->upsertDraftSongRecord([
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'language' => Language::ENGLISH->value,
             'name' => 'Draft without release date',
             'release_date' => null,
-            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'Lyricist',
             'composer' => 'Composer',
         ]);
@@ -483,7 +483,7 @@ class SongRepositoryTest extends TestCase
     {
         $repository = $this->app->make(SongRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet(
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertIsArray($drafts);
@@ -497,16 +497,16 @@ class SongRepositoryTest extends TestCase
     private function upsertSongRecord(array $override = []): array
     {
         $data = array_merge([
-            'id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'name' => 'Song',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'Lyricist',
             'composer' => 'Composer',
             'release_date' => '2024-01-01',
-            'lyrics' => null,
+            'lyrics' => '',
             'overview' => 'Overview',
             'cover_image_path' => null,
             'music_video_link' => null,
@@ -528,18 +528,18 @@ class SongRepositoryTest extends TestCase
     private function upsertDraftSongRecord(array $override = []): array
     {
         $data = array_merge([
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
             'name' => 'Draft Song',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'belong_identifiers' => [StrTestHelper::generateUlid()],
+            'agency_id' => StrTestHelper::generateUuid(),
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'Lyricist',
             'composer' => 'Composer',
             'release_date' => '2024-01-01',
-            'lyrics' => null,
+            'lyrics' => '',
             'overview' => 'Draft Overview',
             'cover_image_path' => null,
             'music_video_link' => null,

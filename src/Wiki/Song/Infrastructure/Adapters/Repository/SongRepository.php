@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Song\Infrastracture\Adapters\Repository;
+namespace Source\Wiki\Song\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\DraftSong as DraftSongModel;
 use Application\Models\Wiki\Song as SongModel;
@@ -11,7 +11,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -117,7 +117,7 @@ final class SongRepository implements SongRepositoryInterface
             new SongIdentifier($draftModel->id),
             $draftModel->published_id ? new SongIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
-            new EditorIdentifier($draftModel->editor_id),
+            new PrincipalIdentifier($draftModel->editor_id),
             Language::from($draftModel->language),
             new SongName($draftModel->name),
             $draftModel->agency_id ? new AgencyIdentifier($draftModel->agency_id) : null,
@@ -183,6 +183,7 @@ final class SongRepository implements SongRepositoryInterface
 
         $drafts = [];
 
+        /** @var DraftSongModel $model */
         foreach ($draftModels as $model) {
             $belongIdentifiers = [];
             foreach (($model->belong_identifiers ?? []) as $identifier) {
@@ -197,7 +198,7 @@ final class SongRepository implements SongRepositoryInterface
                 new SongIdentifier($model->id),
                 $model->published_id ? new SongIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
-                new EditorIdentifier($model->editor_id),
+                new PrincipalIdentifier($model->editor_id),
                 Language::from($model->language),
                 new SongName($model->name),
                 $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
