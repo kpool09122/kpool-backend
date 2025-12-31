@@ -4,7 +4,6 @@ services:
     volumes:
       - .:/var/www/html
     working_dir: /var/www/html
-    command: ["bash", "-c", "tail -f /dev/null"]
     environment:
       - DB_CONNECTION=pgsql
       - DB_HOST=testing_db
@@ -41,11 +40,8 @@ services:
 
   redis:
     image: redis:8-alpine
-    command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
     networks:
       - kpool-network
 
@@ -67,7 +63,6 @@ services:
 
 volumes:
   testing_db_data:
-  redis_data:
 
 networks:
   kpool-network:
