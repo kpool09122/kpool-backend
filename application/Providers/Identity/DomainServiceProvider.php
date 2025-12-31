@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Application\Providers\Identity;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Identity\Domain\Factory\AuthCodeSessionFactory;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
+use Source\Identity\Infrastructure\Factory\AuthCodeSessionFactory;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Identity\Infrastructure\Repository\AuthCodeSessionRepository;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;

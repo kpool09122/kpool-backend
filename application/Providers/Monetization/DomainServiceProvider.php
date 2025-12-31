@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Monetization\Billing\Domain\Factory\InvoiceFactory;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyService;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
-use Source\Monetization\Payment\Domain\Factory\PaymentFactory;
+use Source\Monetization\Billing\Infrastructure\Factory\InvoiceFactory;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
-use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactory;
+use Source\Monetization\Payment\Infrastructure\Factory\PaymentFactory;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
-use Source\Monetization\Settlement\Domain\Factory\TransferFactory;
 use Source\Monetization\Settlement\Domain\Factory\TransferFactoryInterface;
 use Source\Monetization\Settlement\Domain\Service\FeeCalculatorService;
 use Source\Monetization\Settlement\Domain\Service\FeeCalculatorServiceInterface;
 use Source\Monetization\Settlement\Domain\Service\SettlementService;
 use Source\Monetization\Settlement\Domain\Service\SettlementServiceInterface;
+use Source\Monetization\Settlement\Infrastructure\Factory\SettlementBatchFactory;
+use Source\Monetization\Settlement\Infrastructure\Factory\TransferFactory;
 use Source\Monetization\Shared\Service\PaymentMatcherService;
 use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 
