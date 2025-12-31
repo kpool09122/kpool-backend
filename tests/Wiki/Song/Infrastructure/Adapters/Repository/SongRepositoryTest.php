@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use JsonException;
-use PHPUnit\Framework\Attributes\Group as PHPUnitGroup;
+use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -32,7 +32,6 @@ use Tests\Helper\CreateSong;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-#[PHPUnitGroup('useDb')]
 class SongRepositoryTest extends TestCase
 {
     /**
@@ -40,6 +39,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindById(): void
     {
         $songId = StrTestHelper::generateUuid();
@@ -91,6 +91,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindByIdWhenReleaseDateIsNull(): void
     {
         $songId = StrTestHelper::generateUuid();
@@ -117,6 +118,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
         $repository = $this->app->make(SongRepositoryInterface::class);
@@ -130,6 +132,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftById(): void
     {
         $draftId = StrTestHelper::generateUuid();
@@ -187,6 +190,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftByIdWhenReleaseDateIsNull(): void
     {
         $draftId = StrTestHelper::generateUuid();
@@ -213,6 +217,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftByIdWhenNotExist(): void
     {
         $repository = $this->app->make(SongRepositoryInterface::class);
@@ -227,6 +232,7 @@ class SongRepositoryTest extends TestCase
      * @throws BindingResolutionException
      * @throws JsonException
      */
+    #[Group('useDb')]
     public function testSave(): void
     {
         $song = new Song(
@@ -285,6 +291,7 @@ class SongRepositoryTest extends TestCase
      * @throws BindingResolutionException
      * @throws JsonException
      */
+    #[Group('useDb')]
     public function testSaveDraft(): void
     {
         $draft = new DraftSong(
@@ -343,6 +350,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testDeleteDraft(): void
     {
         $id = StrTestHelper::generateUuid();
@@ -392,6 +400,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftsByTranslationSet(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
@@ -471,6 +480,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftsByTranslationSetWhenReleaseDateIsNull(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
@@ -503,6 +513,7 @@ class SongRepositoryTest extends TestCase
      *
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftsByTranslationSetWhenNotExist(): void
     {
         $repository = $this->app->make(SongRepositoryInterface::class);

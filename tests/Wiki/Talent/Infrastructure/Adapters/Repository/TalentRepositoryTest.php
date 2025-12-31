@@ -27,10 +27,11 @@ use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Tests\Helper\CreateDraftTalent;
+use Tests\Helper\CreateTalent;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-#[Group('useDb')]
 class TalentRepositoryTest extends TestCase
 {
     /**
@@ -39,35 +40,35 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindById(): void
     {
         $id = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
-        $translation = Language::JAPANESE;
-        $name = 'タレント';
-        $realName = '本名タレント';
+        $translation = Language::KOREAN;
+        $name = '방찬';
+        $realName = '크리스토퍼 방';
         $agencyId = StrTestHelper::generateUuid();
         $groupIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
-        $birthday = '1990-01-01';
-        $career = '経歴サンプル';
-        $imageLink = '/images/talent.png';
-        $relevantVideoLinks = ['https://example.com/video1', 'https://example.com/video2'];
+        $birthday = '1997-10-03';
+        $career = 'Stray Kids leader, producer, and rapper. Member of 3RACHA.';
+        $imageLink = '/images/talents/bangchan.jpg';
+        $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8', 'https://www.youtube.com/watch?v=dcNRbbQBJUE'];
         $version = 3;
 
-        DB::table('talents')->upsert([
-            'id' => $id,
+        CreateTalent::create($id, [
             'translation_set_identifier' => $translationSetId,
             'language' => $translation->value,
             'name' => $name,
             'real_name' => $realName,
             'agency_id' => $agencyId,
-            'group_identifiers' => json_encode($groupIdentifiers, JSON_THROW_ON_ERROR),
+            'group_identifiers' => $groupIdentifiers,
             'birthday' => $birthday,
             'career' => $career,
             'image_link' => $imageLink,
-            'relevant_video_links' => json_encode($relevantVideoLinks, JSON_THROW_ON_ERROR),
+            'relevant_video_links' => $relevantVideoLinks,
             'version' => $version,
-        ], 'id');
+        ]);
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $talent = $repository->findById(new TalentIdentifier($id));
@@ -84,7 +85,6 @@ class TalentRepositoryTest extends TestCase
             $talent->groupIdentifiers(),
         ));
         $this->assertInstanceOf(Birthday::class, $talent->birthday());
-        $this->assertInstanceOf(DateTimeImmutable::class, $talent->birthday()->value());
         $this->assertSame($birthday, $talent->birthday()->format('Y-m-d'));
         $this->assertSame($career, (string) $talent->career());
         $this->assertSame($imageLink, (string) $talent->imageLink());
@@ -98,24 +98,21 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindByIdWhenBirthdayIsNull(): void
     {
         $id = StrTestHelper::generateUuid();
 
-        DB::table('talents')->upsert([
-            'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'language' => Language::JAPANESE->value,
-            'name' => 'タレント',
-            'real_name' => '本名タレント',
+        CreateTalent::create($id, [
+            'language' => Language::KOREAN->value,
+            'name' => '리노',
+            'real_name' => '이민호',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
+            'group_identifiers' => [StrTestHelper::generateUuid()],
             'birthday' => null,
-            'career' => '経歴サンプル',
-            'image_link' => '/images/talent.png',
-            'relevant_video_links' => json_encode([], JSON_THROW_ON_ERROR),
-            'version' => 1,
-        ], 'id');
+            'career' => 'Stray Kids main dancer and sub-vocalist.',
+            'image_link' => '/images/talents/leeknow.jpg',
+        ]);
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $talent = $repository->findById(new TalentIdentifier($id));
@@ -130,6 +127,7 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindByIdWhenNoTalent(): void
     {
         $repository = $this->app->make(TalentRepositoryInterface::class);
@@ -144,25 +142,25 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftById(): void
     {
         $id = StrTestHelper::generateUuid();
         $publishedId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
-        $translation = Language::ENGLISH;
-        $name = 'Talent Draft';
-        $realName = 'Real Name';
+        $translation = Language::KOREAN;
+        $name = '창빈';
+        $realName = '서창빈';
         $agencyId = StrTestHelper::generateUuid();
         $groupIdentifiers = [StrTestHelper::generateUuid()];
-        $birthday = '1992-02-02';
-        $career = 'Draft Career';
-        $imageLink = '/images/draft.png';
-        $relevantVideoLinks = ['https://example.com/draft-video'];
+        $birthday = '1999-08-13';
+        $career = 'Stray Kids main rapper and producer. Member of 3RACHA.';
+        $imageLink = '/images/talents/changbin.jpg';
+        $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8'];
         $status = ApprovalStatus::Pending;
 
-        DB::table('draft_talents')->upsert([
-            'id' => $id,
+        CreateDraftTalent::create($id, [
             'published_id' => $publishedId,
             'translation_set_identifier' => $translationSetId,
             'editor_id' => $editorId,
@@ -170,13 +168,13 @@ class TalentRepositoryTest extends TestCase
             'name' => $name,
             'real_name' => $realName,
             'agency_id' => $agencyId,
-            'group_identifiers' => json_encode($groupIdentifiers, JSON_THROW_ON_ERROR),
+            'group_identifiers' => $groupIdentifiers,
             'birthday' => $birthday,
             'career' => $career,
             'image_link' => $imageLink,
-            'relevant_video_links' => json_encode($relevantVideoLinks, JSON_THROW_ON_ERROR),
+            'relevant_video_links' => $relevantVideoLinks,
             'status' => $status->value,
-        ], 'id');
+        ]);
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $draft = $repository->findDraftById(new TalentIdentifier($id));
@@ -209,26 +207,21 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftByIdWhenBirthdayIsNull(): void
     {
         $id = StrTestHelper::generateUuid();
 
-        DB::table('draft_talents')->upsert([
-            'id' => $id,
-            'published_id' => StrTestHelper::generateUuid(),
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'editor_id' => StrTestHelper::generateUuid(),
-            'language' => Language::ENGLISH->value,
-            'name' => 'Draft Talent',
-            'real_name' => 'Draft Real Name',
+        CreateDraftTalent::create($id, [
+            'language' => Language::KOREAN->value,
+            'name' => '현진',
+            'real_name' => '황현진',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
+            'group_identifiers' => [StrTestHelper::generateUuid()],
             'birthday' => null,
-            'career' => 'Draft Career',
-            'image_link' => '/images/draft.png',
-            'relevant_video_links' => json_encode([], JSON_THROW_ON_ERROR),
-            'status' => ApprovalStatus::Pending->value,
-        ], 'id');
+            'career' => 'Stray Kids main dancer and lead rapper.',
+            'image_link' => '/images/talents/hyunjin.jpg',
+        ]);
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $draft = $repository->findDraftById(new TalentIdentifier($id));
@@ -243,6 +236,7 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftByIdWhenNoDraftTalent(): void
     {
         $repository = $this->app->make(TalentRepositoryInterface::class);
@@ -258,25 +252,26 @@ class TalentRepositoryTest extends TestCase
      * @throws BindingResolutionException
      * @throws JsonException
      */
+    #[Group('useDb')]
     public function testSave(): void
     {
         $talent = new Talent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new TalentName('채영'),
-            new RealName('손채영'),
+            new TalentName('한'),
+            new RealName('지성'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUuid()),
                 new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
-            new Birthday(new DateTimeImmutable('1999-04-23')),
-            new Career('TWICEメンバー'),
-            new ImagePath('/images/chaeyoung.webp'),
+            new Birthday(new DateTimeImmutable('2000-09-14')),
+            new Career('Stray Kids lead vocalist and main rapper. Member of 3RACHA.'),
+            new ImagePath('/images/talents/han.jpg'),
             new RelevantVideoLinks([
-                new ExternalContentLink('https://example.com/video1'),
-                new ExternalContentLink('https://example.com/video2'),
+                new ExternalContentLink('https://www.youtube.com/watch?v=EaswWiwMVs8'),
+                new ExternalContentLink('https://www.youtube.com/watch?v=dcNRbbQBJUE'),
             ]),
             new Version(4),
         );
@@ -326,6 +321,7 @@ class TalentRepositoryTest extends TestCase
      * @throws BindingResolutionException
      * @throws JsonException
      */
+    #[Group('useDb')]
     public function testSaveDraft(): void
     {
         $draft = new DraftTalent(
@@ -333,16 +329,16 @@ class TalentRepositoryTest extends TestCase
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::ENGLISH,
-            new TalentName('Chaeyoung'),
-            new RealName('Son Chaeyoung'),
+            Language::KOREAN,
+            new TalentName('필릭스'),
+            new RealName('이용복'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [new GroupIdentifier(StrTestHelper::generateUuid())],
-            new Birthday(new DateTimeImmutable('1999-04-23')),
-            new Career('TWICE member'),
-            new ImagePath('/images/draft.webp'),
+            new Birthday(new DateTimeImmutable('2000-09-15')),
+            new Career('Stray Kids lead dancer and sub-rapper. Known for his deep voice.'),
+            new ImagePath('/images/talents/felix.jpg'),
             new RelevantVideoLinks([
-                new ExternalContentLink('https://example.com/draft'),
+                new ExternalContentLink('https://www.youtube.com/watch?v=EaswWiwMVs8'),
             ]),
             ApprovalStatus::UnderReview,
         );
@@ -393,6 +389,7 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testDeleteDraft(): void
     {
         $id = StrTestHelper::generateUuid();
@@ -402,19 +399,18 @@ class TalentRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new TalentName('삭제용タレント'),
-            new RealName('삭제本名'),
+            new TalentName('승민'),
+            new RealName('김승민'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [new GroupIdentifier(StrTestHelper::generateUuid())],
-            new Birthday(new DateTimeImmutable('1995-05-05')),
-            new Career('削除予定'),
+            new Birthday(new DateTimeImmutable('2000-09-22')),
+            new Career('Stray Kids lead vocalist.'),
             null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );
 
-        DB::table('draft_talents')->insert([
-            'id' => $id,
+        CreateDraftTalent::create($id, [
             'published_id' => (string) $draft->publishedTalentIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
             'editor_id' => (string) $draft->editorIdentifier(),
@@ -422,16 +418,12 @@ class TalentRepositoryTest extends TestCase
             'name' => (string) $draft->name(),
             'real_name' => (string) $draft->realName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
-            'group_identifiers' => json_encode(
-                array_map(
-                    static fn (GroupIdentifier $identifier): string => (string) $identifier,
-                    $draft->groupIdentifiers(),
-                ),
-                JSON_THROW_ON_ERROR,
+            'group_identifiers' => array_map(
+                static fn (GroupIdentifier $identifier): string => (string) $identifier,
+                $draft->groupIdentifiers(),
             ),
             'birthday' => $draft->birthday()?->format('Y-m-d'),
             'career' => (string) $draft->career(),
-            'relevant_video_links' => json_encode([], JSON_THROW_ON_ERROR),
             'status' => $draft->status()->value,
         ]);
 
@@ -449,73 +441,74 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftsByTranslationSet(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
+        $draft1Id = StrTestHelper::generateUuid();
         $draft1 = [
-            'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::KOREAN->value,
-            'name' => '드래프트1',
-            'real_name' => '본명1',
+            'name' => '아이엔',
+            'real_name' => '양정인',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
-            'birthday' => '1991-06-01',
-            'career' => '커리어1',
+            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'birthday' => '2001-02-08',
+            'career' => 'Stray Kids youngest member (maknae) and vocalist.',
             'status' => ApprovalStatus::Pending->value,
         ];
 
+        $draft2Id = StrTestHelper::generateUuid();
         $draft2 = [
-            'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
-            'name' => 'ドラフト2',
-            'real_name' => '本名2',
+            'name' => 'アイエン',
+            'real_name' => 'ヤン・ジョンイン',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
-            'birthday' => '1992-07-02',
-            'career' => 'キャリア2',
+            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'birthday' => '2001-02-08',
+            'career' => 'Stray Kidsの末っ子でボーカル担当。',
             'status' => ApprovalStatus::Approved->value,
         ];
 
+        $otherDraftId = StrTestHelper::generateUuid();
         $otherDraft = [
-            'id' => StrTestHelper::generateUuid(),
-            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
-            'name' => 'Other',
-            'real_name' => 'Other Real',
+            'name' => 'Karina',
+            'real_name' => 'Yu Ji-min',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
-            'birthday' => '1999-09-09',
-            'career' => 'Other career',
+            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'birthday' => '2000-04-11',
+            'career' => 'aespa leader, main dancer, lead vocalist, and center.',
             'status' => ApprovalStatus::Pending->value,
         ];
 
-        DB::table('draft_talents')->insert([$draft1, $draft2, $otherDraft]);
+        CreateDraftTalent::create($draft1Id, $draft1);
+        CreateDraftTalent::create($draft2Id, $draft2);
+        CreateDraftTalent::create($otherDraftId, $otherDraft);
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet($translationSetIdentifier);
 
         $this->assertCount(2, $drafts);
         $draftIds = array_map(static fn (DraftTalent $draft): string => (string) $draft->talentIdentifier(), $drafts);
-        $this->assertContains($draft1['id'], $draftIds);
-        $this->assertContains($draft2['id'], $draftIds);
-        $this->assertNotContains($otherDraft['id'], $draftIds);
+        $this->assertContains($draft1Id, $draftIds);
+        $this->assertContains($draft2Id, $draftIds);
+        $this->assertNotContains($otherDraftId, $draftIds);
 
         $birthdayMap = [];
         foreach ($drafts as $draft) {
             $birthdayMap[(string) $draft->talentIdentifier()] = $draft->birthday()?->format('Y-m-d');
         }
 
-        $this->assertSame('1991-06-01', $birthdayMap[$draft1['id']]);
-        $this->assertSame('1992-07-02', $birthdayMap[$draft2['id']]);
+        $this->assertSame('2001-02-08', $birthdayMap[$draft1Id]);
+        $this->assertSame('2001-02-08', $birthdayMap[$draft2Id]);
     }
 
     /**
@@ -524,6 +517,7 @@ class TalentRepositoryTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
+    #[Group('useDb')]
     public function testFindDraftsByTranslationSetWhenNoDrafts(): void
     {
         $repository = $this->app->make(TalentRepositoryInterface::class);
