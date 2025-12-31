@@ -6,17 +6,15 @@ namespace Tests\Wiki\Talent\Infrastructure\Adapters\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group;
-use ReflectionClass;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -29,7 +27,6 @@ use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
-use Source\Wiki\Talent\Infrastracture\Adapters\Repository\TalentRepository;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,13 +41,13 @@ class TalentRepositoryTest extends TestCase
      */
     public function testFindById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $translationSetId = StrTestHelper::generateUuid();
         $translation = Language::JAPANESE;
         $name = 'タレント';
         $realName = '本名タレント';
-        $agencyId = StrTestHelper::generateUlid();
-        $groupIdentifiers = [StrTestHelper::generateUlid(), StrTestHelper::generateUlid()];
+        $agencyId = StrTestHelper::generateUuid();
+        $groupIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $birthday = '1990-01-01';
         $career = '経歴サンプル';
         $imageLink = '/images/talent.png';
@@ -103,16 +100,16 @@ class TalentRepositoryTest extends TestCase
      */
     public function testFindByIdWhenBirthdayIsNull(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
         DB::table('talents')->upsert([
             'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
             'name' => 'タレント',
             'real_name' => '本名タレント',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUlid()], JSON_THROW_ON_ERROR),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
             'birthday' => null,
             'career' => '経歴サンプル',
             'image_link' => '/images/talent.png',
@@ -136,7 +133,7 @@ class TalentRepositoryTest extends TestCase
     public function testFindByIdWhenNoTalent(): void
     {
         $repository = $this->app->make(TalentRepositoryInterface::class);
-        $talent = $repository->findById(new TalentIdentifier(StrTestHelper::generateUlid()));
+        $talent = $repository->findById(new TalentIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($talent);
     }
@@ -149,15 +146,15 @@ class TalentRepositoryTest extends TestCase
      */
     public function testFindDraftById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $publishedId = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
-        $editorId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $publishedId = StrTestHelper::generateUuid();
+        $translationSetId = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
         $translation = Language::ENGLISH;
         $name = 'Talent Draft';
         $realName = 'Real Name';
-        $agencyId = StrTestHelper::generateUlid();
-        $groupIdentifiers = [StrTestHelper::generateUlid()];
+        $agencyId = StrTestHelper::generateUuid();
+        $groupIdentifiers = [StrTestHelper::generateUuid()];
         $birthday = '1992-02-02';
         $career = 'Draft Career';
         $imageLink = '/images/draft.png';
@@ -214,18 +211,18 @@ class TalentRepositoryTest extends TestCase
      */
     public function testFindDraftByIdWhenBirthdayIsNull(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
         DB::table('draft_talents')->upsert([
             'id' => $id,
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+            'published_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'name' => 'Draft Talent',
             'real_name' => 'Draft Real Name',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUlid()], JSON_THROW_ON_ERROR),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
             'birthday' => null,
             'career' => 'Draft Career',
             'image_link' => '/images/draft.png',
@@ -249,7 +246,7 @@ class TalentRepositoryTest extends TestCase
     public function testFindDraftByIdWhenNoDraftTalent(): void
     {
         $repository = $this->app->make(TalentRepositoryInterface::class);
-        $draft = $repository->findDraftById(new TalentIdentifier(StrTestHelper::generateUlid()));
+        $draft = $repository->findDraftById(new TalentIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($draft);
     }
@@ -264,15 +261,15 @@ class TalentRepositoryTest extends TestCase
     public function testSave(): void
     {
         $talent = new Talent(
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('채영'),
             new RealName('손채영'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUlid()),
-                new GroupIdentifier(StrTestHelper::generateUlid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
+                new GroupIdentifier(StrTestHelper::generateUuid()),
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
@@ -332,15 +329,15 @@ class TalentRepositoryTest extends TestCase
     public function testSaveDraft(): void
     {
         $draft = new DraftTalent(
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new TalentName('Chaeyoung'),
             new RealName('Son Chaeyoung'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            [new GroupIdentifier(StrTestHelper::generateUlid())],
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICE member'),
             new ImagePath('/images/draft.webp'),
@@ -398,17 +395,17 @@ class TalentRepositoryTest extends TestCase
      */
     public function testDeleteDraft(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
         $draft = new DraftTalent(
             new TalentIdentifier($id),
-            new TalentIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
-            new EditorIdentifier(StrTestHelper::generateUlid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('삭제용タレント'),
             new RealName('삭제本名'),
-            new AgencyIdentifier(StrTestHelper::generateUlid()),
-            [new GroupIdentifier(StrTestHelper::generateUlid())],
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1995-05-05')),
             new Career('削除予定'),
             null,
@@ -454,48 +451,48 @@ class TalentRepositoryTest extends TestCase
      */
     public function testFindDraftsByTranslationSet(): void
     {
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draft1 = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'editor_id' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::KOREAN->value,
             'name' => '드래프트1',
             'real_name' => '본명1',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUlid()], JSON_THROW_ON_ERROR),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
             'birthday' => '1991-06-01',
             'career' => '커리어1',
             'status' => ApprovalStatus::Pending->value,
         ];
 
         $draft2 = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'editor_id' => StrTestHelper::generateUlid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
             'name' => 'ドラフト2',
             'real_name' => '本名2',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUlid()], JSON_THROW_ON_ERROR),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
             'birthday' => '1992-07-02',
             'career' => 'キャリア2',
             'status' => ApprovalStatus::Approved->value,
         ];
 
         $otherDraft = [
-            'id' => StrTestHelper::generateUlid(),
-            'published_id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
-            'editor_id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'published_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'name' => 'Other',
             'real_name' => 'Other Real',
-            'agency_id' => StrTestHelper::generateUlid(),
-            'group_identifiers' => json_encode([StrTestHelper::generateUlid()], JSON_THROW_ON_ERROR),
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => json_encode([StrTestHelper::generateUuid()], JSON_THROW_ON_ERROR),
             'birthday' => '1999-09-09',
             'career' => 'Other career',
             'status' => ApprovalStatus::Pending->value,
@@ -531,49 +528,10 @@ class TalentRepositoryTest extends TestCase
     {
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet(
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertIsArray($drafts);
         $this->assertEmpty($drafts);
-    }
-
-    /**
-     * 正常系：DateTimeInterface 実装（Carbon）を渡した場合でも DateTimeImmutable に変換されること.
-     */
-    public function testCreateBirthdayConvertsMutableDateTimeInstance(): void
-    {
-        $repository = new TalentRepository();
-        $reflection = new ReflectionClass($repository);
-        $method = $reflection->getMethod('createBirthday');
-        $method->setAccessible(true);
-
-        $carbonBirthday = Carbon::parse('1999-12-31');
-
-        /** @var Birthday $birthday */
-        $birthday = $method->invoke($repository, $carbonBirthday);
-
-        $this->assertInstanceOf(Birthday::class, $birthday);
-        $this->assertInstanceOf(DateTimeImmutable::class, $birthday->value());
-        $this->assertSame('1999-12-31', $birthday->format('Y-m-d'));
-    }
-
-    /**
-     * 正常系：DateTimeImmutable を渡した場合は同一インスタンスが利用されること.
-     */
-    public function testCreateBirthdayKeepsImmutableInstance(): void
-    {
-        $repository = new TalentRepository();
-        $reflection = new ReflectionClass($repository);
-        $method = $reflection->getMethod('createBirthday');
-        $method->setAccessible(true);
-
-        $immutableBirthday = new DateTimeImmutable('1988-01-01');
-
-        /** @var Birthday $birthday */
-        $birthday = $method->invoke($repository, $immutableBirthday);
-
-        $this->assertInstanceOf(Birthday::class, $birthday);
-        $this->assertSame($immutableBirthday, $birthday->value());
     }
 }

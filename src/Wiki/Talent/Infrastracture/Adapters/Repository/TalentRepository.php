@@ -6,13 +6,11 @@ namespace Source\Wiki\Talent\Infrastracture\Adapters\Repository;
 
 use Application\Models\Wiki\DraftTalent as DraftTalentModel;
 use Application\Models\Wiki\Talent as TalentModel;
-use DateTimeImmutable;
-use DateTimeInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -43,8 +41,6 @@ final class TalentRepository implements TalentRepositoryInterface
             $groupIdentifiers[] = new GroupIdentifier($identifier);
         }
 
-        $birthday = $this->createBirthday($talentModel->birthday);
-
         $relevantVideoLinks = RelevantVideoLinks::formStringArray($talentModel->relevant_video_links ?? []);
 
         return new Talent(
@@ -55,7 +51,7 @@ final class TalentRepository implements TalentRepositoryInterface
             new RealName($talentModel->real_name),
             $talentModel->agency_id ? new AgencyIdentifier($talentModel->agency_id) : null,
             $groupIdentifiers,
-            $birthday,
+            $talentModel->birthday ? new Birthday($talentModel->birthday->toDateTimeImmutable()) : null,
             new Career($talentModel->career),
             $talentModel->image_link ? new ImagePath($talentModel->image_link) : null,
             $relevantVideoLinks,
@@ -108,21 +104,19 @@ final class TalentRepository implements TalentRepositoryInterface
             $groupIdentifiers[] = new GroupIdentifier($identifier);
         }
 
-        $birthday = $this->createBirthday($draftModel->birthday);
-
         $relevantVideoLinks = RelevantVideoLinks::formStringArray($draftModel->relevant_video_links ?? []);
 
         return new DraftTalent(
             new TalentIdentifier($draftModel->id),
             $draftModel->published_id ? new TalentIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
-            new EditorIdentifier($draftModel->editor_id),
+            new PrincipalIdentifier($draftModel->editor_id),
             Language::from($draftModel->language),
             new TalentName($draftModel->name),
             new RealName($draftModel->real_name),
             $draftModel->agency_id ? new AgencyIdentifier($draftModel->agency_id) : null,
             $groupIdentifiers,
-            $birthday,
+            $draftModel->birthday ? new Birthday($draftModel->birthday->toDateTimeImmutable()) : null,
             new Career($draftModel->career),
             $draftModel->image_link ? new ImagePath($draftModel->image_link) : null,
             $relevantVideoLinks,
@@ -180,13 +174,12 @@ final class TalentRepository implements TalentRepositoryInterface
 
         $drafts = [];
 
+        /** @var DraftTalentModel $model */
         foreach ($draftModels as $model) {
             $groupIdentifiers = [];
             foreach (($model->group_identifiers ?? []) as $identifier) {
                 $groupIdentifiers[] = new GroupIdentifier($identifier);
             }
-
-            $birthday = $this->createBirthday($model->birthday);
 
             $relevantVideoLinks = RelevantVideoLinks::formStringArray($model->relevant_video_links ?? []);
 
@@ -194,13 +187,13 @@ final class TalentRepository implements TalentRepositoryInterface
                 new TalentIdentifier($model->id),
                 $model->published_id ? new TalentIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
-                new EditorIdentifier($model->editor_id),
+                new PrincipalIdentifier($model->editor_id),
                 Language::from($model->language),
                 new TalentName($model->name),
                 new RealName($model->real_name),
                 $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
                 $groupIdentifiers,
-                $birthday,
+                $model->birthday ? new Birthday($model->birthday->toDateTimeImmutable()) : null,
                 new Career($model->career),
                 $model->image_link ? new ImagePath($model->image_link) : null,
                 $relevantVideoLinks,
@@ -209,18 +202,5 @@ final class TalentRepository implements TalentRepositoryInterface
         }
 
         return $drafts;
-    }
-
-    private function createBirthday(?DateTimeInterface $birthdayValue): ?Birthday
-    {
-        if ($birthdayValue === null) {
-            return null;
-        }
-
-        $immutableBirthday = $birthdayValue instanceof DateTimeImmutable
-            ? $birthdayValue
-            : DateTimeImmutable::createFromInterface($birthdayValue);
-
-        return new Birthday($immutableBirthday);
     }
 }

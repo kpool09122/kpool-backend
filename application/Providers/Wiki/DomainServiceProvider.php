@@ -57,16 +57,16 @@ use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
-use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
+use Source\Wiki\Talent\Infrastracture\Adapters\Repository\TalentRepository;
 use Source\Wiki\Talent\Infrastructure\Adapters\Repository\TalentSnapshotRepository;
 use Source\Wiki\Talent\Infrastructure\Factory\DraftTalentFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentHistoryFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentSnapshotFactory;
-use Source\Wiki\Talent\Infrastracture\Adapters\Repository\TalentRepository;
 
 class DomainServiceProvider extends ServiceProvider
 {

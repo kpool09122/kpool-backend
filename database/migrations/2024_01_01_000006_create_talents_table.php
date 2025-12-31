@@ -18,13 +18,14 @@ return new class extends Migration
             $table->string('name', 32)->comment('タレント名');
             $table->string('real_name', 32)->comment('本名')->default('');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('group_identifiers')->comment('所属グループリスト')->default('[]');
+            $table->json('group_identifiers')->comment('所属グループIDリスト')->default('[]');
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
-            $table->json('relevant_video_links')->comment('関連動画リンク')->default('[]');
+            $table->json('relevant_video_links')->comment('関連動画リン一覧')->default('[]');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('draft_talents', static function (Blueprint $table) {
@@ -36,11 +37,11 @@ return new class extends Migration
             $table->string('name', 32)->comment('タレント名');
             $table->string('real_name', 32)->comment('本名')->default('');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('group_identifiers')->comment('所属グループリスト')->default('[]');
+            $table->json('group_identifiers')->comment('所属グループID一覧')->default('[]');
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
-            $table->json('relevant_video_links')->comment('関連動画リンク')->default('[]');
+            $table->json('relevant_video_links')->comment('関連動画リンク一覧')->default('[]');
             $table->text('status')->comment('公開ステータス');
             $table->timestamps();
         });
@@ -53,11 +54,11 @@ return new class extends Migration
             $table->string('name', 32)->comment('タレント名');
             $table->string('real_name', 32)->comment('本名')->default('');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('group_identifiers')->comment('所属グループリスト')->default('[]');
+            $table->json('group_identifiers')->comment('所属グループID一覧')->default('[]');
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
-            $table->json('relevant_video_links')->comment('関連動画リンク')->default('[]');
+            $table->json('relevant_video_links')->comment('関連動画リンク一覧')->default('[]');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->dateTime('created_at')->comment('作成日時');
 
