@@ -17,7 +17,6 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -40,7 +39,6 @@ class GroupRepositoryTest extends TestCase
         $normalizedName = 'stray kids';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'K-pop boy group.';
-        $songIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $imagePath = '/images/groups/skz.png';
         $version = 3;
 
@@ -52,7 +50,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
-            'song_identifiers' => json_encode($songIds),
             'image_path' => $imagePath,
             'version' => $version,
         ], 'id');
@@ -70,10 +67,6 @@ class GroupRepositoryTest extends TestCase
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($imagePath, (string) $group->imagePath());
         $this->assertSame($version, $group->version()->value());
-        $this->assertSame(
-            $songIds,
-            array_map(static fn (SongIdentifier $identifier): string => (string) $identifier, $group->songIdentifiers()),
-        );
     }
 
     /**
@@ -103,7 +96,6 @@ class GroupRepositoryTest extends TestCase
         $normalizedName = 'stray kids en draft';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'English draft';
-        $songIds = [StrTestHelper::generateUuid()];
         $imagePath = '/images/groups/skz-en.png';
         $status = ApprovalStatus::Pending;
 
@@ -117,7 +109,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
-            'song_identifiers' => json_encode($songIds),
             'image_path' => $imagePath,
             'status' => $status->value,
         ], 'id');
@@ -136,10 +127,6 @@ class GroupRepositoryTest extends TestCase
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($status, $group->status());
-        $this->assertSame(
-            $songIds,
-            array_map(static fn (SongIdentifier $identifier): string => (string) $identifier, $group->songIdentifiers()),
-        );
         $this->assertSame($imagePath, (string) $group->imagePath());
     }
 
@@ -169,10 +156,6 @@ class GroupRepositoryTest extends TestCase
             'twice',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Girl group'),
-            [
-                new SongIdentifier(StrTestHelper::generateUuid()),
-                new SongIdentifier(StrTestHelper::generateUuid()),
-            ],
             new ImagePath('/images/groups/twice.png'),
             new Version(5),
         );
@@ -208,7 +191,6 @@ class GroupRepositoryTest extends TestCase
             'newjeans',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('New draft'),
-            [new SongIdentifier(StrTestHelper::generateUuid())],
             new ImagePath('/images/groups/nj.png'),
             ApprovalStatus::UnderReview,
         );
@@ -247,7 +229,6 @@ class GroupRepositoryTest extends TestCase
             'さくじょたいしょう',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Delete me'),
-            [new SongIdentifier(StrTestHelper::generateUuid())],
             null,
             ApprovalStatus::Pending,
         );
@@ -262,9 +243,9 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => $draft->normalizedName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
-            'song_identifiers' => json_encode([(string) $draft->songIdentifiers()[0]]),
             'status' => $draft->status()->value,
         ]);
+
         $repository = $this->app->make(GroupRepositoryInterface::class);
         $repository->deleteDraft($draft);
 
@@ -291,7 +272,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => 'ㄷㄹㅍㅌ1',
             'agency_id' => StrTestHelper::generateUuid(),
             'description' => '첫번째',
-            'song_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'status' => ApprovalStatus::Pending->value,
         ];
 
@@ -305,7 +285,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => 'どらふと2',
             'agency_id' => StrTestHelper::generateUuid(),
             'description' => '二件目',
-            'song_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'status' => ApprovalStatus::Approved->value,
         ];
 
@@ -319,7 +298,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => 'other',
             'agency_id' => StrTestHelper::generateUuid(),
             'description' => 'Other set',
-            'song_identifiers' => json_encode([StrTestHelper::generateUuid()]),
             'status' => ApprovalStatus::Pending->value,
         ];
 

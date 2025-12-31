@@ -11,7 +11,6 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Group
@@ -24,7 +23,6 @@ class Group
      * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param list<SongIdentifier> $songIdentifiers
      * @param ImagePath|null $imagePath
      * @param Version $version
      */
@@ -36,7 +34,6 @@ class Group
         private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
-        private array                             $songIdentifiers,
         private ?ImagePath                        $imagePath,
         private Version                           $version,
     ) {
@@ -95,23 +92,6 @@ class Group
     public function setDescription(Description $description): void
     {
         $this->description = $description;
-    }
-
-    /**
-     * @return list<SongIdentifier>
-     */
-    public function songIdentifiers(): array
-    {
-        return $this->songIdentifiers;
-    }
-
-    /**
-     * @param list<SongIdentifier> $songIdentifiers
-     * @return void
-     */
-    public function setSongIdentifiers(array $songIdentifiers): void
-    {
-        $this->songIdentifiers = $songIdentifiers;
     }
 
     public function imagePath(): ?ImagePath

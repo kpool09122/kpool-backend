@@ -32,7 +32,6 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
@@ -168,7 +167,6 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$dummyPublishGroup->name, (string)$publishedGroup->name());
         $this->assertSame((string)$dummyPublishGroup->normalizedName, (string)$publishedGroup->normalizedName());
         $this->assertSame((string)$dummyPublishGroup->description, (string)$publishedGroup->description());
-        $this->assertSame($dummyPublishGroup->songIdentifiers, $publishedGroup->songIdentifiers());
         $this->assertSame((string)$dummyPublishGroup->imagePath, (string)$publishedGroup->imagePath());
         $this->assertSame($dummyPublishGroup->publishedVersion->value() + 1, $publishedGroup->version()->value());
     }
@@ -265,7 +263,6 @@ class PublishGroupTest extends TestCase
         $this->assertSame((string)$dummyPublishGroup->agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$dummyPublishGroup->agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$dummyPublishGroup->description, (string)$publishedGroup->description());
-        $this->assertSame($dummyPublishGroup->songIdentifiers, $publishedGroup->songIdentifiers());
         $this->assertSame((string)$dummyPublishGroup->imagePath, (string)$publishedGroup->imagePath());
         $this->assertSame($dummyPublishGroup->version->value(), $publishedGroup->version()->value());
     }
@@ -1204,11 +1201,6 @@ class PublishGroupTest extends TestCase
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
 그룹명은 \'좋은 음악으로 한번, 멋진 퍼포먼스로 두 번 감동을 준다\'는 의미를 담고 있습니다. 그 이름처럼 데뷔곡 \'OOH-AHH하게\' 이후, \'CHEER UP\', \'TT\', \'LIKEY\', \'What is Love?\', \'FANCY\' 등 수많은 히트곡을 연달아 발표했습니다. 특히 \'TT\'에서 보여준 우는 표정을 표현한 \'TT 포즈\'는 일본에서도 사회 현상이 될 정도로 큰 인기를 얻었습니다.
 데뷔 초의 밝고 귀여운 콘셉트에서 해마다 성장을 거듭하며, 세련되고 멋진 퍼포먼스까지 다채로운 모습을 보여주고 있습니다. 중독성 있는 멜로디와 따라 하기 쉬운 안무가 특징으로, 폭넓은 세대로부터 지지를 받고 있습니다. 한국이나 일본뿐만 아니라, 세계적인 스타디움 투어를 성공시키는 등 K팝을 대표하는 최정상 그룹으로서 지금도 전 세계 팬들을 계속해서 사로잡고 있습니다. 팬덤명은 \'원스(ONCE)\'입니다.');
-        $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUuid()),
-            new SongIdentifier(StrTestHelper::generateUuid()),
-            new SongIdentifier(StrTestHelper::generateUuid()),
-        ];
         $imagePath = new ImagePath('/resources/public/images/after.webp');
 
         $draftGroup = new DraftGroup(
@@ -1221,7 +1213,6 @@ class PublishGroupTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $songIdentifiers,
             $imagePath,
             $status,
         );
@@ -1236,10 +1227,6 @@ class PublishGroupTest extends TestCase
 **주요 활동 및 음악 스타일:**
 데뷔곡 \'Black Mamba\'를 시작으로 \'Next Level\', \'Savage\', \'Drama\' 등 발표하는 곡마다 강렬하고 미래지향적인 사운드와 함께 독자적인 세계관을 담은 가사로 큰 사랑을 받고 있습니다. 특히, 가상 세계 \'광야(KWANGYA)\'에서 조력자 \'nævis\'와 함께 악의 존재인 \'Black Mamba\'와 맞서 싸우는 스토리는 에스파의 핵심 서사입니다.
 이처럼 에스파는 단순한 아이돌 그룹을 넘어, 메타버스라는 새로운 영역을 K팝에 접목시키며 전 세계 팬들에게 신선한 충격을 안겨주고 있는 그룹입니다.');
-        $exSongIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUuid()),
-            new SongIdentifier(StrTestHelper::generateUuid()),
-        ];
         $exImagePath = new ImagePath('/resources/public/images/after.webp');
         $publishedVersion = new Version(1);
         $publishedGroup = new Group(
@@ -1250,7 +1237,6 @@ class PublishGroupTest extends TestCase
             'aespa',
             $exAgencyIdentifier,
             $exDescription,
-            $exSongIdentifiers,
             $exImagePath,
             $publishedVersion,
         );
@@ -1265,7 +1251,6 @@ class PublishGroupTest extends TestCase
             $normalizedName,
             null,
             new Description(''),
-            [],
             null,
             $version,
         );
@@ -1293,7 +1278,6 @@ class PublishGroupTest extends TestCase
             $publishedGroup->normalizedName(),
             $publishedGroup->agencyIdentifier(),
             $publishedGroup->description(),
-            $publishedGroup->songIdentifiers(),
             $publishedGroup->imagePath(),
             $publishedGroup->version(),
             new \DateTimeImmutable('2024-01-01 00:00:00'),
@@ -1308,7 +1292,6 @@ class PublishGroupTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $songIdentifiers,
             $imagePath,
             $status,
             $translationSetIdentifier,
@@ -1331,7 +1314,6 @@ readonly class PublishGroupTestData
 {
     /**
      * テストデータなので、すべてpublicで定義
-     * @param SongIdentifier[] $songIdentifiers
      */
     public function __construct(
         public GroupIdentifier          $groupIdentifier,
@@ -1342,7 +1324,6 @@ readonly class PublishGroupTestData
         public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
-        public array                    $songIdentifiers,
         public ImagePath                $imagePath,
         public ApprovalStatus           $status,
         public TranslationSetIdentifier $translationSetIdentifier,

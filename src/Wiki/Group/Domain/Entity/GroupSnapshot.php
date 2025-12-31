@@ -13,7 +13,6 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupSnapshot
@@ -27,7 +26,6 @@ readonly class GroupSnapshot
      * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param list<SongIdentifier> $songIdentifiers
      * @param ImagePath|null $imagePath
      * @param Version $version
      * @param DateTimeImmutable $createdAt
@@ -41,7 +39,6 @@ readonly class GroupSnapshot
         private string                   $normalizedName,
         private ?AgencyIdentifier        $agencyIdentifier,
         private Description              $description,
-        private array                    $songIdentifiers,
         private ?ImagePath               $imagePath,
         private Version                  $version,
         private DateTimeImmutable        $createdAt,
@@ -86,14 +83,6 @@ readonly class GroupSnapshot
     public function description(): Description
     {
         return $this->description;
-    }
-
-    /**
-     * @return list<SongIdentifier>
-     */
-    public function songIdentifiers(): array
-    {
-        return $this->songIdentifiers;
     }
 
     public function imagePath(): ?ImagePath

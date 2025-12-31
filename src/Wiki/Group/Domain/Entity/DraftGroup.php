@@ -11,7 +11,6 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
@@ -27,7 +26,6 @@ class DraftGroup
      * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param SongIdentifier[] $songIdentifiers
      * @param ImagePath|null $imagePath
      * @param ApprovalStatus $status
      */
@@ -41,7 +39,6 @@ class DraftGroup
         private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
-        private array                             $songIdentifiers,
         private ?ImagePath                        $imagePath,
         private ApprovalStatus                    $status,
     ) {
@@ -115,23 +112,6 @@ class DraftGroup
     public function setDescription(Description $description): void
     {
         $this->description = $description;
-    }
-
-    /**
-     * @return list<SongIdentifier>
-     */
-    public function songIdentifiers(): array
-    {
-        return $this->songIdentifiers;
-    }
-
-    /**
-     * @param list<SongIdentifier> $songIdentifiers
-     * @return void
-     */
-    public function setSongIdentifiers(array $songIdentifiers): void
-    {
-        $this->songIdentifiers = $songIdentifiers;
     }
 
     public function imagePath(): ?ImagePath

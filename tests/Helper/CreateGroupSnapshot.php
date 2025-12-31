@@ -17,7 +17,6 @@ class CreateGroupSnapshot
      *     normalized_name?: string,
      *     agency_id?: ?string,
      *     description?: string,
-     *     song_identifiers?: array<int, string>,
      *     image_path?: ?string,
      *     version?: int,
      *     created_at?: string
@@ -34,7 +33,6 @@ class CreateGroupSnapshot
             'normalized_name' => $overrides['normalized_name'] ?? 'twice',
             'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
             'description' => $overrides['description'] ?? 'TWICE is a South Korean girl group.',
-            'song_identifiers' => json_encode($overrides['song_identifiers'] ?? []),
             'image_path' => $overrides['image_path'] ?? '/resources/public/images/twice.webp',
             'version' => $overrides['version'] ?? 1,
             'created_at' => $overrides['created_at'] ?? '2024-01-01 00:00:00',

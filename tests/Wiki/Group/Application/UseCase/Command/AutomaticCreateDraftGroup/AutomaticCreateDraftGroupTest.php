@@ -20,7 +20,6 @@ use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
@@ -188,10 +187,6 @@ class AutomaticCreateDraftGroupTest extends TestCase
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated group profile'),
-            [
-                new SongIdentifier(StrTestHelper::generateUuid()),
-                new SongIdentifier(StrTestHelper::generateUuid()),
-            ],
             new AutomaticDraftGroupSource('news::12345'),
         );
     }
@@ -213,10 +208,6 @@ class AutomaticCreateDraftGroupTest extends TestCase
             'twice',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated group'),
-            [
-                new SongIdentifier(StrTestHelper::generateUuid()),
-                new SongIdentifier(StrTestHelper::generateUuid()),
-            ],
             null,
             ApprovalStatus::Pending,
         );

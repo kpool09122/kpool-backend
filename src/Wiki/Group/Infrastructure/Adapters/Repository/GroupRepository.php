@@ -16,7 +16,6 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -51,7 +50,7 @@ final class GroupRepository implements GroupRepositoryInterface
 
     public function save(Group $group): void
     {
-        GroupModel::query()->updateOrCreate(
+        $groupModel = GroupModel::query()->updateOrCreate(
             [
                 'id' => (string) $group->groupIdentifier(),
             ],
@@ -62,7 +61,6 @@ final class GroupRepository implements GroupRepositoryInterface
                 'normalized_name' => $group->normalizedName(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
-                'song_identifiers' => $this->fromSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'version' => $group->version()->value(),
             ],
@@ -71,7 +69,7 @@ final class GroupRepository implements GroupRepositoryInterface
 
     public function saveDraft(DraftGroup $group): void
     {
-        DraftGroupModel::query()->updateOrCreate(
+        $draftModel = DraftGroupModel::query()->updateOrCreate(
             [
                 'id' => (string) $group->groupIdentifier(),
             ],
@@ -86,7 +84,6 @@ final class GroupRepository implements GroupRepositoryInterface
                 'normalized_name' => $group->normalizedName(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
-                'song_identifiers' => $this->fromSongIdentifiers($group->songIdentifiers()),
                 'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'status' => $group->status()->value,
             ],
@@ -112,32 +109,6 @@ final class GroupRepository implements GroupRepositoryInterface
             ->toArray();
     }
 
-    /**
-     * @param array<int, string>|null $songIdentifiers
-     * @return SongIdentifier[]
-     */
-    private function toSongIdentifiers(?array $songIdentifiers): array
-    {
-        $identifiers = $songIdentifiers ?? [];
-
-        return array_map(
-            static fn (string $songId): SongIdentifier => new SongIdentifier($songId),
-            $identifiers,
-        );
-    }
-
-    /**
-     * @param SongIdentifier[] $songIdentifiers
-     * @return string[]
-     */
-    private function fromSongIdentifiers(array $songIdentifiers): array
-    {
-        return array_map(
-            static fn (SongIdentifier $identifier): string => (string) $identifier,
-            $songIdentifiers,
-        );
-    }
-
     private function toEntity(GroupModel $model): Group
     {
         return new Group(
@@ -148,7 +119,6 @@ final class GroupRepository implements GroupRepositoryInterface
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $this->toSongIdentifiers($model->song_identifiers),
             $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version ?? 1),
         );
@@ -166,7 +136,6 @@ final class GroupRepository implements GroupRepositoryInterface
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $this->toSongIdentifiers($model->song_identifiers),
             $model->image_path ? new ImagePath($model->image_path) : null,
             ApprovalStatus::from($model->status),
         );

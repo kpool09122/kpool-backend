@@ -60,7 +60,6 @@ readonly class CreateGroup implements CreateGroupInterface
         }
         $group->setAgencyIdentifier($input->agencyIdentifier());
         $group->setDescription($input->description());
-        $group->setSongIdentifiers($input->songIdentifiers());
         if ($input->base64EncodedImage()) {
             $imageLink = $this->imageService->upload($input->base64EncodedImage());
             $group->setImagePath($imageLink);

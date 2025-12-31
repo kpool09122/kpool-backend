@@ -49,7 +49,6 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
             $normalizedName,
             null,
             new Description(''),
-            [],
             null,
             ApprovalStatus::Pending,
         );

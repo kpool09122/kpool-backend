@@ -12,7 +12,6 @@ use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -26,7 +25,6 @@ class AutomaticCreateDraftGroupInputTest extends TestCase
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated'),
-            [new SongIdentifier(StrTestHelper::generateUuid())],
             new AutomaticDraftGroupSource('webhook::draft'),
         );
 

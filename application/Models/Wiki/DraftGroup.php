@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $id
@@ -16,7 +17,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $normalized_name
  * @property ?string $agency_id
  * @property string $description
- * @property array $song_identifiers
  * @property ?string $image_path
  * @property string $status
  */
@@ -38,12 +38,20 @@ class DraftGroup extends Model
         'normalized_name',
         'agency_id',
         'description',
-        'song_identifiers',
         'image_path',
         'status',
     ];
 
-    protected $casts = [
-        'song_identifiers' => 'array',
-    ];
+    /**
+     * @return BelongsToMany<Song, $this>
+     */
+    public function songs(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Song::class,
+            'draft_group_song',
+            'draft_group_id',
+            'song_id',
+        );
+    }
 }

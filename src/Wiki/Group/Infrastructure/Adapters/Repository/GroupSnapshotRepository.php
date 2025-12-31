@@ -15,14 +15,13 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
 {
     public function save(GroupSnapshot $snapshot): void
     {
-        GroupSnapshotModel::query()->create([
+        $snapshotModel = GroupSnapshotModel::query()->create([
             'id' => (string)$snapshot->snapshotIdentifier(),
             'group_id' => (string)$snapshot->groupIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
@@ -31,7 +30,6 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             'normalized_name' => $snapshot->normalizedName(),
             'agency_id' => $snapshot->agencyIdentifier() ? (string)$snapshot->agencyIdentifier() : null,
             'description' => (string)$snapshot->description(),
-            'song_identifiers' => $this->fromSongIdentifiers($snapshot->songIdentifiers()),
             'image_path' => $snapshot->imagePath() ? (string)$snapshot->imagePath() : null,
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
@@ -64,32 +62,6 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
         return $this->toEntity($model);
     }
 
-    /**
-     * @param SongIdentifier[] $songIdentifiers
-     * @return string[]
-     */
-    private function fromSongIdentifiers(array $songIdentifiers): array
-    {
-        return array_map(
-            static fn (SongIdentifier $identifier): string => (string) $identifier,
-            $songIdentifiers,
-        );
-    }
-
-    /**
-     * @param array<int, string>|null $songIdentifiers
-     * @return SongIdentifier[]
-     */
-    private function toSongIdentifiers(?array $songIdentifiers): array
-    {
-        $identifiers = $songIdentifiers ?? [];
-
-        return array_map(
-            static fn (string $songId): SongIdentifier => new SongIdentifier($songId),
-            $identifiers,
-        );
-    }
-
     private function toEntity(GroupSnapshotModel $model): GroupSnapshot
     {
         return new GroupSnapshot(
@@ -101,7 +73,6 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $this->toSongIdentifiers($model->song_identifiers),
             $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version),
             $model->created_at->toDateTimeImmutable(),
