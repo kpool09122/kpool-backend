@@ -27,6 +27,8 @@ use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
+use Tests\Helper\CreateDraftSong;
+use Tests\Helper\CreateSong;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,43 +42,48 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindById(): void
     {
-        $songData = $this->upsertSongRecord([
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'language' => Language::ENGLISH->value,
-            'name' => 'Thunderous',
-            'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()],
-            'lyricist' => 'Han',
-            'composer' => 'Bang Chan',
+        $songId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $agencyId = StrTestHelper::generateUuid();
+        $belongIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+
+        CreateSong::create($songId, [
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => '소리꾼',
+            'agency_id' => $agencyId,
+            'belong_identifiers' => $belongIdentifiers,
+            'lyricist' => 'Bang Chan, Changbin, Han',
+            'composer' => 'Bang Chan, Changbin, Han',
             'release_date' => '2021-08-23',
-            'overview' => 'Title track',
-            'cover_image_path' => '/images/song/thunderous.jpg',
-            'music_video_link' => 'https://example.com/mv',
+            'overview' => 'Stray Kids 2nd full album NOEASY title track.',
+            'cover_image_path' => '/images/songs/straykids-thunderous.jpg',
+            'music_video_link' => 'https://www.youtube.com/watch?v=EaswWiwMVs8',
             'version' => 2,
         ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $song = $repository->findById(new SongIdentifier($songData['id']));
+        $song = $repository->findById(new SongIdentifier($songId));
 
         $this->assertInstanceOf(Song::class, $song);
-        $this->assertSame($songData['id'], (string) $song->songIdentifier());
-        $this->assertSame($songData['translation_set_identifier'], (string) $song->translationSetIdentifier());
-        $this->assertSame(Language::ENGLISH, $song->language());
-        $this->assertSame($songData['name'], (string) $song->name());
-        $this->assertSame($songData['agency_id'], (string) $song->agencyIdentifier());
-        $this->assertSame($songData['belong_identifiers'], array_map(
+        $this->assertSame($songId, (string) $song->songIdentifier());
+        $this->assertSame($translationSetIdentifier, (string) $song->translationSetIdentifier());
+        $this->assertSame(Language::KOREAN, $song->language());
+        $this->assertSame('소리꾼', (string) $song->name());
+        $this->assertSame($agencyId, (string) $song->agencyIdentifier());
+        $this->assertSame($belongIdentifiers, array_map(
             static fn (BelongIdentifier $identifier): string => (string) $identifier,
             $song->belongIdentifiers(),
         ));
-        $this->assertSame($songData['lyricist'], (string) $song->lyricist());
-        $this->assertSame($songData['composer'], (string) $song->composer());
+        $this->assertSame('Bang Chan, Changbin, Han', (string) $song->lyricist());
+        $this->assertSame('Bang Chan, Changbin, Han', (string) $song->composer());
         $this->assertInstanceOf(ReleaseDate::class, $song->releaseDate());
         $this->assertInstanceOf(DateTimeImmutable::class, $song->releaseDate()->value());
-        $this->assertSame($songData['release_date'], $song->releaseDate()->format('Y-m-d'));
-        $this->assertSame($songData['overview'], (string) $song->overView());
-        $this->assertSame($songData['cover_image_path'], (string) $song->coverImagePath());
-        $this->assertSame($songData['music_video_link'], (string) $song->musicVideoLink());
-        $this->assertSame($songData['version'], $song->version()->value());
+        $this->assertSame('2021-08-23', $song->releaseDate()->format('Y-m-d'));
+        $this->assertSame('Stray Kids 2nd full album NOEASY title track.', (string) $song->overView());
+        $this->assertSame('/images/songs/straykids-thunderous.jpg', (string) $song->coverImagePath());
+        $this->assertSame('https://www.youtube.com/watch?v=EaswWiwMVs8', (string) $song->musicVideoLink());
+        $this->assertSame(2, $song->version()->value());
     }
 
     /**
@@ -86,15 +93,20 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindByIdWhenReleaseDateIsNull(): void
     {
-        $songData = $this->upsertSongRecord([
-            'language' => Language::ENGLISH->value,
-            'name' => 'No Release Date',
+        $songId = StrTestHelper::generateUuid();
+
+        CreateSong::create($songId, [
+            'language' => Language::KOREAN->value,
+            'name' => 'Unreleased Track',
             'release_date' => null,
             'belong_identifiers' => [StrTestHelper::generateUuid()],
+            'lyricist' => 'J.Y. Park',
+            'composer' => 'J.Y. Park',
+            'overview' => 'Upcoming TWICE song.',
         ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $song = $repository->findById(new SongIdentifier($songData['id']));
+        $song = $repository->findById(new SongIdentifier($songId));
 
         $this->assertInstanceOf(Song::class, $song);
         $this->assertNull($song->releaseDate());
@@ -120,46 +132,53 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindDraftById(): void
     {
-        $draftData = $this->upsertDraftSongRecord([
-            'published_id' => StrTestHelper::generateUuid(),
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'editor_id' => StrTestHelper::generateUuid(),
+        $draftId = StrTestHelper::generateUuid();
+        $publishedId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $editorId = StrTestHelper::generateUuid();
+        $agencyId = StrTestHelper::generateUuid();
+        $belongIdentifiers = [StrTestHelper::generateUuid()];
+
+        CreateDraftSong::create($draftId, [
+            'published_id' => $publishedId,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'editor_id' => $editorId,
             'language' => Language::JAPANESE->value,
-            'name' => 'サンプル歌',
-            'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
-            'lyricist' => 'テスター',
-            'composer' => 'コンポーザー',
-            'release_date' => '2022-02-02',
-            'overview' => 'ドラフト概要',
-            'cover_image_path' => '/covers/sample.png',
-            'music_video_link' => 'https://example.com/draft',
+            'name' => 'Feel Special',
+            'agency_id' => $agencyId,
+            'belong_identifiers' => $belongIdentifiers,
+            'lyricist' => 'J.Y. Park',
+            'composer' => 'J.Y. Park',
+            'release_date' => '2019-09-23',
+            'overview' => 'TWICE 8th mini album title track.',
+            'cover_image_path' => '/images/songs/twice-feelspecial.jpg',
+            'music_video_link' => 'https://www.youtube.com/watch?v=3ymwOvzhwHs',
             'status' => ApprovalStatus::Pending->value,
         ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $draft = $repository->findDraftById(new SongIdentifier($draftData['id']));
+        $draft = $repository->findDraftById(new SongIdentifier($draftId));
 
         $this->assertInstanceOf(DraftSong::class, $draft);
-        $this->assertSame($draftData['id'], (string) $draft->songIdentifier());
-        $this->assertSame($draftData['published_id'], (string) $draft->publishedSongIdentifier());
-        $this->assertSame($draftData['translation_set_identifier'], (string) $draft->translationSetIdentifier());
-        $this->assertSame($draftData['editor_id'], (string) $draft->editorIdentifier());
+        $this->assertSame($draftId, (string) $draft->songIdentifier());
+        $this->assertSame($publishedId, (string) $draft->publishedSongIdentifier());
+        $this->assertSame($translationSetIdentifier, (string) $draft->translationSetIdentifier());
+        $this->assertSame($editorId, (string) $draft->editorIdentifier());
         $this->assertSame(Language::JAPANESE, $draft->language());
-        $this->assertSame($draftData['name'], (string) $draft->name());
-        $this->assertSame($draftData['agency_id'], (string) $draft->agencyIdentifier());
-        $this->assertSame($draftData['belong_identifiers'], array_map(
+        $this->assertSame('Feel Special', (string) $draft->name());
+        $this->assertSame($agencyId, (string) $draft->agencyIdentifier());
+        $this->assertSame($belongIdentifiers, array_map(
             static fn (BelongIdentifier $identifier): string => (string) $identifier,
             $draft->belongIdentifiers(),
         ));
-        $this->assertSame($draftData['lyricist'], (string) $draft->lyricist());
-        $this->assertSame($draftData['composer'], (string) $draft->composer());
+        $this->assertSame('J.Y. Park', (string) $draft->lyricist());
+        $this->assertSame('J.Y. Park', (string) $draft->composer());
         $this->assertInstanceOf(ReleaseDate::class, $draft->releaseDate());
         $this->assertInstanceOf(DateTimeImmutable::class, $draft->releaseDate()->value());
-        $this->assertSame($draftData['release_date'], $draft->releaseDate()->format('Y-m-d'));
-        $this->assertSame($draftData['overview'], (string) $draft->overView());
-        $this->assertSame($draftData['cover_image_path'], (string) $draft->coverImagePath());
-        $this->assertSame($draftData['music_video_link'], (string) $draft->musicVideoLink());
+        $this->assertSame('2019-09-23', $draft->releaseDate()->format('Y-m-d'));
+        $this->assertSame('TWICE 8th mini album title track.', (string) $draft->overView());
+        $this->assertSame('/images/songs/twice-feelspecial.jpg', (string) $draft->coverImagePath());
+        $this->assertSame('https://www.youtube.com/watch?v=3ymwOvzhwHs', (string) $draft->musicVideoLink());
         $this->assertSame(ApprovalStatus::Pending, $draft->status());
     }
 
@@ -170,18 +189,20 @@ class SongRepositoryTest extends TestCase
      */
     public function testFindDraftByIdWhenReleaseDateIsNull(): void
     {
-        $draftData = $this->upsertDraftSongRecord([
-            'language' => Language::JAPANESE->value,
-            'name' => 'Draft Song',
+        $draftId = StrTestHelper::generateUuid();
+
+        CreateDraftSong::create($draftId, [
+            'language' => Language::KOREAN->value,
+            'name' => 'Super Shy',
             'release_date' => null,
             'belong_identifiers' => [StrTestHelper::generateUuid()],
-            'lyricist' => 'Tester',
-            'composer' => 'Composer',
-            'overview' => 'Draft Overview',
+            'lyricist' => '250',
+            'composer' => '250',
+            'overview' => 'NewJeans upcoming single.',
         ]);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
-        $draft = $repository->findDraftById(new SongIdentifier($draftData['id']));
+        $draft = $repository->findDraftById(new SongIdentifier($draftId));
 
         $this->assertInstanceOf(DraftSong::class, $draft);
         $this->assertNull($draft->releaseDate());
@@ -212,18 +233,18 @@ class SongRepositoryTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new SongName('Case 143'),
+            new SongName('CASE 143'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new BelongIdentifier(StrTestHelper::generateUuid()),
                 new BelongIdentifier(StrTestHelper::generateUuid()),
             ],
-            new Lyricist('3racha'),
-            new Composer('Versachoi'),
+            new Lyricist('3RACHA'),
+            new Composer('3RACHA, Versachoi'),
             new ReleaseDate(new DateTimeImmutable('2022-10-07')),
-            new Overview('2nd mini title'),
-            new ImagePath('/cover/case143.png'),
-            new ExternalContentLink('https://example.com/case143'),
+            new Overview('Stray Kids 7th mini album MAXIDENT title track.'),
+            new ImagePath('/images/songs/straykids-case143.jpg'),
+            new ExternalContentLink('https://www.youtube.com/watch?v=jk6zLoynzHw'),
             new Version(4),
         );
 
@@ -271,16 +292,16 @@ class SongRepositoryTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::JAPANESE,
-            new SongName('ブルームーン'),
+            Language::KOREAN,
+            new SongName('Attention'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [new BelongIdentifier(StrTestHelper::generateUuid())],
-            new Lyricist('Lyricist'),
-            new Composer('Composer'),
-            new ReleaseDate(new DateTimeImmutable('2023-05-05')),
-            new Overview('Draft overview'),
-            new ImagePath('/cover/draft.png'),
-            new ExternalContentLink('https://example.com/draft-song'),
+            new Lyricist('Gigi'),
+            new Composer('250'),
+            new ReleaseDate(new DateTimeImmutable('2022-07-22')),
+            new Overview('NewJeans debut single.'),
+            new ImagePath('/images/songs/newjeans-attention.jpg'),
+            new ExternalContentLink('https://www.youtube.com/watch?v=js1CtxSY38I'),
             ApprovalStatus::UnderReview,
         );
 
@@ -330,28 +351,27 @@ class SongRepositoryTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::ENGLISH,
-            new SongName('Delete Draft'),
+            Language::KOREAN,
+            new SongName('Next Level'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [new BelongIdentifier(StrTestHelper::generateUuid())],
-            new Lyricist('L'),
-            new Composer('C'),
-            new ReleaseDate(new DateTimeImmutable('2024-04-04')),
-            new Overview('To delete'),
+            new Lyricist('Kenzie'),
+            new Composer('Dem Jointz'),
+            new ReleaseDate(new DateTimeImmutable('2021-05-17')),
+            new Overview('aespa 2nd single.'),
             null,
             null,
             ApprovalStatus::Pending,
         );
 
-        DB::table('draft_songs')->insert([
-            'id' => $id,
+        CreateDraftSong::create($id, [
             'published_id' => (string) $draft->publishedSongIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
             'editor_id' => (string) $draft->editorIdentifier(),
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
             'agency_id' => (string) $draft->agencyIdentifier(),
-            'belong_identifiers' => json_encode([(string) $draft->belongIdentifiers()[0]]),
+            'belong_identifiers' => [(string) $draft->belongIdentifiers()[0]],
             'lyricist' => (string) $draft->lyricist(),
             'composer' => (string) $draft->composer(),
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
@@ -376,72 +396,74 @@ class SongRepositoryTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
+        $draft1Id = StrTestHelper::generateUuid();
         $draft1 = [
-            'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::KOREAN->value,
-            'name' => '드래프트 송1',
+            'name' => '신메뉴',
             'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUuid()]),
-            'lyricist' => '가사',
-            'composer' => '작곡',
-            'release_date' => '2020-01-10',
-            'overview' => '첫번째',
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
+            'lyricist' => 'Bang Chan, Changbin, Han',
+            'composer' => 'Bang Chan, Changbin, Han',
+            'release_date' => '2020-06-17',
+            'overview' => 'Stray Kids 1st full album GO生 title track.',
             'status' => ApprovalStatus::Pending->value,
         ];
 
+        $draft2Id = StrTestHelper::generateUuid();
         $draft2 = [
-            'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
             'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::JAPANESE->value,
-            'name' => 'ドラフトソング2',
+            'name' => '神メニュー',
             'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUuid()]),
-            'lyricist' => '作詞',
-            'composer' => '作曲',
-            'release_date' => '2021-02-11',
-            'overview' => '二件目',
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
+            'lyricist' => 'Bang Chan, Changbin, Han',
+            'composer' => 'Bang Chan, Changbin, Han',
+            'release_date' => '2020-06-17',
+            'overview' => 'Stray Kids 1st full album GO生 title track Japanese translation.',
             'status' => ApprovalStatus::Approved->value,
         ];
 
+        $otherDraftId = StrTestHelper::generateUuid();
         $otherDraft = [
-            'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => StrTestHelper::generateUuid(),
             'editor_id' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
-            'name' => 'Other Draft',
+            'name' => 'LOVE DIVE',
             'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => json_encode([StrTestHelper::generateUuid()]),
-            'lyricist' => 'Other lyricist',
-            'composer' => 'Other composer',
-            'release_date' => '2022-03-12',
-            'overview' => '別翻訳セット',
+            'belong_identifiers' => [StrTestHelper::generateUuid()],
+            'lyricist' => 'Seo Ji-eum',
+            'composer' => 'Ryan S. Jhun',
+            'release_date' => '2022-04-05',
+            'overview' => 'IVE 2nd single.',
             'status' => ApprovalStatus::Pending->value,
         ];
 
-        DB::table('draft_songs')->insert([$draft1, $draft2, $otherDraft]);
+        CreateDraftSong::create($draft1Id, $draft1);
+        CreateDraftSong::create($draft2Id, $draft2);
+        CreateDraftSong::create($otherDraftId, $otherDraft);
 
         $repository = $this->app->make(SongRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSet($translationSetIdentifier);
 
         $this->assertCount(2, $drafts);
         $draftIds = array_map(static fn (DraftSong $draft): string => (string) $draft->songIdentifier(), $drafts);
-        $this->assertContains($draft1['id'], $draftIds);
-        $this->assertContains($draft2['id'], $draftIds);
-        $this->assertNotContains($otherDraft['id'], $draftIds);
+        $this->assertContains($draft1Id, $draftIds);
+        $this->assertContains($draft2Id, $draftIds);
+        $this->assertNotContains($otherDraftId, $draftIds);
 
         $releaseDates = [];
         foreach ($drafts as $draft) {
             $releaseDates[(string) $draft->songIdentifier()] = $draft->releaseDate()?->format('Y-m-d');
         }
 
-        $this->assertSame('2020-01-10', $releaseDates[$draft1['id']]);
-        $this->assertSame('2021-02-11', $releaseDates[$draft2['id']]);
+        $this->assertSame('2020-06-17', $releaseDates[$draft1Id]);
+        $this->assertSame('2020-06-17', $releaseDates[$draft2Id]);
     }
 
     /**
@@ -452,15 +474,17 @@ class SongRepositoryTest extends TestCase
     public function testFindDraftsByTranslationSetWhenReleaseDateIsNull(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $draftId = StrTestHelper::generateUuid();
 
-        $draftData = $this->upsertDraftSongRecord([
+        CreateDraftSong::create($draftId, [
             'translation_set_identifier' => (string) $translationSetIdentifier,
-            'language' => Language::ENGLISH->value,
-            'name' => 'Draft without release date',
+            'language' => Language::KOREAN->value,
+            'name' => 'After LIKE',
             'release_date' => null,
             'belong_identifiers' => [StrTestHelper::generateUuid()],
-            'lyricist' => 'Lyricist',
-            'composer' => 'Composer',
+            'lyricist' => 'Seo Ji-eum',
+            'composer' => 'Ryan S. Jhun',
+            'overview' => 'IVE 3rd single (release date TBD).',
         ]);
 
         /** @var SongRepositoryInterface $repository */
@@ -470,7 +494,7 @@ class SongRepositoryTest extends TestCase
         $this->assertCount(1, $drafts);
         $draft = $drafts[0];
 
-        $this->assertSame($draftData['id'], (string) $draft->songIdentifier());
+        $this->assertSame($draftId, (string) $draft->songIdentifier());
         $this->assertNull($draft->releaseDate());
     }
 
@@ -488,69 +512,5 @@ class SongRepositoryTest extends TestCase
 
         $this->assertIsArray($drafts);
         $this->assertEmpty($drafts);
-    }
-
-    /**
-     * @param array<string,mixed> $override
-     * @return array<string,mixed>
-     */
-    private function upsertSongRecord(array $override = []): array
-    {
-        $data = array_merge([
-            'id' => StrTestHelper::generateUuid(),
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'language' => Language::ENGLISH->value,
-            'name' => 'Song',
-            'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
-            'lyricist' => 'Lyricist',
-            'composer' => 'Composer',
-            'release_date' => '2024-01-01',
-            'lyrics' => '',
-            'overview' => 'Overview',
-            'cover_image_path' => null,
-            'music_video_link' => null,
-            'version' => 1,
-        ], $override);
-
-        $record = $data;
-        $record['belong_identifiers'] = json_encode($record['belong_identifiers']);
-
-        DB::table('songs')->upsert($record, 'id');
-
-        return $data;
-    }
-
-    /**
-     * @param array<string,mixed> $override
-     * @return array<string,mixed>
-     */
-    private function upsertDraftSongRecord(array $override = []): array
-    {
-        $data = array_merge([
-            'id' => StrTestHelper::generateUuid(),
-            'published_id' => StrTestHelper::generateUuid(),
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'editor_id' => StrTestHelper::generateUuid(),
-            'language' => Language::JAPANESE->value,
-            'name' => 'Draft Song',
-            'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
-            'lyricist' => 'Lyricist',
-            'composer' => 'Composer',
-            'release_date' => '2024-01-01',
-            'lyrics' => '',
-            'overview' => 'Draft Overview',
-            'cover_image_path' => null,
-            'music_video_link' => null,
-            'status' => ApprovalStatus::Pending->value,
-        ], $override);
-
-        $record = $data;
-        $record['belong_identifiers'] = json_encode($record['belong_identifiers']);
-
-        DB::table('draft_songs')->upsert($record, 'id');
-
-        return $data;
     }
 }
