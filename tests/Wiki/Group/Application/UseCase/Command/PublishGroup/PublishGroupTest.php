@@ -40,7 +40,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -91,7 +90,7 @@ class PublishGroupTest extends TestCase
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: true,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -191,7 +190,7 @@ class PublishGroupTest extends TestCase
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: false,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -588,7 +587,7 @@ class PublishGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -721,7 +720,7 @@ class PublishGroupTest extends TestCase
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             agencyId: $agencyId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -852,7 +851,7 @@ class PublishGroupTest extends TestCase
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -985,7 +984,7 @@ class PublishGroupTest extends TestCase
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -1064,7 +1063,7 @@ class PublishGroupTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
-            operatorIdentifier: new EditorIdentifier((string) $principalIdentifier),
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
         );
 
         $input = new PublishGroupInput(
@@ -1183,7 +1182,7 @@ class PublishGroupTest extends TestCase
      * @param string|null $agencyId
      * @param ApprovalStatus $status
      * @param bool $hasPublishedGroup
-     * @param EditorIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return PublishGroupTestData
      */
     private function createDummyPublishGroup(
@@ -1191,12 +1190,12 @@ class PublishGroupTest extends TestCase
         ?string $agencyId = null,
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         bool $hasPublishedGroup = false,
-        ?EditorIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $operatorIdentifier = null,
     ): PublishGroupTestData {
         $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
@@ -1274,7 +1273,7 @@ class PublishGroupTest extends TestCase
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new GroupHistory(
             $historyIdentifier,
-            $operatorIdentifier ?? new EditorIdentifier(StrTestHelper::generateUuid()),
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $draftGroup->editorIdentifier(),
             $hasPublishedGroup ? $publishedGroupIdentifier : null,
             $draftGroup->groupIdentifier(),
@@ -1337,7 +1336,7 @@ readonly class PublishGroupTestData
     public function __construct(
         public GroupIdentifier          $groupIdentifier,
         public GroupIdentifier          $publishedGroupIdentifier,
-        public EditorIdentifier         $editorIdentifier,
+        public PrincipalIdentifier         $editorIdentifier,
         public Language                 $language,
         public GroupName                $name,
         public string                   $normalizedName,

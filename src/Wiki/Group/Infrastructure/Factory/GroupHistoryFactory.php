@@ -12,18 +12,18 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class GroupHistoryFactory implements GroupHistoryFactoryInterface
 {
     public function __construct(
-        private UuidGeneratorInterface $ulidGenerator,
+        private UuidGeneratorInterface $generator,
     ) {
     }
 
     public function create(
-        EditorIdentifier $editorIdentifier,
-        ?EditorIdentifier $submitterIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        ?PrincipalIdentifier $submitterIdentifier,
         ?GroupIdentifier $groupIdentifier,
         ?GroupIdentifier $draftGroupIdentifier,
         ?ApprovalStatus $fromStatus,
@@ -31,7 +31,7 @@ readonly class GroupHistoryFactory implements GroupHistoryFactoryInterface
         GroupName $subjectName,
     ): GroupHistory {
         return new GroupHistory(
-            new GroupHistoryIdentifier($this->ulidGenerator->generate()),
+            new GroupHistoryIdentifier($this->generator->generate()),
             $editorIdentifier,
             $submitterIdentifier,
             $groupIdentifier,

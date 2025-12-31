@@ -27,7 +27,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -184,7 +183,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     private function makePayload(): AutomaticDraftGroupCreationPayload
     {
         return new AutomaticDraftGroupCreationPayload(
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
@@ -208,7 +207,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
             new GroupIdentifier(StrTestHelper::generateUuid()),
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new EditorIdentifier(StrTestHelper::generateUuid()),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new GroupName('TWICE'),
             'twice',

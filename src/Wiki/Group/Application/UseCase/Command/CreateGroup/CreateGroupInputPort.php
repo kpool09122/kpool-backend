@@ -10,13 +10,10 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface CreateGroupInputPort
 {
-    public function editorIdentifier(): EditorIdentifier;
-
     public function publishedGroupIdentifier(): ?GroupIdentifier;
 
     public function language(): Language;

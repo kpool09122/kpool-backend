@@ -28,7 +28,6 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -107,7 +106,7 @@ class EditGroupTest extends TestCase
 
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $group = new DraftGroup(
             $groupIdentifier,
@@ -247,7 +246,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(
@@ -325,7 +324,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(
@@ -407,7 +406,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(
@@ -488,7 +487,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(
@@ -570,7 +569,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(
@@ -651,7 +650,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(
@@ -731,7 +730,7 @@ class EditGroupTest extends TestCase
         $translation = Language::KOREAN;
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $imagePath = new ImagePath('/resources/public/images/before.webp');
         $group = new DraftGroup(

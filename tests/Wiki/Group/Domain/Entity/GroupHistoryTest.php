@@ -11,7 +11,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\EditorIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ class GroupHistoryTest extends TestCase
     public function test__construct(): void
     {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $submitterIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $submitterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $createGroupHistory = $this->createDummyGroupHistory(
             groupIdentifier: $groupIdentifier,
             submitterIdentifier: $submitterIdentifier,
@@ -115,7 +115,7 @@ class GroupHistoryTest extends TestCase
     public function testConstructWithFromStatusNull(): void
     {
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $toStatus = ApprovalStatus::Pending;
         $subjectName = new GroupName('TWICE');
@@ -147,7 +147,7 @@ class GroupHistoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
         $subjectName = new GroupName('TWICE');
@@ -171,16 +171,16 @@ class GroupHistoryTest extends TestCase
      *
      * @param ?GroupIdentifier $groupIdentifier
      * @param ?GroupIdentifier $draftGroupIdentifier
-     * @param ?EditorIdentifier $submitterIdentifier
+     * @param ?PrincipalIdentifier $submitterIdentifier
      * @return GroupHistoryTestData
      */
     private function createDummyGroupHistory(
         ?GroupIdentifier $groupIdentifier = null,
         ?GroupIdentifier $draftGroupIdentifier = null,
-        ?EditorIdentifier $submitterIdentifier = null,
+        ?PrincipalIdentifier $submitterIdentifier = null,
     ): GroupHistoryTestData {
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new EditorIdentifier(StrTestHelper::generateUuid());
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
         $subjectName = new GroupName('TWICE');
@@ -220,8 +220,8 @@ readonly class GroupHistoryTestData
 {
     public function __construct(
         public GroupHistoryIdentifier $historyIdentifier,
-        public EditorIdentifier       $editorIdentifier,
-        public ?EditorIdentifier      $submitterIdentifier,
+        public PrincipalIdentifier       $editorIdentifier,
+        public ?PrincipalIdentifier      $submitterIdentifier,
         public ?GroupIdentifier       $groupIdentifier,
         public ?GroupIdentifier       $draftGroupIdentifier,
         public ApprovalStatus         $fromStatus,
