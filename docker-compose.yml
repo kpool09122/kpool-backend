@@ -4,7 +4,6 @@ services:
     volumes:
       - .:/var/www/html
     working_dir: /var/www/html
-    command: ["bash", "-c", "tail -f /dev/null"]
     environment:
       - DB_CONNECTION=pgsql
       - DB_HOST=testing_db
