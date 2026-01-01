@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Application\UseCase\Command\RejectTalent;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\RejectTalent\RejectTalentInput;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

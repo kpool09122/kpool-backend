@@ -19,7 +19,9 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -38,7 +40,6 @@ use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -172,7 +173,8 @@ class PublishSongTest extends TestCase
         $this->assertSame($dummyPublishSong->language->value, $publishedSong->language()->value);
         $this->assertSame((string)$dummyPublishSong->name, (string)$publishedSong->name());
         $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
-        $this->assertSame($dummyPublishSong->belongIdentifiers, $publishedSong->belongIdentifiers());
+        $this->assertSame((string)$dummyPublishSong->groupIdentifier, (string)$publishedSong->groupIdentifier());
+        $this->assertSame((string)$dummyPublishSong->talentIdentifier, (string)$publishedSong->talentIdentifier());
         $this->assertSame((string)$dummyPublishSong->lyricist, (string)$publishedSong->lyricist());
         $this->assertSame((string)$dummyPublishSong->composer, (string)$publishedSong->composer());
         $this->assertSame($dummyPublishSong->releaseDate->value(), $publishedSong->releaseDate()->value());
@@ -264,7 +266,8 @@ class PublishSongTest extends TestCase
         $this->assertSame((string)$dummyPublishSong->translationSetIdentifier, (string)$publishedSong->translationSetIdentifier());
         $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
         $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
-        $this->assertSame($dummyPublishSong->belongIdentifiers, $publishedSong->belongIdentifiers());
+        $this->assertSame((string)$dummyPublishSong->groupIdentifier, (string)$publishedSong->groupIdentifier());
+        $this->assertSame((string)$dummyPublishSong->talentIdentifier, (string)$publishedSong->talentIdentifier());
         $this->assertSame((string)$dummyPublishSong->lyricist, (string)$publishedSong->lyricist());
         $this->assertSame((string)$dummyPublishSong->composer, (string)$publishedSong->composer());
         $this->assertSame($dummyPublishSong->releaseDate->value(), $publishedSong->releaseDate()->value());
@@ -776,7 +779,7 @@ class PublishSongTest extends TestCase
             operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
-        $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
+        $groupId = (string)$dummyPublishSong->groupIdentifier;
 
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$groupId], []);
 
@@ -910,9 +913,9 @@ class PublishSongTest extends TestCase
             operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyPublishSong->agencyIdentifier;
-        $groupId = (string)$dummyPublishSong->belongIdentifiers[0];
+        $talentId = (string)$dummyPublishSong->talentIdentifier;
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$groupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
 
         $input = new PublishSongInput(
             $dummyPublishSong->songIdentifier,
@@ -1124,10 +1127,8 @@ class PublishSongTest extends TestCase
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -1144,7 +1145,8 @@ class PublishSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -1157,10 +1159,8 @@ class PublishSongTest extends TestCase
         // 公開済みのSongエンティティ（既存データを想定）
         $publishedName = new SongName('I CAN\'T STOP ME');
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $publishedBelongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $publishedLyricist = new Lyricist('J.Y. Park');
         $publishedComposer = new Composer('Melanie Joy Fontana');
         $publishedReleaseDate = new ReleaseDate(new DateTimeImmutable('2020-10-26'));
@@ -1175,7 +1175,8 @@ class PublishSongTest extends TestCase
             $language,
             $publishedName,
             $publishedAgencyIdentifier,
-            $publishedBelongIdentifiers,
+            $publishedGroupIdentifier,
+            $publishedTalentIdentifier,
             $publishedLyricist,
             $publishedComposer,
             $publishedReleaseDate,
@@ -1193,7 +1194,8 @@ class PublishSongTest extends TestCase
             $language,
             $name,
             null,
-            [],
+            null,
+            null,
             new Lyricist(''),
             new Composer(''),
             null,
@@ -1224,7 +1226,8 @@ class PublishSongTest extends TestCase
             $language,
             $publishedName,
             $publishedAgencyIdentifier,
-            $publishedBelongIdentifiers,
+            $publishedGroupIdentifier,
+            $publishedTalentIdentifier,
             $publishedLyricist,
             $publishedComposer,
             $publishedReleaseDate,
@@ -1242,7 +1245,8 @@ class PublishSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -1270,7 +1274,6 @@ readonly class PublishSongTestData
 {
     /**
      * テストデータなので、すべてpublicで定義
-     * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
         public SongIdentifier           $songIdentifier,
@@ -1279,7 +1282,8 @@ readonly class PublishSongTestData
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,
-        public array                    $belongIdentifiers,
+        public GroupIdentifier          $groupIdentifier,
+        public TalentIdentifier         $talentIdentifier,
         public Lyricist                 $lyricist,
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,

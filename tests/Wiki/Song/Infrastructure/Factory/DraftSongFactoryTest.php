@@ -49,7 +49,8 @@ class DraftSongFactoryTest extends TestCase
         $this->assertSame($language->value, $song->language()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertNull($song->agencyIdentifier());
-        $this->assertSame([], $song->belongIdentifiers());
+        $this->assertNull($song->groupIdentifier());
+        $this->assertNull($song->talentIdentifier());
         $this->assertSame('', (string)$song->lyricist());
         $this->assertSame('', (string)$song->composer());
         $this->assertSame('', (string)$song->overView());

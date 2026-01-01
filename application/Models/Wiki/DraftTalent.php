@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -16,11 +18,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $name
  * @property string $real_name
  * @property ?string $agency_id
- * @property \Illuminate\Support\Carbon|null $birthday
+ * @property Carbon|null $birthday
  * @property string $career
  * @property ?string $image_link
  * @property array $relevant_video_links
  * @property string $status
+ * @property-read Collection<int, Group> $groups
  */
 class DraftTalent extends Model
 {

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Infrastracture\Adapters\Repository;
 
 use Application\Models\Wiki\DraftTalent as DraftTalentModel;
+use Application\Models\Wiki\Group;
 use Application\Models\Wiki\Talent as TalentModel;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -21,7 +23,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 final class TalentRepository implements TalentRepositoryInterface
@@ -38,7 +39,7 @@ final class TalentRepository implements TalentRepositoryInterface
         }
 
         $groupIdentifiers = $talentModel->groups
-            ->map(fn ($group) => new GroupIdentifier($group->id))
+            ->map(fn (Group $group) => new GroupIdentifier($group->id))
             ->toArray();
 
         $relevantVideoLinks = RelevantVideoLinks::formStringArray($talentModel->relevant_video_links ?? []);
@@ -102,7 +103,7 @@ final class TalentRepository implements TalentRepositoryInterface
         }
 
         $groupIdentifiers = $draftModel->groups
-            ->map(fn ($group) => new GroupIdentifier($group->id))
+            ->map(fn (Group $group) => new GroupIdentifier($group->id))
             ->toArray();
 
         $relevantVideoLinks = RelevantVideoLinks::formStringArray($draftModel->relevant_video_links ?? []);
@@ -180,7 +181,7 @@ final class TalentRepository implements TalentRepositoryInterface
         /** @var DraftTalentModel $model */
         foreach ($draftModels as $model) {
             $groupIdentifiers = $model->groups
-                ->map(fn ($group) => new GroupIdentifier($group->id))
+                ->map(fn (Group $group) => new GroupIdentifier($group->id))
                 ->toArray();
 
             $relevantVideoLinks = RelevantVideoLinks::formStringArray($model->relevant_video_links ?? []);

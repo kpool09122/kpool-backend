@@ -15,6 +15,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -25,7 +26,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\CreateDraftTalent;
 use Tests\Helper\CreateGroup;
@@ -459,6 +459,11 @@ class TalentRepositoryTest extends TestCase
 
         $this->assertDatabaseMissing('draft_talents', [
             'id' => $id,
+        ]);
+
+        $this->assertDatabaseMissing('draft_talent_group', [
+            'draft_talent_id' => $id,
+            'group_id' => $groupId,
         ]);
     }
 

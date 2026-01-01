@@ -12,13 +12,14 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -65,10 +66,8 @@ class SongServiceTest extends TestCase
             Language::KOREAN,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('블랙아이드필승'),
             new Composer('Sam Lewis'),
             new ReleaseDate(new DateTimeImmutable('2016-10-24')),
@@ -116,9 +115,8 @@ class SongServiceTest extends TestCase
             Language::JAPANESE,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('Black Eyed Pilseung'),
             new Composer('Sam Lewis'),
             new ReleaseDate(new DateTimeImmutable('2016-10-24')),
@@ -165,10 +163,8 @@ class SongServiceTest extends TestCase
             Language::ENGLISH,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('Black Eyed Pilseung'),
             new Composer('Sam Lewis'),
             new ReleaseDate(new DateTimeImmutable('2016-10-24')),
@@ -242,10 +238,8 @@ class SongServiceTest extends TestCase
             Language::KOREAN,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('블랙아이드필승'),
             new Composer('Sam Lewis'),
             new ReleaseDate(new DateTimeImmutable('2016-10-24')),
@@ -266,10 +260,8 @@ class SongServiceTest extends TestCase
             Language::ENGLISH,
             new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('Black Eyed Pilseung'),
             new Composer('Sam Lewis'),
             new ReleaseDate(new DateTimeImmutable('2016-10-24')),

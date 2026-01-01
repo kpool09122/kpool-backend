@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Domain\Repository;
 
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 interface TalentSnapshotRepositoryInterface
 {

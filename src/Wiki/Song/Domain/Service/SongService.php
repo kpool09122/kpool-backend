@@ -9,10 +9,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 
-class SongService implements SongServiceInterface
+readonly class SongService implements SongServiceInterface
 {
     public function __construct(
-        private readonly SongRepositoryInterface $songRepository,
+        private SongRepositoryInterface $songRepository,
     ) {
     }
 

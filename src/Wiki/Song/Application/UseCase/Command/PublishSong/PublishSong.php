@@ -62,16 +62,11 @@ readonly class PublishSong implements PublishSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $agencyId = (string) $song->agencyIdentifier();
-        $belongIds = array_map(
-            static fn ($belongIdentifier) => (string) $belongIdentifier,
-            $song->belongIdentifiers()
-        );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: $agencyId,
-            groupIds: $belongIds,
-            talentIds: $belongIds,
+            agencyId: (string) $song->agencyIdentifier(),
+            groupIds: [(string) $song->groupIdentifier()],
+            talentIds: [(string) $song->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::PUBLISH, $resource, $principal)) {
@@ -108,7 +103,12 @@ readonly class PublishSong implements PublishSongInterface
         if ($song->agencyIdentifier()) {
             $publishedSong->setAgencyIdentifier($song->agencyIdentifier());
         }
-        $publishedSong->setBelongIdentifiers($song->belongIdentifiers());
+        if ($song->groupIdentifier()) {
+            $publishedSong->setGroupIdentifier($song->groupIdentifier());
+        }
+        if ($song->talentIdentifier()) {
+            $publishedSong->setTalentIdentifier($song->talentIdentifier());
+        }
         $publishedSong->setLyricist($song->lyricist());
         $publishedSong->setComposer($song->composer());
         if ($song->releaseDate()) {

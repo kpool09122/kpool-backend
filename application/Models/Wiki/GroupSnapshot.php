@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -49,17 +48,4 @@ class GroupSnapshot extends Model
         'version' => 'integer',
         'created_at' => 'datetime',
     ];
-
-    /**
-     * @return BelongsToMany<Song, $this>
-     */
-    public function songs(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Song::class,
-            'group_snapshot_song',
-            'group_snapshot_id',
-            'song_id',
-        );
-    }
 }

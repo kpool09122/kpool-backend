@@ -37,16 +37,11 @@ readonly class CreateSong implements CreateSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $agencyId = (string) $input->agencyIdentifier();
-        $belongIds = array_map(
-            static fn ($belongIdentifier) => (string) $belongIdentifier,
-            $input->belongIdentifiers()
-        );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: $agencyId,
-            groupIds: $belongIds,
-            talentIds: $belongIds,
+            agencyId: (string) $input->agencyIdentifier(),
+            groupIds: [(string) $input->groupIdentifier()],
+            talentIds: [(string) $input->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
@@ -64,7 +59,12 @@ readonly class CreateSong implements CreateSongInterface
                 $song->setPublishedSongIdentifier($publishedSong->songIdentifier());
             }
         }
-        $song->setBelongIdentifiers($input->belongIdentifiers());
+        if ($input->groupIdentifier()) {
+            $song->setGroupIdentifier($input->groupIdentifier());
+        }
+        if ($input->talentIdentifier()) {
+            $song->setTalentIdentifier($input->talentIdentifier());
+        }
         $song->setLyricist($input->lyricist());
         $song->setComposer($input->composer());
         if ($input->releaseDate()) {

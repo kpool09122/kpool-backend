@@ -7,8 +7,8 @@ namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateGroupInput implements CreateGroupInputPort

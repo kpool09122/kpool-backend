@@ -34,18 +34,6 @@ return new class extends Migration
             $table->foreign('talent_snapshot_id')->references('id')->on('talent_snapshots')->onDelete('cascade');
             $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
         });
-
-        Schema::table('talents', static function (Blueprint $table) {
-            $table->dropColumn('group_identifiers');
-        });
-
-        Schema::table('draft_talents', static function (Blueprint $table) {
-            $table->dropColumn('group_identifiers');
-        });
-
-        Schema::table('talent_snapshots', static function (Blueprint $table) {
-            $table->dropColumn('group_identifiers');
-        });
     }
 
     /**
@@ -53,18 +41,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('talents', static function (Blueprint $table) {
-            $table->json('group_identifiers')->comment('所属グループIDリスト')->default('[]');
-        });
-
-        Schema::table('draft_talents', static function (Blueprint $table) {
-            $table->json('group_identifiers')->comment('所属グループID一覧')->default('[]');
-        });
-
-        Schema::table('talent_snapshots', static function (Blueprint $table) {
-            $table->json('group_identifiers')->comment('所属グループID一覧')->default('[]');
-        });
-
         Schema::dropIfExists('talent_snapshot_group');
         Schema::dropIfExists('draft_talent_group');
         Schema::dropIfExists('talent_group');

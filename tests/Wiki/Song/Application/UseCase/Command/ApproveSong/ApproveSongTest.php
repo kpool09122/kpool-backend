@@ -19,7 +19,9 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
@@ -32,7 +34,6 @@ use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -639,7 +640,7 @@ class ApproveSongTest extends TestCase
 
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
-            belongIds: [$groupId],
+            groupId: $groupId,
             operatorIdentifier: $principalIdentifier,
         );
 
@@ -763,7 +764,7 @@ class ApproveSongTest extends TestCase
 
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
-            belongIds: [$groupId],
+            groupId: $groupId,
             operatorIdentifier: $principalIdentifier,
         );
 
@@ -887,7 +888,7 @@ class ApproveSongTest extends TestCase
 
         $dummyApproveSong = $this->createDummyApproveSong(
             agencyId: $agencyId,
-            belongIds: [$talentId],
+            talentId: $talentId,
             operatorIdentifier: $principalIdentifier,
         );
 
@@ -1063,14 +1064,16 @@ class ApproveSongTest extends TestCase
      * ダミーデータを作成するヘルパーメソッド
      *
      * @param string|null $agencyId
-     * @param string[]|null $belongIds
+     * @param string|null $groupId
+     * @param string|null $talentId
      * @param ApprovalStatus $status
      * @param PrincipalIdentifier|null $operatorIdentifier
      * @return ApproveSongTestData
      */
     private function createDummyApproveSong(
         ?string $agencyId = null,
-        ?array $belongIds = null,
+        ?string $groupId = null,
+        ?string $talentId = null,
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         ?PrincipalIdentifier $operatorIdentifier = null,
     ): ApproveSongTestData {
@@ -1080,12 +1083,8 @@ class ApproveSongTest extends TestCase
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
-        $belongIdentifiers = $belongIds !== null
-            ? array_map(static fn ($id) => new BelongIdentifier($id), $belongIds)
-            : [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ];
+        $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier($talentId ?? StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -1102,7 +1101,8 @@ class ApproveSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -1132,7 +1132,8 @@ class ApproveSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -1155,7 +1156,6 @@ readonly class ApproveSongTestData
 {
     /**
      * テストデータなので、すべてpublicで定義
-     * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
         public SongIdentifier           $songIdentifier,
@@ -1164,7 +1164,8 @@ readonly class ApproveSongTestData
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,
-        public array                    $belongIdentifiers,
+        public GroupIdentifier          $groupIdentifier,
+        public TalentIdentifier         $talentIdentifier,
         public Lyricist                 $lyricist,
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,

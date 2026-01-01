@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Infrastructure\Adapters\Repository;
 
+use Application\Models\Wiki\Group;
 use Application\Models\Wiki\TalentSnapshot as TalentSnapshotModel;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
 use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
@@ -17,7 +19,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 
@@ -89,7 +90,7 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
     private function toEntity(TalentSnapshotModel $model): TalentSnapshot
     {
         $groupIdentifiers = $model->groups
-            ->map(fn ($group) => new GroupIdentifier($group->id))
+            ->map(fn (Group $group) => new GroupIdentifier($group->id))
             ->toArray();
 
         return new TalentSnapshot(

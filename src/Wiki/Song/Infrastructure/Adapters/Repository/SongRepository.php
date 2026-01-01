@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\DraftSong as DraftSongModel;
+use Application\Models\Wiki\Group;
 use Application\Models\Wiki\Song as SongModel;
+use Application\Models\Wiki\Talent;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -30,6 +33,7 @@ final class SongRepository implements SongRepositoryInterface
     public function findById(SongIdentifier $songIdentifier): ?Song
     {
         $songModel = SongModel::query()
+            ->with(['groups', 'talents'])
             ->where('id', (string) $songIdentifier)
             ->first();
 
@@ -37,10 +41,13 @@ final class SongRepository implements SongRepositoryInterface
             return null;
         }
 
-        $belongIdentifiers = [];
-        foreach (($songModel->belong_identifiers ?? []) as $identifier) {
-            $belongIdentifiers[] = new BelongIdentifier($identifier);
-        }
+        /** @var Group|null $group */
+        $group = $songModel->groups->first();
+        $groupIdentifier = $group ? new GroupIdentifier($group->id) : null;
+
+        /** @var Talent|null $talent */
+        $talent = $songModel->talents->first();
+        $talentIdentifier = $talent ? new TalentIdentifier($talent->id) : null;
 
         $releaseDate = $songModel->release_date
             ? new ReleaseDate($songModel->release_date->toDateTimeImmutable())
@@ -52,7 +59,8 @@ final class SongRepository implements SongRepositoryInterface
             Language::from($songModel->language),
             new SongName($songModel->name),
             $songModel->agency_id ? new AgencyIdentifier($songModel->agency_id) : null,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             new Lyricist($songModel->lyricist),
             new Composer($songModel->composer),
             $releaseDate,
@@ -65,15 +73,11 @@ final class SongRepository implements SongRepositoryInterface
 
     public function save(Song $song): void
     {
-        $belongIdentifiers = [];
-        foreach ($song->belongIdentifiers() as $identifier) {
-            $belongIdentifiers[] = (string) $identifier;
-        }
-
         $releaseDate = $song->releaseDate();
         $releaseDateValue = $releaseDate?->format('Y-m-d');
 
-        SongModel::query()->updateOrCreate(
+        /** @var SongModel $songModel */
+        $songModel = SongModel::query()->updateOrCreate(
             [
                 'id' => (string) $song->songIdentifier(),
             ],
@@ -82,7 +86,6 @@ final class SongRepository implements SongRepositoryInterface
                 'language' => $song->language()->value,
                 'name' => (string) $song->name(),
                 'agency_id' => $song->agencyIdentifier() ? (string) $song->agencyIdentifier() : null,
-                'belong_identifiers' => $belongIdentifiers,
                 'lyricist' => (string) $song->lyricist(),
                 'composer' => (string) $song->composer(),
                 'release_date' => $releaseDateValue,
@@ -92,11 +95,18 @@ final class SongRepository implements SongRepositoryInterface
                 'version' => $song->version()->value(),
             ],
         );
+
+        $groupId = $song->groupIdentifier() ? [(string) $song->groupIdentifier()] : [];
+        $songModel->groups()->sync($groupId);
+
+        $talentId = $song->talentIdentifier() ? [(string) $song->talentIdentifier()] : [];
+        $songModel->talents()->sync($talentId);
     }
 
     public function findDraftById(SongIdentifier $songIdentifier): ?DraftSong
     {
         $draftModel = DraftSongModel::query()
+            ->with(['groups', 'talents'])
             ->where('id', (string) $songIdentifier)
             ->first();
 
@@ -104,10 +114,13 @@ final class SongRepository implements SongRepositoryInterface
             return null;
         }
 
-        $belongIdentifiers = [];
-        foreach (($draftModel->belong_identifiers ?? []) as $identifier) {
-            $belongIdentifiers[] = new BelongIdentifier($identifier);
-        }
+        /** @var Group|null $group */
+        $group = $draftModel->groups->first();
+        $groupIdentifier = $group ? new GroupIdentifier($group->id) : null;
+
+        /** @var Talent|null $talent */
+        $talent = $draftModel->talents->first();
+        $talentIdentifier = $talent ? new TalentIdentifier($talent->id) : null;
 
         $releaseDate = $draftModel->release_date
             ? new ReleaseDate($draftModel->release_date->toDateTimeImmutable())
@@ -121,7 +134,8 @@ final class SongRepository implements SongRepositoryInterface
             Language::from($draftModel->language),
             new SongName($draftModel->name),
             $draftModel->agency_id ? new AgencyIdentifier($draftModel->agency_id) : null,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             new Lyricist($draftModel->lyricist),
             new Composer($draftModel->composer),
             $releaseDate,
@@ -134,15 +148,11 @@ final class SongRepository implements SongRepositoryInterface
 
     public function saveDraft(DraftSong $song): void
     {
-        $belongIdentifiers = [];
-        foreach ($song->belongIdentifiers() as $identifier) {
-            $belongIdentifiers[] = (string) $identifier;
-        }
-
         $releaseDate = $song->releaseDate();
         $releaseDateValue = $releaseDate?->format('Y-m-d');
 
-        DraftSongModel::query()->updateOrCreate(
+        /** @var DraftSongModel $draftModel */
+        $draftModel = DraftSongModel::query()->updateOrCreate(
             [
                 'id' => (string) $song->songIdentifier(),
             ],
@@ -155,7 +165,6 @@ final class SongRepository implements SongRepositoryInterface
                 'language' => $song->language()->value,
                 'name' => (string) $song->name(),
                 'agency_id' => $song->agencyIdentifier() ? (string) $song->agencyIdentifier() : null,
-                'belong_identifiers' => $belongIdentifiers,
                 'lyricist' => (string) $song->lyricist(),
                 'composer' => (string) $song->composer(),
                 'release_date' => $releaseDateValue,
@@ -165,6 +174,12 @@ final class SongRepository implements SongRepositoryInterface
                 'status' => $song->status()->value,
             ],
         );
+
+        $groupId = $song->groupIdentifier() ? [(string) $song->groupIdentifier()] : [];
+        $draftModel->groups()->sync($groupId);
+
+        $talentId = $song->talentIdentifier() ? [(string) $song->talentIdentifier()] : [];
+        $draftModel->talents()->sync($talentId);
     }
 
     public function deleteDraft(DraftSong $song): void
@@ -178,6 +193,7 @@ final class SongRepository implements SongRepositoryInterface
         TranslationSetIdentifier $translationSetIdentifier,
     ): array {
         $draftModels = DraftSongModel::query()
+            ->with(['groups', 'talents'])
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->get();
 
@@ -185,10 +201,13 @@ final class SongRepository implements SongRepositoryInterface
 
         /** @var DraftSongModel $model */
         foreach ($draftModels as $model) {
-            $belongIdentifiers = [];
-            foreach (($model->belong_identifiers ?? []) as $identifier) {
-                $belongIdentifiers[] = new BelongIdentifier($identifier);
-            }
+            /** @var Group|null $group */
+            $group = $model->groups->first();
+            $groupIdentifier = $group ? new GroupIdentifier($group->id) : null;
+
+            /** @var Talent|null $talent */
+            $talent = $model->talents->first();
+            $talentIdentifier = $talent ? new TalentIdentifier($talent->id) : null;
 
             $releaseDate = $model->release_date
                 ? new ReleaseDate($model->release_date->toDateTimeImmutable())
@@ -202,7 +221,8 @@ final class SongRepository implements SongRepositoryInterface
                 Language::from($model->language),
                 new SongName($model->name),
                 $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
-                $belongIdentifiers,
+                $groupIdentifier,
+                $talentIdentifier,
                 new Lyricist($model->lyricist),
                 new Composer($model->composer),
                 $releaseDate,

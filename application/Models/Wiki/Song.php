@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Ramsey\Collection\Collection;
 
 /**
  * @property string $id
@@ -17,12 +19,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array $belong_identifiers
  * @property string $lyricist
  * @property string $composer
- * @property \Illuminate\Support\Carbon|null $release_date
+ * @property Carbon|null $release_date
  * @property string $overview
  * @property ?string $cover_image_path
  * @property ?string $music_video_link
  * @property int|null $version
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Group> $groups
+ * @property-read Collection<int, Talent> $talents
  */
 class Song extends Model
 {
@@ -40,7 +44,6 @@ class Song extends Model
         'language',
         'name',
         'agency_id',
-        'belong_identifiers',
         'lyricist',
         'composer',
         'release_date',
@@ -51,7 +54,6 @@ class Song extends Model
     ];
 
     protected $casts = [
-        'belong_identifiers' => 'array',
         'release_date' => 'date',
         'version' => 'integer',
         'deleted_at' => 'datetime',
@@ -64,9 +66,22 @@ class Song extends Model
     {
         return $this->belongsToMany(
             Group::class,
-            'group_song',
+            'song_group',
             'song_id',
             'group_id',
+        );
+    }
+
+    /**
+     * @return BelongsToMany<Talent, $this>
+     */
+    public function talents(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Talent::class,
+            'song_talent',
+            'song_id',
+            'talent_id',
         );
     }
 }

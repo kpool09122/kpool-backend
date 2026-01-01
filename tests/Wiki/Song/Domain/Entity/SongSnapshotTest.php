@@ -9,10 +9,11 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -41,7 +42,8 @@ class SongSnapshotTest extends TestCase
         $this->assertSame($data->language->value, $snapshot->language()->value);
         $this->assertSame((string)$data->name, (string)$snapshot->name());
         $this->assertSame((string)$data->agencyIdentifier, (string)$snapshot->agencyIdentifier());
-        $this->assertSame($data->belongIdentifiers, $snapshot->belongIdentifiers());
+        $this->assertSame((string)$data->groupIdentifier, (string)$snapshot->groupIdentifier());
+        $this->assertSame((string)$data->talentIdentifier, (string)$snapshot->talentIdentifier());
         $this->assertSame((string)$data->lyricist, (string)$snapshot->lyricist());
         $this->assertSame((string)$data->composer, (string)$snapshot->composer());
         $this->assertSame($data->releaseDate->value(), $snapshot->releaseDate()->value());
@@ -64,7 +66,6 @@ class SongSnapshotTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
-        $belongIdentifiers = [];
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $overView = new Overview('A song about love.');
@@ -78,7 +79,8 @@ class SongSnapshotTest extends TestCase
             $language,
             $name,
             null,
-            $belongIdentifiers,
+            null,
+            null,
             $lyricist,
             $composer,
             null,
@@ -90,6 +92,8 @@ class SongSnapshotTest extends TestCase
         );
 
         $this->assertNull($snapshot->agencyIdentifier());
+        $this->assertNull($snapshot->groupIdentifier());
+        $this->assertNull($snapshot->talentIdentifier());
         $this->assertNull($snapshot->releaseDate());
         $this->assertNull($snapshot->coverImagePath());
         $this->assertNull($snapshot->musicVideoLink());
@@ -108,10 +112,8 @@ class SongSnapshotTest extends TestCase
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -128,7 +130,8 @@ class SongSnapshotTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -146,7 +149,8 @@ class SongSnapshotTest extends TestCase
             language: $language,
             name: $name,
             agencyIdentifier: $agencyIdentifier,
-            belongIdentifiers: $belongIdentifiers,
+            groupIdentifier: $groupIdentifier,
+            talentIdentifier: $talentIdentifier,
             lyricist: $lyricist,
             composer: $composer,
             releaseDate: $releaseDate,
@@ -162,13 +166,9 @@ class SongSnapshotTest extends TestCase
 
 /**
  * テストデータを保持するクラス
- * @phpstan-type BelongIdentifierList list<BelongIdentifier>
  */
 readonly class SongSnapshotTestData
 {
-    /**
-     * @param BelongIdentifier[] $belongIdentifiers
-     */
     public function __construct(
         public SongSnapshotIdentifier   $snapshotIdentifier,
         public SongIdentifier           $songIdentifier,
@@ -176,7 +176,8 @@ readonly class SongSnapshotTestData
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,
-        public array                    $belongIdentifiers,
+        public GroupIdentifier          $groupIdentifier,
+        public TalentIdentifier         $talentIdentifier,
         public Lyricist                 $lyricist,
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,

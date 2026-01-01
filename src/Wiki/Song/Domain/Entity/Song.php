@@ -8,9 +8,10 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -26,7 +27,8 @@ class Song
      * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
-     * @param list<BelongIdentifier> $belongIdentifiers
+     * @param ?GroupIdentifier $groupIdentifier
+     * @param ?TalentIdentifier $talentIdentifier
      * @param Lyricist $lyricist
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
@@ -41,7 +43,8 @@ class Song
         private readonly Language                 $language,
         private SongName                          $name,
         private ?AgencyIdentifier                 $agencyIdentifier,
-        private array                             $belongIdentifiers,
+        private ?GroupIdentifier                  $groupIdentifier,
+        private ?TalentIdentifier                 $talentIdentifier,
         private Lyricist                          $lyricist,
         private Composer                          $composer,
         private ?ReleaseDate                      $releaseDate,
@@ -87,21 +90,24 @@ class Song
         $this->agencyIdentifier = $agencyIdentifier;
     }
 
-    /**
-     * @return BelongIdentifier[]
-     */
-    public function belongIdentifiers(): array
+    public function groupIdentifier(): ?GroupIdentifier
     {
-        return $this->belongIdentifiers;
+        return $this->groupIdentifier;
     }
 
-    /**
-     * @param BelongIdentifier[] $belongIdentifiers
-     * @return void
-     */
-    public function setBelongIdentifiers(array $belongIdentifiers): void
+    public function setGroupIdentifier(GroupIdentifier $groupIdentifier): void
     {
-        $this->belongIdentifiers = $belongIdentifiers;
+        $this->groupIdentifier = $groupIdentifier;
+    }
+
+    public function talentIdentifier(): ?TalentIdentifier
+    {
+        return $this->talentIdentifier;
+    }
+
+    public function setTalentIdentifier(TalentIdentifier $talentIdentifier): void
+    {
+        $this->talentIdentifier = $talentIdentifier;
     }
 
     public function lyricist(): Lyricist

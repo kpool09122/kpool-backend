@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Talent\Domain\ValueObject;
+namespace Tests\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class TalentIdentifierTest extends TestCase

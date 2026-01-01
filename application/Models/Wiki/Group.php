@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $id
@@ -41,17 +40,4 @@ class Group extends Model
     protected $casts = [
         'version' => 'integer',
     ];
-
-    /**
-     * @return BelongsToMany<Song, $this>
-     */
-    public function songs(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Song::class,
-            'group_song',
-            'group_id',
-            'song_id',
-        );
-    }
 }

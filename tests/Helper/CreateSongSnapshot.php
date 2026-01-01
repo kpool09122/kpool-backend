@@ -15,7 +15,8 @@ class CreateSongSnapshot
      *     language?: string,
      *     name?: string,
      *     agency_id?: ?string,
-     *     belong_identifiers?: array<int, string>,
+     *     group_id?: ?string,
+     *     talent_id?: ?string,
      *     lyricist?: string,
      *     composer?: string,
      *     release_date?: ?string,
@@ -35,7 +36,6 @@ class CreateSongSnapshot
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'TT',
             'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
-            'belong_identifiers' => json_encode($overrides['belong_identifiers'] ?? []),
             'lyricist' => $overrides['lyricist'] ?? '블랙아이드필승',
             'composer' => $overrides['composer'] ?? 'Sam Lewis',
             'release_date' => $overrides['release_date'] ?? '2016-10-24',
@@ -45,5 +45,19 @@ class CreateSongSnapshot
             'version' => $overrides['version'] ?? 1,
             'created_at' => $overrides['created_at'] ?? '2024-01-01 00:00:00',
         ]);
+
+        if (isset($overrides['group_id'])) {
+            DB::table('song_snapshot_group')->insert([
+                'song_snapshot_id' => $snapshotId,
+                'group_id' => $overrides['group_id'],
+            ]);
+        }
+
+        if (isset($overrides['talent_id'])) {
+            DB::table('song_snapshot_talent')->insert([
+                'song_snapshot_id' => $snapshotId,
+                'talent_id' => $overrides['talent_id'],
+            ]);
+        }
     }
 }

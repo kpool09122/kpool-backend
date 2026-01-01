@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Group\Domain\ValueObject;
+namespace Tests\Wiki\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class GroupIdentifierTest extends TestCase

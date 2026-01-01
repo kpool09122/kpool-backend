@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property array<int, string>|null $relevant_video_links
  * @property int $version
  * @property Carbon $created_at
+ * @property-read Collection<int, Group> $groups
  */
 class TalentSnapshot extends Model
 {

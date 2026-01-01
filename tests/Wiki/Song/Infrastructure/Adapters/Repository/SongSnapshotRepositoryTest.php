@@ -11,11 +11,12 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -23,7 +24,9 @@ use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Song\Domain\ValueObject\SongSnapshotIdentifier;
+use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateSongSnapshot;
+use Tests\Helper\CreateTalent;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,10 +47,8 @@ class SongSnapshotRepositoryTest extends TestCase
         $language = Language::KOREAN;
         $name = 'TT';
         $agencyId = StrTestHelper::generateUuid();
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
         $lyricist = '블랙아이드필승';
         $composer = 'Sam Lewis';
         $releaseDate = new DateTimeImmutable('2016-10-24');
@@ -57,6 +58,9 @@ class SongSnapshotRepositoryTest extends TestCase
         $version = 1;
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
+
         $snapshot = new SongSnapshot(
             new SongSnapshotIdentifier($snapshotId),
             new SongIdentifier($songId),
@@ -64,7 +68,8 @@ class SongSnapshotRepositoryTest extends TestCase
             $language,
             new SongName($name),
             new AgencyIdentifier($agencyId),
-            $belongIdentifiers,
+            new GroupIdentifier($groupId),
+            new TalentIdentifier($talentId),
             new Lyricist($lyricist),
             new Composer($composer),
             new ReleaseDate($releaseDate),
@@ -92,6 +97,16 @@ class SongSnapshotRepositoryTest extends TestCase
             'music_video_link' => $musicVideoLink,
             'version' => $version,
         ]);
+
+        $this->assertDatabaseHas('song_snapshot_group', [
+            'song_snapshot_id' => $snapshotId,
+            'group_id' => $groupId,
+        ]);
+
+        $this->assertDatabaseHas('song_snapshot_talent', [
+            'song_snapshot_id' => $snapshotId,
+            'talent_id' => $talentId,
+        ]);
     }
 
     /**
@@ -113,7 +128,8 @@ class SongSnapshotRepositoryTest extends TestCase
             Language::KOREAN,
             new SongName('TT'),
             null,
-            [],
+            null,
+            null,
             new Lyricist(''),
             new Composer(''),
             null,

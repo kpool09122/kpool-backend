@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
-use JsonException;
 
 class CreateSong
 {
@@ -15,7 +14,8 @@ class CreateSong
      *     language?: string,
      *     name?: string,
      *     agency_id?: ?string,
-     *     belong_identifiers?: array<string>,
+     *     group_id?: ?string,
+     *     talent_id?: ?string,
      *     lyricist?: string,
      *     composer?: string,
      *     release_date?: ?string,
@@ -25,7 +25,6 @@ class CreateSong
      *     music_video_link?: ?string,
      *     version?: int
      * } $overrides
-     * @throws JsonException
      */
     public static function create(string $songId, array $overrides = []): void
     {
@@ -35,7 +34,6 @@ class CreateSong
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'LALALALA',
             'agency_id' => $overrides['agency_id'] ?? null,
-            'belong_identifiers' => json_encode($overrides['belong_identifiers'] ?? [], JSON_THROW_ON_ERROR),
             'lyricist' => $overrides['lyricist'] ?? 'Bang Chan, Changbin, Han',
             'composer' => $overrides['composer'] ?? 'Bang Chan, Changbin, Han',
             'release_date' => $overrides['release_date'] ?? null,
@@ -47,5 +45,19 @@ class CreateSong
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        if (isset($overrides['group_id'])) {
+            DB::table('song_group')->insert([
+                'song_id' => $songId,
+                'group_id' => $overrides['group_id'],
+            ]);
+        }
+
+        if (isset($overrides['talent_id'])) {
+            DB::table('song_talent')->insert([
+                'song_id' => $songId,
+                'talent_id' => $overrides['talent_id'],
+            ]);
+        }
     }
 }

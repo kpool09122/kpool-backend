@@ -19,7 +19,9 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSong;
 use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSongInput;
@@ -30,7 +32,6 @@ use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -536,9 +537,9 @@ class RejectSongTest extends TestCase
             operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyRejectSong->belongIdentifiers);
+        $groupId = (string) $dummyRejectSong->groupIdentifier;
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$groupId], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -648,9 +649,9 @@ class RejectSongTest extends TestCase
             operatorIdentifier: $principalIdentifier,
         );
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyRejectSong->belongIdentifiers);
+        $talentId = (string) $dummyRejectSong->talentIdentifier;
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -818,10 +819,8 @@ class RejectSongTest extends TestCase
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -838,7 +837,8 @@ class RejectSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -868,7 +868,8 @@ class RejectSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -891,7 +892,6 @@ readonly class RejectSongTestData
 {
     /**
      * テストデータなので、すべてpublicで定義
-     * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
         public SongIdentifier           $songIdentifier,
@@ -900,7 +900,8 @@ readonly class RejectSongTestData
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,
-        public array                    $belongIdentifiers,
+        public ?GroupIdentifier         $groupIdentifier,
+        public ?TalentIdentifier        $talentIdentifier,
         public Lyricist                 $lyricist,
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,

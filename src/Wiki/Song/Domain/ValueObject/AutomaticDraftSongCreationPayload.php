@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 
 final readonly class AutomaticDraftSongCreationPayload
 {
-    /**
-     * @param BelongIdentifier[] $belongIdentifiers
-     */
     public function __construct(
         private PrincipalIdentifier      $editorIdentifier,
         private Language                 $language,
         private SongName                 $name,
         private ?AgencyIdentifier        $agencyIdentifier,
-        private array                    $belongIdentifiers,
+        private ?GroupIdentifier         $groupIdentifier,
+        private ?TalentIdentifier        $talentIdentifier,
         private Lyricist                 $lyricist,
         private Composer                 $composer,
         private ?ReleaseDate             $releaseDate,
@@ -46,12 +46,14 @@ final readonly class AutomaticDraftSongCreationPayload
         return $this->agencyIdentifier;
     }
 
-    /**
-     * @return BelongIdentifier[]
-     */
-    public function belongIdentifiers(): array
+    public function groupIdentifier(): ?GroupIdentifier
     {
-        return $this->belongIdentifiers;
+        return $this->groupIdentifier;
+    }
+
+    public function talentIdentifier(): ?TalentIdentifier
+    {
+        return $this->talentIdentifier;
     }
 
     public function lyricist(): Lyricist

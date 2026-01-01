@@ -16,8 +16,7 @@ return new class extends Migration
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('歌名');
-            $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('belong_identifiers')->comment('所属グループ/タレントID一覧')->default('[]');
+            $table->uuid('agency_id')->nullable()->comment('所有事務所ID');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');
@@ -38,7 +37,6 @@ return new class extends Migration
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('楽曲名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('belong_identifiers')->comment('所属グループ/タレントID一覧')->default('[]');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');
@@ -57,7 +55,6 @@ return new class extends Migration
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('歌名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
-            $table->json('belong_identifiers')->comment('所属グループ/タレントリスト')->default('[]');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');

@@ -6,10 +6,11 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInput;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -31,10 +32,8 @@ class EditSongInputTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -48,7 +47,8 @@ class EditSongInputTest extends TestCase
             $songIdentifier,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -60,7 +60,8 @@ class EditSongInputTest extends TestCase
         $this->assertSame((string)$songIdentifier, (string)$input->songIdentifier());
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$agencyIdentifier, (string)$input->agencyIdentifier());
-        $this->assertSame($belongIdentifiers, $input->belongIdentifiers());
+        $this->assertSame($groupIdentifier, $input->groupIdentifier());
+        $this->assertSame($talentIdentifier, $input->talentIdentifier());
         $this->assertSame((string)$lyricist, (string)$input->lyricist());
         $this->assertSame((string)$composer, (string)$input->composer());
         $this->assertSame($releaseDate->value(), $input->releaseDate()->value());

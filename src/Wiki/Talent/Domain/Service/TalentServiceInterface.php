@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 
 interface TalentServiceInterface
 {
