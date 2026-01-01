@@ -21,13 +21,13 @@ use Source\SiteManagement\Announcement\Domain\ValueObject\Title;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-#[PHPUnitGroup('useDb')]
 class AnnouncementRepositoryTest extends TestCase
 {
     /**
      * 正常系：指定IDのお知らせを取得できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindById(): void
     {
         $id = StrTestHelper::generateUlid();
@@ -65,6 +65,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：存在しないIDの場合はnullが返る.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
@@ -77,6 +78,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：翻訳セットIDでお知らせ一覧を取得できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindByTranslationSetIdentifier(): void
     {
         $translationSetId = StrTestHelper::generateUlid();
@@ -127,6 +129,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：下書きお知らせを取得できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindDraftById(): void
     {
         $id = StrTestHelper::generateUlid();
@@ -164,6 +167,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：存在しないIDの下書きにはnullが返る.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindDraftByIdWhenNotExist(): void
     {
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
@@ -176,6 +180,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：翻訳セットIDで下書き一覧を取得できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindDraftsByTranslationSetIdentifier(): void
     {
         $translationSetId = new TranslationSetIdentifier(StrTestHelper::generateUlid());
@@ -226,6 +231,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：翻訳セットに紐づく下書きが無ければ空配列を返す.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testFindDraftsByTranslationSetIdentifierWhenNotExist(): void
     {
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
@@ -241,6 +247,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：お知らせを保存できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testSave(): void
     {
         $announcement = new AnnouncementEntity(
@@ -271,6 +278,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：下書きを保存できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testSaveDraft(): void
     {
         $draft = new DraftAnnouncementEntity(
@@ -301,6 +309,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：お知らせを削除できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testDelete(): void
     {
         $id = StrTestHelper::generateUlid();
@@ -335,6 +344,7 @@ class AnnouncementRepositoryTest extends TestCase
      * 正常系：下書きを削除できる.
      * @throws BindingResolutionException
      */
+    #[PHPUnitGroup('useDb')]
     public function testDeleteDraft(): void
     {
         $id = StrTestHelper::generateUlid();
