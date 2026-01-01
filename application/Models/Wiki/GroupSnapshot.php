@@ -16,7 +16,6 @@ use Illuminate\Support\Carbon;
  * @property string $normalized_name
  * @property ?string $agency_id
  * @property string $description
- * @property array<int, string>|null $song_identifiers
  * @property ?string $image_path
  * @property int $version
  * @property Carbon $created_at
@@ -40,14 +39,12 @@ class GroupSnapshot extends Model
         'normalized_name',
         'agency_id',
         'description',
-        'song_identifiers',
         'image_path',
         'version',
         'created_at',
     ];
 
     protected $casts = [
-        'song_identifiers' => 'array',
         'version' => 'integer',
         'created_at' => 'datetime',
     ];

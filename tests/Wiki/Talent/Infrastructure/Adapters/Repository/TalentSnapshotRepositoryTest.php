@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
 use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
@@ -20,9 +21,9 @@ use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
+use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateTalentSnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -45,9 +46,16 @@ class TalentSnapshotRepositoryTest extends TestCase
         $name = '채영';
         $realName = '손채영';
         $agencyId = StrTestHelper::generateUuid();
+        $groupId1 = StrTestHelper::generateUuid();
+        $groupId2 = StrTestHelper::generateUuid();
+
+        // 先にグループを作成
+        CreateGroup::create($groupId1);
+        CreateGroup::create($groupId2);
+
         $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier($groupId1),
+            new GroupIdentifier($groupId2),
         ];
         $birthday = new DateTimeImmutable('1999-04-23');
         $career = 'TWICE member since 2015.';
@@ -89,6 +97,16 @@ class TalentSnapshotRepositoryTest extends TestCase
             'career' => $career,
             'image_link' => $imageLink,
             'version' => $version,
+        ]);
+
+        // 中間テーブルの確認
+        $this->assertDatabaseHas('talent_snapshot_group', [
+            'talent_snapshot_id' => $snapshotId,
+            'group_id' => $groupId1,
+        ]);
+        $this->assertDatabaseHas('talent_snapshot_group', [
+            'talent_snapshot_id' => $snapshotId,
+            'group_id' => $groupId2,
         ]);
     }
 

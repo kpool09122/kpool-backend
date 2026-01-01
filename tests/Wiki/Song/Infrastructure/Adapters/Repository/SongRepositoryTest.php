@@ -6,21 +6,20 @@ namespace Tests\Wiki\Song\Infrastructure\Adapters\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\DB;
-use JsonException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -28,7 +27,9 @@ use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Tests\Helper\CreateDraftSong;
+use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateSong;
+use Tests\Helper\CreateTalent;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -45,14 +46,19 @@ class SongRepositoryTest extends TestCase
         $songId = StrTestHelper::generateUuid();
         $translationSetIdentifier = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
-        $belongIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
 
         CreateSong::create($songId, [
             'translation_set_identifier' => $translationSetIdentifier,
             'language' => Language::KOREAN->value,
             'name' => '소리꾼',
             'agency_id' => $agencyId,
-            'belong_identifiers' => $belongIdentifiers,
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
             'lyricist' => 'Bang Chan, Changbin, Han',
             'composer' => 'Bang Chan, Changbin, Han',
             'release_date' => '2021-08-23',
@@ -71,10 +77,8 @@ class SongRepositoryTest extends TestCase
         $this->assertSame(Language::KOREAN, $song->language());
         $this->assertSame('소리꾼', (string) $song->name());
         $this->assertSame($agencyId, (string) $song->agencyIdentifier());
-        $this->assertSame($belongIdentifiers, array_map(
-            static fn (BelongIdentifier $identifier): string => (string) $identifier,
-            $song->belongIdentifiers(),
-        ));
+        $this->assertSame($groupId, (string) $song->groupIdentifier());
+        $this->assertSame($talentId, (string) $song->talentIdentifier());
         $this->assertSame('Bang Chan, Changbin, Han', (string) $song->lyricist());
         $this->assertSame('Bang Chan, Changbin, Han', (string) $song->composer());
         $this->assertInstanceOf(ReleaseDate::class, $song->releaseDate());
@@ -100,7 +104,6 @@ class SongRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
             'name' => 'Unreleased Track',
             'release_date' => null,
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'J.Y. Park',
             'composer' => 'J.Y. Park',
             'overview' => 'Upcoming TWICE song.',
@@ -140,7 +143,11 @@ class SongRepositoryTest extends TestCase
         $translationSetIdentifier = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
-        $belongIdentifiers = [StrTestHelper::generateUuid()];
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
 
         CreateDraftSong::create($draftId, [
             'published_id' => $publishedId,
@@ -149,7 +156,8 @@ class SongRepositoryTest extends TestCase
             'language' => Language::JAPANESE->value,
             'name' => 'Feel Special',
             'agency_id' => $agencyId,
-            'belong_identifiers' => $belongIdentifiers,
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
             'lyricist' => 'J.Y. Park',
             'composer' => 'J.Y. Park',
             'release_date' => '2019-09-23',
@@ -170,10 +178,8 @@ class SongRepositoryTest extends TestCase
         $this->assertSame(Language::JAPANESE, $draft->language());
         $this->assertSame('Feel Special', (string) $draft->name());
         $this->assertSame($agencyId, (string) $draft->agencyIdentifier());
-        $this->assertSame($belongIdentifiers, array_map(
-            static fn (BelongIdentifier $identifier): string => (string) $identifier,
-            $draft->belongIdentifiers(),
-        ));
+        $this->assertSame($groupId, (string) $draft->groupIdentifier());
+        $this->assertSame($talentId, (string) $draft->talentIdentifier());
         $this->assertSame('J.Y. Park', (string) $draft->lyricist());
         $this->assertSame('J.Y. Park', (string) $draft->composer());
         $this->assertInstanceOf(ReleaseDate::class, $draft->releaseDate());
@@ -199,7 +205,6 @@ class SongRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
             'name' => 'Super Shy',
             'release_date' => null,
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => '250',
             'composer' => '250',
             'overview' => 'NewJeans upcoming single.',
@@ -230,21 +235,24 @@ class SongRepositoryTest extends TestCase
      * 正常系：正しく歌情報を保存できること.
      *
      * @throws BindingResolutionException
-     * @throws JsonException
      */
     #[Group('useDb')]
     public function testSave(): void
     {
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
+
         $song = new Song(
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('CASE 143'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier($groupId),
+            new TalentIdentifier($talentId),
             new Lyricist('3RACHA'),
             new Composer('3RACHA, Versachoi'),
             new ReleaseDate(new DateTimeImmutable('2022-10-07')),
@@ -256,11 +264,6 @@ class SongRepositoryTest extends TestCase
 
         $repository = $this->app->make(SongRepositoryInterface::class);
         $repository->save($song);
-
-        $expectedBelongs = array_map(
-            static fn (BelongIdentifier $identifier): string => (string) $identifier,
-            $song->belongIdentifiers(),
-        );
 
         $this->assertDatabaseHas('songs', [
             'id' => (string) $song->songIdentifier(),
@@ -277,23 +280,31 @@ class SongRepositoryTest extends TestCase
             'version' => $song->version()->value(),
         ]);
 
-        $rawBelongs = DB::table('songs')
-            ->where('id', (string) $song->songIdentifier())
-            ->value('belong_identifiers');
-        $decodedBelongs = json_decode((string) $rawBelongs, true, 512, JSON_THROW_ON_ERROR);
+        $this->assertDatabaseHas('song_group', [
+            'song_id' => (string) $song->songIdentifier(),
+            'group_id' => $groupId,
+        ]);
 
-        $this->assertSame($expectedBelongs, $decodedBelongs);
+        $this->assertDatabaseHas('song_talent', [
+            'song_id' => (string) $song->songIdentifier(),
+            'talent_id' => $talentId,
+        ]);
     }
 
     /**
      * 正常系：正しく下書き歌を保存できること.
      *
      * @throws BindingResolutionException
-     * @throws JsonException
      */
     #[Group('useDb')]
     public function testSaveDraft(): void
     {
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
+
         $draft = new DraftSong(
             new SongIdentifier(StrTestHelper::generateUuid()),
             new SongIdentifier(StrTestHelper::generateUuid()),
@@ -302,7 +313,8 @@ class SongRepositoryTest extends TestCase
             Language::KOREAN,
             new SongName('Attention'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [new BelongIdentifier(StrTestHelper::generateUuid())],
+            new GroupIdentifier($groupId),
+            new TalentIdentifier($talentId),
             new Lyricist('Gigi'),
             new Composer('250'),
             new ReleaseDate(new DateTimeImmutable('2022-07-22')),
@@ -314,11 +326,6 @@ class SongRepositoryTest extends TestCase
 
         $repository = $this->app->make(SongRepositoryInterface::class);
         $repository->saveDraft($draft);
-
-        $expectedBelongs = array_map(
-            static fn (BelongIdentifier $identifier): string => (string) $identifier,
-            $draft->belongIdentifiers(),
-        );
 
         $this->assertDatabaseHas('draft_songs', [
             'id' => (string) $draft->songIdentifier(),
@@ -337,12 +344,15 @@ class SongRepositoryTest extends TestCase
             'status' => $draft->status()->value,
         ]);
 
-        $rawBelongs = DB::table('draft_songs')
-            ->where('id', (string) $draft->songIdentifier())
-            ->value('belong_identifiers');
-        $decodedBelongs = json_decode((string) $rawBelongs, true, 512, JSON_THROW_ON_ERROR);
+        $this->assertDatabaseHas('draft_song_group', [
+            'draft_song_id' => (string) $draft->songIdentifier(),
+            'group_id' => $groupId,
+        ]);
 
-        $this->assertSame($expectedBelongs, $decodedBelongs);
+        $this->assertDatabaseHas('draft_song_talent', [
+            'draft_song_id' => (string) $draft->songIdentifier(),
+            'talent_id' => $talentId,
+        ]);
     }
 
     /**
@@ -354,6 +364,12 @@ class SongRepositoryTest extends TestCase
     public function testDeleteDraft(): void
     {
         $id = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
+
         $draft = new DraftSong(
             new SongIdentifier($id),
             new SongIdentifier(StrTestHelper::generateUuid()),
@@ -362,7 +378,8 @@ class SongRepositoryTest extends TestCase
             Language::KOREAN,
             new SongName('Next Level'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [new BelongIdentifier(StrTestHelper::generateUuid())],
+            new GroupIdentifier($groupId),
+            new TalentIdentifier($talentId),
             new Lyricist('Kenzie'),
             new Composer('Dem Jointz'),
             new ReleaseDate(new DateTimeImmutable('2021-05-17')),
@@ -379,7 +396,8 @@ class SongRepositoryTest extends TestCase
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
             'agency_id' => (string) $draft->agencyIdentifier(),
-            'belong_identifiers' => [(string) $draft->belongIdentifiers()[0]],
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
             'lyricist' => (string) $draft->lyricist(),
             'composer' => (string) $draft->composer(),
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
@@ -393,6 +411,16 @@ class SongRepositoryTest extends TestCase
         $this->assertDatabaseMissing('draft_songs', [
             'id' => $id,
         ]);
+
+        $this->assertDatabaseMissing('draft_song_group', [
+            'draft_song_id' => $id,
+            'group_id' => $groupId,
+        ]);
+
+        $this->assertDatabaseMissing('draft_song_talent', [
+            'draft_song_id' => $id,
+            'talent_id' => $talentId,
+        ]);
     }
 
     /**
@@ -404,6 +432,11 @@ class SongRepositoryTest extends TestCase
     public function testFindDraftsByTranslationSet(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
 
         $draft1Id = StrTestHelper::generateUuid();
         $draft1 = [
@@ -413,7 +446,8 @@ class SongRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
             'name' => '신메뉴',
             'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
             'lyricist' => 'Bang Chan, Changbin, Han',
             'composer' => 'Bang Chan, Changbin, Han',
             'release_date' => '2020-06-17',
@@ -429,7 +463,8 @@ class SongRepositoryTest extends TestCase
             'language' => Language::JAPANESE->value,
             'name' => '神メニュー',
             'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
             'lyricist' => 'Bang Chan, Changbin, Han',
             'composer' => 'Bang Chan, Changbin, Han',
             'release_date' => '2020-06-17',
@@ -445,7 +480,6 @@ class SongRepositoryTest extends TestCase
             'language' => Language::ENGLISH->value,
             'name' => 'LOVE DIVE',
             'agency_id' => StrTestHelper::generateUuid(),
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'Seo Ji-eum',
             'composer' => 'Ryan S. Jhun',
             'release_date' => '2022-04-05',
@@ -491,7 +525,6 @@ class SongRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
             'name' => 'After LIKE',
             'release_date' => null,
-            'belong_identifiers' => [StrTestHelper::generateUuid()],
             'lyricist' => 'Seo Ji-eum',
             'composer' => 'Ryan S. Jhun',
             'overview' => 'IVE 3rd single (release date TBD).',

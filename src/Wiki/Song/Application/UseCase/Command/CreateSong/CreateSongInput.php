@@ -6,9 +6,10 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -23,7 +24,8 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
-     * @param list<BelongIdentifier> $belongIdentifiers
+     * @param ?GroupIdentifier $groupIdentifier
+     * @param ?TalentIdentifier $talentIdentifier
      * @param Lyricist $lyricist
      * @param Composer $composer
      * @param ?ReleaseDate $releaseDate
@@ -37,7 +39,8 @@ readonly class CreateSongInput implements CreateSongInputPort
         private Language             $language,
         private SongName             $name,
         private ?AgencyIdentifier    $agencyIdentifier,
-        private array                $belongIdentifiers,
+        private ?GroupIdentifier     $groupIdentifier,
+        private ?TalentIdentifier    $talentIdentifier,
         private Lyricist             $lyricist,
         private Composer             $composer,
         private ?ReleaseDate         $releaseDate,
@@ -68,12 +71,14 @@ readonly class CreateSongInput implements CreateSongInputPort
         return $this->agencyIdentifier;
     }
 
-    /**
-     * @return list<BelongIdentifier>
-     */
-    public function belongIdentifiers(): array
+    public function groupIdentifier(): ?GroupIdentifier
     {
-        return $this->belongIdentifiers;
+        return $this->groupIdentifier;
+    }
+
+    public function talentIdentifier(): ?TalentIdentifier
+    {
+        return $this->talentIdentifier;
     }
 
     public function lyricist(): Lyricist

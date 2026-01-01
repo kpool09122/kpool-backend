@@ -6,8 +6,8 @@ namespace Source\Wiki\Talent\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 class TalentService implements TalentServiceInterface
 {

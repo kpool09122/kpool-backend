@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -23,10 +24,9 @@ interface EditSongInputPort
 
     public function agencyIdentifier(): ?AgencyIdentifier;
 
-    /**
-     * @return list<BelongIdentifier>
-     */
-    public function belongIdentifiers(): array;
+    public function groupIdentifier(): ?GroupIdentifier;
+
+    public function talentIdentifier(): ?TalentIdentifier;
 
     public function lyricist(): Lyricist;
 

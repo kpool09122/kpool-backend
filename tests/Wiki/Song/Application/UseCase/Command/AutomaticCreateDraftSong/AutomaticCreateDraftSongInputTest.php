@@ -7,12 +7,13 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInput;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongSource;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -29,7 +30,8 @@ class AutomaticCreateDraftSongInputTest extends TestCase
             Language::JAPANESE,
             new SongName('Auto Song'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [new BelongIdentifier(StrTestHelper::generateUuid())],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('Auto Lyricist'),
             new Composer('Auto Composer'),
             new ReleaseDate(new DateTimeImmutable('2023-05-10')),

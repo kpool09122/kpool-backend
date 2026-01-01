@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Application\UseCase\Command\TranslateGroup;
 
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInput;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;

@@ -56,16 +56,11 @@ readonly class ApproveSong implements ApproveSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $agencyId = (string) $song->agencyIdentifier();
-        $belongIds = array_map(
-            static fn ($belongIdentifier) => (string) $belongIdentifier,
-            $song->belongIdentifiers()
-        );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
-            agencyId: $agencyId,
-            groupIds: $belongIds,
-            talentIds: $belongIds,
+            agencyId: (string) $song->agencyIdentifier(),
+            groupIds: [(string) $song->groupIdentifier()],
+            talentIds: [(string) $song->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::APPROVE, $resource, $principal)) {

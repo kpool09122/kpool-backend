@@ -44,15 +44,11 @@ readonly class TranslateSong implements TranslateSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $belongIds = array_map(
-            static fn ($belongIdentifier) => (string) $belongIdentifier,
-            $song->belongIdentifiers()
-        );
         $resourceIdentifier = new ResourceIdentifier(
             type: ResourceType::SONG,
             agencyId: (string) $song->agencyIdentifier(),
-            groupIds: $belongIds,
-            talentIds: $belongIds,
+            groupIds: [(string) $song->groupIdentifier()],
+            talentIds: [(string) $song->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::TRANSLATE, $resourceIdentifier, $principal)) {

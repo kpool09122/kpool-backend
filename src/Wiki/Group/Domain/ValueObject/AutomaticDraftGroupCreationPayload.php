@@ -9,16 +9,12 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 final readonly class AutomaticDraftGroupCreationPayload
 {
-    /**
-     * @param SongIdentifier[] $songIdentifiers
-     */
     public function __construct(
         private PrincipalIdentifier       $editorIdentifier,
         private Language                  $language,
         private GroupName                 $name,
         private AgencyIdentifier          $agencyIdentifier,
         private Description               $description,
-        private array                     $songIdentifiers,
         private AutomaticDraftGroupSource $source,
     ) {
     }
@@ -46,14 +42,6 @@ final readonly class AutomaticDraftGroupCreationPayload
     public function description(): Description
     {
         return $this->description;
-    }
-
-    /**
-     * @return SongIdentifier[]
-     */
-    public function songIdentifiers(): array
-    {
-        return $this->songIdentifiers;
     }
 
     public function source(): AutomaticDraftGroupSource

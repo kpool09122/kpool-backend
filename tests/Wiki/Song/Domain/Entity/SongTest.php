@@ -9,10 +9,11 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -37,7 +38,8 @@ class SongTest extends TestCase
         $this->assertSame($createSong->language->value, $createSong->song->language()->value);
         $this->assertSame((string)$createSong->name, (string)$createSong->song->name());
         $this->assertSame((string)$createSong->agencyIdentifier, (string)$createSong->song->agencyIdentifier());
-        $this->assertSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
+        $this->assertSame((string)$createSong->groupIdentifier, (string)$createSong->song->groupIdentifier());
+        $this->assertSame((string)$createSong->talentIdentifier, (string)$createSong->song->talentIdentifier());
         $this->assertSame((string)$createSong->lyricist, (string)$createSong->song->lyricist());
         $this->assertSame((string)$createSong->composer, (string)$createSong->song->composer());
         $this->assertSame((string)$createSong->overView, (string)$createSong->song->overView());
@@ -63,27 +65,37 @@ class SongTest extends TestCase
     }
 
     /**
-     * 正常系：BelongIdentifiersのsetterが正しく動作すること(null許容).
+     * 正常系：GroupIdentifierのsetterが正しく動作すること.
      *
      * @return void
      */
-    public function testSetBelongIdentifiers(): void
+    public function testSetGroupIdentifier(): void
     {
         $createSong = $this->createDummySong();
 
-        $this->assertSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
+        $this->assertSame((string)$createSong->groupIdentifier, (string)$createSong->song->groupIdentifier());
 
-        $newBelongIdentifier = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
-        $createSong->song->setBelongIdentifiers($newBelongIdentifier);
-        $this->assertNotSame($createSong->belongIdentifiers, $createSong->song->belongIdentifiers());
-        $this->assertSame($newBelongIdentifier, $createSong->song->belongIdentifiers());
+        $newGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $createSong->song->setGroupIdentifier($newGroupIdentifier);
+        $this->assertNotSame((string)$createSong->groupIdentifier, (string)$createSong->song->groupIdentifier());
+        $this->assertSame((string)$newGroupIdentifier, (string)$createSong->song->groupIdentifier());
+    }
 
-        $createSong->song->setBelongIdentifiers([]);
-        $this->assertEmpty($createSong->song->belongIdentifiers());
+    /**
+     * 正常系：TalentIdentifierのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetTalentIdentifier(): void
+    {
+        $createSong = $this->createDummySong();
+
+        $this->assertSame((string)$createSong->talentIdentifier, (string)$createSong->song->talentIdentifier());
+
+        $newTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $createSong->song->setTalentIdentifier($newTalentIdentifier);
+        $this->assertNotSame((string)$createSong->talentIdentifier, (string)$createSong->song->talentIdentifier());
+        $this->assertSame((string)$newTalentIdentifier, (string)$createSong->song->talentIdentifier());
     }
 
     /**
@@ -220,10 +232,8 @@ class SongTest extends TestCase
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -238,7 +248,8 @@ class SongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -254,7 +265,8 @@ class SongTest extends TestCase
             language: $language,
             name: $name,
             agencyIdentifier: $agencyIdentifier,
-            belongIdentifiers: $belongIdentifiers,
+            groupIdentifier: $groupIdentifier,
+            talentIdentifier: $talentIdentifier,
             lyricist: $lyricist,
             composer: $composer,
             releaseDate: $releaseDate,
@@ -272,17 +284,14 @@ class SongTest extends TestCase
  */
 readonly class SongTestData
 {
-    /**
-     * テストデータなので、すべてpublicで定義
-     * @param BelongIdentifier[] $belongIdentifiers
-     */
     public function __construct(
         public SongIdentifier           $songIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,
-        public array                    $belongIdentifiers,
+        public GroupIdentifier          $groupIdentifier,
+        public TalentIdentifier         $talentIdentifier,
         public Lyricist                 $lyricist,
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,
@@ -290,7 +299,7 @@ readonly class SongTestData
         public ImagePath                $coverImagePath,
         public ExternalContentLink      $musicVideoLink,
         public Song                     $song,
-        public Version $version
+        public Version                  $version
     ) {
     }
 }

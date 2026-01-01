@@ -11,10 +11,9 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -39,7 +38,6 @@ class GroupSnapshotTest extends TestCase
         $this->assertSame($data->normalizedName, $snapshot->normalizedName());
         $this->assertSame((string)$data->agencyIdentifier, (string)$snapshot->agencyIdentifier());
         $this->assertSame((string)$data->description, (string)$snapshot->description());
-        $this->assertSame($data->songIdentifiers, $snapshot->songIdentifiers());
         $this->assertSame((string)$data->imagePath, (string)$snapshot->imagePath());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
@@ -59,7 +57,6 @@ class GroupSnapshotTest extends TestCase
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
         $description = new Description('TWICE is a South Korean girl group.');
-        $songIdentifiers = [];
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
@@ -72,7 +69,6 @@ class GroupSnapshotTest extends TestCase
             $normalizedName,
             null,
             $description,
-            $songIdentifiers,
             null,
             $version,
             $createdAt,
@@ -97,10 +93,6 @@ class GroupSnapshotTest extends TestCase
         $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('TWICE is a South Korean girl group.');
-        $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUuid()),
-            new SongIdentifier(StrTestHelper::generateUuid()),
-        ];
         $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
@@ -114,7 +106,6 @@ class GroupSnapshotTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $songIdentifiers,
             $imagePath,
             $version,
             $createdAt,
@@ -129,7 +120,6 @@ class GroupSnapshotTest extends TestCase
             normalizedName: $normalizedName,
             agencyIdentifier: $agencyIdentifier,
             description: $description,
-            songIdentifiers: $songIdentifiers,
             imagePath: $imagePath,
             version: $version,
             createdAt: $createdAt,
@@ -140,13 +130,9 @@ class GroupSnapshotTest extends TestCase
 
 /**
  * テストデータを保持するクラス
- * @phpstan-type SongIdentifierList list<SongIdentifier>
  */
 readonly class GroupSnapshotTestData
 {
-    /**
-     * @param SongIdentifier[] $songIdentifiers
-     */
     public function __construct(
         public GroupSnapshotIdentifier  $snapshotIdentifier,
         public GroupIdentifier          $groupIdentifier,
@@ -156,7 +142,6 @@ readonly class GroupSnapshotTestData
         public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
-        public array                    $songIdentifiers,
         public ImagePath                $imagePath,
         public Version                  $version,
         public DateTimeImmutable        $createdAt,

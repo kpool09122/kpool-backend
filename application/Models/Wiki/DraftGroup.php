@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $normalized_name
  * @property ?string $agency_id
  * @property string $description
- * @property array $song_identifiers
  * @property ?string $image_path
  * @property string $status
  */
@@ -38,12 +37,7 @@ class DraftGroup extends Model
         'normalized_name',
         'agency_id',
         'description',
-        'song_identifiers',
         'image_path',
         'status',
-    ];
-
-    protected $casts = [
-        'song_identifiers' => 'array',
     ];
 }

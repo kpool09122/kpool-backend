@@ -7,11 +7,12 @@ namespace Tests\Wiki\Song\Domain\ValueObject;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongSource;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -27,10 +28,8 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
         $language = Language::ENGLISH;
         $name = new SongName('Sample Song');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('Composer One');
         $composer = new Composer('Arranger Two');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2020-01-01'));
@@ -42,7 +41,8 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -54,7 +54,8 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
         $this->assertSame($language, $payload->translation());
         $this->assertSame($name, $payload->name());
         $this->assertSame($agencyIdentifier, $payload->agencyIdentifier());
-        $this->assertSame($belongIdentifiers, $payload->belongIdentifiers());
+        $this->assertSame($groupIdentifier, $payload->groupIdentifier());
+        $this->assertSame($talentIdentifier, $payload->talentIdentifier());
         $this->assertSame($lyricist, $payload->lyricist());
         $this->assertSame($composer, $payload->composer());
         $this->assertSame($releaseDate, $payload->releaseDate());
@@ -69,7 +70,8 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
             Language::JAPANESE,
             new SongName('Optional Song'),
             null,
-            [],
+            null,
+            null,
             new Lyricist('Lyricist'),
             new Composer('Composer'),
             null,
@@ -78,7 +80,8 @@ class AutomaticDraftSongCreationPayloadTest extends TestCase
         );
 
         $this->assertNull($payload->agencyIdentifier());
-        $this->assertSame([], $payload->belongIdentifiers());
+        $this->assertNull($payload->groupIdentifier());
+        $this->assertNull($payload->talentIdentifier());
         $this->assertNull($payload->releaseDate());
     }
 }

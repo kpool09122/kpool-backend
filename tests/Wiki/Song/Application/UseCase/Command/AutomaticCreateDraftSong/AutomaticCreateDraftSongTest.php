@@ -16,7 +16,9 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -25,7 +27,6 @@ use Source\Wiki\Song\Domain\Service\AutomaticDraftSongCreationServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongSource;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -212,10 +213,8 @@ class AutomaticCreateDraftSongTest extends TestCase
             Language::KOREAN,
             new SongName('Auto Song'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-                new BelongIdentifier(StrTestHelper::generateUuid()),
-            ],
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new TalentIdentifier(StrTestHelper::generateUuid()),
             new Lyricist('Auto Lyricist'),
             new Composer('Auto Composer'),
             new ReleaseDate(new DateTimeImmutable('2024-02-10')),
@@ -239,7 +238,8 @@ class AutomaticCreateDraftSongTest extends TestCase
             Language::KOREAN,
             new SongName('Auto Song'),
             null,
-            [],
+            null,
+            null,
             new Lyricist('Draft Lyricist'),
             new Composer('Draft Composer'),
             null,

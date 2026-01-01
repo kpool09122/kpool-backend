@@ -10,10 +10,10 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class DraftGroupFactory implements DraftGroupFactoryInterface
@@ -49,7 +49,6 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
             $normalizedName,
             null,
             new Description(''),
-            [],
             null,
             ApprovalStatus::Pending,
         );

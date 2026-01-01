@@ -52,15 +52,11 @@ readonly class RejectSong implements RejectSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $belongIds = array_map(
-            static fn ($belongIdentifier) => (string) $belongIdentifier,
-            $song->belongIdentifiers()
-        );
         $resource = new ResourceIdentifier(
             type: ResourceType::SONG,
             agencyId: (string) $song->agencyIdentifier(),
-            groupIds: $belongIds,
-            talentIds: $belongIds,
+            groupIds: [(string) $song->groupIdentifier()],
+            talentIds: [(string) $song->talentIdentifier()],
         );
 
         if (! $principal->role()->can(Action::REJECT, $resource, $principal)) {

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Application\UseCase\Query\GetTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Query\GetTalent\GetTalentInput;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

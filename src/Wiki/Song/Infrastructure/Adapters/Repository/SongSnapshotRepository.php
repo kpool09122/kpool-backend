@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Infrastructure\Adapters\Repository;
 
+use Application\Models\Wiki\Group;
 use Application\Models\Wiki\SongSnapshot as SongSnapshotModel;
+use Application\Models\Wiki\Talent;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -26,14 +29,14 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
 {
     public function save(SongSnapshot $snapshot): void
     {
-        SongSnapshotModel::query()->create([
+        /** @var SongSnapshotModel $snapshotModel */
+        $snapshotModel = SongSnapshotModel::query()->create([
             'id' => (string)$snapshot->snapshotIdentifier(),
             'song_id' => (string)$snapshot->songIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
             'language' => $snapshot->language()->value,
             'name' => (string)$snapshot->name(),
             'agency_id' => $snapshot->agencyIdentifier() ? (string)$snapshot->agencyIdentifier() : null,
-            'belong_identifiers' => $this->fromBelongIdentifiers($snapshot->belongIdentifiers()),
             'lyricist' => (string)$snapshot->lyricist(),
             'composer' => (string)$snapshot->composer(),
             'release_date' => $snapshot->releaseDate()?->value(),
@@ -43,11 +46,18 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
         ]);
+
+        $groupId = $snapshot->groupIdentifier() ? [(string)$snapshot->groupIdentifier()] : [];
+        $snapshotModel->groups()->sync($groupId);
+
+        $talentId = $snapshot->talentIdentifier() ? [(string)$snapshot->talentIdentifier()] : [];
+        $snapshotModel->talents()->sync($talentId);
     }
 
     public function findBySongIdentifier(SongIdentifier $songIdentifier): array
     {
         $models = SongSnapshotModel::query()
+            ->with(['groups', 'talents'])
             ->where('song_id', (string)$songIdentifier)
             ->orderBy('version', 'desc')
             ->get();
@@ -60,6 +70,7 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
         Version $version
     ): ?SongSnapshot {
         $model = SongSnapshotModel::query()
+            ->with(['groups', 'talents'])
             ->where('song_id', (string)$songIdentifier)
             ->where('version', $version->value())
             ->first();
@@ -71,34 +82,16 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
         return $this->toEntity($model);
     }
 
-    /**
-     * @param BelongIdentifier[] $belongIdentifiers
-     * @return string[]
-     */
-    private function fromBelongIdentifiers(array $belongIdentifiers): array
-    {
-        return array_map(
-            static fn (BelongIdentifier $identifier): string => (string) $identifier,
-            $belongIdentifiers,
-        );
-    }
-
-    /**
-     * @param array<int, string>|null $belongIdentifiers
-     * @return BelongIdentifier[]
-     */
-    private function toBelongIdentifiers(?array $belongIdentifiers): array
-    {
-        $identifiers = $belongIdentifiers ?? [];
-
-        return array_map(
-            static fn (string $belongId): BelongIdentifier => new BelongIdentifier($belongId),
-            $identifiers,
-        );
-    }
-
     private function toEntity(SongSnapshotModel $model): SongSnapshot
     {
+        /** @var Group|null $group */
+        $group = $model->groups->first();
+        $groupIdentifier = $group ? new GroupIdentifier($group->id) : null;
+
+        /** @var Talent|null $talent */
+        $talent = $model->talents->first();
+        $talentIdentifier = $talent ? new TalentIdentifier($talent->id) : null;
+
         return new SongSnapshot(
             new SongSnapshotIdentifier($model->id),
             new SongIdentifier($model->song_id),
@@ -106,7 +99,8 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
             Language::from($model->language),
             new SongName($model->name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
-            $this->toBelongIdentifiers($model->belong_identifiers),
+            $groupIdentifier,
+            $talentIdentifier,
             new Lyricist($model->lyricist),
             new Composer($model->composer),
             $model->release_date ? new ReleaseDate($model->release_date->toDateTimeImmutable()) : null,

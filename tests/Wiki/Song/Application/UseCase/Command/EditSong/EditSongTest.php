@@ -19,7 +19,9 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInput;
@@ -27,7 +29,6 @@ use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\BelongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
@@ -78,7 +79,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -121,7 +123,8 @@ class EditSongTest extends TestCase
         $this->assertSame($dummyEditSong->language->value, $song->language()->value);
         $this->assertSame((string)$dummyEditSong->name, (string)$song->name());
         $this->assertSame((string)$dummyEditSong->agencyIdentifier, (string)$song->agencyIdentifier());
-        $this->assertSame($dummyEditSong->belongIdentifiers, $song->belongIdentifiers());
+        $this->assertSame((string)$dummyEditSong->groupIdentifier, (string)$song->groupIdentifier());
+        $this->assertSame((string)$dummyEditSong->talentIdentifier, (string)$song->talentIdentifier());
         $this->assertSame((string)$dummyEditSong->lyricist, (string)$song->lyricist());
         $this->assertSame((string)$dummyEditSong->composer, (string)$song->composer());
         $this->assertSame($dummyEditSong->releaseDate->value(), $song->releaseDate()->value());
@@ -149,7 +152,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -196,7 +200,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -249,7 +254,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -306,7 +312,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -355,16 +362,17 @@ class EditSongTest extends TestCase
     {
         $dummyEditSong = $this->createDummyEditSong();
         $agencyId = (string)$dummyEditSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyEditSong->belongIdentifiers);
+        $groupId = (string)$dummyEditSong->groupIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$groupId], []);
 
         $input = new EditSongInput(
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -413,16 +421,17 @@ class EditSongTest extends TestCase
     {
         $dummyEditSong = $this->createDummyEditSong();
         $agencyId = (string)$dummyEditSong->agencyIdentifier;
-        $belongIds = array_map(static fn ($belongId) => (string)$belongId, $dummyEditSong->belongIdentifiers);
+        $talentId = (string)$dummyEditSong->talentIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $belongIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
 
         $input = new EditSongInput(
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -478,7 +487,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -533,7 +543,8 @@ class EditSongTest extends TestCase
             $dummyEditSong->songIdentifier,
             $dummyEditSong->name,
             $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->belongIdentifiers,
+            $dummyEditSong->groupIdentifier,
+            $dummyEditSong->talentIdentifier,
             $dummyEditSong->lyricist,
             $dummyEditSong->composer,
             $dummyEditSong->releaseDate,
@@ -579,10 +590,8 @@ class EditSongTest extends TestCase
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $belongIdentifiers = [
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-            new BelongIdentifier(StrTestHelper::generateUuid()),
-        ];
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
@@ -601,7 +610,8 @@ class EditSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -618,7 +628,8 @@ class EditSongTest extends TestCase
             $language,
             $name,
             $agencyIdentifier,
-            $belongIdentifiers,
+            $groupIdentifier,
+            $talentIdentifier,
             $lyricist,
             $composer,
             $releaseDate,
@@ -640,7 +651,6 @@ readonly class EditSongTestData
 {
     /**
      * テストデータなので、すべてpublicで定義
-     * @param BelongIdentifier[] $belongIdentifiers
      */
     public function __construct(
         public SongIdentifier      $songIdentifier,
@@ -649,7 +659,8 @@ readonly class EditSongTestData
         public Language            $language,
         public SongName            $name,
         public AgencyIdentifier    $agencyIdentifier,
-        public array               $belongIdentifiers,
+        public GroupIdentifier     $groupIdentifier,
+        public TalentIdentifier    $talentIdentifier,
         public Lyricist            $lyricist,
         public Composer            $composer,
         public ReleaseDate         $releaseDate,

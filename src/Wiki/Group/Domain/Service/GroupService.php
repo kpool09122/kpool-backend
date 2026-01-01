@@ -6,8 +6,8 @@ namespace Source\Wiki\Group\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 
 class GroupService implements GroupServiceInterface
 {

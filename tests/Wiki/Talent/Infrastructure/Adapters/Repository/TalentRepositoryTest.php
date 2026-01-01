@@ -15,6 +15,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -25,9 +26,9 @@ use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\CreateDraftTalent;
+use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateTalent;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -55,6 +56,11 @@ class TalentRepositoryTest extends TestCase
         $imageLink = '/images/talents/bangchan.jpg';
         $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8', 'https://www.youtube.com/watch?v=dcNRbbQBJUE'];
         $version = 3;
+
+        // 先にグループを作成
+        foreach ($groupIdentifiers as $groupId) {
+            CreateGroup::create($groupId);
+        }
 
         CreateTalent::create($id, [
             'translation_set_identifier' => $translationSetId,
@@ -102,13 +108,15 @@ class TalentRepositoryTest extends TestCase
     public function testFindByIdWhenBirthdayIsNull(): void
     {
         $id = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
 
+        CreateGroup::create($groupId);
         CreateTalent::create($id, [
             'language' => Language::KOREAN->value,
             'name' => '리노',
             'real_name' => '이민호',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'group_identifiers' => [$groupId],
             'birthday' => null,
             'career' => 'Stray Kids main dancer and sub-vocalist.',
             'image_link' => '/images/talents/leeknow.jpg',
@@ -159,6 +167,11 @@ class TalentRepositoryTest extends TestCase
         $imageLink = '/images/talents/changbin.jpg';
         $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8'];
         $status = ApprovalStatus::Pending;
+
+        // 先にグループを作成
+        foreach ($groupIdentifiers as $groupId) {
+            CreateGroup::create($groupId);
+        }
 
         CreateDraftTalent::create($id, [
             'published_id' => $publishedId,
@@ -211,13 +224,15 @@ class TalentRepositoryTest extends TestCase
     public function testFindDraftByIdWhenBirthdayIsNull(): void
     {
         $id = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
 
+        CreateGroup::create($groupId);
         CreateDraftTalent::create($id, [
             'language' => Language::KOREAN->value,
             'name' => '현진',
             'real_name' => '황현진',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'group_identifiers' => [$groupId],
             'birthday' => null,
             'career' => 'Stray Kids main dancer and lead rapper.',
             'image_link' => '/images/talents/hyunjin.jpg',
@@ -255,6 +270,13 @@ class TalentRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
+        $groupId1 = StrTestHelper::generateUuid();
+        $groupId2 = StrTestHelper::generateUuid();
+
+        // 先にグループを作成
+        CreateGroup::create($groupId1);
+        CreateGroup::create($groupId2);
+
         $talent = new Talent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
@@ -263,8 +285,8 @@ class TalentRepositoryTest extends TestCase
             new RealName('지성'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
-                new GroupIdentifier(StrTestHelper::generateUuid()),
-                new GroupIdentifier(StrTestHelper::generateUuid()),
+                new GroupIdentifier($groupId1),
+                new GroupIdentifier($groupId2),
             ],
             new Birthday(new DateTimeImmutable('2000-09-14')),
             new Career('Stray Kids lead vocalist and main rapper. Member of 3RACHA.'),
@@ -279,11 +301,6 @@ class TalentRepositoryTest extends TestCase
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $repository->save($talent);
 
-        $expectedGroups = array_map(
-            static fn (GroupIdentifier $identifier): string => (string) $identifier,
-            $talent->groupIdentifiers(),
-        );
-
         $this->assertDatabaseHas('talents', [
             'id' => (string) $talent->talentIdentifier(),
             'translation_set_identifier' => (string) $talent->translationSetIdentifier(),
@@ -297,17 +314,22 @@ class TalentRepositoryTest extends TestCase
             'version' => $talent->version()->value(),
         ]);
 
-        $rawGroups = DB::table('talents')
-            ->where('id', (string) $talent->talentIdentifier())
-            ->value('group_identifiers');
+        // 中間テーブルの確認
+        $this->assertDatabaseHas('talent_group', [
+            'talent_id' => (string) $talent->talentIdentifier(),
+            'group_id' => $groupId1,
+        ]);
+        $this->assertDatabaseHas('talent_group', [
+            'talent_id' => (string) $talent->talentIdentifier(),
+            'group_id' => $groupId2,
+        ]);
+
         $rawVideos = DB::table('talents')
             ->where('id', (string) $talent->talentIdentifier())
             ->value('relevant_video_links');
 
-        $decodedGroups = json_decode((string) $rawGroups, true, 512, JSON_THROW_ON_ERROR);
         $decodedVideos = json_decode((string) $rawVideos, true, 512, JSON_THROW_ON_ERROR);
 
-        $this->assertSame($expectedGroups, $decodedGroups);
         $this->assertSame(
             $talent->relevantVideoLinks()->toStringArray(),
             $decodedVideos,
@@ -324,6 +346,11 @@ class TalentRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveDraft(): void
     {
+        $groupId = StrTestHelper::generateUuid();
+
+        // 先にグループを作成
+        CreateGroup::create($groupId);
+
         $draft = new DraftTalent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TalentIdentifier(StrTestHelper::generateUuid()),
@@ -333,7 +360,7 @@ class TalentRepositoryTest extends TestCase
             new TalentName('필릭스'),
             new RealName('이용복'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [new GroupIdentifier(StrTestHelper::generateUuid())],
+            [new GroupIdentifier($groupId)],
             new Birthday(new DateTimeImmutable('2000-09-15')),
             new Career('Stray Kids lead dancer and sub-rapper. Known for his deep voice.'),
             new ImagePath('/images/talents/felix.jpg'),
@@ -345,11 +372,6 @@ class TalentRepositoryTest extends TestCase
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
         $repository->saveDraft($draft);
-
-        $expectedGroups = array_map(
-            static fn (GroupIdentifier $identifier): string => (string) $identifier,
-            $draft->groupIdentifiers(),
-        );
 
         $this->assertDatabaseHas('draft_talents', [
             'id' => (string) $draft->talentIdentifier(),
@@ -366,17 +388,18 @@ class TalentRepositoryTest extends TestCase
             'status' => $draft->status()->value,
         ]);
 
-        $rawGroups = DB::table('draft_talents')
-            ->where('id', (string) $draft->talentIdentifier())
-            ->value('group_identifiers');
+        // 中間テーブルの確認
+        $this->assertDatabaseHas('draft_talent_group', [
+            'draft_talent_id' => (string) $draft->talentIdentifier(),
+            'group_id' => $groupId,
+        ]);
+
         $rawVideos = DB::table('draft_talents')
             ->where('id', (string) $draft->talentIdentifier())
             ->value('relevant_video_links');
 
-        $decodedGroups = json_decode((string) $rawGroups, true, 512, JSON_THROW_ON_ERROR);
         $decodedVideos = json_decode((string) $rawVideos, true, 512, JSON_THROW_ON_ERROR);
 
-        $this->assertSame($expectedGroups, $decodedGroups);
         $this->assertSame(
             $draft->relevantVideoLinks()->toStringArray(),
             $decodedVideos,
@@ -393,6 +416,10 @@ class TalentRepositoryTest extends TestCase
     public function testDeleteDraft(): void
     {
         $id = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+
         $draft = new DraftTalent(
             new TalentIdentifier($id),
             new TalentIdentifier(StrTestHelper::generateUuid()),
@@ -402,7 +429,7 @@ class TalentRepositoryTest extends TestCase
             new TalentName('승민'),
             new RealName('김승민'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            [new GroupIdentifier(StrTestHelper::generateUuid())],
+            [new GroupIdentifier($groupId)],
             new Birthday(new DateTimeImmutable('2000-09-22')),
             new Career('Stray Kids lead vocalist.'),
             null,
@@ -433,6 +460,11 @@ class TalentRepositoryTest extends TestCase
         $this->assertDatabaseMissing('draft_talents', [
             'id' => $id,
         ]);
+
+        $this->assertDatabaseMissing('draft_talent_group', [
+            'draft_talent_id' => $id,
+            'group_id' => $groupId,
+        ]);
     }
 
     /**
@@ -446,6 +478,14 @@ class TalentRepositoryTest extends TestCase
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
+        $groupId1 = StrTestHelper::generateUuid();
+        $groupId2 = StrTestHelper::generateUuid();
+        $groupId3 = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId1);
+        CreateGroup::create($groupId2);
+        CreateGroup::create($groupId3);
+
         $draft1Id = StrTestHelper::generateUuid();
         $draft1 = [
             'published_id' => StrTestHelper::generateUuid(),
@@ -455,7 +495,7 @@ class TalentRepositoryTest extends TestCase
             'name' => '아이엔',
             'real_name' => '양정인',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'group_identifiers' => [$groupId1],
             'birthday' => '2001-02-08',
             'career' => 'Stray Kids youngest member (maknae) and vocalist.',
             'status' => ApprovalStatus::Pending->value,
@@ -470,7 +510,7 @@ class TalentRepositoryTest extends TestCase
             'name' => 'アイエン',
             'real_name' => 'ヤン・ジョンイン',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'group_identifiers' => [$groupId2],
             'birthday' => '2001-02-08',
             'career' => 'Stray Kidsの末っ子でボーカル担当。',
             'status' => ApprovalStatus::Approved->value,
@@ -483,7 +523,7 @@ class TalentRepositoryTest extends TestCase
             'name' => 'Karina',
             'real_name' => 'Yu Ji-min',
             'agency_id' => StrTestHelper::generateUuid(),
-            'group_identifiers' => [StrTestHelper::generateUuid()],
+            'group_identifiers' => [$groupId3],
             'birthday' => '2000-04-11',
             'career' => 'aespa leader, main dancer, lead vocalist, and center.',
             'status' => ApprovalStatus::Pending->value,

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Ramsey\Collection\Collection;
 
 /**
  * @property string $id
@@ -14,14 +17,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $language
  * @property string $name
  * @property ?string $agency_id
- * @property array $belong_identifiers
  * @property string $lyricist
  * @property string $composer
- * @property \Illuminate\Support\Carbon|null $release_date
+ * @property Carbon|null $release_date
  * @property string $overview
  * @property ?string $cover_image_path
  * @property ?string $music_video_link
  * @property string $status
+ * @property-read Collection<int, Group> $groups
+ * @property-read Collection<int, Talent> $talents
  */
 class DraftSong extends Model
 {
@@ -39,7 +43,6 @@ class DraftSong extends Model
         'language',
         'name',
         'agency_id',
-        'belong_identifiers',
         'lyricist',
         'composer',
         'release_date',
@@ -50,7 +53,32 @@ class DraftSong extends Model
     ];
 
     protected $casts = [
-        'belong_identifiers' => 'array',
         'release_date' => 'date',
     ];
+
+    /**
+     * @return BelongsToMany<Group, $this>
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Group::class,
+            'draft_song_group',
+            'draft_song_id',
+            'group_id',
+        );
+    }
+
+    /**
+     * @return BelongsToMany<Talent, $this>
+     */
+    public function talents(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Talent::class,
+            'draft_song_talent',
+            'draft_song_id',
+            'talent_id',
+        );
+    }
 }

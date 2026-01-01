@@ -14,10 +14,9 @@ use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\CreateGroupSnapshot;
 use Tests\Helper\StrTestHelper;
@@ -42,10 +41,6 @@ class GroupSnapshotRepositoryTest extends TestCase
         $normalizedName = 'twice';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'TWICE description';
-        $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUuid()),
-            new SongIdentifier(StrTestHelper::generateUuid()),
-        ];
         $imagePath = '/resources/public/images/twice.webp';
         $version = 1;
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
@@ -59,7 +54,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             $normalizedName,
             new AgencyIdentifier($agencyId),
             new Description($description),
-            $songIdentifiers,
             new ImagePath($imagePath),
             new Version($version),
             $createdAt,
@@ -103,7 +97,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             'twice',
             null,
             new Description('TWICE is a South Korean girl group.'),
-            [],
             null,
             new Version(1),
             new DateTimeImmutable('2024-01-01 00:00:00'),

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Repository;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\ValueObject\TalentIdentifier;
 
 interface TalentRepositoryInterface
 {

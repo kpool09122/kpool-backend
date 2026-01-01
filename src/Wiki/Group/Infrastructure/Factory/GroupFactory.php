@@ -10,9 +10,9 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupFactory implements GroupFactoryInterface
@@ -44,7 +44,6 @@ readonly class GroupFactory implements GroupFactoryInterface
             $normalizedName,
             null,
             new Description(''),
-            [],
             null,
             new Version(1),
         );

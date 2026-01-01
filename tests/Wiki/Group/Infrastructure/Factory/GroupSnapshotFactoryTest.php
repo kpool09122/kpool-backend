@@ -14,10 +14,9 @@ use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Group\Infrastructure\Factory\GroupSnapshotFactory;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -51,10 +50,6 @@ class GroupSnapshotFactoryTest extends TestCase
         $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('TWICE is a South Korean girl group.');
-        $songIdentifiers = [
-            new SongIdentifier(StrTestHelper::generateUuid()),
-            new SongIdentifier(StrTestHelper::generateUuid()),
-        ];
         $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $version = new Version(3);
 
@@ -66,7 +61,6 @@ class GroupSnapshotFactoryTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $songIdentifiers,
             $imagePath,
             $version,
         );
@@ -82,7 +76,6 @@ class GroupSnapshotFactoryTest extends TestCase
         $this->assertSame($normalizedName, $snapshot->normalizedName());
         $this->assertSame((string)$agencyIdentifier, (string)$snapshot->agencyIdentifier());
         $this->assertSame((string)$description, (string)$snapshot->description());
-        $this->assertSame($songIdentifiers, $snapshot->songIdentifiers());
         $this->assertSame((string)$imagePath, (string)$snapshot->imagePath());
         $this->assertSame($version->value(), $snapshot->version()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
@@ -104,7 +97,6 @@ class GroupSnapshotFactoryTest extends TestCase
             'twice',
             null,
             new Description('TWICE is a South Korean girl group.'),
-            [],
             null,
             new Version(1),
         );

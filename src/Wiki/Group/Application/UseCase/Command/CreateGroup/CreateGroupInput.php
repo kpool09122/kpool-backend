@@ -7,9 +7,8 @@ namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Group\Domain\ValueObject\SongIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class CreateGroupInput implements CreateGroupInputPort
@@ -20,7 +19,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
      * @param GroupName $name
      * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
-     * @param SongIdentifier[] $songIdentifiers
      * @param string|null $base64EncodedImage
      * @param PrincipalIdentifier $principalIdentifier
      */
@@ -30,7 +28,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         private GroupName           $name,
         private AgencyIdentifier    $agencyIdentifier,
         private Description         $description,
-        private array               $songIdentifiers,
         private ?string             $base64EncodedImage,
         private PrincipalIdentifier $principalIdentifier,
     ) {
@@ -59,14 +56,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
     public function description(): Description
     {
         return $this->description;
-    }
-
-    /**
-     * @return list<SongIdentifier>
-     */
-    public function songIdentifiers(): array
-    {
-        return $this->songIdentifiers;
     }
 
     public function base64EncodedImage(): ?string
