@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Infrastructure\Adapters\Repository;
 
-use Application\Models\Wiki\DraftGroup as DraftGroupModel;
 use Application\Models\Wiki\Group as GroupModel;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 final class GroupRepository implements GroupRepositoryInterface
@@ -35,78 +31,23 @@ final class GroupRepository implements GroupRepositoryInterface
         return $this->toEntity($groupModel);
     }
 
-    public function findDraftById(GroupIdentifier $groupIdentifier): ?DraftGroup
-    {
-        $draftModel = DraftGroupModel::query()
-            ->where('id', (string) $groupIdentifier)
-            ->first();
-
-        if ($draftModel === null) {
-            return null;
-        }
-
-        return $this->toDraftEntity($draftModel);
-    }
-
     public function save(Group $group): void
     {
-        $groupModel = GroupModel::query()->updateOrCreate(
+        GroupModel::query()->updateOrCreate(
             [
-                'id' => (string) $group->groupIdentifier(),
+               'id' => (string)$group->groupIdentifier(),
             ],
             [
-                'translation_set_identifier' => (string) $group->translationSetIdentifier(),
-                'translation' => $group->language()->value,
-                'name' => (string) $group->name(),
-                'normalized_name' => $group->normalizedName(),
-                'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
-                'description' => (string) $group->description(),
-                'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
-                'version' => $group->version()->value(),
-            ],
-        );
-    }
-
-    public function saveDraft(DraftGroup $group): void
-    {
-        $draftModel = DraftGroupModel::query()->updateOrCreate(
-            [
-                'id' => (string) $group->groupIdentifier(),
-            ],
-            [
-                'published_id' => $group->publishedGroupIdentifier()
-                    ? (string) $group->publishedGroupIdentifier()
-                    : null,
-                'translation_set_identifier' => (string) $group->translationSetIdentifier(),
-                'editor_id' => (string) $group->editorIdentifier(),
-                'translation' => $group->language()->value,
-                'name' => (string) $group->name(),
-                'normalized_name' => $group->normalizedName(),
-                'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
-                'description' => (string) $group->description(),
-                'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
-                'status' => $group->status()->value,
+               'translation_set_identifier' => (string)$group->translationSetIdentifier(),
+               'translation' => $group->language()->value,
+               'name' => (string)$group->name(),
+               'normalized_name' => $group->normalizedName(),
+               'agency_id' => $group->agencyIdentifier() ? (string)$group->agencyIdentifier() : null,
+               'description' => (string)$group->description(),
+               'image_path' => $group->imagePath() ? (string)$group->imagePath() : null,
+               'version' => $group->version()->value(),
             ],
         );
-    }
-
-    public function deleteDraft(DraftGroup $group): void
-    {
-        DraftGroupModel::query()
-            ->where('id', (string) $group->groupIdentifier())
-            ->delete();
-    }
-
-    public function findDraftsByTranslationSet(
-        TranslationSetIdentifier $translationSetIdentifier,
-    ): array {
-        $draftModels = DraftGroupModel::query()
-            ->where('translation_set_identifier', (string) $translationSetIdentifier)
-            ->get();
-
-        return $draftModels
-            ->map(fn (DraftGroupModel $model): DraftGroup => $this->toDraftEntity($model))
-            ->toArray();
     }
 
     private function toEntity(GroupModel $model): Group
@@ -121,23 +62,6 @@ final class GroupRepository implements GroupRepositoryInterface
             new Description($model->description),
             $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version ?? 1),
-        );
-    }
-
-    private function toDraftEntity(DraftGroupModel $model): DraftGroup
-    {
-        return new DraftGroup(
-            new GroupIdentifier($model->id),
-            $model->published_id ? new GroupIdentifier($model->published_id) : null,
-            new TranslationSetIdentifier($model->translation_set_identifier),
-            new PrincipalIdentifier($model->editor_id),
-            Language::from($model->translation),
-            new GroupName($model->name),
-            $model->normalized_name,
-            $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
-            new Description($model->description),
-            $model->image_path ? new ImagePath($model->image_path) : null,
-            ApprovalStatus::from($model->status),
         );
     }
 }

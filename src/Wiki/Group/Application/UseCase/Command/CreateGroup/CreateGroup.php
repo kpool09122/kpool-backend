@@ -7,6 +7,7 @@ namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -18,10 +19,11 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class CreateGroup implements CreateGroupInterface
 {
     public function __construct(
-        private ImageServiceInterface      $imageService,
-        private DraftGroupFactoryInterface $groupFactory,
-        private GroupRepositoryInterface   $groupRepository,
-        private PrincipalRepositoryInterface $principalRepository,
+        private ImageServiceInterface         $imageService,
+        private DraftGroupFactoryInterface    $groupFactory,
+        private DraftGroupRepositoryInterface $draftGroupRepository,
+        private GroupRepositoryInterface      $groupRepository,
+        private PrincipalRepositoryInterface  $principalRepository,
     ) {
     }
 
@@ -65,7 +67,7 @@ readonly class CreateGroup implements CreateGroupInterface
             $group->setImagePath($imageLink);
         }
 
-        $this->groupRepository->saveDraft($group);
+        $this->draftGroupRepository->save($group);
 
         return $group;
     }

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 
-class GroupService implements GroupServiceInterface
+readonly class GroupService implements GroupServiceInterface
 {
     public function __construct(
-        private readonly GroupRepositoryInterface $groupRepository,
+        private DraftGroupRepositoryInterface $groupRepository,
     ) {
     }
 
@@ -20,7 +20,7 @@ class GroupService implements GroupServiceInterface
         TranslationSetIdentifier $translationSetIdentifier,
         GroupIdentifier $excludeGroupIdentifier,
     ): bool {
-        $draftGroups = $this->groupRepository->findDraftsByTranslationSet(
+        $draftGroups = $this->groupRepository->findByTranslationSet(
             $translationSetIdentifier,
         );
 

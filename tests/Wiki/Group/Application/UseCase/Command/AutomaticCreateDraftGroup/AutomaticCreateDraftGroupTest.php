@@ -12,7 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
@@ -57,15 +57,15 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftGroup);
 
-        $repository = Mockery::mock(GroupRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftGroup)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
-        $this->app->instance(GroupRepositoryInterface::class, $repository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
@@ -99,15 +99,15 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftGroup);
 
-        $repository = Mockery::mock(GroupRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftGroup)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
-        $this->app->instance(GroupRepositoryInterface::class, $repository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
@@ -135,11 +135,11 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
-        $repository = Mockery::mock(GroupRepositoryInterface::class);
+        $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
-        $this->app->instance(GroupRepositoryInterface::class, $repository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
@@ -166,11 +166,11 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->andReturn(null);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
-        $repository = Mockery::mock(GroupRepositoryInterface::class);
+        $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
-        $this->app->instance(GroupRepositoryInterface::class, $repository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);

@@ -10,6 +10,7 @@ use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
@@ -34,6 +35,7 @@ readonly class PublishGroup implements PublishGroupInterface
         private GroupSnapshotFactoryInterface    $groupSnapshotFactory,
         private GroupSnapshotRepositoryInterface $groupSnapshotRepository,
         private PrincipalRepositoryInterface     $principalRepository,
+        private DraftGroupRepositoryInterface    $draftGroupRepository,
     ) {
     }
 
@@ -48,7 +50,7 @@ readonly class PublishGroup implements PublishGroupInterface
      */
     public function process(PublishGroupInputPort $input): Group
     {
-        $group = $this->groupRepository->findDraftById($input->groupIdentifier());
+        $group = $this->draftGroupRepository->findById($input->groupIdentifier());
 
         if ($group === null) {
             throw new GroupNotFoundException();
@@ -119,7 +121,7 @@ readonly class PublishGroup implements PublishGroupInterface
         );
         $this->groupHistoryRepository->save($history);
 
-        $this->groupRepository->deleteDraft($group);
+        $this->draftGroupRepository->delete($group);
 
         return $publishedGroup;
     }

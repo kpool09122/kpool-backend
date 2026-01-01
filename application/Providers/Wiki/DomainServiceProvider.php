@@ -23,10 +23,12 @@ use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupService;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
+use Source\Wiki\Group\Infrastructure\Adapters\Repository\DraftGroupRepository;
 use Source\Wiki\Group\Infrastructure\Adapters\Repository\GroupRepository;
 use Source\Wiki\Group\Infrastructure\Adapters\Repository\GroupSnapshotRepository;
 use Source\Wiki\Group\Infrastructure\Factory\DraftGroupFactory;
@@ -103,5 +105,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
         $this->app->singleton(SongRepositoryInterface::class, SongRepository::class);
+        $this->app->singleton(DraftGroupRepositoryInterface::class, DraftGroupRepository::class);
     }
 }

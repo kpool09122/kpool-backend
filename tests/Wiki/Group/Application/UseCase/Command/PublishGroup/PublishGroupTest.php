@@ -22,6 +22,7 @@ use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
@@ -68,6 +69,8 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
         $groupSnapshotRepository = Mockery::mock(GroupSnapshotRepositoryInterface::class);
         $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $this->assertInstanceOf(PublishGroup::class, $publishGroup);
     }
@@ -105,10 +108,6 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->publishedGroupIdentifier)
@@ -117,7 +116,13 @@ class PublishGroupTest extends TestCase
             ->once()
             ->with($dummyPublishGroup->publishedGroup)
             ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
             ->once()
             ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
@@ -159,13 +164,14 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
         $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
         $this->assertSame($dummyPublishGroup->language->value, $publishedGroup->language()->value);
         $this->assertSame((string)$dummyPublishGroup->agencyIdentifier, (string)$publishedGroup->agencyIdentifier());
         $this->assertSame((string)$dummyPublishGroup->name, (string)$publishedGroup->name());
-        $this->assertSame((string)$dummyPublishGroup->normalizedName, (string)$publishedGroup->normalizedName());
+        $this->assertSame($dummyPublishGroup->normalizedName, $publishedGroup->normalizedName());
         $this->assertSame((string)$dummyPublishGroup->description, (string)$publishedGroup->description());
         $this->assertSame((string)$dummyPublishGroup->imagePath, (string)$publishedGroup->imagePath());
         $this->assertSame($dummyPublishGroup->publishedVersion->value() + 1, $publishedGroup->version()->value());
@@ -204,15 +210,17 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
             ->once()
             ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
@@ -255,6 +263,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
         $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishedGroup = $publishGroup->process($input);
         $this->assertSame((string)$dummyPublishGroup->publishedGroupIdentifier, (string)$publishedGroup->groupIdentifier());
@@ -268,7 +277,7 @@ class PublishGroupTest extends TestCase
     }
 
     /**
-     * 異常系：指定したIDに紐づくGroupが存在しない場合、例外がスローされること.
+     * 異常系：指定したIDに紐づく下書きGroupが存在しない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -276,12 +285,11 @@ class PublishGroupTest extends TestCase
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testWhenNotFoundAgency(): void
+    public function testWhenNotFoundGroup(): void
     {
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -293,10 +301,13 @@ class PublishGroupTest extends TestCase
         $principalRepository->shouldNotReceive('findById');
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn(null);
+            ->andReturnNull();
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -307,6 +318,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(GroupNotFoundException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -341,10 +353,13 @@ class PublishGroupTest extends TestCase
             ->andReturn(null);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -355,6 +370,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -373,9 +389,7 @@ class PublishGroupTest extends TestCase
     public function testInvalidStatus(): void
     {
         $dummyPublishGroup = $this->createDummyPublishGroup(status: ApprovalStatus::Approved);
-
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -387,10 +401,13 @@ class PublishGroupTest extends TestCase
         $principalRepository->shouldNotReceive('findById');
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -401,6 +418,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(InvalidStatusException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -437,10 +455,13 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -456,6 +477,8 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+
         $this->expectException(ExistsApprovedButNotTranslatedGroupException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -490,14 +513,17 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->publishedGroupIdentifier)
             ->andReturn(null);
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
@@ -513,6 +539,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(GroupNotFoundException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -548,10 +575,13 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -562,6 +592,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -600,15 +631,17 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
             ->once()
             ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
@@ -642,9 +675,10 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
-        $result = $publishGroup->process($input);
+        $publishGroup->process($input);
 
         $this->assertSame(ApprovalStatus::UnderReview, $dummyPublishGroup->status);
     }
@@ -679,10 +713,13 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -693,6 +730,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -733,15 +771,17 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
             ->once()
             ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
@@ -775,6 +815,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -810,10 +851,13 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldNotReceive('delete');
 
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -824,6 +868,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -864,15 +909,17 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
             ->once()
             ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
@@ -906,6 +953,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -941,12 +989,13 @@ class PublishGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
 
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
@@ -956,6 +1005,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
@@ -997,15 +1047,17 @@ class PublishGroupTest extends TestCase
             ->andReturn($principal);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
-            ->once()
-            ->with($dummyPublishGroup->groupIdentifier)
-            ->andReturn($dummyPublishGroup->draftGroup);
         $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishGroup->createdGroup)
             ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
             ->once()
             ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
@@ -1039,6 +1091,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -1075,18 +1128,20 @@ class PublishGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishGroup->draftGroup)
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishGroup->createdGroup)
-            ->andReturn(null);
-        $groupRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishGroup->draftGroup)
             ->andReturn(null);
 
         $groupFactory = Mockery::mock(GroupFactoryInterface::class);
@@ -1118,6 +1173,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -1151,12 +1207,13 @@ class PublishGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishGroup->groupIdentifier)
             ->andReturn($dummyPublishGroup->draftGroup);
 
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
@@ -1166,6 +1223,7 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);

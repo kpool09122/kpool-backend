@@ -7,7 +7,7 @@ namespace Source\Wiki\Group\Application\UseCase\Command\EditGroup;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -19,10 +19,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class EditGroup implements EditGroupInterface
 {
     public function __construct(
-        private ImageServiceInterface    $imageService,
-        private GroupRepositoryInterface $groupRepository,
+        private ImageServiceInterface         $imageService,
+        private DraftGroupRepositoryInterface $groupRepository,
         private NormalizationServiceInterface $normalizationService,
-        private PrincipalRepositoryInterface $principalRepository,
+        private PrincipalRepositoryInterface  $principalRepository,
     ) {
     }
 
@@ -35,7 +35,7 @@ readonly class EditGroup implements EditGroupInterface
      */
     public function process(EditGroupInputPort $input): DraftGroup
     {
-        $group = $this->groupRepository->findDraftById($input->groupIdentifier());
+        $group = $this->groupRepository->findById($input->groupIdentifier());
 
         if ($group === null) {
             throw new GroupNotFoundException();
@@ -65,7 +65,7 @@ readonly class EditGroup implements EditGroupInterface
             $group->setImagePath($imageLink);
         }
 
-        $this->groupRepository->saveDraft($group);
+        $this->groupRepository->save($group);
 
         return $group;
     }
