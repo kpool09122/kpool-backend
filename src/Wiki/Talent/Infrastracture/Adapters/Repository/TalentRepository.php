@@ -29,6 +29,7 @@ final class TalentRepository implements TalentRepositoryInterface
     public function findById(TalentIdentifier $identifier): ?Talent
     {
         $talentModel = TalentModel::query()
+            ->with('groups')
             ->where('id', (string) $identifier)
             ->first();
 
@@ -36,10 +37,9 @@ final class TalentRepository implements TalentRepositoryInterface
             return null;
         }
 
-        $groupIdentifiers = [];
-        foreach (($talentModel->group_identifiers ?? []) as $identifier) {
-            $groupIdentifiers[] = new GroupIdentifier($identifier);
-        }
+        $groupIdentifiers = $talentModel->groups
+            ->map(fn ($group) => new GroupIdentifier($group->id))
+            ->toArray();
 
         $relevantVideoLinks = RelevantVideoLinks::formStringArray($talentModel->relevant_video_links ?? []);
 
@@ -61,15 +61,11 @@ final class TalentRepository implements TalentRepositoryInterface
 
     public function save(Talent $talent): void
     {
-        $groupIdentifiers = [];
-        foreach ($talent->groupIdentifiers() as $identifier) {
-            $groupIdentifiers[] = (string) $identifier;
-        }
-
         $birthday = $talent->birthday();
         $birthdayValue = $birthday?->format('Y-m-d');
 
-        TalentModel::query()->updateOrCreate(
+        /** @var TalentModel $talentModel */
+        $talentModel = TalentModel::query()->updateOrCreate(
             [
                 'id' => (string) $talent->talentIdentifier(),
             ],
@@ -79,7 +75,6 @@ final class TalentRepository implements TalentRepositoryInterface
                 'name' => (string) $talent->name(),
                 'real_name' => (string) $talent->realName(),
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
-                'group_identifiers' => $groupIdentifiers,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
                 'image_link' => $talent->imageLink() ? (string) $talent->imageLink() : null,
@@ -87,11 +82,18 @@ final class TalentRepository implements TalentRepositoryInterface
                 'version' => $talent->version()->value(),
             ],
         );
+
+        $groupIds = array_map(
+            static fn (GroupIdentifier $identifier): string => (string) $identifier,
+            $talent->groupIdentifiers(),
+        );
+        $talentModel->groups()->sync($groupIds);
     }
 
     public function findDraftById(TalentIdentifier $identifier): ?DraftTalent
     {
         $draftModel = DraftTalentModel::query()
+            ->with('groups')
             ->where('id', (string) $identifier)
             ->first();
 
@@ -99,10 +101,9 @@ final class TalentRepository implements TalentRepositoryInterface
             return null;
         }
 
-        $groupIdentifiers = [];
-        foreach (($draftModel->group_identifiers ?? []) as $identifier) {
-            $groupIdentifiers[] = new GroupIdentifier($identifier);
-        }
+        $groupIdentifiers = $draftModel->groups
+            ->map(fn ($group) => new GroupIdentifier($group->id))
+            ->toArray();
 
         $relevantVideoLinks = RelevantVideoLinks::formStringArray($draftModel->relevant_video_links ?? []);
 
@@ -126,15 +127,11 @@ final class TalentRepository implements TalentRepositoryInterface
 
     public function saveDraft(DraftTalent $talent): void
     {
-        $groupIdentifiers = [];
-        foreach ($talent->groupIdentifiers() as $identifier) {
-            $groupIdentifiers[] = (string) $identifier;
-        }
-
         $birthday = $talent->birthday();
         $birthdayValue = $birthday?->format('Y-m-d');
 
-        DraftTalentModel::query()->updateOrCreate(
+        /** @var DraftTalentModel $draftModel */
+        $draftModel = DraftTalentModel::query()->updateOrCreate(
             [
                 'id' => (string) $talent->talentIdentifier(),
             ],
@@ -148,7 +145,6 @@ final class TalentRepository implements TalentRepositoryInterface
                 'name' => (string) $talent->name(),
                 'real_name' => (string) $talent->realName(),
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
-                'group_identifiers' => $groupIdentifiers,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
                 'image_link' => $talent->imageLink() ? (string) $talent->imageLink() : null,
@@ -156,6 +152,12 @@ final class TalentRepository implements TalentRepositoryInterface
                 'status' => $talent->status()->value,
             ],
         );
+
+        $groupIds = array_map(
+            static fn (GroupIdentifier $identifier): string => (string) $identifier,
+            $talent->groupIdentifiers(),
+        );
+        $draftModel->groups()->sync($groupIds);
     }
 
     public function deleteDraft(DraftTalent $talent): void
@@ -169,6 +171,7 @@ final class TalentRepository implements TalentRepositoryInterface
         TranslationSetIdentifier $translationSetIdentifier,
     ): array {
         $draftModels = DraftTalentModel::query()
+            ->with('groups')
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->get();
 
@@ -176,10 +179,9 @@ final class TalentRepository implements TalentRepositoryInterface
 
         /** @var DraftTalentModel $model */
         foreach ($draftModels as $model) {
-            $groupIdentifiers = [];
-            foreach (($model->group_identifiers ?? []) as $identifier) {
-                $groupIdentifiers[] = new GroupIdentifier($identifier);
-            }
+            $groupIdentifiers = $model->groups
+                ->map(fn ($group) => new GroupIdentifier($group->id))
+                ->toArray();
 
             $relevantVideoLinks = RelevantVideoLinks::formStringArray($model->relevant_video_links ?? []);
 

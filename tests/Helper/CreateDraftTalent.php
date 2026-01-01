@@ -39,7 +39,6 @@ class CreateDraftTalent
             'name' => $overrides['name'] ?? '현진',
             'real_name' => $overrides['real_name'] ?? '황현진',
             'agency_id' => $overrides['agency_id'] ?? null,
-            'group_identifiers' => json_encode($overrides['group_identifiers'] ?? [], JSON_THROW_ON_ERROR),
             'birthday' => $overrides['birthday'] ?? null,
             'career' => $overrides['career'] ?? 'Stray Kids main dancer and lead rapper.',
             'image_link' => $overrides['image_link'] ?? null,
@@ -48,5 +47,13 @@ class CreateDraftTalent
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $groupIdentifiers = $overrides['group_identifiers'] ?? [];
+        foreach ($groupIdentifiers as $groupId) {
+            DB::table('draft_talent_group')->insert([
+                'draft_talent_id' => $draftTalentId,
+                'group_id' => $groupId,
+            ]);
+        }
     }
 }

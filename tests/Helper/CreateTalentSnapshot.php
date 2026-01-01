@@ -35,7 +35,6 @@ class CreateTalentSnapshot
             'name' => $overrides['name'] ?? '채영',
             'real_name' => $overrides['real_name'] ?? '손채영',
             'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
-            'group_identifiers' => json_encode($overrides['group_identifiers'] ?? []),
             'birthday' => $overrides['birthday'] ?? '1999-04-23',
             'career' => $overrides['career'] ?? 'TWICE member since 2015.',
             'image_link' => $overrides['image_link'] ?? '/resources/public/images/chaeyoung.webp',
@@ -43,5 +42,13 @@ class CreateTalentSnapshot
             'version' => $overrides['version'] ?? 1,
             'created_at' => $overrides['created_at'] ?? '2024-01-01 00:00:00',
         ]);
+
+        $groupIdentifiers = $overrides['group_identifiers'] ?? [];
+        foreach ($groupIdentifiers as $groupId) {
+            DB::table('talent_snapshot_group')->insert([
+                'talent_snapshot_id' => $snapshotId,
+                'group_id' => $groupId,
+            ]);
+        }
     }
 }

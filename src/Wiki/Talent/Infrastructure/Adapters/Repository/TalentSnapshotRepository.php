@@ -25,7 +25,8 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
 {
     public function save(TalentSnapshot $snapshot): void
     {
-        TalentSnapshotModel::query()->create([
+        /** @var TalentSnapshotModel $snapshotModel */
+        $snapshotModel = TalentSnapshotModel::query()->create([
             'id' => (string)$snapshot->snapshotIdentifier(),
             'talent_id' => (string)$snapshot->talentIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
@@ -33,7 +34,6 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             'name' => (string)$snapshot->name(),
             'real_name' => (string)$snapshot->realName(),
             'agency_id' => $snapshot->agencyIdentifier() ? (string)$snapshot->agencyIdentifier() : null,
-            'group_identifiers' => $this->fromGroupIdentifiers($snapshot->groupIdentifiers()),
             'birthday' => $snapshot->birthday()?->value(),
             'career' => (string)$snapshot->career(),
             'image_link' => $snapshot->imageLink() ? (string)$snapshot->imageLink() : null,
@@ -41,11 +41,15 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
         ]);
+
+        $groupIds = $this->fromGroupIdentifiers($snapshot->groupIdentifiers());
+        $snapshotModel->groups()->sync($groupIds);
     }
 
     public function findByTalentIdentifier(TalentIdentifier $talentIdentifier): array
     {
         $models = TalentSnapshotModel::query()
+            ->with('groups')
             ->where('talent_id', (string)$talentIdentifier)
             ->orderBy('version', 'desc')
             ->get();
@@ -58,6 +62,7 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
         Version $version
     ): ?TalentSnapshot {
         $model = TalentSnapshotModel::query()
+            ->with('groups')
             ->where('talent_id', (string)$talentIdentifier)
             ->where('version', $version->value())
             ->first();
@@ -81,22 +86,12 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
         );
     }
 
-    /**
-     * @param array<int, string>|null $groupIdentifiers
-     * @return GroupIdentifier[]
-     */
-    private function toGroupIdentifiers(?array $groupIdentifiers): array
-    {
-        $identifiers = $groupIdentifiers ?? [];
-
-        return array_map(
-            static fn (string $groupId): GroupIdentifier => new GroupIdentifier($groupId),
-            $identifiers,
-        );
-    }
-
     private function toEntity(TalentSnapshotModel $model): TalentSnapshot
     {
+        $groupIdentifiers = $model->groups
+            ->map(fn ($group) => new GroupIdentifier($group->id))
+            ->toArray();
+
         return new TalentSnapshot(
             new TalentSnapshotIdentifier($model->id),
             new TalentIdentifier($model->talent_id),
@@ -105,7 +100,7 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             new TalentName($model->name),
             new RealName($model->real_name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
-            $this->toGroupIdentifiers($model->group_identifiers),
+            $groupIdentifiers,
             $model->birthday ? new Birthday($model->birthday->toDateTimeImmutable()) : null,
             new Career($model->career),
             $model->image_link ? new ImagePath($model->image_link) : null,

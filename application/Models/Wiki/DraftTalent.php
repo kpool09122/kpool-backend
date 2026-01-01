@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $id
@@ -15,7 +16,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property string $real_name
  * @property ?string $agency_id
- * @property array $group_identifiers
  * @property \Illuminate\Support\Carbon|null $birthday
  * @property string $career
  * @property ?string $image_link
@@ -39,7 +39,6 @@ class DraftTalent extends Model
         'name',
         'real_name',
         'agency_id',
-        'group_identifiers',
         'birthday',
         'career',
         'image_link',
@@ -48,8 +47,20 @@ class DraftTalent extends Model
     ];
 
     protected $casts = [
-        'group_identifiers' => 'array',
         'birthday' => 'date',
         'relevant_video_links' => 'array',
     ];
+
+    /**
+     * @return BelongsToMany<Group, $this>
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Group::class,
+            'draft_talent_group',
+            'draft_talent_id',
+            'group_id',
+        );
+    }
 }
