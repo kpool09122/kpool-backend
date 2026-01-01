@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 
-class AgencyService implements AgencyServiceInterface
+readonly class AgencyService implements AgencyServiceInterface
 {
     public function __construct(
-        private readonly AgencyRepositoryInterface $agencyRepository,
+        private DraftAgencyRepositoryInterface $agencyRepository,
     ) {
     }
 
@@ -20,7 +20,7 @@ class AgencyService implements AgencyServiceInterface
         TranslationSetIdentifier $translationSetIdentifier,
         AgencyIdentifier $excludeAgencyIdentifier,
     ): bool {
-        $draftAgencies = $this->agencyRepository->findDraftsByTranslationSet(
+        $draftAgencies = $this->agencyRepository->findByTranslationSet(
             $translationSetIdentifier,
         );
 

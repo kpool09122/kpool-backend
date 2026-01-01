@@ -9,6 +9,7 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -19,9 +20,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class TranslateAgency implements TranslateAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface    $agencyRepository,
-        private TranslationServiceInterface  $translationService,
-        private PrincipalRepositoryInterface $principalRepository,
+        private AgencyRepositoryInterface      $agencyRepository,
+        private DraftAgencyRepositoryInterface $draftAgencyRepository,
+        private TranslationServiceInterface    $translationService,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -61,7 +63,7 @@ readonly class TranslateAgency implements TranslateAgencyInterface
         foreach ($languages as $language) {
             $agencyDraft = $this->translationService->translateAgency($agency, $language);
             $agencyDrafts[] = $agencyDraft;
-            $this->agencyRepository->saveDraft($agencyDraft);
+            $this->draftAgencyRepository->save($agencyDraft);
         }
 
         return $agencyDrafts;

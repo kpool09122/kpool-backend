@@ -18,6 +18,7 @@ use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
@@ -47,6 +48,8 @@ class CreateAgencyTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $this->assertInstanceOf(CreateAgency::class, $createAgency);
     }
@@ -73,7 +76,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             $dummyCreateAgency->publishedAgency,
         );
@@ -87,6 +90,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $agency = $createAgency->process($input);
 
@@ -133,9 +137,11 @@ class CreateAgencyTest extends TestCase
             ->andReturn(null);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
         $createAgency = $this->app->make(CreateAgencyInterface::class);
@@ -164,7 +170,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             null,
         );
@@ -178,6 +184,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
@@ -206,7 +213,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             null,
         );
@@ -220,6 +227,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
@@ -248,7 +256,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             null,
         );
@@ -262,6 +270,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
@@ -291,7 +300,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             null,
         );
@@ -305,6 +314,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
@@ -332,7 +342,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             null,
         );
@@ -346,6 +356,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
@@ -373,7 +384,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->principalIdentifier,
         );
 
-        [$agencyFactory, $agencyRepository] = $this->mockAgencyFactoryAndRepository(
+        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
             $dummyCreateAgency,
             null,
         );
@@ -387,6 +398,7 @@ class CreateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
 
         $createAgency = $this->app->make(CreateAgencyInterface::class);
         $createAgency->process($input);
@@ -420,7 +432,9 @@ class CreateAgencyTest extends TestCase
             ->andReturn($dummyCreateAgency->principal);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
 
         $this->expectException(UnauthorizedException::class);
@@ -446,12 +460,14 @@ class CreateAgencyTest extends TestCase
             ->once()
             ->with($dummy->publishedAgencyIdentifier)
             ->andReturn($existingAgency);
-        $agencyRepository->shouldReceive('saveDraft')
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('save')
             ->once()
             ->with($dummy->draftAgency)
             ->andReturn(null);
 
-        return [$agencyFactory, $agencyRepository];
+        return [$agencyFactory, $agencyRepository, $draftAgencyRepository];
     }
 
     /**

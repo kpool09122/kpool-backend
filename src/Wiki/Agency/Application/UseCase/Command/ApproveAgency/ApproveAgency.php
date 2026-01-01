@@ -9,7 +9,7 @@ use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgenc
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -23,7 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class ApproveAgency implements ApproveAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface        $agencyRepository,
+        private DraftAgencyRepositoryInterface   $agencyRepository,
         private AgencyServiceInterface           $agencyService,
         private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
         private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
@@ -42,7 +42,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
      */
     public function process(ApproveAgencyInputPort $input): DraftAgency
     {
-        $agency = $this->agencyRepository->findDraftById($input->agencyIdentifier());
+        $agency = $this->agencyRepository->findById($input->agencyIdentifier());
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
@@ -78,7 +78,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::Approved);
 
-        $this->agencyRepository->saveDraft($agency);
+        $this->agencyRepository->save($agency);
 
         $history = $this->agencyHistoryFactory->create(
             $input->principalIdentifier(),

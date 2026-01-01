@@ -8,7 +8,7 @@ use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -21,7 +21,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class SubmitAgency implements SubmitAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface        $agencyRepository,
+        private DraftAgencyRepositoryInterface   $agencyRepository,
         private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
         private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
         private PrincipalRepositoryInterface     $principalRepository,
@@ -38,7 +38,7 @@ readonly class SubmitAgency implements SubmitAgencyInterface
      */
     public function process(SubmitAgencyInputPort $input): DraftAgency
     {
-        $agency = $this->agencyRepository->findDraftById($input->agencyIdentifier());
+        $agency = $this->agencyRepository->findById($input->agencyIdentifier());
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
@@ -66,7 +66,7 @@ readonly class SubmitAgency implements SubmitAgencyInterface
         $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::UnderReview);
 
-        $this->agencyRepository->saveDraft($agency);
+        $this->agencyRepository->save($agency);
 
         $history = $this->agencyHistoryFactory->create(
             $input->principalIdentifier(),

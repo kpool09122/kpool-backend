@@ -9,7 +9,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyService;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -26,8 +26,8 @@ class AgencyServiceTest extends TestCase
 {
     public function test__construct(): void
     {
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = $this->app->make(AgencyServiceInterface::class);
         $this->assertInstanceOf(AgencyService::class, $agencyService);
     }
@@ -54,13 +54,13 @@ class AgencyServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$approvedAgency]);
 
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = $this->app->make(AgencyServiceInterface::class);
 
         $result = $agencyService->existsApprovedButNotTranslatedAgency(
@@ -93,13 +93,13 @@ class AgencyServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$pendingAgency]);
 
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = $this->app->make(AgencyServiceInterface::class);
 
         $result = $agencyService->existsApprovedButNotTranslatedAgency(
@@ -131,13 +131,13 @@ class AgencyServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$agency]);
 
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = $this->app->make(AgencyServiceInterface::class);
 
         $result = $agencyService->existsApprovedButNotTranslatedAgency(
@@ -153,13 +153,13 @@ class AgencyServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([]);
 
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = $this->app->make(AgencyServiceInterface::class);
 
         $result = $agencyService->existsApprovedButNotTranslatedAgency(
@@ -210,13 +210,13 @@ class AgencyServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$approvedAgency1, $approvedAgency2]);
 
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = $this->app->make(AgencyServiceInterface::class);
 
         $result = $agencyService->existsApprovedButNotTranslatedAgency(

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency;
 
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
@@ -16,7 +16,7 @@ readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyI
 {
     public function __construct(
         private AutomaticDraftAgencyCreationServiceInterface $automaticDraftAgencyCreationService,
-        private AgencyRepositoryInterface                    $agencyRepository,
+        private DraftAgencyRepositoryInterface               $agencyRepository,
         private PrincipalRepositoryInterface                 $principalRepository,
     ) {
     }
@@ -41,7 +41,7 @@ readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyI
         }
 
         $draftAgency = $this->automaticDraftAgencyCreationService->create($input->payload(), $principal);
-        $this->agencyRepository->saveDraft($draftAgency);
+        $this->agencyRepository->save($draftAgency);
 
         return $draftAgency;
     }
