@@ -8,6 +8,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -19,9 +20,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class TranslateGroup implements TranslateGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface     $groupRepository,
-        private TranslationServiceInterface  $translationService,
-        private PrincipalRepositoryInterface $principalRepository,
+        private GroupRepositoryInterface      $groupRepository,
+        private DraftGroupRepositoryInterface $draftGroupRepository,
+        private TranslationServiceInterface   $translationService,
+        private PrincipalRepositoryInterface  $principalRepository,
     ) {
     }
 
@@ -61,7 +63,7 @@ readonly class TranslateGroup implements TranslateGroupInterface
             // 外部翻訳サービスを使って翻訳
             $groupDraft = $this->translationService->translateGroup($group, $language);
             $groupDrafts[] = $groupDraft;
-            $this->groupRepository->saveDraft($groupDraft);
+            $this->draftGroupRepository->save($groupDraft);
         }
 
         return $groupDrafts;

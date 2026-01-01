@@ -10,7 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupService;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -32,8 +32,8 @@ class GroupServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = $this->app->make(GroupServiceInterface::class);
         $this->assertInstanceOf(GroupService::class, $groupService);
     }
@@ -81,13 +81,13 @@ class GroupServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftsByTranslationSet')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$approvedGroup, $excludeGroup]);
 
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = $this->app->make(GroupServiceInterface::class);
 
         $result = $groupService->existsApprovedButNotTranslatedGroup(
@@ -141,13 +141,13 @@ class GroupServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftsByTranslationSet')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$pendingGroup, $excludeGroup]);
 
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = $this->app->make(GroupServiceInterface::class);
 
         $result = $groupService->existsApprovedButNotTranslatedGroup(
@@ -185,13 +185,13 @@ class GroupServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftsByTranslationSet')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$selfGroup]);
 
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = $this->app->make(GroupServiceInterface::class);
 
         $result = $groupService->existsApprovedButNotTranslatedGroup(
@@ -213,13 +213,13 @@ class GroupServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftsByTranslationSet')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([]);
 
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = $this->app->make(GroupServiceInterface::class);
 
         $result = $groupService->existsApprovedButNotTranslatedGroup(
@@ -298,13 +298,13 @@ TWICE（トゥワイス）は、2015年に韓国のサバイバルオーディ�
             ApprovalStatus::Pending,
         );
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftsByTranslationSet')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$koreanGroup, $englishGroup, $japaneseGroup]);
 
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = $this->app->make(GroupServiceInterface::class);
 
         $result = $groupService->existsApprovedButNotTranslatedGroup(

@@ -8,8 +8,8 @@ use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupE
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -23,7 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class ApproveGroup implements ApproveGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface        $groupRepository,
+        private DraftGroupRepositoryInterface   $groupRepository,
         private GroupServiceInterface           $groupService,
         private GroupHistoryRepositoryInterface $groupHistoryRepository,
         private GroupHistoryFactoryInterface    $groupHistoryFactory,
@@ -42,7 +42,7 @@ readonly class ApproveGroup implements ApproveGroupInterface
      */
     public function process(ApproveGroupInputPort $input): DraftGroup
     {
-        $group = $this->groupRepository->findDraftById($input->groupIdentifier());
+        $group = $this->groupRepository->findById($input->groupIdentifier());
 
         if ($group === null) {
             throw new GroupNotFoundException();
@@ -77,7 +77,7 @@ readonly class ApproveGroup implements ApproveGroupInterface
         $previousStatus = $group->status();
         $group->setStatus(ApprovalStatus::Approved);
 
-        $this->groupRepository->saveDraft($group);
+        $this->groupRepository->save($group);
 
         $history = $this->groupHistoryFactory->create(
             $input->principalIdentifier(),

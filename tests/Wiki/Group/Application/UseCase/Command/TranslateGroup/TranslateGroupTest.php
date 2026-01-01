@@ -17,6 +17,7 @@ use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupI
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -47,6 +48,8 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $this->assertInstanceOf(TranslateGroup::class, $translateGroup);
     }
@@ -83,11 +86,13 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->once()
             ->andReturn($dummyTranslateGroup->group);
-        $groupRepository->shouldReceive('saveDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->enGroup)
             ->once()
             ->andReturn(null);
-        $groupRepository->shouldReceive('saveDraft')
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->jaGroup)
             ->once()
             ->andReturn(null);
@@ -105,6 +110,7 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
         $this->assertCount(2, $groups);
@@ -136,10 +142,15 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn(null);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(GroupNotFoundException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -177,11 +188,16 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->group);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -220,11 +236,16 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->andReturn($dummyTranslateGroup->group);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -263,11 +284,13 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->once()
             ->andReturn($dummyTranslateGroup->group);
-        $groupRepository->shouldReceive('saveDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->enGroup)
             ->once()
             ->andReturn(null);
-        $groupRepository->shouldReceive('saveDraft')
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->jaGroup)
             ->once()
             ->andReturn(null);
@@ -285,6 +308,7 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
@@ -324,11 +348,16 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->andReturn($dummyTranslateGroup->group);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -365,11 +394,13 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->once()
             ->andReturn($dummyTranslateGroup->group);
-        $groupRepository->shouldReceive('saveDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->enGroup)
             ->once()
             ->andReturn(null);
-        $groupRepository->shouldReceive('saveDraft')
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->jaGroup)
             ->once()
             ->andReturn(null);
@@ -387,6 +418,7 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
@@ -426,11 +458,16 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->andReturn($dummyTranslateGroup->group);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -466,11 +503,13 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->once()
             ->andReturn($dummyTranslateGroup->group);
-        $groupRepository->shouldReceive('saveDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->enGroup)
             ->once()
             ->andReturn(null);
-        $groupRepository->shouldReceive('saveDraft')
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->jaGroup)
             ->once()
             ->andReturn(null);
@@ -488,6 +527,7 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
@@ -528,11 +568,16 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->andReturn($dummyTranslateGroup->group);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
@@ -569,11 +614,13 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->once()
             ->andReturn($dummyTranslateGroup->group);
-        $groupRepository->shouldReceive('saveDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->enGroup)
             ->once()
             ->andReturn(null);
-        $groupRepository->shouldReceive('saveDraft')
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->jaGroup)
             ->once()
             ->andReturn(null);
@@ -591,6 +638,7 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
@@ -632,11 +680,13 @@ class TranslateGroupTest extends TestCase
             ->with($dummyTranslateGroup->groupIdentifier)
             ->once()
             ->andReturn($dummyTranslateGroup->group);
-        $groupRepository->shouldReceive('saveDraft')
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->enGroup)
             ->once()
             ->andReturn(null);
-        $groupRepository->shouldReceive('saveDraft')
+        $draftGroupRepository->shouldReceive('save')
             ->with($dummyTranslateGroup->jaGroup)
             ->once()
             ->andReturn(null);
@@ -654,6 +704,7 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $groups = $translateGroup->process($input);
@@ -695,11 +746,16 @@ class TranslateGroupTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateGroup->group);
 
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+        $draftGroupRepository->shouldNotReceive('save');
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);

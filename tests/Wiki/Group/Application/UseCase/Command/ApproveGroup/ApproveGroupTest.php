@@ -19,8 +19,8 @@ use Source\Wiki\Group\Application\UseCase\Command\ApproveGroup\ApproveGroupInter
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\GroupHistory;
 use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
+use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
@@ -49,8 +49,8 @@ class ApproveGroupTest extends TestCase
     public function test__construct(): void
     {
         // TODO: 各実装クラス作ったら削除する
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $groupService = Mockery::mock(GroupServiceInterface::class);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
@@ -92,12 +92,12 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('saveDraft')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveGroup->group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -119,7 +119,7 @@ class ApproveGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -143,7 +143,6 @@ class ApproveGroupTest extends TestCase
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
@@ -154,8 +153,8 @@ class ApproveGroupTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn(null);
@@ -165,7 +164,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -201,8 +200,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -212,7 +211,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -235,7 +234,6 @@ class ApproveGroupTest extends TestCase
         $dummyApproveGroup = $this->createDummyApproveGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
@@ -246,8 +244,8 @@ class ApproveGroupTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -257,7 +255,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -296,8 +294,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -312,7 +310,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -350,8 +348,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -361,7 +359,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -400,8 +398,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -411,7 +409,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -454,12 +452,12 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('saveDraft')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveGroup->group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -481,7 +479,7 @@ class ApproveGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -521,8 +519,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -532,7 +530,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -576,12 +574,12 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('saveDraft')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveGroup->group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -603,7 +601,7 @@ class ApproveGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -642,8 +640,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -653,7 +651,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -696,12 +694,12 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('saveDraft')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveGroup->group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -723,7 +721,7 @@ class ApproveGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -764,12 +762,12 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('saveDraft')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveGroup->group)
             ->andReturn(null);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -791,7 +789,7 @@ class ApproveGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
@@ -829,8 +827,8 @@ class ApproveGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findDraftById')
+        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveGroup->groupIdentifier)
             ->andReturn($dummyApproveGroup->group);
@@ -840,7 +838,7 @@ class ApproveGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupServiceInterface::class, $groupService);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
