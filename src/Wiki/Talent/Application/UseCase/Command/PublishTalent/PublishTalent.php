@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\PublishTalent;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -37,6 +38,7 @@ readonly class PublishTalent implements PublishTalentInterface
         private TalentSnapshotFactoryInterface    $talentSnapshotFactory,
         private TalentSnapshotRepositoryInterface $talentSnapshotRepository,
         private PrincipalRepositoryInterface      $principalRepository,
+        private PolicyEvaluatorInterface          $policyEvaluator,
     ) {
     }
 
@@ -73,7 +75,7 @@ readonly class PublishTalent implements PublishTalentInterface
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::PUBLISH, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::PUBLISH, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

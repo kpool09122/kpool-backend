@@ -6,6 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -21,6 +22,7 @@ readonly class EditSong implements EditSongInterface
         private DraftSongRepositoryInterface $draftSongRepository,
         private ImageServiceInterface        $imageService,
         private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -50,7 +52,7 @@ readonly class EditSong implements EditSongInterface
             talentIds: [(string) $input->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

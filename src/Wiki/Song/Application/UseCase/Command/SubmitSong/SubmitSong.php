@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\SubmitSong;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -25,6 +26,7 @@ readonly class SubmitSong implements SubmitSongInterface
         private SongHistoryRepositoryInterface $songHistoryRepository,
         private SongHistoryFactoryInterface    $songHistoryFactory,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -55,7 +57,7 @@ readonly class SubmitSong implements SubmitSongInterface
             talentIds: [(string) $song->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

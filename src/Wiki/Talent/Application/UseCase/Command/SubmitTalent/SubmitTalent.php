@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -25,6 +26,7 @@ readonly class SubmitTalent implements SubmitTalentInterface
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
         private TalentHistoryFactoryInterface    $talentHistoryFactory,
         private PrincipalRepositoryInterface     $principalRepository,
+        private PolicyEvaluatorInterface         $policyEvaluator,
     ) {
     }
 
@@ -59,7 +61,7 @@ readonly class SubmitTalent implements SubmitTalentInterface
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

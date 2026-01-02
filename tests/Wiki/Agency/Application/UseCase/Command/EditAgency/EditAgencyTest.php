@@ -332,7 +332,7 @@ class EditAgencyTest extends TestCase
     }
 
     /**
-     * 異常系：TALENT_ACTORはAgencyを編集できないこと.
+     * 正常系：TALENT_ACTORがAgencyを編集できること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -364,13 +364,15 @@ class EditAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $this->expectException(UnauthorizedException::class);
-
         $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyAgency->agencyIdentifier)
             ->andReturn($dummyAgency->agency);
+        $draftAgencyRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyAgency->agency)
+            ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);

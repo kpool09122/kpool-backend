@@ -10,6 +10,7 @@ use Source\Wiki\Group\Domain\Factory\GroupHistoryFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -25,6 +26,7 @@ readonly class SubmitGroup implements SubmitGroupInterface
         private GroupHistoryRepositoryInterface $groupHistoryRepository,
         private GroupHistoryFactoryInterface    $groupHistoryFactory,
         private PrincipalRepositoryInterface    $principalRepository,
+        private PolicyEvaluatorInterface        $policyEvaluator,
     ) {
     }
 
@@ -54,7 +56,7 @@ readonly class SubmitGroup implements SubmitGroupInterface
             groupIds: [(string) $group->groupIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::SUBMIT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

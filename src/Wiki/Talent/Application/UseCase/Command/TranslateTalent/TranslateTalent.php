@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -24,6 +25,7 @@ readonly class TranslateTalent implements TranslateTalentInterface
         private DraftTalentRepositoryInterface $draftTalentRepository,
         private TranslationServiceInterface    $translationService,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
     }
 
@@ -57,7 +59,7 @@ readonly class TranslateTalent implements TranslateTalentInterface
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::TRANSLATE, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::TRANSLATE, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

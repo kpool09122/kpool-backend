@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -28,6 +29,7 @@ readonly class ApproveSong implements ApproveSongInterface
         private SongHistoryRepositoryInterface $songHistoryRepository,
         private SongHistoryFactoryInterface    $songHistoryFactory,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -63,7 +65,7 @@ readonly class ApproveSong implements ApproveSongInterface
             talentIds: [(string) $song->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::APPROVE, $resource, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::APPROVE, $resource)) {
             throw new UnauthorizedException();
         }
 

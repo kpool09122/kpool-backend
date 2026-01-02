@@ -10,6 +10,7 @@ use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -24,6 +25,7 @@ readonly class CreateGroup implements CreateGroupInterface
         private DraftGroupRepositoryInterface $draftGroupRepository,
         private GroupRepositoryInterface      $groupRepository,
         private PrincipalRepositoryInterface  $principalRepository,
+        private PolicyEvaluatorInterface      $policyEvaluator,
     ) {
     }
 
@@ -45,7 +47,7 @@ readonly class CreateGroup implements CreateGroupInterface
             groupIds: [],
         );
 
-        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

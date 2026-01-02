@@ -39,8 +39,10 @@ use Source\Wiki\Group\Infrastructure\Factory\GroupHistoryFactory;
 use Source\Wiki\Group\Infrastructure\Factory\GroupSnapshotFactory;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Principal\Infrastructure\Factory\PrincipalFactory;
 use Source\Wiki\Principal\Infrastructure\Repository\PrincipalRepository;
+use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
@@ -110,6 +112,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
+        $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
         $this->app->singleton(SongRepositoryInterface::class, SongRepository::class);
         $this->app->singleton(DraftGroupRepositoryInterface::class, DraftGroupRepository::class);
         $this->app->singleton(DraftAgencyRepositoryInterface::class, DraftAgencyRepository::class);

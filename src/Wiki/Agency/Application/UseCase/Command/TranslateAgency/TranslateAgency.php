@@ -11,6 +11,7 @@ use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -24,6 +25,7 @@ readonly class TranslateAgency implements TranslateAgencyInterface
         private DraftAgencyRepositoryInterface $draftAgencyRepository,
         private TranslationServiceInterface    $translationService,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
     }
 
@@ -53,7 +55,7 @@ readonly class TranslateAgency implements TranslateAgencyInterface
             groupIds: [],
         );
 
-        if (! $principal->role()->can(Action::TRANSLATE, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::TRANSLATE, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

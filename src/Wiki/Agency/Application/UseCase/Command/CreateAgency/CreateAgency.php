@@ -9,6 +9,7 @@ use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
@@ -24,6 +25,7 @@ readonly class CreateAgency implements CreateAgencyInterface
         private DraftAgencyRepositoryInterface $draftAgencyRepository,
         private NormalizationServiceInterface  $normalizationService,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
     }
 
@@ -47,7 +49,7 @@ readonly class CreateAgency implements CreateAgencyInterface
             groupIds: [],
         );
 
-        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

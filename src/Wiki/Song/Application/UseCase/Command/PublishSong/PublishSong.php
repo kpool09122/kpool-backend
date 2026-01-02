@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\PublishSong;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -36,6 +37,7 @@ readonly class PublishSong implements PublishSongInterface
         private SongSnapshotFactoryInterface    $songSnapshotFactory,
         private SongSnapshotRepositoryInterface $songSnapshotRepository,
         private PrincipalRepositoryInterface    $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -71,7 +73,7 @@ readonly class PublishSong implements PublishSongInterface
             talentIds: [(string) $song->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::PUBLISH, $resource, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::PUBLISH, $resource)) {
             throw new UnauthorizedException();
         }
 
