@@ -16,7 +16,7 @@ use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -39,8 +39,8 @@ class SongServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $this->app->instance(DraftSongRepositoryInterface::class, $songRepository);
         $songService = $this->app->make(SongServiceInterface::class);
         $this->assertInstanceOf(SongService::class, $songService);
     }
@@ -77,13 +77,13 @@ class SongServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftsByTranslationSet')
+        $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $songRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$approvedSong]);
 
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $songRepository);
         $songService = $this->app->make(SongServiceInterface::class);
 
         $result = $songService->existsApprovedButNotTranslatedSong(
@@ -126,13 +126,13 @@ class SongServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftsByTranslationSet')
+        $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $songRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$pendingSong]);
 
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $songRepository);
         $songService = $this->app->make(SongServiceInterface::class);
 
         $result = $songService->existsApprovedButNotTranslatedSong(
@@ -174,13 +174,13 @@ class SongServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftsByTranslationSet')
+        $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $songRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$selfSong]);
 
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $songRepository);
         $songService = $this->app->make(SongServiceInterface::class);
 
         $result = $songService->existsApprovedButNotTranslatedSong(
@@ -200,13 +200,13 @@ class SongServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftsByTranslationSet')
+        $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $songRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([]);
 
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $songRepository);
         $songService = $this->app->make(SongServiceInterface::class);
 
         $result = $songService->existsApprovedButNotTranslatedSong(
@@ -271,13 +271,13 @@ class SongServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftsByTranslationSet')
+        $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $songRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$approvedSong1, $approvedSong2]);
 
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $songRepository);
         $songService = $this->app->make(SongServiceInterface::class);
 
         $result = $songService->existsApprovedButNotTranslatedSong(

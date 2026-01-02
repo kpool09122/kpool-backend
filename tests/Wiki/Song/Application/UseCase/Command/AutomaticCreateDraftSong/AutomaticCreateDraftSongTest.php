@@ -22,7 +22,7 @@ use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\AutomaticDraftSongCreationServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AutomaticDraftSongCreationPayload;
@@ -50,9 +50,9 @@ class AutomaticCreateDraftSongTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
-        $repository = Mockery::mock(SongRepositoryInterface::class);
+        $repository = Mockery::mock(DraftSongRepositoryInterface::class);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
-        $this->app->instance(SongRepositoryInterface::class, $repository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $repository);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
         $this->assertInstanceOf(AutomaticCreateDraftSongInterface::class, $useCase);
     }
@@ -82,15 +82,15 @@ class AutomaticCreateDraftSongTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftSong);
 
-        $repository = Mockery::mock(SongRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftSong)
             ->andReturnNull();
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
-        $this->app->instance(SongRepositoryInterface::class, $repository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
@@ -125,15 +125,15 @@ class AutomaticCreateDraftSongTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftSong);
 
-        $repository = Mockery::mock(SongRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftSong)
             ->andReturnNull();
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
-        $this->app->instance(SongRepositoryInterface::class, $repository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
@@ -162,11 +162,11 @@ class AutomaticCreateDraftSongTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
-        $repository = Mockery::mock(SongRepositoryInterface::class);
+        $repository = Mockery::mock(DraftSongRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
-        $this->app->instance(SongRepositoryInterface::class, $repository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
@@ -193,11 +193,11 @@ class AutomaticCreateDraftSongTest extends TestCase
             ->andReturn(null);
 
         $service = Mockery::mock(AutomaticDraftSongCreationServiceInterface::class);
-        $repository = Mockery::mock(SongRepositoryInterface::class);
+        $repository = Mockery::mock(DraftSongRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftSongCreationServiceInterface::class, $service);
-        $this->app->instance(SongRepositoryInterface::class, $repository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);

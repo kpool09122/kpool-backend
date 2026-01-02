@@ -29,6 +29,7 @@ use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInpu
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -56,6 +57,8 @@ class TranslateSongTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $songService);
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $this->assertInstanceOf(TranslateSong::class, $translateSong);
     }
@@ -92,11 +95,13 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->once()
             ->andReturn($dummyTranslateSong->song);
-        $songRepository->shouldReceive('saveDraft')
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->enSong)
             ->once()
             ->andReturn(null);
-        $songRepository->shouldReceive('saveDraft')
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->jaSong)
             ->once()
             ->andReturn(null);
@@ -114,6 +119,7 @@ class TranslateSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -149,11 +155,14 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn(null);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(SongNotFoundException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -191,11 +200,14 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->andReturn($dummyTranslateSong->song);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -234,11 +246,14 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->andReturn($dummyTranslateSong->song);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -277,11 +292,13 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->once()
             ->andReturn($dummyTranslateSong->song);
-        $songRepository->shouldReceive('saveDraft')
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->enSong)
             ->once()
             ->andReturn(null);
-        $songRepository->shouldReceive('saveDraft')
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->jaSong)
             ->once()
             ->andReturn(null);
@@ -299,6 +316,7 @@ class TranslateSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -337,11 +355,14 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->andReturn($dummyTranslateSong->song);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -381,11 +402,13 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->once()
             ->andReturn($dummyTranslateSong->song);
-        $songRepository->shouldReceive('saveDraft')
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->enSong)
             ->once()
             ->andReturn(null);
-        $songRepository->shouldReceive('saveDraft')
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->jaSong)
             ->once()
             ->andReturn(null);
@@ -403,6 +426,7 @@ class TranslateSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -442,11 +466,14 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->andReturn($dummyTranslateSong->song);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -487,11 +514,13 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->once()
             ->andReturn($dummyTranslateSong->song);
-        $songRepository->shouldReceive('saveDraft')
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->enSong)
             ->once()
             ->andReturn(null);
-        $songRepository->shouldReceive('saveDraft')
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->jaSong)
             ->once()
             ->andReturn(null);
@@ -509,6 +538,7 @@ class TranslateSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -548,11 +578,14 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->andReturn($dummyTranslateSong->song);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
@@ -593,11 +626,13 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->once()
             ->andReturn($dummyTranslateSong->song);
-        $songRepository->shouldReceive('saveDraft')
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->enSong)
             ->once()
             ->andReturn(null);
-        $songRepository->shouldReceive('saveDraft')
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->jaSong)
             ->once()
             ->andReturn(null);
@@ -615,6 +650,7 @@ class TranslateSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -652,11 +688,13 @@ class TranslateSongTest extends TestCase
             ->with($dummyTranslateSong->songIdentifier)
             ->once()
             ->andReturn($dummyTranslateSong->song);
-        $songRepository->shouldReceive('saveDraft')
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->enSong)
             ->once()
             ->andReturn(null);
-        $songRepository->shouldReceive('saveDraft')
+        $draftSongRepository->shouldReceive('save')
             ->with($dummyTranslateSong->jaSong)
             ->once()
             ->andReturn(null);
@@ -674,6 +712,7 @@ class TranslateSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -711,11 +750,14 @@ class TranslateSongTest extends TestCase
             ->once()
             ->andReturn($dummyTranslateSong->song);
 
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+
         $translationService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);

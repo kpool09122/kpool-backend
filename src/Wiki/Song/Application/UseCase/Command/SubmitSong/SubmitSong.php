@@ -15,16 +15,16 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
 readonly class SubmitSong implements SubmitSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
+        private DraftSongRepositoryInterface   $draftSongRepository,
         private SongHistoryRepositoryInterface $songHistoryRepository,
-        private SongHistoryFactoryInterface $songHistoryFactory,
-        private PrincipalRepositoryInterface $principalRepository,
+        private SongHistoryFactoryInterface    $songHistoryFactory,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -38,7 +38,7 @@ readonly class SubmitSong implements SubmitSongInterface
      */
     public function process(SubmitSongInputPort $input): DraftSong
     {
-        $song = $this->songRepository->findDraftById($input->songIdentifier());
+        $song = $this->draftSongRepository->findById($input->songIdentifier());
 
         if ($song === null) {
             throw new SongNotFoundException();
@@ -67,7 +67,7 @@ readonly class SubmitSong implements SubmitSongInterface
         $previousStatus = $song->status();
         $song->setStatus(ApprovalStatus::UnderReview);
 
-        $this->songRepository->saveDraft($song);
+        $this->draftSongRepository->save($song);
 
         $history = $this->songHistoryFactory->create(
             $input->principalIdentifier(),
