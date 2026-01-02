@@ -36,6 +36,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -667,12 +668,15 @@ class RollbackAgencyTest extends TestCase
     ): AgencyHistory {
         return new AgencyHistory(
             new AgencyHistoryIdentifier(StrTestHelper::generateUuid()),
+            HistoryActionType::Rollback,
             $editorIdentifier,
             null,
             $agencyIdentifier,
             null,
             null,
             null,
+            new Version(5),
+            new Version(2),
             new AgencyName('Test Agency'),
             new DateTimeImmutable(),
         );

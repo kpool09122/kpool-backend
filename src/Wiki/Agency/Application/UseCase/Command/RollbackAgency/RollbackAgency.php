@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -126,12 +127,15 @@ readonly class RollbackAgency implements RollbackAgencyInterface
 
             // 履歴記録
             $history = $this->agencyHistoryFactory->create(
+                actionType: HistoryActionType::Rollback,
                 editorIdentifier: $input->principalIdentifier(),
                 submitterIdentifier: null,
                 agencyIdentifier: $a->agencyIdentifier(),
                 draftAgencyIdentifier: null,
                 fromStatus: null,
                 toStatus: null,
+                fromVersion: $baseVersion,
+                toVersion: $targetVersion,
                 subjectName: $a->name(),
             );
             $this->agencyHistoryRepository->save($history);

@@ -11,7 +11,9 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -119,12 +121,15 @@ class AgencyHistoryTest extends TestCase
 
         $agencyHistory = new AgencyHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             $agencyIdentifier,
             null,
             null,
             $toStatus,
+            null,
+            null,
             $agencyName,
             $recordedAt,
         );
@@ -151,12 +156,15 @@ class AgencyHistoryTest extends TestCase
 
         new AgencyHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             null,
             null,
             $fromStatus,
             $toStatus,
+            null,
+            null,
             $agencyName,
             $recordedAt,
         );
@@ -168,12 +176,18 @@ class AgencyHistoryTest extends TestCase
      * @param ?AgencyIdentifier $agencyIdentifier
      * @param ?AgencyIdentifier $draftAgencyIdentifier
      * @param ?PrincipalIdentifier $submitterIdentifier
+     * @param HistoryActionType $actionType
+     * @param ?Version $fromVersion
+     * @param ?Version $toVersion
      * @return AgencyHistoryTestData
      */
     private function createDummyAgencyHistory(
         ?AgencyIdentifier $agencyIdentifier = null,
         ?AgencyIdentifier $draftAgencyIdentifier = null,
         ?PrincipalIdentifier $submitterIdentifier = null,
+        HistoryActionType $actionType = HistoryActionType::DraftStatusChange,
+        ?Version $fromVersion = null,
+        ?Version $toVersion = null,
     ): AgencyHistoryTestData {
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -184,24 +198,30 @@ class AgencyHistoryTest extends TestCase
 
         $agencyHistory = new AgencyHistory(
             $historyIdentifier,
+            $actionType,
             $editorIdentifier,
             $submitterIdentifier,
             $agencyIdentifier,
             $draftAgencyIdentifier,
             $fromStatus,
             $toStatus,
+            $fromVersion,
+            $toVersion,
             $agencyName,
             $recordedAt,
         );
 
         return new AgencyHistoryTestData(
             historyIdentifier: $historyIdentifier,
+            actionType: $actionType,
             editorIdentifier: $editorIdentifier,
             submitterIdentifier: $submitterIdentifier,
             agencyIdentifier: $agencyIdentifier,
             draftAgencyIdentifier: $draftAgencyIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            fromVersion: $fromVersion,
+            toVersion: $toVersion,
             recordedAt: $recordedAt,
             agencyHistory: $agencyHistory,
         );
@@ -215,12 +235,15 @@ readonly class AgencyHistoryTestData
 {
     public function __construct(
         public AgencyHistoryIdentifier $historyIdentifier,
-        public PrincipalIdentifier        $editorIdentifier,
-        public ?PrincipalIdentifier       $submitterIdentifier,
+        public HistoryActionType       $actionType,
+        public PrincipalIdentifier     $editorIdentifier,
+        public ?PrincipalIdentifier    $submitterIdentifier,
         public ?AgencyIdentifier       $agencyIdentifier,
         public ?AgencyIdentifier       $draftAgencyIdentifier,
         public ApprovalStatus          $fromStatus,
         public ApprovalStatus          $toStatus,
+        public ?Version                $fromVersion,
+        public ?Version                $toVersion,
         public DateTimeImmutable       $recordedAt,
         public AgencyHistory           $agencyHistory,
     ) {

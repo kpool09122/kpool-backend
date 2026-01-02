@@ -41,6 +41,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -1253,11 +1254,14 @@ DESC);
         $historyIdentifier = new AgencyHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new AgencyHistory(
             $historyIdentifier,
+            HistoryActionType::Publish,
             $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $agency->editorIdentifier(),
             $hasPublishedAgency ? $publishedAgencyIdentifier : null,
             $agency->agencyIdentifier(),
             $agency->status(),
+            null,
+            null,
             null,
             $agency->name(),
             new DateTimeImmutable('now'),
