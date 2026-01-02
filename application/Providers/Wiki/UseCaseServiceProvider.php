@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Application\Providers\Wiki;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControl;
-use Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl\ChangeAccessControlInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgency;
@@ -43,6 +41,8 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRole;
+use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
@@ -96,7 +96,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(EditAgencyInterface::class, EditAgency::class);
         $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
         $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
-        $this->app->singleton(ChangeAccessControlInterface::class, ChangeAccessControl::class);
+        $this->app->singleton(ChangePrincipalRoleInterface::class, ChangePrincipalRole::class);
         $this->app->singleton(SubmitAgencyInterface::class, SubmitAgency::class);
         $this->app->singleton(ApproveAgencyInterface::class, ApproveAgency::class);
         $this->app->singleton(RejectAgencyInterface::class, RejectAgency::class);

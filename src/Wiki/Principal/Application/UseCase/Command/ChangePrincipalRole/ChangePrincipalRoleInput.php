@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\AccessControl\Application\UseCase\Command\ChangeAccessControl;
+namespace Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole;
 
 use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
-readonly class ChangeAccessControlInput implements ChangeAccessControlInputPort
+readonly class ChangePrincipalRoleInput implements ChangePrincipalRoleInputPort
 {
     public function __construct(
-        private Role                $holdingRole,
+        private PrincipalIdentifier $operatorIdentifier,
         private PrincipalIdentifier $principalIdentifier,
         private Role                $targetRole,
     ) {
     }
 
-    public function holdingRole(): Role
+    public function operatorIdentifier(): PrincipalIdentifier
     {
-        return $this->holdingRole;
+        return $this->operatorIdentifier;
     }
 
-    public function principalIdentifier(): PrincipalIdentifier
+    public function targetPrincipalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
     }
