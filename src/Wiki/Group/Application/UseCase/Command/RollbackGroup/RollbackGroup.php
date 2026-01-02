@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -127,12 +128,15 @@ readonly class RollbackGroup implements RollbackGroupInterface
 
             // 履歴記録
             $history = $this->groupHistoryFactory->create(
+                actionType: HistoryActionType::Rollback,
                 editorIdentifier: $input->principalIdentifier(),
                 submitterIdentifier: null,
                 groupIdentifier: $g->groupIdentifier(),
                 draftGroupIdentifier: null,
                 fromStatus: null,
                 toStatus: null,
+                fromVersion: $baseVersion,
+                toVersion: $targetVersion,
                 subjectName: $g->name(),
             );
             $this->groupHistoryRepository->save($history);

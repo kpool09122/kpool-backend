@@ -36,6 +36,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -236,7 +237,7 @@ class RollbackGroupTest extends TestCase
         $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
         $groupHistoryFactory->shouldReceive('create')
             ->twice()
-            ->andReturnUsing(function ($editorIdentifier, $submitterIdentifier, $groupIdentifier) use ($historyKo, $historyJa, $groupIdentifierKo) {
+            ->andReturnUsing(function ($actionType, $editorIdentifier, $submitterIdentifier, $groupIdentifier) use ($historyKo, $historyJa, $groupIdentifierKo) {
                 if ((string)$groupIdentifier === (string)$groupIdentifierKo) {
                     return $historyKo;
                 }
@@ -628,12 +629,15 @@ class RollbackGroupTest extends TestCase
     ): GroupHistory {
         return new GroupHistory(
             new GroupHistoryIdentifier(StrTestHelper::generateUuid()),
+            HistoryActionType::Rollback,
             $principalIdentifier,
             null,
             $groupIdentifier,
             null,
             null,
             null,
+            new Version(5),
+            new Version(2),
             new GroupName('Group Name'),
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );

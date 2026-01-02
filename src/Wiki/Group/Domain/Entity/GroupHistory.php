@@ -10,18 +10,23 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupHistory
 {
     public function __construct(
         private GroupHistoryIdentifier $historyIdentifier,
+        private HistoryActionType      $actionType,
         private PrincipalIdentifier    $editorIdentifier,
         private ?PrincipalIdentifier   $submitterIdentifier,
         private ?GroupIdentifier       $groupIdentifier,
         private ?GroupIdentifier       $draftGroupIdentifier,
         private ?ApprovalStatus        $fromStatus,
         private ?ApprovalStatus        $toStatus,
+        private ?Version               $fromVersion,
+        private ?Version               $toVersion,
         private GroupName              $subjectName,
         private DateTimeImmutable      $recordedAt
     ) {
@@ -38,6 +43,11 @@ readonly class GroupHistory
     public function historyIdentifier(): GroupHistoryIdentifier
     {
         return $this->historyIdentifier;
+    }
+
+    public function actionType(): HistoryActionType
+    {
+        return $this->actionType;
     }
 
     public function editorIdentifier(): PrincipalIdentifier
@@ -68,6 +78,16 @@ readonly class GroupHistory
     public function toStatus(): ?ApprovalStatus
     {
         return $this->toStatus;
+    }
+
+    public function fromVersion(): ?Version
+    {
+        return $this->fromVersion;
+    }
+
+    public function toVersion(): ?Version
+    {
+        return $this->toVersion;
     }
 
     public function subjectName(): GroupName
