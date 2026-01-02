@@ -16,14 +16,14 @@ use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongExc
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 
 readonly class ApproveSong implements ApproveSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface        $songRepository,
+        private DraftSongRepositoryInterface   $draftSongRepository,
         private SongServiceInterface           $songService,
         private SongHistoryRepositoryInterface $songHistoryRepository,
         private SongHistoryFactoryInterface    $songHistoryFactory,
@@ -42,7 +42,7 @@ readonly class ApproveSong implements ApproveSongInterface
      */
     public function process(ApproveSongInputPort $input): DraftSong
     {
-        $song = $this->songRepository->findDraftById($input->songIdentifier());
+        $song = $this->draftSongRepository->findById($input->songIdentifier());
 
         if ($song === null) {
             throw new SongNotFoundException();
@@ -78,7 +78,7 @@ readonly class ApproveSong implements ApproveSongInterface
         $previousStatus = $song->status();
         $song->setStatus(ApprovalStatus::Approved);
 
-        $this->songRepository->saveDraft($song);
+        $this->draftSongRepository->save($song);
 
         $history = $this->songHistoryFactory->create(
             $input->principalIdentifier(),

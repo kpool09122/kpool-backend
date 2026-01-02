@@ -6,13 +6,13 @@ namespace Source\Wiki\Song\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 
 readonly class SongService implements SongServiceInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
+        private DraftSongRepositoryInterface $songRepository,
     ) {
     }
 
@@ -20,7 +20,7 @@ readonly class SongService implements SongServiceInterface
         TranslationSetIdentifier $translationSetIdentifier,
         SongIdentifier $excludeSongIdentifier,
     ): bool {
-        $draftSongs = $this->songRepository->findDraftsByTranslationSet(
+        $draftSongs = $this->songRepository->findByTranslationSet(
             $translationSetIdentifier,
         );
 

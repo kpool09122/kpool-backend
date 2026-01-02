@@ -13,13 +13,13 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 
 readonly class EditSong implements EditSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
-        private ImageServiceInterface $imageService,
+        private DraftSongRepositoryInterface $draftSongRepository,
+        private ImageServiceInterface        $imageService,
         private PrincipalRepositoryInterface $principalRepository,
     ) {
     }
@@ -33,7 +33,7 @@ readonly class EditSong implements EditSongInterface
      */
     public function process(EditSongInputPort $input): DraftSong
     {
-        $song = $this->songRepository->findDraftById($input->songIdentifier());
+        $song = $this->draftSongRepository->findById($input->songIdentifier());
 
         if ($song === null) {
             throw new SongNotFoundException();
@@ -78,7 +78,7 @@ readonly class EditSong implements EditSongInterface
             $song->setMusicVideoLink($input->musicVideoLink());
         }
 
-        $this->songRepository->saveDraft($song);
+        $this->draftSongRepository->save($song);
 
         return $song;
     }

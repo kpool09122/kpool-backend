@@ -35,6 +35,7 @@ use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongSnapshotFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
@@ -66,6 +67,8 @@ class PublishSongTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $songService = Mockery::mock(SongServiceInterface::class);
         $this->app->instance(SongServiceInterface::class, $songService);
         $songFactory = Mockery::mock(SongFactoryInterface::class);
@@ -111,11 +114,17 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->publishedSongIdentifier)
@@ -123,10 +132,6 @@ class PublishSongTest extends TestCase
         $songRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishSong->publishedSong)
-            ->andReturn(null);
-        $songRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -161,6 +166,7 @@ class PublishSongTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -216,18 +222,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishSong->createdSong)
-            ->andReturn(null);
-        $songRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
@@ -254,6 +262,7 @@ class PublishSongTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -301,17 +310,20 @@ class PublishSongTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -349,17 +361,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -394,17 +409,20 @@ class PublishSongTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -444,11 +462,13 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songService->shouldReceive('existsApprovedButNotTranslatedSong')
@@ -460,6 +480,7 @@ class PublishSongTest extends TestCase
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -498,11 +519,13 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->publishedSongIdentifier)
@@ -518,6 +541,7 @@ class PublishSongTest extends TestCase
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -556,17 +580,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -606,17 +633,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -661,18 +691,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishSong->createdSong)
-            ->andReturn(null);
-        $songRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
@@ -699,6 +731,7 @@ class PublishSongTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -739,17 +772,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -795,18 +831,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishSong->createdSong)
-            ->andReturn(null);
-        $songRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
@@ -833,6 +871,7 @@ class PublishSongTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -873,17 +912,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
@@ -929,18 +971,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishSong->createdSong)
-            ->andReturn(null);
-        $songRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
@@ -967,6 +1011,7 @@ class PublishSongTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -1009,18 +1054,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('save')
             ->once()
             ->with($dummyPublishSong->createdSong)
-            ->andReturn(null);
-        $songRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($dummyPublishSong->draftSong)
             ->andReturn(null);
 
         $songFactory = Mockery::mock(SongFactoryInterface::class);
@@ -1047,6 +1094,7 @@ class PublishSongTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongFactoryInterface::class, $songFactory);
         $this->app->instance(SongServiceInterface::class, $songService);
@@ -1087,17 +1135,20 @@ class PublishSongTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findDraftById')
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
             ->once()
             ->with($dummyPublishSong->songIdentifier)
             ->andReturn($dummyPublishSong->draftSong);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
 
         $songService = Mockery::mock(SongServiceInterface::class);
         $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
         $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(SongServiceInterface::class, $songService);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);

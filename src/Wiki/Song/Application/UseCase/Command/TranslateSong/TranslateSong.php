@@ -14,12 +14,14 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
 readonly class TranslateSong implements TranslateSongInterface
 {
     public function __construct(
         private SongRepositoryInterface $songRepository,
+        private DraftSongRepositoryInterface $draftSongRepository,
         private TranslationServiceInterface $translationService,
         private PrincipalRepositoryInterface $principalRepository,
     ) {
@@ -62,7 +64,7 @@ readonly class TranslateSong implements TranslateSongInterface
             // 外部翻訳サービスを使って翻訳
             $songDraft = $this->translationService->translateSong($song, $language);
             $songDrafts[] = $songDraft;
-            $this->songRepository->saveDraft($songDraft);
+            $this->draftSongRepository->save($songDraft);
         }
 
         return $songDrafts;

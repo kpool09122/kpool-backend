@@ -13,6 +13,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 
 readonly class CreateSong implements CreateSongInterface
@@ -20,6 +21,7 @@ readonly class CreateSong implements CreateSongInterface
     public function __construct(
         private DraftSongFactoryInterface $songFactory,
         private SongRepositoryInterface $songRepository,
+        private DraftSongRepositoryInterface $draftSongRepository,
         private ImageServiceInterface $imageService,
         private PrincipalRepositoryInterface $principalRepository,
     ) {
@@ -79,7 +81,7 @@ readonly class CreateSong implements CreateSongInterface
             $song->setMusicVideoLink($input->musicVideoLink());
         }
 
-        $this->songRepository->saveDraft($song);
+        $this->draftSongRepository->save($song);
 
         return $song;
     }

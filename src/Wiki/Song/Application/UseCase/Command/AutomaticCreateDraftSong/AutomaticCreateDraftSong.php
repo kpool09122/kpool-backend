@@ -9,15 +9,15 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\AutomaticDraftSongCreationServiceInterface;
 
 readonly class AutomaticCreateDraftSong implements AutomaticCreateDraftSongInterface
 {
     public function __construct(
         private AutomaticDraftSongCreationServiceInterface $automaticDraftSongCreationService,
-        private SongRepositoryInterface $songRepository,
-        private PrincipalRepositoryInterface $principalRepository,
+        private DraftSongRepositoryInterface               $draftSongRepository,
+        private PrincipalRepositoryInterface               $principalRepository,
     ) {
     }
 
@@ -40,7 +40,7 @@ readonly class AutomaticCreateDraftSong implements AutomaticCreateDraftSongInter
         }
 
         $draftSong = $this->automaticDraftSongCreationService->create($input->payload(), $principal);
-        $this->songRepository->saveDraft($draftSong);
+        $this->draftSongRepository->save($draftSong);
 
         return $draftSong;
     }

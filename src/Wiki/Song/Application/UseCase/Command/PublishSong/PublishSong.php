@@ -18,6 +18,7 @@ use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongHistoryFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongSnapshotFactoryInterface;
+use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongHistoryRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
@@ -27,6 +28,7 @@ readonly class PublishSong implements PublishSongInterface
 {
     public function __construct(
         private SongRepositoryInterface         $songRepository,
+        private DraftSongRepositoryInterface    $draftSongRepository,
         private SongServiceInterface            $songService,
         private SongFactoryInterface            $songFactory,
         private SongHistoryRepositoryInterface  $songHistoryRepository,
@@ -48,7 +50,7 @@ readonly class PublishSong implements PublishSongInterface
      */
     public function process(PublishSongInputPort $input): Song
     {
-        $song = $this->songRepository->findDraftById($input->songIdentifier());
+        $song = $this->draftSongRepository->findById($input->songIdentifier());
 
         if ($song === null) {
             throw new SongNotFoundException();
@@ -135,7 +137,7 @@ readonly class PublishSong implements PublishSongInterface
         );
         $this->songHistoryRepository->save($history);
 
-        $this->songRepository->deleteDraft($song);
+        $this->draftSongRepository->delete($song);
 
         return $publishedSong;
     }
