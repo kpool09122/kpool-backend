@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent;
 
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -29,6 +30,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
         private TalentHistoryFactoryInterface    $talentHistoryFactory,
         private PrincipalRepositoryInterface     $principalRepository,
+        private PolicyEvaluatorInterface         $policyEvaluator,
     ) {
     }
 
@@ -64,7 +66,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::APPROVE, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::APPROVE, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

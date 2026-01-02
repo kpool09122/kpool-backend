@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\EditTalent;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -21,6 +22,7 @@ readonly class EditTalent implements EditTalentInterface
         private DraftTalentRepositoryInterface $draftTalentRepository,
         private ImageServiceInterface          $imageService,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
     }
 
@@ -54,7 +56,7 @@ readonly class EditTalent implements EditTalentInterface
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

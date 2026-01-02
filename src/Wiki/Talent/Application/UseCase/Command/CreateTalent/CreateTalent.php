@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -25,6 +26,7 @@ readonly class CreateTalent implements CreateTalentInterface
         private DraftTalentRepositoryInterface $draftTalentRepository,
         private ImageServiceInterface          $imageService,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
     }
 
@@ -51,7 +53,7 @@ readonly class CreateTalent implements CreateTalentInterface
             groupIds: $groupIds,
         );
 
-        if (! $principal->role()->can(Action::CREATE, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

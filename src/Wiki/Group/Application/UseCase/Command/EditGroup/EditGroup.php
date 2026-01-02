@@ -9,6 +9,7 @@ use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
@@ -23,6 +24,7 @@ readonly class EditGroup implements EditGroupInterface
         private DraftGroupRepositoryInterface $groupRepository,
         private NormalizationServiceInterface $normalizationService,
         private PrincipalRepositoryInterface  $principalRepository,
+        private PolicyEvaluatorInterface      $policyEvaluator,
     ) {
     }
 
@@ -51,7 +53,7 @@ readonly class EditGroup implements EditGroupInterface
             groupIds: [(string) $group->groupIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::EDIT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

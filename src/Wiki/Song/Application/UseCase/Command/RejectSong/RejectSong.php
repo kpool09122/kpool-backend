@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\RejectSong;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -25,6 +26,7 @@ readonly class RejectSong implements RejectSongInterface
         private SongHistoryRepositoryInterface $songHistoryRepository,
         private SongHistoryFactoryInterface    $songHistoryFactory,
         private PrincipalRepositoryInterface   $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -59,7 +61,7 @@ readonly class RejectSong implements RejectSongInterface
             talentIds: [(string) $song->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::REJECT, $resource, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::REJECT, $resource)) {
             throw new UnauthorizedException();
         }
 

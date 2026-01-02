@@ -16,6 +16,7 @@ use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -36,6 +37,7 @@ readonly class PublishAgency implements PublishAgencyInterface
         private AgencySnapshotFactoryInterface    $agencySnapshotFactory,
         private AgencySnapshotRepositoryInterface $agencySnapshotRepository,
         private PrincipalRepositoryInterface      $principalRepository,
+        private PolicyEvaluatorInterface          $policyEvaluator,
     ) {
     }
 
@@ -70,7 +72,7 @@ readonly class PublishAgency implements PublishAgencyInterface
             groupIds: [],
         );
 
-        if (! $principal->role()->can(Action::PUBLISH, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::PUBLISH, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

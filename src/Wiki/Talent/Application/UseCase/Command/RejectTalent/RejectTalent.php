@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Application\UseCase\Command\RejectTalent;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -25,6 +26,7 @@ readonly class RejectTalent implements RejectTalentInterface
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
         private TalentHistoryFactoryInterface    $talentHistoryFactory,
         private PrincipalRepositoryInterface     $principalRepository,
+        private PolicyEvaluatorInterface         $policyEvaluator,
     ) {
     }
 
@@ -59,7 +61,7 @@ readonly class RejectTalent implements RejectTalentInterface
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::REJECT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::REJECT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

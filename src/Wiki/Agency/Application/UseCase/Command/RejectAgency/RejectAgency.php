@@ -10,6 +10,7 @@ use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -25,6 +26,7 @@ readonly class RejectAgency implements RejectAgencyInterface
         private AgencyHistoryRepositoryInterface $agencyHistoryRepository,
         private AgencyHistoryFactoryInterface    $agencyHistoryFactory,
         private PrincipalRepositoryInterface     $principalRepository,
+        private PolicyEvaluatorInterface         $policyEvaluator,
     ) {
     }
 
@@ -55,7 +57,7 @@ readonly class RejectAgency implements RejectAgencyInterface
             groupIds: [],
         );
 
-        if (! $principal->role()->can(Action::REJECT, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::REJECT, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 

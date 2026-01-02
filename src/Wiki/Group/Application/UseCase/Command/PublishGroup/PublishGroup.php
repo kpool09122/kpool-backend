@@ -16,6 +16,7 @@ use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -36,6 +37,7 @@ readonly class PublishGroup implements PublishGroupInterface
         private GroupSnapshotRepositoryInterface $groupSnapshotRepository,
         private PrincipalRepositoryInterface     $principalRepository,
         private DraftGroupRepositoryInterface    $draftGroupRepository,
+        private PolicyEvaluatorInterface         $policyEvaluator,
     ) {
     }
 
@@ -70,7 +72,7 @@ readonly class PublishGroup implements PublishGroupInterface
             groupIds: [(string) $group->groupIdentifier()],
         );
 
-        if (! $principal->role()->can(Action::PUBLISH, $resourceIdentifier, $principal)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::PUBLISH, $resourceIdentifier)) {
             throw new UnauthorizedException();
         }
 
