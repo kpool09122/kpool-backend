@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -29,6 +30,8 @@ class DraftAgency
         private ?FoundedIn                        $foundedIn,
         private Description                       $description,
         private ApprovalStatus                    $status,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -130,5 +133,25 @@ class DraftAgency
     public function setStatus(ApprovalStatus $status): void
     {
         $this->status = $status;
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }

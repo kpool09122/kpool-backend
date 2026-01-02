@@ -13,6 +13,8 @@ use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\MergeAgency\MergeAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\MergeAgency\MergeAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\RejectAgency\RejectAgency;
@@ -102,6 +104,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateAgencyInterface::class, CreateAgency::class);
         $this->app->singleton(AutomaticCreateDraftAgencyInterface::class, AutomaticCreateDraftAgency::class);
         $this->app->singleton(EditAgencyInterface::class, EditAgency::class);
+        $this->app->singleton(MergeAgencyInterface::class, MergeAgency::class);
         $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
         $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
         $this->app->singleton(ChangePrincipalRoleInterface::class, ChangePrincipalRole::class);
