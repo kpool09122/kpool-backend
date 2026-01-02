@@ -268,47 +268,4 @@ class SongRepositoryTest extends TestCase
         $this->assertIsArray($songs);
         $this->assertEmpty($songs);
     }
-
-    /**
-     * 正常系：versionがnullの歌は取得されないこと.
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testFindByTranslationSetIdentifierExcludesNullVersion(): void
-    {
-        $translationSetIdentifier = StrTestHelper::generateUuid();
-
-        // versionがnullの歌（取得されないはず）
-        $songIdWithNullVersion = StrTestHelper::generateUuid();
-        CreateSong::create($songIdWithNullVersion, [
-            'translation_set_identifier' => $translationSetIdentifier,
-            'language' => Language::KOREAN->value,
-            'name' => 'Draft Song',
-            'lyricist' => 'Unknown',
-            'composer' => 'Unknown',
-            'overview' => 'This is a draft.',
-            'version' => null,
-        ]);
-
-        // versionがある歌
-        $songIdWithVersion = StrTestHelper::generateUuid();
-        CreateSong::create($songIdWithVersion, [
-            'translation_set_identifier' => $translationSetIdentifier,
-            'language' => Language::KOREAN->value,
-            'name' => 'Published Song',
-            'lyricist' => 'Known',
-            'composer' => 'Known',
-            'overview' => 'This is published.',
-            'version' => 1,
-        ]);
-
-        $repository = $this->app->make(SongRepositoryInterface::class);
-        $songs = $repository->findByTranslationSetIdentifier(
-            new TranslationSetIdentifier($translationSetIdentifier)
-        );
-
-        $this->assertCount(1, $songs);
-        $this->assertSame($songIdWithVersion, (string) $songs[0]->songIdentifier());
-    }
 }

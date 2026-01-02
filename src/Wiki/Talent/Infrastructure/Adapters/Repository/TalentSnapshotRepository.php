@@ -76,6 +76,22 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array {
+        $models = TalentSnapshotModel::query()
+            ->with('groups')
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->where('version', $version->value())
+            ->get();
+
+        return $models->map(fn (TalentSnapshotModel $model) => $this->toEntity($model))->toArray();
+    }
+
+    /**
      * @param GroupIdentifier[] $groupIdentifiers
      * @return string[]
      */

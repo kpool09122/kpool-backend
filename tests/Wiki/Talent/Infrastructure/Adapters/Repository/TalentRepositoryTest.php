@@ -215,4 +215,89 @@ class TalentRepositoryTest extends TestCase
             $decodedVideos,
         );
     }
+
+    /**
+     * 正常系：指定したTranslationSetIdentifierに紐づくTalent一覧が取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifier(): void
+    {
+        $translationSetId = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+
+        // 同じtranslationSetIdentifierを持つTalentを2つ作成
+        $talentId1 = StrTestHelper::generateUuid();
+        CreateTalent::create($talentId1, [
+            'translation_set_identifier' => $translationSetId,
+            'language' => Language::KOREAN->value,
+            'name' => '채영',
+            'real_name' => '손채영',
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => [$groupId],
+            'birthday' => '1999-04-23',
+            'career' => 'Test career',
+            'image_link' => '/images/test.jpg',
+            'version' => 1,
+        ]);
+
+        $talentId2 = StrTestHelper::generateUuid();
+        CreateTalent::create($talentId2, [
+            'translation_set_identifier' => $translationSetId,
+            'language' => Language::ENGLISH->value,
+            'name' => 'Chaeyoung',
+            'real_name' => 'Son Chaeyoung',
+            'agency_id' => StrTestHelper::generateUuid(),
+            'group_identifiers' => [$groupId],
+            'birthday' => '1999-04-23',
+            'career' => 'Test career en',
+            'image_link' => '/images/test.jpg',
+            'version' => 1,
+        ]);
+
+        // 別のtranslationSetIdentifierを持つTalent（取得されないはず）
+        $talentId3 = StrTestHelper::generateUuid();
+        CreateTalent::create($talentId3, [
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'language' => Language::KOREAN->value,
+            'name' => '지효',
+            'real_name' => '박지효',
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(TalentRepositoryInterface::class);
+        $talents = $repository->findByTranslationSetIdentifier(
+            new TranslationSetIdentifier($translationSetId)
+        );
+
+        $this->assertCount(2, $talents);
+        $talentIds = array_map(
+            static fn (Talent $talent): string => (string) $talent->talentIdentifier(),
+            $talents
+        );
+        $this->assertContains($talentId1, $talentIds);
+        $this->assertContains($talentId2, $talentIds);
+    }
+
+    /**
+     * 正常系：指定したTranslationSetIdentifierにTalentが存在しない場合、空配列が返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierWhenNoTalents(): void
+    {
+        $repository = $this->app->make(TalentRepositoryInterface::class);
+        $talents = $repository->findByTranslationSetIdentifier(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid())
+        );
+
+        $this->assertIsArray($talents);
+        $this->assertEmpty($talents);
+    }
 }

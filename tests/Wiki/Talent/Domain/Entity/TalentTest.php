@@ -183,6 +183,80 @@ class TalentTest extends TestCase
     }
 
     /**
+     * 正常系：同じバージョンの場合trueを返すこと.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testHasSameVersionReturnsTrue(): void
+    {
+        $talentInfo = $this->createDummyDraftTalent();
+
+        $sameVersion = new Version(1);
+        $this->assertTrue($talentInfo->talent->hasSameVersion($sameVersion));
+    }
+
+    /**
+     * 正常系：異なるバージョンの場合falseを返すこと.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testHasSameVersionReturnsFalse(): void
+    {
+        $talentInfo = $this->createDummyDraftTalent();
+
+        $differentVersion = new Version(2);
+        $this->assertFalse($talentInfo->talent->hasSameVersion($differentVersion));
+    }
+
+    /**
+     * 正常系：現在のバージョンが引数より大きい場合trueを返すこと.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testIsVersionGreaterThanReturnsTrue(): void
+    {
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $talent = new Talent(
+            $talentIdentifier,
+            $translationSetIdentifier,
+            Language::KOREAN,
+            new TalentName('테스트'),
+            new RealName('테스트'),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [],
+            null,
+            new Career(''),
+            null,
+            new RelevantVideoLinks([]),
+            new Version(5),
+        );
+
+        $lowerVersion = new Version(3);
+        $this->assertTrue($talent->isVersionGreaterThan($lowerVersion));
+    }
+
+    /**
+     * 正常系：現在のバージョンが引数以下の場合falseを返すこと.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testIsVersionGreaterThanReturnsFalse(): void
+    {
+        $talentInfo = $this->createDummyDraftTalent();
+
+        $sameVersion = new Version(1);
+        $this->assertFalse($talentInfo->talent->isVersionGreaterThan($sameVersion));
+
+        $higherVersion = new Version(2);
+        $this->assertFalse($talentInfo->talent->isVersionGreaterThan($higherVersion));
+    }
+
+    /**
      * @throws ExceedMaxRelevantVideoLinksException
      */
     private function createDummyDraftTalent(): TalentTestData

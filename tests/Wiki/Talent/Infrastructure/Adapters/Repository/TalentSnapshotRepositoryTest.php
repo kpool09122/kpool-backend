@@ -289,4 +289,91 @@ class TalentSnapshotRepositoryTest extends TestCase
 
         $this->assertNull($snapshot);
     }
+
+    /**
+     * 正常系：TranslationSetIdentifierとVersionで複数のスナップショットが取得できること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersion(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $version = 2;
+
+        // 同じtranslationSetIdentifierとversionを持つ2つのスナップショットを作成
+        $snapshotId1 = StrTestHelper::generateUuid();
+        $talentId1 = StrTestHelper::generateUuid();
+        CreateTalentSnapshot::create($snapshotId1, [
+            'talent_id' => $talentId1,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => '채영',
+            'career' => 'Career v2 KR',
+            'version' => $version,
+        ]);
+
+        $snapshotId2 = StrTestHelper::generateUuid();
+        $talentId2 = StrTestHelper::generateUuid();
+        CreateTalentSnapshot::create($snapshotId2, [
+            'talent_id' => $talentId2,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::ENGLISH->value,
+            'name' => 'Chaeyoung',
+            'career' => 'Career v2 EN',
+            'version' => $version,
+        ]);
+
+        // 同じtranslationSetIdentifierだが異なるversion
+        $snapshotId3 = StrTestHelper::generateUuid();
+        CreateTalentSnapshot::create($snapshotId3, [
+            'talent_id' => $talentId1,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'name' => '채영 v1',
+            'version' => 1,
+        ]);
+
+        // 異なるtranslationSetIdentifier
+        $snapshotId4 = StrTestHelper::generateUuid();
+        CreateTalentSnapshot::create($snapshotId4, [
+            'talent_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'name' => '지효',
+            'version' => $version,
+        ]);
+
+        $repository = $this->app->make(TalentSnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new Version($version)
+        );
+
+        $this->assertCount(2, $snapshots);
+        $snapshotIds = array_map(
+            static fn (TalentSnapshot $snapshot): string => (string) $snapshot->snapshotIdentifier(),
+            $snapshots
+        );
+        $this->assertContains($snapshotId1, $snapshotIds);
+        $this->assertContains($snapshotId2, $snapshotIds);
+    }
+
+    /**
+     * 正常系：該当するスナップショットが存在しない場合、空配列が返却されること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersionWhenNoSnapshots(): void
+    {
+        $repository = $this->app->make(TalentSnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Version(1)
+        );
+
+        $this->assertIsArray($snapshots);
+        $this->assertEmpty($snapshots);
+    }
 }

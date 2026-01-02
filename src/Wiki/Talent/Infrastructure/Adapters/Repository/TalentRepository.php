@@ -34,26 +34,21 @@ final class TalentRepository implements TalentRepositoryInterface
             return null;
         }
 
-        $groupIdentifiers = $talentModel->groups
-            ->map(fn (Group $group) => new GroupIdentifier($group->id))
-            ->toArray();
+        return $this->toEntity($talentModel);
+    }
 
-        $relevantVideoLinks = RelevantVideoLinks::formStringArray($talentModel->relevant_video_links ?? []);
+    /**
+     * @return Talent[]
+     */
+    public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array
+    {
+        $talentModels = TalentModel::query()
+            ->with('groups')
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->whereNotNull('version')
+            ->get();
 
-        return new Talent(
-            new TalentIdentifier($talentModel->id),
-            new TranslationSetIdentifier($talentModel->translation_set_identifier),
-            Language::from($talentModel->language),
-            new TalentName($talentModel->name),
-            new RealName($talentModel->real_name),
-            $talentModel->agency_id ? new AgencyIdentifier($talentModel->agency_id) : null,
-            $groupIdentifiers,
-            $talentModel->birthday ? new Birthday($talentModel->birthday->toDateTimeImmutable()) : null,
-            new Career($talentModel->career),
-            $talentModel->image_link ? new ImagePath($talentModel->image_link) : null,
-            $relevantVideoLinks,
-            new Version($talentModel->version ?? 1),
-        );
+        return $talentModels->map(fn (TalentModel $model) => $this->toEntity($model))->toArray();
     }
 
     public function save(Talent $talent): void
@@ -85,5 +80,29 @@ final class TalentRepository implements TalentRepositoryInterface
             $talent->groupIdentifiers(),
         );
         $talentModel->groups()->sync($groupIds);
+    }
+
+    private function toEntity(TalentModel $talentModel): Talent
+    {
+        $groupIdentifiers = $talentModel->groups
+            ->map(fn (Group $group) => new GroupIdentifier($group->id))
+            ->toArray();
+
+        $relevantVideoLinks = RelevantVideoLinks::formStringArray($talentModel->relevant_video_links ?? []);
+
+        return new Talent(
+            new TalentIdentifier($talentModel->id),
+            new TranslationSetIdentifier($talentModel->translation_set_identifier),
+            Language::from($talentModel->language),
+            new TalentName($talentModel->name),
+            new RealName($talentModel->real_name),
+            $talentModel->agency_id ? new AgencyIdentifier($talentModel->agency_id) : null,
+            $groupIdentifiers,
+            $talentModel->birthday ? new Birthday($talentModel->birthday->toDateTimeImmutable()) : null,
+            new Career($talentModel->career),
+            $talentModel->image_link ? new ImagePath($talentModel->image_link) : null,
+            $relevantVideoLinks,
+            new Version($talentModel->version),
+        );
     }
 }
