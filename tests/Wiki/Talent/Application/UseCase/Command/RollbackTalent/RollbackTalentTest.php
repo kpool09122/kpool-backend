@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -560,12 +561,15 @@ class RollbackTalentTest extends TestCase
     ): TalentHistory {
         return new TalentHistory(
             new TalentHistoryIdentifier(StrTestHelper::generateUuid()),
+            HistoryActionType::Rollback,
             $principalIdentifier,
             null,
             $talentIdentifier,
             null,
             null,
             null,
+            new Version(5),
+            new Version(2),
             new TalentName('테스트'),
             new DateTimeImmutable(),
         );

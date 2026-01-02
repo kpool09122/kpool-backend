@@ -7,8 +7,10 @@ namespace Tests\Wiki\Talent\Domain\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentHistory;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
@@ -123,12 +125,15 @@ class TalentHistoryTest extends TestCase
 
         $talentHistory = new TalentHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             $talentIdentifier,
             null,
             null,
             $toStatus,
+            null,
+            null,
             $subjectName,
             $recordedAt,
         );
@@ -156,12 +161,15 @@ class TalentHistoryTest extends TestCase
 
         new TalentHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             null,
             null,
             $fromStatus,
             $toStatus,
+            null,
+            null,
             $subjectName,
             $recordedAt,
         );
@@ -173,12 +181,18 @@ class TalentHistoryTest extends TestCase
      * @param ?TalentIdentifier $talentIdentifier
      * @param ?TalentIdentifier $draftTalentIdentifier
      * @param ?PrincipalIdentifier $submitterIdentifier
+     * @param HistoryActionType $actionType
+     * @param ?Version $fromVersion
+     * @param ?Version $toVersion
      * @return TalentHistoryTestData
      */
     private function createDummyTalentHistory(
         ?TalentIdentifier $talentIdentifier = null,
         ?TalentIdentifier $draftTalentIdentifier = null,
         ?PrincipalIdentifier $submitterIdentifier = null,
+        HistoryActionType $actionType = HistoryActionType::DraftStatusChange,
+        ?Version $fromVersion = null,
+        ?Version $toVersion = null,
     ): TalentHistoryTestData {
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -189,24 +203,30 @@ class TalentHistoryTest extends TestCase
 
         $talentHistory = new TalentHistory(
             $historyIdentifier,
+            $actionType,
             $editorIdentifier,
             $submitterIdentifier,
             $talentIdentifier,
             $draftTalentIdentifier,
             $fromStatus,
             $toStatus,
+            $fromVersion,
+            $toVersion,
             $subjectName,
             $recordedAt,
         );
 
         return new TalentHistoryTestData(
             historyIdentifier: $historyIdentifier,
+            actionType: $actionType,
             editorIdentifier: $editorIdentifier,
             submitterIdentifier: $submitterIdentifier,
             talentIdentifier: $talentIdentifier,
             draftTalentIdentifier: $draftTalentIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            fromVersion: $fromVersion,
+            toVersion: $toVersion,
             subjectName: $subjectName,
             recordedAt: $recordedAt,
             talentHistory: $talentHistory,
@@ -221,12 +241,15 @@ readonly class TalentHistoryTestData
 {
     public function __construct(
         public TalentHistoryIdentifier $historyIdentifier,
-        public PrincipalIdentifier       $editorIdentifier,
-        public ?PrincipalIdentifier      $submitterIdentifier,
+        public HistoryActionType       $actionType,
+        public PrincipalIdentifier     $editorIdentifier,
+        public ?PrincipalIdentifier    $submitterIdentifier,
         public ?TalentIdentifier       $talentIdentifier,
         public ?TalentIdentifier       $draftTalentIdentifier,
         public ApprovalStatus          $fromStatus,
         public ApprovalStatus          $toStatus,
+        public ?Version                $fromVersion,
+        public ?Version                $toVersion,
         public TalentName              $subjectName,
         public DateTimeImmutable       $recordedAt,
         public TalentHistory           $talentHistory,

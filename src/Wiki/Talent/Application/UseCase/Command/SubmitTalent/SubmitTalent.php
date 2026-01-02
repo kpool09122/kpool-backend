@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -76,13 +77,16 @@ readonly class SubmitTalent implements SubmitTalentInterface
         $this->draftTalentRepository->save($talent);
 
         $history = $this->talentHistoryFactory->create(
-            $input->principalIdentifier(),
-            $talent->editorIdentifier(),
-            $talent->publishedTalentIdentifier(),
-            $talent->talentIdentifier(),
-            $previousStatus,
-            $talent->status(),
-            $talent->name(),
+            actionType: HistoryActionType::DraftStatusChange,
+            editorIdentifier: $input->principalIdentifier(),
+            submitterIdentifier: $talent->editorIdentifier(),
+            talentIdentifier: $talent->publishedTalentIdentifier(),
+            draftTalentIdentifier: $talent->talentIdentifier(),
+            fromStatus: $previousStatus,
+            toStatus: $talent->status(),
+            fromVersion: null,
+            toVersion: null,
+            subjectName: $talent->name(),
         );
         $this->talentHistoryRepository->save($history);
 

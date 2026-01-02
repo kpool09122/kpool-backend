@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -123,13 +124,16 @@ readonly class PublishTalent implements PublishTalentInterface
         $this->talentRepository->save($publishedTalent);
 
         $history = $this->talentHistoryFactory->create(
-            $input->principalIdentifier(),
-            $talent->editorIdentifier(),
-            $talent->publishedTalentIdentifier(),
-            $talent->talentIdentifier(),
-            $talent->status(),
-            null,
-            $talent->name(),
+            actionType: HistoryActionType::Publish,
+            editorIdentifier: $input->principalIdentifier(),
+            submitterIdentifier: $talent->editorIdentifier(),
+            talentIdentifier: $talent->publishedTalentIdentifier(),
+            draftTalentIdentifier: $talent->talentIdentifier(),
+            fromStatus: $talent->status(),
+            toStatus: null,
+            fromVersion: null,
+            toVersion: null,
+            subjectName: $talent->name(),
         );
         $this->talentHistoryRepository->save($history);
 

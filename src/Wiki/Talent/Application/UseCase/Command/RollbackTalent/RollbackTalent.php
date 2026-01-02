@@ -12,6 +12,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -137,12 +138,15 @@ readonly class RollbackTalent implements RollbackTalentInterface
 
             // 履歴記録
             $history = $this->talentHistoryFactory->create(
+                actionType: HistoryActionType::Rollback,
                 editorIdentifier: $input->principalIdentifier(),
                 submitterIdentifier: null,
                 talentIdentifier: $t->talentIdentifier(),
                 draftTalentIdentifier: null,
                 fromStatus: null,
                 toStatus: null,
+                fromVersion: $baseVersion,
+                toVersion: $targetVersion,
                 subjectName: $t->name(),
             );
             $this->talentHistoryRepository->save($history);

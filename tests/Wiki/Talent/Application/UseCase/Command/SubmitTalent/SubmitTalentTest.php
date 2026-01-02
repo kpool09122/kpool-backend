@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -696,12 +697,15 @@ class SubmitTalentTest extends TestCase
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new TalentHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $talent->editorIdentifier(),
             $talent->publishedTalentIdentifier(),
             $talent->talentIdentifier(),
             $status,
             ApprovalStatus::UnderReview,
+            null,
+            null,
             $talent->name(),
             new DateTimeImmutable('now'),
         );
