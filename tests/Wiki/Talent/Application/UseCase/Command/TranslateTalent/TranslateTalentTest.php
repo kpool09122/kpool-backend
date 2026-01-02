@@ -29,6 +29,7 @@ use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTale
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -54,6 +55,8 @@ class TranslateTalentTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
@@ -93,11 +96,13 @@ class TranslateTalentTest extends TestCase
             ->with($translateTalentInfo->talentIdentifier)
             ->once()
             ->andReturn($translateTalentInfo->talent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->with($translateTalentInfo->enTalent)
             ->once()
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+        $draftTalentRepository->shouldReceive('save')
             ->with($translateTalentInfo->jaTalent)
             ->once()
             ->andReturn(null);
@@ -114,6 +119,7 @@ class TranslateTalentTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $talents = $translateTalent->process($input);
@@ -281,11 +287,13 @@ class TranslateTalentTest extends TestCase
             ->once()
             ->with($translateTalentInfo->talentIdentifier)
             ->andReturn($translateTalentInfo->talent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->enTalent)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->jaTalent)
             ->andReturn(null);
@@ -301,6 +309,7 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -392,11 +401,13 @@ class TranslateTalentTest extends TestCase
             ->once()
             ->with($translateTalentInfo->talentIdentifier)
             ->andReturn($translateTalentInfo->talent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->enTalent)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->jaTalent)
             ->andReturn(null);
@@ -412,6 +423,7 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -504,11 +516,13 @@ class TranslateTalentTest extends TestCase
             ->once()
             ->with($translateTalentInfo->talentIdentifier)
             ->andReturn($translateTalentInfo->talent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->enTalent)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->jaTalent)
             ->andReturn(null);
@@ -524,6 +538,7 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -619,11 +634,13 @@ class TranslateTalentTest extends TestCase
             ->once()
             ->with($translateTalentInfo->talentIdentifier)
             ->andReturn($translateTalentInfo->talent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->enTalent)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->jaTalent)
             ->andReturn(null);
@@ -639,6 +656,7 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
@@ -683,11 +701,13 @@ class TranslateTalentTest extends TestCase
             ->once()
             ->with($translateTalentInfo->talentIdentifier)
             ->andReturn($translateTalentInfo->talent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->enTalent)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($translateTalentInfo->jaTalent)
             ->andReturn(null);
@@ -703,6 +723,7 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 

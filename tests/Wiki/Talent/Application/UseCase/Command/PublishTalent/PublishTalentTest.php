@@ -35,6 +35,7 @@ use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
@@ -64,6 +65,8 @@ class PublishTalentTest extends TestCase
         // TODO: 各実装クラス作ったら削除する
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -145,11 +148,17 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($publishTalentInfo->draftTalent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->publishedTalentIdentifier)
@@ -157,10 +166,6 @@ class PublishTalentTest extends TestCase
         $talentRepository->shouldReceive('save')
             ->once()
             ->with($publishedTalent)
-            ->andReturn(null);
-        $talentRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($publishTalentInfo->draftTalent)
             ->andReturn(null);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -195,6 +200,7 @@ class PublishTalentTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
@@ -281,18 +287,20 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('save')
             ->once()
             ->with($createdTalent)
-            ->andReturn(null);
-        $talentRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($talent)
             ->andReturn(null);
 
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
@@ -319,6 +327,7 @@ class PublishTalentTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentServiceInterface::class, $talentService);
@@ -363,8 +372,8 @@ class PublishTalentTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn(null);
@@ -374,7 +383,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -411,8 +420,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
@@ -422,7 +431,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -479,8 +488,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
@@ -490,7 +499,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -530,8 +539,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
@@ -546,7 +555,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -585,11 +594,13 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->publishedTalentIdentifier)
@@ -605,6 +616,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
@@ -645,8 +657,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
@@ -656,7 +668,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -696,8 +708,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
@@ -708,7 +720,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
@@ -788,18 +800,20 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('save')
             ->once()
             ->with($createdTalent)
-            ->andReturn(null);
-        $talentRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($talent)
             ->andReturn(null);
 
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
@@ -826,6 +840,7 @@ class PublishTalentTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentServiceInterface::class, $talentService);
@@ -867,8 +882,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
@@ -878,7 +893,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -957,18 +972,20 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('save')
             ->once()
             ->with($createdTalent)
-            ->andReturn(null);
-        $talentRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($talent)
             ->andReturn(null);
 
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
@@ -995,6 +1012,7 @@ class PublishTalentTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentServiceInterface::class, $talentService);
@@ -1038,8 +1056,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($publishTalentInfo->draftTalent);
@@ -1049,7 +1067,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
@@ -1129,18 +1147,20 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('save')
             ->once()
             ->with($createdTalent)
-            ->andReturn(null);
-        $talentRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($talent)
             ->andReturn(null);
 
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
@@ -1167,6 +1187,7 @@ class PublishTalentTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentServiceInterface::class, $talentService);
@@ -1243,18 +1264,20 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($talent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('save')
             ->once()
             ->with($createdTalent)
-            ->andReturn(null);
-        $talentRepository->shouldReceive('deleteDraft')
-            ->once()
-            ->with($talent)
             ->andReturn(null);
 
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
@@ -1281,6 +1304,7 @@ class PublishTalentTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentServiceInterface::class, $talentService);
@@ -1337,8 +1361,8 @@ class PublishTalentTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftById')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
             ->once()
             ->with($publishTalentInfo->talentIdentifier)
             ->andReturn($talent);
@@ -1348,7 +1372,7 @@ class PublishTalentTest extends TestCase
         $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);

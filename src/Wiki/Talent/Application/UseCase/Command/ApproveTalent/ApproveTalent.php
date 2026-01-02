@@ -17,14 +17,14 @@ use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalen
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 
 readonly class ApproveTalent implements ApproveTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface        $talentRepository,
+        private DraftTalentRepositoryInterface   $draftTalentRepository,
         private TalentServiceInterface           $talentService,
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
         private TalentHistoryFactoryInterface    $talentHistoryFactory,
@@ -43,7 +43,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
      */
     public function process(ApproveTalentInputPort $input): DraftTalent
     {
-        $talent = $this->talentRepository->findDraftById($input->talentIdentifier());
+        $talent = $this->draftTalentRepository->findById($input->talentIdentifier());
 
         if ($talent === null) {
             throw new TalentNotFoundException();
@@ -83,7 +83,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
         $previousStatus = $talent->status();
         $talent->setStatus(ApprovalStatus::Approved);
 
-        $this->talentRepository->saveDraft($talent);
+        $this->draftTalentRepository->save($talent);
 
         $history = $this->talentHistoryFactory->create(
             $input->principalIdentifier(),

@@ -30,6 +30,7 @@ use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -56,8 +57,10 @@ class CreateTalentTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $createTalent = $this->app->make(CreateTalentInterface::class);
         $this->assertInstanceOf(CreateTalent::class, $createTalent);
     }
@@ -115,7 +118,9 @@ class CreateTalentTest extends TestCase
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
             ->andReturn($createTalentInfo->publishedTalent);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($createTalentInfo->draftTalent)
             ->andReturn(null);
@@ -124,6 +129,7 @@ class CreateTalentTest extends TestCase
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $createTalent = $this->app->make(CreateTalentInterface::class);
         $talent = $createTalent->process($input);
         $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
@@ -193,7 +199,9 @@ class CreateTalentTest extends TestCase
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($createTalentInfo->draftTalent)
             ->andReturn(null);
@@ -202,6 +210,7 @@ class CreateTalentTest extends TestCase
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $useCase = $this->app->make(CreateTalentInterface::class);
         $useCase->process($input);
@@ -261,7 +270,9 @@ class CreateTalentTest extends TestCase
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($createTalentInfo->draftTalent)
             ->andReturn(null);
@@ -270,6 +281,7 @@ class CreateTalentTest extends TestCase
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $useCase = $this->app->make(CreateTalentInterface::class);
         $useCase->process($input);
@@ -330,7 +342,9 @@ class CreateTalentTest extends TestCase
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($createTalentInfo->draftTalent)
             ->andReturn(null);
@@ -339,6 +353,7 @@ class CreateTalentTest extends TestCase
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $useCase = $this->app->make(CreateTalentInterface::class);
         $useCase->process($input);
@@ -400,7 +415,9 @@ class CreateTalentTest extends TestCase
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($createTalentInfo->draftTalent)
             ->andReturn(null);
@@ -409,6 +426,7 @@ class CreateTalentTest extends TestCase
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $useCase = $this->app->make(CreateTalentInterface::class);
         $useCase->process($input);
@@ -467,7 +485,9 @@ class CreateTalentTest extends TestCase
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
             ->andReturn(null);
-        $talentRepository->shouldReceive('saveDraft')
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('save')
             ->once()
             ->with($createTalentInfo->draftTalent)
             ->andReturn(null);
@@ -476,6 +496,7 @@ class CreateTalentTest extends TestCase
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $useCase = $this->app->make(CreateTalentInterface::class);
         $useCase->process($input);
@@ -518,10 +539,12 @@ class CreateTalentTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $this->expectException(UnauthorizedException::class);
         $useCase = $this->app->make(CreateTalentInterface::class);
@@ -564,10 +587,12 @@ class CreateTalentTest extends TestCase
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
 
         $this->expectException(PrincipalNotFoundException::class);
         $useCase = $this->app->make(CreateTalentInterface::class);

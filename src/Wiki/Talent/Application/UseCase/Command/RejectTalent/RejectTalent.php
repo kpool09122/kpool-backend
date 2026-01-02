@@ -15,13 +15,13 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
 readonly class RejectTalent implements RejectTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface        $talentRepository,
+        private DraftTalentRepositoryInterface   $dratTalentRepository,
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
         private TalentHistoryFactoryInterface    $talentHistoryFactory,
         private PrincipalRepositoryInterface     $principalRepository,
@@ -38,7 +38,7 @@ readonly class RejectTalent implements RejectTalentInterface
      */
     public function process(RejectTalentInputPort $input): DraftTalent
     {
-        $talent = $this->talentRepository->findDraftById($input->talentIdentifier());
+        $talent = $this->dratTalentRepository->findById($input->talentIdentifier());
 
         if ($talent === null) {
             throw new TalentNotFoundException();
@@ -71,7 +71,7 @@ readonly class RejectTalent implements RejectTalentInterface
 
         $talent->setStatus(ApprovalStatus::Rejected);
 
-        $this->talentRepository->saveDraft($talent);
+        $this->dratTalentRepository->save($talent);
 
         $history = $this->talentHistoryFactory->create(
             $input->principalIdentifier(),

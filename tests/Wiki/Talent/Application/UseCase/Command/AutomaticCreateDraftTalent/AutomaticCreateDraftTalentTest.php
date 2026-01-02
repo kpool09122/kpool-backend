@@ -22,7 +22,7 @@ use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\Au
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\AutomaticDraftTalentCreationServiceInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AutomaticDraftTalentCreationPayload;
@@ -64,15 +64,15 @@ class AutomaticCreateDraftTalentTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftTalent);
 
-        $repository = Mockery::mock(TalentRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftTalent)
             ->andReturnNull();
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
-        $this->app->instance(TalentRepositoryInterface::class, $repository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
@@ -107,15 +107,15 @@ class AutomaticCreateDraftTalentTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftTalent);
 
-        $repository = Mockery::mock(TalentRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftTalent)
             ->andReturnNull();
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
-        $this->app->instance(TalentRepositoryInterface::class, $repository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
@@ -143,11 +143,11 @@ class AutomaticCreateDraftTalentTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftTalentCreationServiceInterface::class);
-        $repository = Mockery::mock(TalentRepositoryInterface::class);
+        $repository = Mockery::mock(DraftTalentRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
-        $this->app->instance(TalentRepositoryInterface::class, $repository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);
@@ -173,11 +173,11 @@ class AutomaticCreateDraftTalentTest extends TestCase
             ->andReturn(null);
 
         $service = Mockery::mock(AutomaticDraftTalentCreationServiceInterface::class);
-        $repository = Mockery::mock(TalentRepositoryInterface::class);
+        $repository = Mockery::mock(DraftTalentRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftTalentCreationServiceInterface::class, $service);
-        $this->app->instance(TalentRepositoryInterface::class, $repository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftTalentInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftTalentInterface::class);

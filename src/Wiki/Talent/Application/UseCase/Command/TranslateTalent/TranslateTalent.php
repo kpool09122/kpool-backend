@@ -14,14 +14,16 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
 readonly class TranslateTalent implements TranslateTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface    $talentRepository,
-        private TranslationServiceInterface  $translationService,
-        private PrincipalRepositoryInterface $principalRepository,
+        private TalentRepositoryInterface      $talentRepository,
+        private DraftTalentRepositoryInterface $draftTalentRepository,
+        private TranslationServiceInterface    $translationService,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -66,7 +68,7 @@ readonly class TranslateTalent implements TranslateTalentInterface
             // 外部翻訳サービスを使って翻訳
             $talentDraft = $this->translationService->translateTalent($talent, $language);
             $talentDrafts[] = $talentDraft;
-            $this->talentRepository->saveDraft($talentDraft);
+            $this->draftTalentRepository->save($talentDraft);
         }
 
         return $talentDrafts;

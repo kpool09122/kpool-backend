@@ -14,15 +14,17 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
 readonly class CreateTalent implements CreateTalentInterface
 {
     public function __construct(
-        private DraftTalentFactoryInterface  $talentFactory,
-        private TalentRepositoryInterface    $talentRepository,
-        private ImageServiceInterface        $imageService,
-        private PrincipalRepositoryInterface $principalRepository,
+        private DraftTalentFactoryInterface    $talentFactory,
+        private TalentRepositoryInterface      $talentRepository,
+        private DraftTalentRepositoryInterface $draftTalentRepository,
+        private ImageServiceInterface          $imageService,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -77,7 +79,7 @@ readonly class CreateTalent implements CreateTalentInterface
         }
         $talent->setRelevantVideoLinks($input->relevantVideoLinks());
 
-        $this->talentRepository->saveDraft($talent);
+        $this->draftTalentRepository->save($talent);
 
         return $talent;
     }
