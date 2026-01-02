@@ -7,12 +7,12 @@ namespace Source\Wiki\Talent\Domain\Service;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 
 class TalentService implements TalentServiceInterface
 {
     public function __construct(
-        private readonly TalentRepositoryInterface $talentRepository,
+        private readonly DraftTalentRepositoryInterface $draftTalentRepository,
     ) {
     }
 
@@ -20,7 +20,7 @@ class TalentService implements TalentServiceInterface
         TranslationSetIdentifier $translationSetIdentifier,
         TalentIdentifier         $excludeTalentIdentifier,
     ): bool {
-        $draftTalents = $this->talentRepository->findDraftsByTranslationSet(
+        $draftTalents = $this->draftTalentRepository->findByTranslationSet(
             $translationSetIdentifier,
         );
 

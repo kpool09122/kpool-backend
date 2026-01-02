@@ -17,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
@@ -128,7 +127,7 @@ class DraftSongRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByIdWhenNotExist(): void
     {
-        $repository = $this->app->make(SongRepositoryInterface::class);
+        $repository = $this->app->make(DraftSongRepositoryInterface::class);
         $draft = $repository->findById(new SongIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($draft);

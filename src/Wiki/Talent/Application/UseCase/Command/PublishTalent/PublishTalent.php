@@ -19,6 +19,7 @@ use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
@@ -28,6 +29,7 @@ readonly class PublishTalent implements PublishTalentInterface
 {
     public function __construct(
         private TalentRepositoryInterface         $talentRepository,
+        private DraftTalentRepositoryInterface    $draftTalentRepository,
         private TalentServiceInterface            $talentService,
         private TalentFactoryInterface            $talentFactory,
         private TalentHistoryRepositoryInterface  $talentHistoryRepository,
@@ -50,7 +52,7 @@ readonly class PublishTalent implements PublishTalentInterface
      */
     public function process(PublishTalentInputPort $input): Talent
     {
-        $talent = $this->talentRepository->findDraftById($input->talentIdentifier());
+        $talent = $this->draftTalentRepository->findById($input->talentIdentifier());
 
         if ($talent === null) {
             throw new TalentNotFoundException();
@@ -129,7 +131,7 @@ readonly class PublishTalent implements PublishTalentInterface
         );
         $this->talentHistoryRepository->save($history);
 
-        $this->talentRepository->deleteDraft($talent);
+        $this->draftTalentRepository->delete($talent);
 
         return $publishedTalent;
     }

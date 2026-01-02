@@ -15,16 +15,16 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentHistoryRepositoryInterface;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 
 readonly class SubmitTalent implements SubmitTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface $talentRepository,
+        private DraftTalentRepositoryInterface   $draftTalentRepository,
         private TalentHistoryRepositoryInterface $talentHistoryRepository,
-        private TalentHistoryFactoryInterface $talentHistoryFactory,
-        private PrincipalRepositoryInterface $principalRepository,
+        private TalentHistoryFactoryInterface    $talentHistoryFactory,
+        private PrincipalRepositoryInterface     $principalRepository,
     ) {
     }
 
@@ -38,7 +38,7 @@ readonly class SubmitTalent implements SubmitTalentInterface
      */
     public function process(SubmitTalentInputPort $input): DraftTalent
     {
-        $talent = $this->talentRepository->findDraftById($input->talentIdentifier());
+        $talent = $this->draftTalentRepository->findById($input->talentIdentifier());
 
         if ($talent === null) {
             throw new TalentNotFoundException();
@@ -71,7 +71,7 @@ readonly class SubmitTalent implements SubmitTalentInterface
         $previousStatus = $talent->status();
         $talent->setStatus(ApprovalStatus::UnderReview);
 
-        $this->talentRepository->saveDraft($talent);
+        $this->draftTalentRepository->save($talent);
 
         $history = $this->talentHistoryFactory->create(
             $input->principalIdentifier(),

@@ -16,7 +16,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -39,8 +39,8 @@ class TalentServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentService = $this->app->make(TalentServiceInterface::class);
         $this->assertInstanceOf(TalentService::class, $talentService);
     }
@@ -103,13 +103,13 @@ class TalentServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$approvedTalent, $excludeTalent]);
 
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentService = $this->app->make(TalentServiceInterface::class);
 
         $result = $talentService->existsApprovedButNotTranslatedTalent(
@@ -178,13 +178,13 @@ class TalentServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$pendingTalent, $excludeTalent]);
 
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentService = $this->app->make(TalentServiceInterface::class);
 
         $result = $talentService->existsApprovedButNotTranslatedTalent(
@@ -230,13 +230,13 @@ class TalentServiceTest extends TestCase
             ApprovalStatus::Approved,
         );
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$selfTalent]);
 
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentService = $this->app->make(TalentServiceInterface::class);
 
         $result = $talentService->existsApprovedButNotTranslatedTalent(
@@ -258,13 +258,13 @@ class TalentServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([]);
 
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentService = $this->app->make(TalentServiceInterface::class);
 
         $result = $talentService->existsApprovedButNotTranslatedTalent(
@@ -344,13 +344,13 @@ class TalentServiceTest extends TestCase
             ApprovalStatus::Pending,
         );
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findDraftsByTranslationSet')
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findByTranslationSet')
             ->once()
             ->with($translationSetIdentifier)
             ->andReturn([$koreanTalent, $englishTalent, $japaneseTalent]);
 
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentService = $this->app->make(TalentServiceInterface::class);
 
         $result = $talentService->existsApprovedButNotTranslatedTalent(

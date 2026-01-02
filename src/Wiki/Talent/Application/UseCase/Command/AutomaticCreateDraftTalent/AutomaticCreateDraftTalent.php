@@ -9,15 +9,15 @@ use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\AutomaticDraftTalentCreationServiceInterface;
 
 readonly class AutomaticCreateDraftTalent implements AutomaticCreateDraftTalentInterface
 {
     public function __construct(
         private AutomaticDraftTalentCreationServiceInterface $automaticDraftTalentCreationService,
-        private TalentRepositoryInterface $talentRepository,
-        private PrincipalRepositoryInterface $principalRepository,
+        private DraftTalentRepositoryInterface               $draftTalentRepository,
+        private PrincipalRepositoryInterface                 $principalRepository,
     ) {
     }
 
@@ -40,7 +40,7 @@ readonly class AutomaticCreateDraftTalent implements AutomaticCreateDraftTalentI
         }
 
         $draftTalent = $this->automaticDraftTalentCreationService->create($input->payload(), $principal);
-        $this->talentRepository->saveDraft($draftTalent);
+        $this->draftTalentRepository->save($draftTalent);
 
         return $draftTalent;
     }

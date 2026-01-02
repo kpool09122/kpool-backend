@@ -13,14 +13,14 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 
 readonly class EditTalent implements EditTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface    $talentRepository,
-        private ImageServiceInterface        $imageService,
-        private PrincipalRepositoryInterface $principalRepository,
+        private DraftTalentRepositoryInterface $draftTalentRepository,
+        private ImageServiceInterface          $imageService,
+        private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
 
@@ -33,7 +33,7 @@ readonly class EditTalent implements EditTalentInterface
      */
     public function process(EditTalentInputPort $input): DraftTalent
     {
-        $talent = $this->talentRepository->findDraftById($input->talentIdentifier());
+        $talent = $this->draftTalentRepository->findById($input->talentIdentifier());
 
         if ($talent === null) {
             throw new TalentNotFoundException();
@@ -72,7 +72,7 @@ readonly class EditTalent implements EditTalentInterface
         }
         $talent->setRelevantVideoLinks($input->relevantVideoLinks());
 
-        $this->talentRepository->saveDraft($talent);
+        $this->draftTalentRepository->save($talent);
 
         return $talent;
     }
