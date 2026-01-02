@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\AgencySnapshot;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -22,4 +23,12 @@ interface AgencySnapshotRepositoryInterface
         AgencyIdentifier $agencyIdentifier,
         Version $version
     ): ?AgencySnapshot;
+
+    /**
+     * @return AgencySnapshot[]
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array;
 }

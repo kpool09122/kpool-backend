@@ -63,6 +63,21 @@ class AgencySnapshotRepository implements AgencySnapshotRepositoryInterface
         return $this->toEntity($model);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array {
+        $models = AgencySnapshotModel::query()
+            ->where('translation_set_identifier', (string)$translationSetIdentifier)
+            ->where('version', $version->value())
+            ->get();
+
+        return $models->map(fn (AgencySnapshotModel $model) => $this->toEntity($model))->toArray();
+    }
+
     private function toEntity(AgencySnapshotModel $model): AgencySnapshot
     {
         return new AgencySnapshot(

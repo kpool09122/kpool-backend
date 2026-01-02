@@ -265,4 +265,113 @@ class AgencySnapshotRepositoryTest extends TestCase
 
         $this->assertNull($snapshot);
     }
+
+    /**
+     * 正常系：翻訳セットIDとバージョンで複数のSnapshotを取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersion(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $agencyIdKo = StrTestHelper::generateUuid();
+        $agencyIdJa = StrTestHelper::generateUuid();
+        $version = 2;
+
+        // 韓国語版Snapshotバージョン2
+        $snapshotIdKo = StrTestHelper::generateUuid();
+        CreateAgencySnapshot::create($snapshotIdKo, [
+            'agency_id' => $agencyIdKo,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => 'JYP엔터테인먼트 v2',
+            'normalized_name' => 'jypㅇㅌㅌㅇㅁㅌ v2',
+            'CEO' => 'J.Y. Park',
+            'normalized_CEO' => 'j.y. park',
+            'founded_in' => '1997-04-25',
+            'description' => 'Korean description v2',
+            'version' => $version,
+        ]);
+
+        // 日本語版Snapshotバージョン2
+        $snapshotIdJa = StrTestHelper::generateUuid();
+        CreateAgencySnapshot::create($snapshotIdJa, [
+            'agency_id' => $agencyIdJa,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::JAPANESE->value,
+            'name' => 'JYPエンターテインメント v2',
+            'normalized_name' => 'jypえんたーていんめんと v2',
+            'CEO' => 'J.Y. パク',
+            'normalized_CEO' => 'j.y. ぱく',
+            'founded_in' => '1997-04-25',
+            'description' => 'Japanese description v2',
+            'version' => $version,
+        ]);
+
+        // 同じ翻訳セットだが異なるバージョン（取得されないはず）
+        $snapshotIdV1 = StrTestHelper::generateUuid();
+        CreateAgencySnapshot::create($snapshotIdV1, [
+            'agency_id' => $agencyIdKo,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => 'JYP엔터테인먼트 v1',
+            'normalized_name' => 'jypㅇㅌㅌㅇㅁㅌ v1',
+            'CEO' => 'J.Y. Park',
+            'normalized_CEO' => 'j.y. park',
+            'founded_in' => '1997-04-25',
+            'description' => 'Korean description v1',
+            'version' => 1,
+        ]);
+
+        // 別の翻訳セットのSnapshot（取得されないはず）
+        $otherTranslationSetIdentifier = StrTestHelper::generateUuid();
+        $snapshotIdOther = StrTestHelper::generateUuid();
+        CreateAgencySnapshot::create($snapshotIdOther, [
+            'agency_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $otherTranslationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => 'SM엔터테인먼트',
+            'normalized_name' => 'smㅇㅌㅌㅇㅁㅌ',
+            'CEO' => 'Lee Sung-su',
+            'normalized_CEO' => 'lee sung-su',
+            'founded_in' => '1995-02-14',
+            'description' => 'SM description',
+            'version' => $version,
+        ]);
+
+        $repository = $this->app->make(AgencySnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new Version($version)
+        );
+
+        $this->assertCount(2, $snapshots);
+
+        $snapshotIds = array_map(fn (AgencySnapshot $s) => (string) $s->snapshotIdentifier(), $snapshots);
+        $this->assertContains($snapshotIdKo, $snapshotIds);
+        $this->assertContains($snapshotIdJa, $snapshotIds);
+        $this->assertNotContains($snapshotIdV1, $snapshotIds);
+        $this->assertNotContains($snapshotIdOther, $snapshotIds);
+    }
+
+    /**
+     * 正常系：該当するSnapshotが存在しない場合、空の配列が返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersionWhenNoSnapshots(): void
+    {
+        $repository = $this->app->make(AgencySnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Version(1)
+        );
+
+        $this->assertIsArray($snapshots);
+        $this->assertEmpty($snapshots);
+    }
 }

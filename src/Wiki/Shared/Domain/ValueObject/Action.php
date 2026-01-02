@@ -13,4 +13,5 @@ enum Action: string
     case REJECT = 'reject';
     case TRANSLATE = 'translate';
     case PUBLISH = 'publish';
+    case ROLLBACK = 'rollback';
 }

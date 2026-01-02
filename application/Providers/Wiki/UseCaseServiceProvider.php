@@ -17,6 +17,8 @@ use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\PublishAgency\PublishAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\RejectAgency\RejectAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\RejectAgency\RejectAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\RollbackAgency\RollbackAgency;
+use Source\Wiki\Agency\Application\UseCase\Command\RollbackAgency\RollbackAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency\SubmitAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\SubmitAgency\SubmitAgencyInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgency;
@@ -102,6 +104,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectAgencyInterface::class, RejectAgency::class);
         $this->app->singleton(PublishAgencyInterface::class, PublishAgency::class);
         $this->app->singleton(TranslateAgencyInterface::class, TranslateAgency::class);
+        $this->app->singleton(RollbackAgencyInterface::class, RollbackAgency::class);
         $this->app->singleton(SubmitGroupInterface::class, SubmitGroup::class);
         $this->app->singleton(ApproveGroupInterface::class, ApproveGroup::class);
         $this->app->singleton(RejectGroupInterface::class, RejectGroup::class);

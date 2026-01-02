@@ -42,6 +42,31 @@ class AgencyRepository implements AgencyRepositoryInterface
         );
     }
 
+    /**
+     * @return Agency[]
+     */
+    public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array
+    {
+        $agencyModels = AgencyModel::query()
+            ->where('translation_set_identifier', (string)$translationSetIdentifier)
+            ->get();
+
+        return $agencyModels->map(function (AgencyModel $agencyModel) {
+            return new Agency(
+                new AgencyIdentifier($agencyModel->id),
+                new TranslationSetIdentifier($agencyModel->translation_set_identifier),
+                Language::from($agencyModel->language),
+                new AgencyName($agencyModel->name),
+                $agencyModel->normalized_name,
+                new CEO($agencyModel->CEO),
+                $agencyModel->normalized_CEO,
+                $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
+                new Description($agencyModel->description),
+                new Version($agencyModel->version),
+            );
+        })->toArray();
+    }
+
     public function save(Agency $agency): void
     {
         AgencyModel::query()->updateOrCreate(

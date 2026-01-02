@@ -174,6 +174,61 @@ DESCRIPTION
     }
 
     /**
+     * 正常系：hasSameVersionが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testHasSameVersion(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        // 同じバージョン
+        $sameVersion = new Version(1);
+        $this->assertTrue($agency->hasSameVersion($sameVersion));
+
+        // 異なるバージョン
+        $differentVersion = new Version(2);
+        $this->assertFalse($agency->hasSameVersion($differentVersion));
+    }
+
+    /**
+     * 正常系：isVersionGreaterThanが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testIsVersionGreaterThan(): void
+    {
+        // バージョン5のAgencyを作成
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $agency = new Agency(
+            $agencyIdentifier,
+            $translationSetIdentifier,
+            Language::KOREAN,
+            new AgencyName('JYP엔터테인먼트'),
+            'jypㅇㅌㅌㅇㅁㅌ',
+            new CEO('J.Y. Park'),
+            'j.y.park',
+            new FoundedIn(new DateTimeImmutable('1997-04-25')),
+            new Description('Description'),
+            new Version(5),
+        );
+
+        // 現在のバージョンより小さいバージョン
+        $smallerVersion = new Version(3);
+        $this->assertTrue($agency->isVersionGreaterThan($smallerVersion));
+
+        // 現在のバージョンと同じバージョン
+        $sameVersion = new Version(5);
+        $this->assertFalse($agency->isVersionGreaterThan($sameVersion));
+
+        // 現在のバージョンより大きいバージョン
+        $largerVersion = new Version(7);
+        $this->assertFalse($agency->isVersionGreaterThan($largerVersion));
+    }
+
+    /**
      * ダミーのAgencyを作成するヘルパーメソッド
      *
      * @return AgencyTestData
