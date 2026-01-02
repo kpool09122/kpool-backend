@@ -185,4 +185,87 @@ class SongRepositoryTest extends TestCase
             'talent_id' => $talentId,
         ]);
     }
+
+    /**
+     * 正常系：翻訳セットIDで歌情報一覧が取得できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifier(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
+        $talentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($groupId);
+        CreateTalent::create($talentId);
+
+        // 韓国語版
+        $songIdKo = StrTestHelper::generateUuid();
+        CreateSong::create($songIdKo, [
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => '소리꾼',
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
+            'lyricist' => 'Bang Chan, Changbin, Han',
+            'composer' => 'Bang Chan, Changbin, Han',
+            'overview' => 'Stray Kids 2nd full album NOEASY title track.',
+            'version' => 2,
+        ]);
+
+        // 日本語版
+        $songIdJa = StrTestHelper::generateUuid();
+        CreateSong::create($songIdJa, [
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::JAPANESE->value,
+            'name' => 'ソリックン',
+            'group_id' => $groupId,
+            'talent_id' => $talentId,
+            'lyricist' => 'Bang Chan, Changbin, Han',
+            'composer' => 'Bang Chan, Changbin, Han',
+            'overview' => 'Stray Kids 2nd full album NOEASY title track.',
+            'version' => 2,
+        ]);
+
+        // 別の翻訳セットの歌（取得されないはず）
+        $otherSongId = StrTestHelper::generateUuid();
+        CreateSong::create($otherSongId, [
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'language' => Language::KOREAN->value,
+            'name' => 'CASE 143',
+            'lyricist' => '3RACHA',
+            'composer' => '3RACHA, Versachoi',
+            'overview' => 'Stray Kids 7th mini album MAXIDENT title track.',
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(SongRepositoryInterface::class);
+        $songs = $repository->findByTranslationSetIdentifier(
+            new TranslationSetIdentifier($translationSetIdentifier)
+        );
+
+        $this->assertCount(2, $songs);
+        $songIds = array_map(fn (Song $song) => (string) $song->songIdentifier(), $songs);
+        $this->assertContains($songIdKo, $songIds);
+        $this->assertContains($songIdJa, $songIds);
+    }
+
+    /**
+     * 正常系：翻訳セットIDに該当する歌が存在しない場合、空の配列が返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierWhenNoSongs(): void
+    {
+        $repository = $this->app->make(SongRepositoryInterface::class);
+        $songs = $repository->findByTranslationSetIdentifier(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid())
+        );
+
+        $this->assertIsArray($songs);
+        $this->assertEmpty($songs);
+    }
 }

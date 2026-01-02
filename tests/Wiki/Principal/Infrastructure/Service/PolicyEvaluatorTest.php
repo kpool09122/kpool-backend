@@ -37,12 +37,12 @@ class PolicyEvaluatorTest extends TestCase
     }
 
     /**
-     * 正常系: SeniorCollaboratorの場合は、いつでもtrueが返却されること.
+     * 正常系: SeniorCollaboratorの場合は、ROLLBACK以外のアクションでtrueが返却されること.
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testSeniorCollaboratorAlwaysTrue(): void
+    public function testSeniorCollaboratorTrueExceptRollback(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
@@ -50,7 +50,11 @@ class PolicyEvaluatorTest extends TestCase
 
         $policyEvaluator = $this->app->make(PolicyEvaluatorInterface::class);
         foreach (Action::cases() as $action) {
-            $this->assertTrue($policyEvaluator->evaluate($principal, $action, $resource));
+            if ($action === Action::ROLLBACK) {
+                $this->assertFalse($policyEvaluator->evaluate($principal, $action, $resource));
+            } else {
+                $this->assertTrue($policyEvaluator->evaluate($principal, $action, $resource));
+            }
         }
     }
 

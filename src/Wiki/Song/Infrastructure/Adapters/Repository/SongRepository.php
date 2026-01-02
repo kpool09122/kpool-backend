@@ -37,34 +37,21 @@ final class SongRepository implements SongRepositoryInterface
             return null;
         }
 
-        /** @var Group|null $group */
-        $group = $songModel->groups->first();
-        $groupIdentifier = $group ? new GroupIdentifier($group->id) : null;
+        return $this->toEntity($songModel);
+    }
 
-        /** @var Talent|null $talent */
-        $talent = $songModel->talents->first();
-        $talentIdentifier = $talent ? new TalentIdentifier($talent->id) : null;
+    /**
+     * @return Song[]
+     */
+    public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array
+    {
+        $songModels = SongModel::query()
+            ->with(['groups', 'talents'])
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->whereNotNull('version')
+            ->get();
 
-        $releaseDate = $songModel->release_date
-            ? new ReleaseDate($songModel->release_date->toDateTimeImmutable())
-            : null;
-
-        return new Song(
-            new SongIdentifier($songModel->id),
-            new TranslationSetIdentifier($songModel->translation_set_identifier),
-            Language::from($songModel->language),
-            new SongName($songModel->name),
-            $songModel->agency_id ? new AgencyIdentifier($songModel->agency_id) : null,
-            $groupIdentifier,
-            $talentIdentifier,
-            new Lyricist($songModel->lyricist),
-            new Composer($songModel->composer),
-            $releaseDate,
-            new Overview($songModel->overview),
-            $songModel->cover_image_path ? new ImagePath($songModel->cover_image_path) : null,
-            $songModel->music_video_link ? new ExternalContentLink($songModel->music_video_link) : null,
-            new Version($songModel->version ?? 1),
-        );
+        return $songModels->map(fn (SongModel $model) => $this->toEntity($model))->toArray();
     }
 
     public function save(Song $song): void
@@ -97,5 +84,37 @@ final class SongRepository implements SongRepositoryInterface
 
         $talentId = $song->talentIdentifier() ? [(string) $song->talentIdentifier()] : [];
         $songModel->talents()->sync($talentId);
+    }
+
+    private function toEntity(SongModel $songModel): Song
+    {
+        /** @var Group|null $group */
+        $group = $songModel->groups->first();
+        $groupIdentifier = $group ? new GroupIdentifier($group->id) : null;
+
+        /** @var Talent|null $talent */
+        $talent = $songModel->talents->first();
+        $talentIdentifier = $talent ? new TalentIdentifier($talent->id) : null;
+
+        $releaseDate = $songModel->release_date
+            ? new ReleaseDate($songModel->release_date->toDateTimeImmutable())
+            : null;
+
+        return new Song(
+            new SongIdentifier($songModel->id),
+            new TranslationSetIdentifier($songModel->translation_set_identifier),
+            Language::from($songModel->language),
+            new SongName($songModel->name),
+            $songModel->agency_id ? new AgencyIdentifier($songModel->agency_id) : null,
+            $groupIdentifier,
+            $talentIdentifier,
+            new Lyricist($songModel->lyricist),
+            new Composer($songModel->composer),
+            $releaseDate,
+            new Overview($songModel->overview),
+            $songModel->cover_image_path ? new ImagePath($songModel->cover_image_path) : null,
+            $songModel->music_video_link ? new ExternalContentLink($songModel->music_video_link) : null,
+            new Version($songModel->version),
+        );
     }
 }

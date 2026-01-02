@@ -152,6 +152,60 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     }
 
     /**
+     * 正常系：hasSameVersionが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testHasSameVersion(): void
+    {
+        $createGroup = $this->createDummyGroup();
+        $group = $createGroup->group;
+
+        // 同じバージョン
+        $sameVersion = new Version(1);
+        $this->assertTrue($group->hasSameVersion($sameVersion));
+
+        // 異なるバージョン
+        $differentVersion = new Version(2);
+        $this->assertFalse($group->hasSameVersion($differentVersion));
+    }
+
+    /**
+     * 正常系：isVersionGreaterThanが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testIsVersionGreaterThan(): void
+    {
+        // バージョン5のグループを作成
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $group = new Group(
+            $groupIdentifier,
+            $translationSetIdentifier,
+            Language::KOREAN,
+            new GroupName('TWICE'),
+            'twice',
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            new Description('Description'),
+            new ImagePath('/resources/public/images/test.webp'),
+            new Version(5),
+        );
+
+        // 現在のバージョンより小さいバージョン
+        $smallerVersion = new Version(3);
+        $this->assertTrue($group->isVersionGreaterThan($smallerVersion));
+
+        // 現在のバージョンと同じバージョン
+        $sameVersion = new Version(5);
+        $this->assertFalse($group->isVersionGreaterThan($sameVersion));
+
+        // 現在のバージョンより大きいバージョン
+        $largerVersion = new Version(7);
+        $this->assertFalse($group->isVersionGreaterThan($largerVersion));
+    }
+
+    /**
      * ダミーのGroupを作成するヘルパーメソッド
      *
      * @return GroupTestData

@@ -179,4 +179,14 @@ class Song
     {
         $this->version = Version::nextVersion($this->version);
     }
+
+    public function hasSameVersion(Version $version): bool
+    {
+        return $this->version->value() === $version->value();
+    }
+
+    public function isVersionGreaterThan(Version $version): bool
+    {
+        return $this->version->value() > $version->value();
+    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -22,4 +23,12 @@ interface GroupSnapshotRepositoryInterface
         GroupIdentifier $groupIdentifier,
         Version $version
     ): ?GroupSnapshot;
+
+    /**
+     * @return GroupSnapshot[]
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array;
 }

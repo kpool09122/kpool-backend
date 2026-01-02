@@ -16,6 +16,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -71,13 +72,16 @@ readonly class SubmitAgency implements SubmitAgencyInterface
         $this->agencyRepository->save($agency);
 
         $history = $this->agencyHistoryFactory->create(
-            $input->principalIdentifier(),
-            $agency->editorIdentifier(),
-            $agency->publishedAgencyIdentifier(),
-            $agency->agencyIdentifier(),
-            $previousStatus,
-            $agency->status(),
-            $agency->name(),
+            actionType: HistoryActionType::DraftStatusChange,
+            editorIdentifier: $input->principalIdentifier(),
+            submitterIdentifier: $agency->editorIdentifier(),
+            agencyIdentifier: $agency->publishedAgencyIdentifier(),
+            draftAgencyIdentifier: $agency->agencyIdentifier(),
+            fromStatus: $previousStatus,
+            toStatus: $agency->status(),
+            fromVersion: null,
+            toVersion: null,
+            subjectName: $agency->name(),
         );
         $this->agencyHistoryRepository->save($history);
 

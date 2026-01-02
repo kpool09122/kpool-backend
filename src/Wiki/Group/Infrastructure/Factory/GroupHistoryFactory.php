@@ -12,7 +12,9 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupHistoryFactory implements GroupHistoryFactoryInterface
 {
@@ -22,22 +24,28 @@ readonly class GroupHistoryFactory implements GroupHistoryFactoryInterface
     }
 
     public function create(
+        HistoryActionType $actionType,
         PrincipalIdentifier $editorIdentifier,
         ?PrincipalIdentifier $submitterIdentifier,
         ?GroupIdentifier $groupIdentifier,
         ?GroupIdentifier $draftGroupIdentifier,
         ?ApprovalStatus $fromStatus,
         ?ApprovalStatus $toStatus,
+        ?Version $fromVersion,
+        ?Version $toVersion,
         GroupName $subjectName,
     ): GroupHistory {
         return new GroupHistory(
             new GroupHistoryIdentifier($this->generator->generate()),
+            $actionType,
             $editorIdentifier,
             $submitterIdentifier,
             $groupIdentifier,
             $draftGroupIdentifier,
             $fromStatus,
             $toStatus,
+            $fromVersion,
+            $toVersion,
             $subjectName,
             new DateTimeImmutable('now'),
         );

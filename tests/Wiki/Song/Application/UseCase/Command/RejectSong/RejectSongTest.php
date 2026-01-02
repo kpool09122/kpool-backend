@@ -20,6 +20,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -851,12 +852,15 @@ class RejectSongTest extends TestCase
         $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new SongHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $song->editorIdentifier(),
             $song->publishedSongIdentifier(),
             $song->songIdentifier(),
             ApprovalStatus::UnderReview,
             ApprovalStatus::Rejected,
+            null,
+            null,
             $song->name(),
             new DateTimeImmutable('now'),
         );

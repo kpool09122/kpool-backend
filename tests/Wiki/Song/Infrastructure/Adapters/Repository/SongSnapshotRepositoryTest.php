@@ -297,4 +297,96 @@ class SongSnapshotRepositoryTest extends TestCase
 
         $this->assertNull($snapshot);
     }
+
+    /**
+     * 正常系：翻訳セットIDとバージョンでスナップショット一覧が取得できること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersion(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $version = 2;
+
+        // 韓国語版のスナップショット（バージョン2）
+        $snapshotIdKo = StrTestHelper::generateUuid();
+        $songIdKo = StrTestHelper::generateUuid();
+        CreateSongSnapshot::create($snapshotIdKo, [
+            'song_id' => $songIdKo,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => 'TT v2',
+            'overview' => 'TT is a song by TWICE (v2).',
+            'version' => $version,
+        ]);
+
+        // 日本語版のスナップショット（バージョン2）
+        $snapshotIdJa = StrTestHelper::generateUuid();
+        $songIdJa = StrTestHelper::generateUuid();
+        CreateSongSnapshot::create($snapshotIdJa, [
+            'song_id' => $songIdJa,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::JAPANESE->value,
+            'name' => 'TT v2 JA',
+            'overview' => 'TT is a song by TWICE (v2 JA).',
+            'version' => $version,
+        ]);
+
+        // 同じ翻訳セットだが異なるバージョン（取得されないはず）
+        $snapshotIdV1 = StrTestHelper::generateUuid();
+        CreateSongSnapshot::create($snapshotIdV1, [
+            'song_id' => $songIdKo,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => 'TT v1',
+            'overview' => 'TT is a song by TWICE (v1).',
+            'version' => 1,
+        ]);
+
+        // 異なる翻訳セットのスナップショット（取得されないはず）
+        $snapshotIdOther = StrTestHelper::generateUuid();
+        CreateSongSnapshot::create($snapshotIdOther, [
+            'song_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'language' => Language::KOREAN->value,
+            'name' => 'CHEER UP',
+            'overview' => 'CHEER UP is a song by TWICE.',
+            'version' => $version,
+        ]);
+
+        $repository = $this->app->make(SongSnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new Version($version)
+        );
+
+        $this->assertCount(2, $snapshots);
+        $snapshotIds = array_map(
+            fn (SongSnapshot $snapshot) => (string) $snapshot->snapshotIdentifier(),
+            $snapshots
+        );
+        $this->assertContains($snapshotIdKo, $snapshotIds);
+        $this->assertContains($snapshotIdJa, $snapshotIds);
+    }
+
+    /**
+     * 正常系：翻訳セットIDとバージョンに該当するスナップショットが存在しない場合、空の配列が返却されること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersionWhenNoSnapshots(): void
+    {
+        $repository = $this->app->make(SongSnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Version(1)
+        );
+
+        $this->assertIsArray($snapshots);
+        $this->assertEmpty($snapshots);
+    }
 }

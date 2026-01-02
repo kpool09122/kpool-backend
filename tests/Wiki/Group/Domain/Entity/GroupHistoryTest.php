@@ -11,7 +11,9 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -123,12 +125,15 @@ class GroupHistoryTest extends TestCase
 
         $groupHistory = new GroupHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             $groupIdentifier,
             null,
             null,
             $toStatus,
+            null,
+            null,
             $subjectName,
             $recordedAt,
         );
@@ -155,12 +160,15 @@ class GroupHistoryTest extends TestCase
 
         new GroupHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             null,
             null,
             $fromStatus,
             $toStatus,
+            null,
+            null,
             $subjectName,
             $recordedAt,
         );
@@ -172,12 +180,18 @@ class GroupHistoryTest extends TestCase
      * @param ?GroupIdentifier $groupIdentifier
      * @param ?GroupIdentifier $draftGroupIdentifier
      * @param ?PrincipalIdentifier $submitterIdentifier
+     * @param HistoryActionType $actionType
+     * @param ?Version $fromVersion
+     * @param ?Version $toVersion
      * @return GroupHistoryTestData
      */
     private function createDummyGroupHistory(
         ?GroupIdentifier $groupIdentifier = null,
         ?GroupIdentifier $draftGroupIdentifier = null,
         ?PrincipalIdentifier $submitterIdentifier = null,
+        HistoryActionType $actionType = HistoryActionType::DraftStatusChange,
+        ?Version $fromVersion = null,
+        ?Version $toVersion = null,
     ): GroupHistoryTestData {
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -188,24 +202,30 @@ class GroupHistoryTest extends TestCase
 
         $groupHistory = new GroupHistory(
             $historyIdentifier,
+            $actionType,
             $editorIdentifier,
             $submitterIdentifier,
             $groupIdentifier,
             $draftGroupIdentifier,
             $fromStatus,
             $toStatus,
+            $fromVersion,
+            $toVersion,
             $subjectName,
             $recordedAt,
         );
 
         return new GroupHistoryTestData(
             historyIdentifier: $historyIdentifier,
+            actionType: $actionType,
             editorIdentifier: $editorIdentifier,
             submitterIdentifier: $submitterIdentifier,
             groupIdentifier: $groupIdentifier,
             draftGroupIdentifier: $draftGroupIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            fromVersion: $fromVersion,
+            toVersion: $toVersion,
             subjectName: $subjectName,
             recordedAt: $recordedAt,
             groupHistory: $groupHistory,
@@ -220,12 +240,15 @@ readonly class GroupHistoryTestData
 {
     public function __construct(
         public GroupHistoryIdentifier $historyIdentifier,
-        public PrincipalIdentifier       $editorIdentifier,
-        public ?PrincipalIdentifier      $submitterIdentifier,
+        public HistoryActionType      $actionType,
+        public PrincipalIdentifier    $editorIdentifier,
+        public ?PrincipalIdentifier   $submitterIdentifier,
         public ?GroupIdentifier       $groupIdentifier,
         public ?GroupIdentifier       $draftGroupIdentifier,
         public ApprovalStatus         $fromStatus,
         public ApprovalStatus         $toStatus,
+        public ?Version               $fromVersion,
+        public ?Version               $toVersion,
         public GroupName              $subjectName,
         public DateTimeImmutable      $recordedAt,
         public GroupHistory           $groupHistory,

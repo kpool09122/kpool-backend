@@ -165,4 +165,23 @@ class PolicyTest extends TestCase
         $this->assertSame([ResourceType::AGENCY], $statement->resourceTypes());
         $this->assertSame(ScopeCondition::NONE, $statement->scopeCondition());
     }
+
+    /**
+     * 正常系: DENY_ROLLBACKはROLLBACKを全リソースに対してDENYを返すこと.
+     *
+     * @return void
+     */
+    public function testDenyRollbackStatements(): void
+    {
+        $statements = Policy::DENY_ROLLBACK->statements();
+
+        $this->assertCount(1, $statements);
+
+        $statement = $statements[0];
+        $this->assertSame(Effect::DENY, $statement->effect());
+        $this->assertCount(1, $statement->actions());
+        $this->assertContains(Action::ROLLBACK, $statement->actions());
+        $this->assertSame(ResourceType::cases(), $statement->resourceTypes());
+        $this->assertSame(ScopeCondition::NONE, $statement->scopeCondition());
+    }
 }

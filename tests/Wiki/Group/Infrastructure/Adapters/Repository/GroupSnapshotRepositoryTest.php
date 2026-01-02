@@ -252,4 +252,97 @@ class GroupSnapshotRepositoryTest extends TestCase
 
         $this->assertNull($snapshot);
     }
+
+    /**
+     * 正常系：TranslationSetIdentifierとVersionでスナップショット一覧が取得できること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersion(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $groupId1 = StrTestHelper::generateUuid();
+        $groupId2 = StrTestHelper::generateUuid();
+        $version = 2;
+
+        // 同じtranslation_set_identifierと同じversionを持つスナップショットを2つ作成
+        $snapshotId1 = StrTestHelper::generateUuid();
+        CreateGroupSnapshot::create($snapshotId1, [
+            'group_id' => $groupId1,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'translation' => 'ko',
+            'name' => 'TWICE KO v2',
+            'normalized_name' => 'twice ko v2',
+            'description' => 'Description v2',
+            'version' => $version,
+            'created_at' => '2024-01-02 00:00:00',
+        ]);
+
+        $snapshotId2 = StrTestHelper::generateUuid();
+        CreateGroupSnapshot::create($snapshotId2, [
+            'group_id' => $groupId2,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'translation' => 'ja',
+            'name' => 'TWICE JA v2',
+            'normalized_name' => 'twice ja v2',
+            'description' => 'Description v2',
+            'version' => $version,
+            'created_at' => '2024-01-02 00:00:00',
+        ]);
+
+        // 同じtranslation_set_identifierだが異なるversionを持つスナップショット（取得されないはず）
+        $snapshotId3 = StrTestHelper::generateUuid();
+        CreateGroupSnapshot::create($snapshotId3, [
+            'group_id' => $groupId1,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'name' => 'TWICE KO v1',
+            'normalized_name' => 'twice ko v1',
+            'version' => 1,
+            'created_at' => '2024-01-01 00:00:00',
+        ]);
+
+        // 異なるtranslation_set_identifierを持つスナップショット（取得されないはず）
+        $snapshotId4 = StrTestHelper::generateUuid();
+        CreateGroupSnapshot::create($snapshotId4, [
+            'group_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'name' => 'aespa',
+            'normalized_name' => 'aespa',
+            'version' => $version,
+        ]);
+
+        $repository = $this->app->make(GroupSnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new Version($version)
+        );
+
+        $this->assertCount(2, $snapshots);
+        $snapshotIds = array_map(fn ($s) => (string) $s->snapshotIdentifier(), $snapshots);
+        $this->assertContains($snapshotId1, $snapshotIds);
+        $this->assertContains($snapshotId2, $snapshotIds);
+        $this->assertNotContains($snapshotId3, $snapshotIds);
+        $this->assertNotContains($snapshotId4, $snapshotIds);
+    }
+
+    /**
+     * 正常系：TranslationSetIdentifierとVersionで該当するスナップショットが存在しない場合、空配列が返却されること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndVersionWhenNoSnapshots(): void
+    {
+        $repository = $this->app->make(GroupSnapshotRepositoryInterface::class);
+        $snapshots = $repository->findByTranslationSetIdentifierAndVersion(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Version(1)
+        );
+
+        $this->assertIsArray($snapshots);
+        $this->assertEmpty($snapshots);
+    }
 }

@@ -20,8 +20,9 @@ class RoleTest extends TestCase
     public function testSeniorCollaboratorPolicies(): void
     {
         $policies = Role::SENIOR_COLLABORATOR->policies();
-        $this->assertCount(1, $policies);
-        $this->assertSame(Policy::FULL_ACCESS, $policies[0]);
+        $this->assertCount(2, $policies);
+        $this->assertContains(Policy::FULL_ACCESS, $policies);
+        $this->assertContains(Policy::DENY_ROLLBACK, $policies);
     }
 
     public function testAgencyActorPolicies(): void

@@ -7,7 +7,9 @@ namespace Tests\Wiki\Song\Domain\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongHistory;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
@@ -123,12 +125,15 @@ class SongHistoryTest extends TestCase
 
         $songHistory = new SongHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             $songIdentifier,
             null,
             null,
             $toStatus,
+            null,
+            null,
             $subjectName,
             $recordedAt,
         );
@@ -155,12 +160,15 @@ class SongHistoryTest extends TestCase
 
         new SongHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $editorIdentifier,
             null,
             null,
             null,
             $fromStatus,
             $toStatus,
+            null,
+            null,
             $subjectName,
             $recordedAt,
         );
@@ -172,12 +180,18 @@ class SongHistoryTest extends TestCase
      * @param ?SongIdentifier $songIdentifier
      * @param ?SongIdentifier $draftSongIdentifier
      * @param ?PrincipalIdentifier $submitterIdentifier
+     * @param HistoryActionType $actionType
+     * @param ?Version $fromVersion
+     * @param ?Version $toVersion
      * @return SongHistoryTestData
      */
     private function createDummySongHistory(
         ?SongIdentifier $songIdentifier = null,
         ?SongIdentifier $draftSongIdentifier = null,
         ?PrincipalIdentifier $submitterIdentifier = null,
+        HistoryActionType $actionType = HistoryActionType::DraftStatusChange,
+        ?Version $fromVersion = null,
+        ?Version $toVersion = null,
     ): SongHistoryTestData {
         $historyIdentifier = new SongHistoryIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -188,24 +202,30 @@ class SongHistoryTest extends TestCase
 
         $songHistory = new SongHistory(
             $historyIdentifier,
+            $actionType,
             $editorIdentifier,
             $submitterIdentifier,
             $songIdentifier,
             $draftSongIdentifier,
             $fromStatus,
             $toStatus,
+            $fromVersion,
+            $toVersion,
             $subjectName,
             $recordedAt,
         );
 
         return new SongHistoryTestData(
             historyIdentifier: $historyIdentifier,
+            actionType: $actionType,
             editorIdentifier: $editorIdentifier,
             submitterIdentifier: $submitterIdentifier,
             songIdentifier: $songIdentifier,
             draftSongIdentifier: $draftSongIdentifier,
             fromStatus: $fromStatus,
             toStatus: $toStatus,
+            fromVersion: $fromVersion,
+            toVersion: $toVersion,
             subjectName: $subjectName,
             recordedAt: $recordedAt,
             songHistory: $songHistory,
@@ -220,12 +240,15 @@ readonly class SongHistoryTestData
 {
     public function __construct(
         public SongHistoryIdentifier $historyIdentifier,
+        public HistoryActionType     $actionType,
         public PrincipalIdentifier   $editorIdentifier,
         public ?PrincipalIdentifier  $submitterIdentifier,
         public ?SongIdentifier       $songIdentifier,
         public ?SongIdentifier       $draftSongIdentifier,
         public ApprovalStatus        $fromStatus,
         public ApprovalStatus        $toStatus,
+        public ?Version              $fromVersion,
+        public ?Version              $toVersion,
         public SongName              $subjectName,
         public DateTimeImmutable     $recordedAt,
         public SongHistory           $songHistory,

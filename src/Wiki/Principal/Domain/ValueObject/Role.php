@@ -21,7 +21,7 @@ enum Role: string
     {
         return match ($this) {
             self::ADMINISTRATOR => [Policy::FULL_ACCESS],
-            self::SENIOR_COLLABORATOR => [Policy::FULL_ACCESS],
+            self::SENIOR_COLLABORATOR => [Policy::FULL_ACCESS, Policy::DENY_ROLLBACK],
             self::AGENCY_ACTOR => [
                 Policy::BASIC_EDITING,
                 Policy::AGENCY_MANAGEMENT,

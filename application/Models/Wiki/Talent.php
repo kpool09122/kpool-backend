@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $career
  * @property ?string $image_link
  * @property array $relevant_video_links
- * @property int|null $version
+ * @property int $version
  * @property-read Collection<int, Group> $groups
  */
 class Talent extends Model

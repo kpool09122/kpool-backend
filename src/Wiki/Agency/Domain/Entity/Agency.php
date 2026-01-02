@@ -89,9 +89,19 @@ class Agency
         return $this->foundedIn;
     }
 
-    public function setFoundedIn(FoundedIn $foundedIn): void
+    public function setFoundedIn(?FoundedIn $foundedIn): void
     {
         $this->foundedIn = $foundedIn;
+    }
+
+    public function hasSameVersion(Version $version): bool
+    {
+        return $this->version->value() === $version->value();
+    }
+
+    public function isVersionGreaterThan(Version $version): bool
+    {
+        return $this->version->value() > $version->value();
     }
 
     public function description(): Description

@@ -149,4 +149,91 @@ class AgencyRepositoryTest extends TestCase
             'version' => $version,
         ]);
     }
+
+    /**
+     * 正常系：翻訳セットIDで複数のAgencyを取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifier(): void
+    {
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $idKo = StrTestHelper::generateUuid();
+        $idJa = StrTestHelper::generateUuid();
+
+        // 韓国語版Agency
+        DB::table('agencies')->upsert([
+            'id' => $idKo,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::KOREAN->value,
+            'name' => 'JYP엔터테인먼트',
+            'normalized_name' => 'jypㅇㅌㅌㅇㅁㅌ',
+            'CEO' => 'J.Y. Park',
+            'normalized_CEO' => 'j.y. park',
+            'founded_in' => new DateTimeImmutable('1997-04-25'),
+            'description' => 'Korean description',
+            'version' => 3,
+        ], 'id');
+
+        // 日本語版Agency
+        DB::table('agencies')->upsert([
+            'id' => $idJa,
+            'translation_set_identifier' => $translationSetIdentifier,
+            'language' => Language::JAPANESE->value,
+            'name' => 'JYPエンターテインメント',
+            'normalized_name' => 'jypえんたーていんめんと',
+            'CEO' => 'J.Y. パク',
+            'normalized_CEO' => 'j.y. ぱく',
+            'founded_in' => new DateTimeImmutable('1997-04-25'),
+            'description' => 'Japanese description',
+            'version' => 3,
+        ], 'id');
+
+        // 別の翻訳セットのAgency（取得されないはず）
+        $otherId = StrTestHelper::generateUuid();
+        DB::table('agencies')->upsert([
+            'id' => $otherId,
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'language' => Language::KOREAN->value,
+            'name' => 'SM엔터테인먼트',
+            'normalized_name' => 'smㅇㅌㅌㅇㅁㅌ',
+            'CEO' => 'Lee Sung-su',
+            'normalized_CEO' => 'lee sung-su',
+            'founded_in' => new DateTimeImmutable('1995-02-14'),
+            'description' => 'SM description',
+            'version' => 1,
+        ], 'id');
+
+        $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
+        $agencies = $agencyRepository->findByTranslationSetIdentifier(
+            new TranslationSetIdentifier($translationSetIdentifier)
+        );
+
+        $this->assertCount(2, $agencies);
+
+        $agencyIds = array_map(fn (Agency $a) => (string) $a->agencyIdentifier(), $agencies);
+        $this->assertContains($idKo, $agencyIds);
+        $this->assertContains($idJa, $agencyIds);
+        $this->assertNotContains($otherId, $agencyIds);
+    }
+
+    /**
+     * 正常系：該当するAgencyが存在しない場合、空の配列が返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierWhenNoAgencies(): void
+    {
+        $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
+        $agencies = $agencyRepository->findByTranslationSetIdentifier(
+            new TranslationSetIdentifier(StrTestHelper::generateUuid())
+        );
+
+        $this->assertIsArray($agencies);
+        $this->assertEmpty($agencies);
+    }
 }

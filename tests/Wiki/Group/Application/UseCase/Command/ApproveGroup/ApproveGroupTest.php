@@ -34,6 +34,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -896,12 +897,15 @@ DESC);
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new GroupHistory(
             $historyIdentifier,
+            HistoryActionType::DraftStatusChange,
             $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $group->editorIdentifier(),
             $group->publishedGroupIdentifier(),
             $group->groupIdentifier(),
             ApprovalStatus::UnderReview,
             ApprovalStatus::Approved,
+            null,
+            null,
             $group->name(),
             new DateTimeImmutable('now'),
         );

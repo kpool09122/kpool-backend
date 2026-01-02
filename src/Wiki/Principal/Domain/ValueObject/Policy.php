@@ -15,6 +15,7 @@ enum Policy: string
     case GROUP_MANAGEMENT = 'group_management';
     case TALENT_MANAGEMENT = 'talent_management';
     case DENY_AGENCY_APPROVAL = 'deny_agency_approval';
+    case DENY_ROLLBACK = 'deny_rollback';
 
     /**
      * @return Statement[]
@@ -79,6 +80,14 @@ enum Policy: string
                     effect: Effect::DENY,
                     actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
                     resourceTypes: [ResourceType::AGENCY],
+                    scopeCondition: ScopeCondition::NONE,
+                ),
+            ],
+            self::DENY_ROLLBACK => [
+                new Statement(
+                    effect: Effect::DENY,
+                    actions: [Action::ROLLBACK],
+                    resourceTypes: ResourceType::cases(),
                     scopeCondition: ScopeCondition::NONE,
                 ),
             ],

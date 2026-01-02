@@ -40,6 +40,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -1316,11 +1317,14 @@ class PublishGroupTest extends TestCase
         $historyIdentifier = new GroupHistoryIdentifier(StrTestHelper::generateUuid());
         $history = new GroupHistory(
             $historyIdentifier,
+            HistoryActionType::Publish,
             $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
             $draftGroup->editorIdentifier(),
             $hasPublishedGroup ? $publishedGroupIdentifier : null,
             $draftGroup->groupIdentifier(),
             $draftGroup->status(),
+            null,
+            null,
             null,
             $draftGroup->name(),
             new \DateTimeImmutable(),
