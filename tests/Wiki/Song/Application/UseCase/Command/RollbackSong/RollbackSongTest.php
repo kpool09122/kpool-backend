@@ -20,6 +20,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -645,12 +646,15 @@ class RollbackSongTest extends TestCase
     ): SongHistory {
         return new SongHistory(
             new SongHistoryIdentifier(StrTestHelper::generateUuid()),
+            HistoryActionType::Rollback,
             $principalIdentifier,
             null,
             $songIdentifier,
             null,
             null,
             null,
+            new Version(5),
+            new Version(2),
             new SongName('Song Name'),
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );

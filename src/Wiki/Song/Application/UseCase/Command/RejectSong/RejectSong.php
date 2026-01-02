@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -71,13 +72,16 @@ readonly class RejectSong implements RejectSongInterface
         $this->draftSongRepository->save($song);
 
         $history = $this->songHistoryFactory->create(
-            $input->principalIdentifier(),
-            $song->editorIdentifier(),
-            $song->publishedSongIdentifier(),
-            $song->songIdentifier(),
-            $previousStatus,
-            $song->status(),
-            $song->name(),
+            actionType: HistoryActionType::DraftStatusChange,
+            editorIdentifier: $input->principalIdentifier(),
+            submitterIdentifier: $song->editorIdentifier(),
+            songIdentifier: $song->publishedSongIdentifier(),
+            draftSongIdentifier: $song->songIdentifier(),
+            fromStatus: $previousStatus,
+            toStatus: $song->status(),
+            fromVersion: null,
+            toVersion: null,
+            subjectName: $song->name(),
         );
         $this->songHistoryRepository->save($history);
 
