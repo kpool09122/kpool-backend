@@ -82,6 +82,22 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
         return $this->toEntity($model);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array {
+        $models = SongSnapshotModel::query()
+            ->with(['groups', 'talents'])
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->where('version', $version->value())
+            ->get();
+
+        return $models->map(fn (SongSnapshotModel $model) => $this->toEntity($model))->toArray();
+    }
+
     private function toEntity(SongSnapshotModel $model): SongSnapshot
     {
         /** @var Group|null $group */

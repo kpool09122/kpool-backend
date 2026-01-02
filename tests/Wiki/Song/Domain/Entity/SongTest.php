@@ -221,6 +221,82 @@ class SongTest extends TestCase
     }
 
     /**
+     * 正常系：hasSameVersionが正しく動作すること（同じバージョン）.
+     *
+     * @return void
+     */
+    public function testHasSameVersionReturnsTrue(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $sameVersion = new Version(1);
+        $this->assertTrue($song->hasSameVersion($sameVersion));
+    }
+
+    /**
+     * 正常系：hasSameVersionが正しく動作すること（異なるバージョン）.
+     *
+     * @return void
+     */
+    public function testHasSameVersionReturnsFalse(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $differentVersion = new Version(2);
+        $this->assertFalse($song->hasSameVersion($differentVersion));
+    }
+
+    /**
+     * 正常系：isVersionGreaterThanが正しく動作すること（より大きいバージョン）.
+     *
+     * @return void
+     */
+    public function testIsVersionGreaterThanReturnsTrue(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        // Songのバージョンを5にする
+        $song->updateVersion(); // 2
+        $song->updateVersion(); // 3
+        $song->updateVersion(); // 4
+        $song->updateVersion(); // 5
+
+        $smallerVersion = new Version(3);
+        $this->assertTrue($song->isVersionGreaterThan($smallerVersion));
+    }
+
+    /**
+     * 正常系：isVersionGreaterThanが正しく動作すること（同じバージョン）.
+     *
+     * @return void
+     */
+    public function testIsVersionGreaterThanReturnsFalseForSameVersion(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $sameVersion = new Version(1);
+        $this->assertFalse($song->isVersionGreaterThan($sameVersion));
+    }
+
+    /**
+     * 正常系：isVersionGreaterThanが正しく動作すること（より小さいバージョン）.
+     *
+     * @return void
+     */
+    public function testIsVersionGreaterThanReturnsFalseForLargerVersion(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $largerVersion = new Version(5);
+        $this->assertFalse($song->isVersionGreaterThan($largerVersion));
+    }
+
+    /**
      * ダミーのSongを作成するヘルパーメソッド
      *
      * @return SongTestData

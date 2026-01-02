@@ -63,6 +63,8 @@ use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSong;
 use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSong;
 use Source\Wiki\Song\Application\UseCase\Command\SubmitSong\SubmitSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\RollbackSong\RollbackSong;
+use Source\Wiki\Song\Application\UseCase\Command\RollbackSong\RollbackSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSong;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent\ApproveTalent;
@@ -123,6 +125,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectSongInterface::class, RejectSong::class);
         $this->app->singleton(PublishSongInterface::class, PublishSong::class);
         $this->app->singleton(TranslateSongInterface::class, TranslateSong::class);
+        $this->app->singleton(RollbackSongInterface::class, RollbackSong::class);
         $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
     }
 }

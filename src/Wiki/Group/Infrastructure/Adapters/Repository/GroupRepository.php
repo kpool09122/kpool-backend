@@ -74,7 +74,7 @@ final class GroupRepository implements GroupRepositoryInterface
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
             $model->image_path ? new ImagePath($model->image_path) : null,
-            new Version($model->version ?? 1),
+            new Version($model->version),
         );
     }
 }

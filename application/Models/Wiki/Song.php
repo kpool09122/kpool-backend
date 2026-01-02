@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $overview
  * @property ?string $cover_image_path
  * @property ?string $music_video_link
- * @property int|null $version
+ * @property int $version
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Group> $groups
  * @property-read Collection<int, Talent> $talents

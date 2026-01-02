@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
@@ -22,4 +23,12 @@ interface SongSnapshotRepositoryInterface
         SongIdentifier $songIdentifier,
         Version $version
     ): ?SongSnapshot;
+
+    /**
+     * @return SongSnapshot[]
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array;
 }

@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $agency_id
  * @property string $description
  * @property ?string $image_path
- * @property int|null $version
+ * @property int $version
  */
 class Group extends Model
 {
