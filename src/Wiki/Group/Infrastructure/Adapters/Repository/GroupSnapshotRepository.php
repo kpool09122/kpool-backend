@@ -62,6 +62,21 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
         return $this->toEntity($model);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function findByTranslationSetIdentifierAndVersion(
+        TranslationSetIdentifier $translationSetIdentifier,
+        Version $version
+    ): array {
+        $models = GroupSnapshotModel::query()
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->where('version', $version->value())
+            ->get();
+
+        return $models->map(fn (GroupSnapshotModel $model) => $this->toEntity($model))->toArray();
+    }
+
     private function toEntity(GroupSnapshotModel $model): GroupSnapshot
     {
         return new GroupSnapshot(

@@ -112,4 +112,79 @@ class GroupRepositoryTest extends TestCase
             'version' => $group->version()->value(),
         ]);
     }
+
+    /**
+     * 正常系：TranslationSetIdentifierでグループ情報が取得できること.
+     * @throws BindingResolutionException
+     */
+    #[PHPUnitGroup('useDb')]
+    public function testFindByTranslationSetIdentifier(): void
+    {
+        $translationSetId = StrTestHelper::generateUuid();
+        $id1 = StrTestHelper::generateUuid();
+        $id2 = StrTestHelper::generateUuid();
+        $otherTranslationSetId = StrTestHelper::generateUuid();
+        $id3 = StrTestHelper::generateUuid();
+
+        // 同じtranslation_set_identifierを持つグループを2つ作成
+        DB::table('groups')->upsert([
+            'id' => $id1,
+            'translation_set_identifier' => $translationSetId,
+            'translation' => Language::KOREAN->value,
+            'name' => 'TWICE KO',
+            'normalized_name' => 'twice ko',
+            'agency_id' => StrTestHelper::generateUuid(),
+            'description' => 'K-pop girl group.',
+            'image_path' => '/images/groups/twice-ko.png',
+            'version' => 3,
+        ], 'id');
+
+        DB::table('groups')->upsert([
+            'id' => $id2,
+            'translation_set_identifier' => $translationSetId,
+            'translation' => Language::JAPANESE->value,
+            'name' => 'TWICE JA',
+            'normalized_name' => 'twice ja',
+            'agency_id' => StrTestHelper::generateUuid(),
+            'description' => 'K-pop girl group.',
+            'image_path' => '/images/groups/twice-ja.png',
+            'version' => 3,
+        ], 'id');
+
+        // 別のtranslation_set_identifierを持つグループ
+        DB::table('groups')->upsert([
+            'id' => $id3,
+            'translation_set_identifier' => $otherTranslationSetId,
+            'translation' => Language::KOREAN->value,
+            'name' => 'aespa',
+            'normalized_name' => 'aespa',
+            'agency_id' => StrTestHelper::generateUuid(),
+            'description' => 'K-pop girl group.',
+            'image_path' => '/images/groups/aespa.png',
+            'version' => 1,
+        ], 'id');
+
+        $repository = $this->app->make(GroupRepositoryInterface::class);
+        $groups = $repository->findByTranslationSetIdentifier(new TranslationSetIdentifier($translationSetId));
+
+        $this->assertCount(2, $groups);
+        $ids = array_map(fn (Group $g) => (string) $g->groupIdentifier(), $groups);
+        $this->assertContains($id1, $ids);
+        $this->assertContains($id2, $ids);
+        $this->assertNotContains($id3, $ids);
+    }
+
+    /**
+     * 正常系：TranslationSetIdentifierでグループが存在しない場合、空配列が返却されること.
+     * @throws BindingResolutionException
+     */
+    #[PHPUnitGroup('useDb')]
+    public function testFindByTranslationSetIdentifierWhenNotExist(): void
+    {
+        $repository = $this->app->make(GroupRepositoryInterface::class);
+        $groups = $repository->findByTranslationSetIdentifier(new TranslationSetIdentifier(StrTestHelper::generateUuid()));
+
+        $this->assertIsArray($groups);
+        $this->assertEmpty($groups);
+    }
 }

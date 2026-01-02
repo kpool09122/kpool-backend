@@ -39,6 +39,8 @@ use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroup;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroup;
 use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\RollbackGroup\RollbackGroup;
+use Source\Wiki\Group\Application\UseCase\Command\RollbackGroup\RollbackGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
@@ -110,6 +112,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectGroupInterface::class, RejectGroup::class);
         $this->app->singleton(PublishGroupInterface::class, PublishGroup::class);
         $this->app->singleton(TranslateGroupInterface::class, TranslateGroup::class);
+        $this->app->singleton(RollbackGroupInterface::class, RollbackGroup::class);
         $this->app->singleton(SubmitTalentInterface::class, SubmitTalent::class);
         $this->app->singleton(ApproveTalentInterface::class, ApproveTalent::class);
         $this->app->singleton(RejectTalentInterface::class, RejectTalent::class);

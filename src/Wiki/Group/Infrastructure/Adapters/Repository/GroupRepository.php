@@ -31,6 +31,19 @@ final class GroupRepository implements GroupRepositoryInterface
         return $this->toEntity($groupModel);
     }
 
+    /**
+     * @return Group[]
+     */
+    public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array
+    {
+        $groupModels = GroupModel::query()
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->whereNotNull('version')
+            ->get();
+
+        return $groupModels->map(fn (GroupModel $model) => $this->toEntity($model))->toArray();
+    }
+
     public function save(Group $group): void
     {
         GroupModel::query()->updateOrCreate(
