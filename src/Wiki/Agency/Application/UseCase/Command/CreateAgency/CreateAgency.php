@@ -7,6 +7,7 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -18,9 +19,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class CreateAgency implements CreateAgencyInterface
 {
     public function __construct(
-        private DraftAgencyFactoryInterface   $agencyFactory,
-        private AgencyRepositoryInterface     $agencyRepository,
-        private NormalizationServiceInterface $normalizationService,
+        private DraftAgencyFactoryInterface    $agencyFactory,
+        private AgencyRepositoryInterface      $agencyRepository,
+        private DraftAgencyRepositoryInterface $draftAgencyRepository,
+        private NormalizationServiceInterface  $normalizationService,
         private PrincipalRepositoryInterface   $principalRepository,
     ) {
     }
@@ -68,7 +70,7 @@ readonly class CreateAgency implements CreateAgencyInterface
         }
         $agency->setDescription($input->description());
 
-        $this->agencyRepository->saveDraft($agency);
+        $this->draftAgencyRepository->save($agency);
 
         return $agency;
     }

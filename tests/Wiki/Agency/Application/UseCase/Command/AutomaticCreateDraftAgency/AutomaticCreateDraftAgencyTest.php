@@ -13,7 +13,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInterface;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
@@ -60,15 +60,15 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftAgency);
 
-        $repository = Mockery::mock(AgencyRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftAgency)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
-        $this->app->instance(AgencyRepositoryInterface::class, $repository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
@@ -103,15 +103,15 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->with($payload, $principal)
             ->andReturn($draftAgency);
 
-        $repository = Mockery::mock(AgencyRepositoryInterface::class);
-        $repository->shouldReceive('saveDraft')
+        $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $repository->shouldReceive('save')
             ->once()
             ->with($draftAgency)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
-        $this->app->instance(AgencyRepositoryInterface::class, $repository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
@@ -140,11 +140,11 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->andReturn(null);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
-        $repository = Mockery::mock(AgencyRepositoryInterface::class);
+        $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
-        $this->app->instance(AgencyRepositoryInterface::class, $repository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
@@ -173,11 +173,11 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
-        $repository = Mockery::mock(AgencyRepositoryInterface::class);
+        $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
-        $this->app->instance(AgencyRepositoryInterface::class, $repository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);

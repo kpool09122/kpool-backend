@@ -6,7 +6,7 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\EditAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -18,7 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class EditAgency implements EditAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface     $agencyRepository,
+        private DraftAgencyRepositoryInterface $agencyRepository,
         private NormalizationServiceInterface $normalizationService,
         private PrincipalRepositoryInterface $principalRepository,
     ) {
@@ -33,7 +33,7 @@ readonly class EditAgency implements EditAgencyInterface
      */
     public function process(EditAgencyInputPort $input): DraftAgency
     {
-        $agency = $this->agencyRepository->findDraftById($input->agencyIdentifier());
+        $agency = $this->agencyRepository->findById($input->agencyIdentifier());
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
@@ -64,7 +64,7 @@ readonly class EditAgency implements EditAgencyInterface
         }
         $agency->setDescription($input->description());
 
-        $this->agencyRepository->saveDraft($agency);
+        $this->agencyRepository->save($agency);
 
         return $agency;
     }

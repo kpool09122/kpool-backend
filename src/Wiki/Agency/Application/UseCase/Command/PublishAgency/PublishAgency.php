@@ -13,6 +13,7 @@ use Source\Wiki\Agency\Domain\Factory\AgencySnapshotFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -27,6 +28,7 @@ readonly class PublishAgency implements PublishAgencyInterface
 {
     public function __construct(
         private AgencyRepositoryInterface         $agencyRepository,
+        private DraftAgencyRepositoryInterface    $draftAgencyRepository,
         private AgencyServiceInterface            $agencyService,
         private AgencyFactoryInterface            $agencyFactory,
         private AgencyHistoryRepositoryInterface  $agencyHistoryRepository,
@@ -48,7 +50,7 @@ readonly class PublishAgency implements PublishAgencyInterface
      */
     public function process(PublishAgencyInputPort $input): Agency
     {
-        $agency = $this->agencyRepository->findDraftById($input->agencyIdentifier());
+        $agency = $this->draftAgencyRepository->findById($input->agencyIdentifier());
 
         if ($agency === null) {
             throw new AgencyNotFoundException();
@@ -118,7 +120,7 @@ readonly class PublishAgency implements PublishAgencyInterface
         );
         $this->agencyHistoryRepository->save($history);
 
-        $this->agencyRepository->deleteDraft($agency);
+        $this->draftAgencyRepository->delete($agency);
 
         return $publishedAgency;
     }

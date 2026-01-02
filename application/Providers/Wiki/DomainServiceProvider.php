@@ -11,10 +11,12 @@ use Source\Wiki\Agency\Domain\Factory\AgencySnapshotFactoryInterface;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyService;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Infrastructure\Adapters\Repository\AgencyRepository;
 use Source\Wiki\Agency\Infrastructure\Adapters\Repository\AgencySnapshotRepository;
+use Source\Wiki\Agency\Infrastructure\Adapters\Repository\DraftAgencyRepository;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyFactory;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyHistoryFactory;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencySnapshotFactory;
@@ -106,5 +108,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
         $this->app->singleton(SongRepositoryInterface::class, SongRepository::class);
         $this->app->singleton(DraftGroupRepositoryInterface::class, DraftGroupRepository::class);
+        $this->app->singleton(DraftAgencyRepositoryInterface::class, DraftAgencyRepository::class);
     }
 }

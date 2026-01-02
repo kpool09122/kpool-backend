@@ -18,6 +18,7 @@ use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgen
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
@@ -83,11 +84,13 @@ class TranslateAgencyTest extends TestCase
             ->with($dummyTranslateAgency->agencyIdentifier)
             ->once()
             ->andReturn($dummyTranslateAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->enAgency)
             ->once()
             ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->jaAgency)
             ->once()
             ->andReturn(null);
@@ -105,6 +108,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $agencies = $translateAgency->process($input);
         $this->assertCount(2, $agencies);
@@ -139,8 +143,10 @@ class TranslateAgencyTest extends TestCase
 
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(AgencyNotFoundException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -181,8 +187,10 @@ class TranslateAgencyTest extends TestCase
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(PrincipalNotFoundException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -224,8 +232,10 @@ class TranslateAgencyTest extends TestCase
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -264,11 +274,13 @@ class TranslateAgencyTest extends TestCase
             ->with($dummyTranslateAgency->agencyIdentifier)
             ->once()
             ->andReturn($dummyTranslateAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->enAgency)
             ->once()
             ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->jaAgency)
             ->once()
             ->andReturn(null);
@@ -286,6 +298,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $result = $translateAgency->process($input);
 
@@ -331,8 +344,10 @@ class TranslateAgencyTest extends TestCase
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -376,8 +391,10 @@ class TranslateAgencyTest extends TestCase
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -420,8 +437,10 @@ class TranslateAgencyTest extends TestCase
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -461,11 +480,13 @@ class TranslateAgencyTest extends TestCase
             ->with($dummyTranslateAgency->agencyIdentifier)
             ->once()
             ->andReturn($dummyTranslateAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->enAgency)
             ->once()
             ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->jaAgency)
             ->once()
             ->andReturn(null);
@@ -483,6 +504,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $result = $translateAgency->process($input);
 
@@ -524,11 +546,13 @@ class TranslateAgencyTest extends TestCase
             ->with($dummyTranslateAgency->agencyIdentifier)
             ->once()
             ->andReturn($dummyTranslateAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->enAgency)
             ->once()
             ->andReturn(null);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->with($dummyTranslateAgency->jaAgency)
             ->once()
             ->andReturn(null);
@@ -546,6 +570,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $result = $translateAgency->process($input);
 
@@ -590,8 +615,10 @@ class TranslateAgencyTest extends TestCase
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);

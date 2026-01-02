@@ -19,7 +19,7 @@ use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -48,8 +48,8 @@ class ApproveAgencyTest extends TestCase
      */
     public function test__construct(): void
     {
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
@@ -91,12 +91,12 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveAgency->agency)
             ->andReturn(null);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -118,7 +118,7 @@ class ApproveAgencyTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -153,8 +153,8 @@ class ApproveAgencyTest extends TestCase
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldNotReceive('findById');
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn(null);
@@ -164,7 +164,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -200,8 +200,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn(null);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -211,7 +211,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -248,8 +248,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -259,7 +259,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -297,8 +297,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -313,7 +313,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -350,8 +350,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -361,7 +361,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -402,12 +402,12 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveAgency->agency)
             ->andReturn(null);
@@ -429,7 +429,7 @@ class ApproveAgencyTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -469,8 +469,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -480,7 +480,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -523,12 +523,12 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveAgency->agency)
             ->andReturn(null);
@@ -550,7 +550,7 @@ class ApproveAgencyTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -590,8 +590,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -601,7 +601,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -641,8 +641,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -652,7 +652,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -693,12 +693,12 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
-        $agencyRepository->shouldReceive('saveDraft')
+        $draftAgencyRepository->shouldReceive('save')
             ->once()
             ->with($dummyApproveAgency->agency)
             ->andReturn(null);
@@ -720,7 +720,7 @@ class ApproveAgencyTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
@@ -759,8 +759,8 @@ class ApproveAgencyTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findDraftById')
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
             ->once()
             ->with($dummyApproveAgency->agencyIdentifier)
             ->andReturn($dummyApproveAgency->agency);
@@ -770,7 +770,7 @@ class ApproveAgencyTest extends TestCase
         $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyServiceInterface::class, $agencyService);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
