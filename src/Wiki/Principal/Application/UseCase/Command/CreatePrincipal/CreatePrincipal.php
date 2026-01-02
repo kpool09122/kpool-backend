@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 
-use Source\Wiki\AccessControl\Application\Exception\PrincipalAlreadyExistsException;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyExistsException;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 
