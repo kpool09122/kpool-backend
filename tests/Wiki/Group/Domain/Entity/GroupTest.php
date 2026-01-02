@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Group\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -12,6 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -203,6 +205,40 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         // 現在のバージョンより大きいバージョン
         $largerVersion = new Version(7);
         $this->assertFalse($group->isVersionGreaterThan($largerVersion));
+    }
+
+    /**
+     * 正常系：MergerIdentifierのsetter/getterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $createGroup = $this->createDummyGroup();
+        $group = $createGroup->group;
+
+        $this->assertNull($group->mergerIdentifier());
+
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $group->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame((string)$mergerIdentifier, (string)$group->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetter/getterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergedAt(): void
+    {
+        $createGroup = $this->createDummyGroup();
+        $group = $createGroup->group;
+
+        $this->assertNull($group->mergedAt());
+
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $group->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $group->mergedAt());
     }
 
     /**

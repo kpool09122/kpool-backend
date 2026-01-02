@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -28,6 +29,8 @@ class DraftGroup
      * @param Description $description
      * @param ImagePath|null $imagePath
      * @param ApprovalStatus $status
+     * @param PrincipalIdentifier|null $mergerIdentifier
+     * @param DateTimeImmutable|null $mergedAt
      */
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,
@@ -41,6 +44,8 @@ class DraftGroup
         private Description                       $description,
         private ?ImagePath                        $imagePath,
         private ApprovalStatus                    $status,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -132,5 +137,25 @@ class DraftGroup
     public function setStatus(ApprovalStatus $status): void
     {
         $this->status = $status;
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }

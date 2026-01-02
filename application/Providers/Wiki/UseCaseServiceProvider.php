@@ -37,6 +37,8 @@ use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\CreateGroup\CreateGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroup;
 use Source\Wiki\Group\Application\UseCase\Command\EditGroup\EditGroupInterface;
+use Source\Wiki\Group\Application\UseCase\Command\MergeGroup\MergeGroup;
+use Source\Wiki\Group\Application\UseCase\Command\MergeGroup\MergeGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroup;
 use Source\Wiki\Group\Application\UseCase\Command\PublishGroup\PublishGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\RejectGroup\RejectGroup;
@@ -98,6 +100,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateGroupInterface::class, CreateGroup::class);
         $this->app->singleton(AutomaticCreateDraftGroupInterface::class, AutomaticCreateDraftGroup::class);
         $this->app->singleton(EditGroupInterface::class, EditGroup::class);
+        $this->app->singleton(MergeGroupInterface::class, MergeGroup::class);
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
         $this->app->singleton(AutomaticCreateDraftSongInterface::class, AutomaticCreateDraftSong::class);
         $this->app->singleton(EditSongInterface::class, EditSong::class);
