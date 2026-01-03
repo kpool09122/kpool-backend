@@ -9,7 +9,7 @@ use Source\Account\Application\UseCase\Command\WithdrawFromMembership\WithdrawFr
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class WithdrawFromMembershipInputTest extends TestCase
@@ -23,7 +23,7 @@ class WithdrawFromMembershipInputTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $accountMembership = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 

@@ -38,8 +38,8 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AccountTest extends TestCase
@@ -70,7 +70,7 @@ class AccountTest extends TestCase
      */
     public function testNoOwner(): void
     {
-        $memberships = [new AccountMembership(new UserIdentifier(StrTestHelper::generateUuid()), AccountRole::MEMBER)];
+        $memberships = [new AccountMembership(new IdentityIdentifier(StrTestHelper::generateUuid()), AccountRole::MEMBER)];
         $this->expectException(DomainException::class);
         $this->createDummyAccountTestData($memberships);
     }
@@ -85,7 +85,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 
@@ -104,7 +104,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            $dummyAccount->memberships[0]->userIdentifier(),
+            $dummyAccount->memberships[0]->identityIdentifier(),
             AccountRole::MEMBER
         );
 
@@ -122,7 +122,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $newMember = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 
@@ -161,7 +161,7 @@ class AccountTest extends TestCase
         $dummyAccount = $this->createDummyAccountTestData();
 
         $nonMember = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 
@@ -181,7 +181,7 @@ class AccountTest extends TestCase
         $owner = $dummyAccount->memberships[0];
 
         $spoofedMembership = new AccountMembership(
-            $owner->userIdentifier(),
+            $owner->identityIdentifier(),
             AccountRole::MEMBER
         );
 
@@ -291,9 +291,9 @@ class AccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUuid());
+        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
         if ($memberships === []) {
-            $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
+            $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
         }
 
         $status = AccountStatus::ACTIVE;

@@ -6,6 +6,31 @@ namespace Tests\Monetization\Account\Infrastructure\Repository;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Account\Domain\Entity\Account;
+use Source\Account\Domain\Entity\AccountMembership;
+use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\ValueObject\AccountName;
+use Source\Account\Domain\ValueObject\AccountRole;
+use Source\Account\Domain\ValueObject\AccountStatus;
+use Source\Account\Domain\ValueObject\AccountType;
+use Source\Account\Domain\ValueObject\AddressLine;
+use Source\Account\Domain\ValueObject\BillingAddress;
+use Source\Account\Domain\ValueObject\BillingContact;
+use Source\Account\Domain\ValueObject\BillingCycle;
+use Source\Account\Domain\ValueObject\BillingMethod;
+use Source\Account\Domain\ValueObject\City;
+use Source\Account\Domain\ValueObject\ContractInfo;
+use Source\Account\Domain\ValueObject\ContractName;
+use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Domain\ValueObject\Plan;
+use Source\Account\Domain\ValueObject\PlanDescription;
+use Source\Account\Domain\ValueObject\PlanName;
+use Source\Account\Domain\ValueObject\PostalCode;
+use Source\Account\Domain\ValueObject\StateOrProvince;
+use Source\Account\Domain\ValueObject\TaxCategory;
+use Source\Account\Domain\ValueObject\TaxInfo;
+use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
@@ -13,11 +38,89 @@ use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier
 use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
 use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\Currency;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Money;
+use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class MonetizationAccountRepositoryTest extends TestCase
 {
+    /**
+     * FK制約を満たすため、事前にAccountを作成するヘルパーメソッド
+     */
+    private function createAccountForTest(string $accountId): void
+    {
+        $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
+        $ownerIdentityId = StrTestHelper::generateUuid();
+
+        // FK制約のためIdentityを事前に作成
+        CreateIdentity::create(
+            new IdentityIdentifier($ownerIdentityId),
+            ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
+        );
+
+        $billingAddress = new BillingAddress(
+            CountryCode::JAPAN,
+            new PostalCode('123-4567'),
+            new StateOrProvince('Tokyo'),
+            new City('Shibuya'),
+            new AddressLine('1-2-3 Shibuya'),
+            null,
+            null,
+        );
+
+        $billingContact = new BillingContact(
+            new ContractName('Test Contact'),
+            new Email($email),
+            null,
+        );
+
+        $plan = new Plan(
+            new PlanName('Standard Plan'),
+            BillingCycle::MONTHLY,
+            new PlanDescription(''),
+            new Money(0, Currency::JPY),
+        );
+
+        $taxInfo = new TaxInfo(
+            TaxRegion::JP,
+            TaxCategory::TAXABLE,
+            null,
+        );
+
+        $contractInfo = new ContractInfo(
+            $billingAddress,
+            $billingContact,
+            BillingMethod::CREDIT_CARD,
+            $plan,
+            $taxInfo,
+            null,
+        );
+
+        $memberships = [
+            new AccountMembership(
+                new IdentityIdentifier($ownerIdentityId),
+                AccountRole::OWNER,
+            ),
+        ];
+
+        $account = new Account(
+            new AccountIdentifier($accountId),
+            new Email($email),
+            AccountType::CORPORATION,
+            new AccountName('Test Account'),
+            $contractInfo,
+            AccountStatus::ACTIVE,
+            $memberships,
+            DeletionReadinessChecklist::ready(),
+        );
+
+        $this->app->make(AccountRepositoryInterface::class)->save($account);
+    }
+
     /**
      * 正常系: 正しくIDに紐づくMonetizationAccountを取得できること
      *
@@ -26,7 +129,9 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindById(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $accountId = StrTestHelper::generateUuid();
+        $this->createAccountForTest($accountId);
+        $accountIdentifier = new AccountIdentifier($accountId);
 
         $monetizationAccountId = StrTestHelper::generateUuid();
         $account = new MonetizationAccount(
@@ -72,7 +177,9 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testFindByAccountIdentifier(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $accountId = StrTestHelper::generateUuid();
+        $this->createAccountForTest($accountId);
+        $accountIdentifier = new AccountIdentifier($accountId);
 
         $monetizationAccountId = StrTestHelper::generateUuid();
         $account = new MonetizationAccount(
@@ -118,7 +225,9 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithNewAccount(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $accountId = StrTestHelper::generateUuid();
+        $this->createAccountForTest($accountId);
+        $accountIdentifier = new AccountIdentifier($accountId);
 
         $monetizationAccountId = StrTestHelper::generateUuid();
         $account = new MonetizationAccount(
@@ -148,7 +257,9 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveWithExistingAccount(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $accountId = StrTestHelper::generateUuid();
+        $this->createAccountForTest($accountId);
+        $accountIdentifier = new AccountIdentifier($accountId);
 
         $monetizationAccountId = StrTestHelper::generateUuid();
         $account = new MonetizationAccount(
@@ -184,7 +295,9 @@ class MonetizationAccountRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSaveAndFindWithEmptyCapabilities(): void
     {
-        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $accountId = StrTestHelper::generateUuid();
+        $this->createAccountForTest($accountId);
+        $accountIdentifier = new AccountIdentifier($accountId);
 
         $monetizationAccountId = StrTestHelper::generateUuid();
         $account = new MonetizationAccount(

@@ -41,8 +41,8 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -93,7 +93,7 @@ class WithdrawFromMembershipTest extends TestCase
         $account = $useCase->process($testData->input);
 
         $this->assertCount(1, $account->memberships());
-        $this->assertSame((string)$testData->ownerMembership->userIdentifier(), (string)$account->memberships()[0]->userIdentifier());
+        $this->assertSame((string)$testData->ownerMembership->identityIdentifier(), (string)$account->memberships()[0]->identityIdentifier());
         $this->assertSame(AccountRole::OWNER, $account->memberships()[0]->role());
     }
 
@@ -164,7 +164,7 @@ class WithdrawFromMembershipTest extends TestCase
         $nonMemberInput = new WithdrawFromMembershipInput(
             $testData->identifier,
             new AccountMembership(
-                new UserIdentifier(StrTestHelper::generateUuid()),
+                new IdentityIdentifier(StrTestHelper::generateUuid()),
                 AccountRole::MEMBER
             )
         );
@@ -223,11 +223,11 @@ class WithdrawFromMembershipTest extends TestCase
         );
 
         $ownerMembership = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             AccountRole::OWNER
         );
         $withdrawMembership = new AccountMembership(
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
             AccountRole::MEMBER
         );
 

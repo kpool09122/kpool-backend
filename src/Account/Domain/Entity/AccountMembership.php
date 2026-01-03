@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Source\Account\Domain\Entity;
 
 use Source\Account\Domain\ValueObject\AccountRole;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class AccountMembership
 {
     public function __construct(
-        private UserIdentifier $userIdentifier,
-        private AccountRole $role,
+        private IdentityIdentifier $identityIdentifier,
+        private AccountRole        $role,
     ) {
     }
 
-    public function userIdentifier(): UserIdentifier
+    public function identityIdentifier(): IdentityIdentifier
     {
-        return $this->userIdentifier;
+        return $this->identityIdentifier;
     }
 
     public function role(): AccountRole
