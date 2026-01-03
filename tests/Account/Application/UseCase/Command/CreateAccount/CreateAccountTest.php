@@ -40,8 +40,8 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -176,8 +176,8 @@ class CreateAccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUuid());
-        $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
+        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
 
         $status = AccountStatus::ACTIVE;
 

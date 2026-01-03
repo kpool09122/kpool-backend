@@ -30,8 +30,8 @@ use Source\Account\Domain\ValueObject\TaxInfo;
 use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class CreateAccountInputTest extends TestCase
@@ -49,7 +49,7 @@ class CreateAccountInputTest extends TestCase
         $contractInfo = $this->createContractInfo();
         $initialMembers = [
             new AccountMembership(
-                new UserIdentifier(StrTestHelper::generateUuid()),
+                new IdentityIdentifier(StrTestHelper::generateUuid()),
                 AccountRole::OWNER,
             ),
         ];

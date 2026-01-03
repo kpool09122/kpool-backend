@@ -16,7 +16,7 @@ use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class Account
 {
@@ -100,7 +100,7 @@ class Account
      */
     public function detachMember(AccountMembership $removeMembership): void
     {
-        $storedMembership = $this->findMembershipByUserIdentifier($removeMembership->userIdentifier());
+        $storedMembership = $this->findMembershipByIdentityIdentifier($removeMembership->identityIdentifier());
 
         if (! $storedMembership) {
             throw new AccountMembershipNotFoundException();
@@ -113,7 +113,7 @@ class Account
         $updatedMemberships = array_values(
             array_filter(
                 $this->memberships,
-                static fn (AccountMembership $membership) => (string)$membership->userIdentifier() !== (string)$removeMembership->userIdentifier()
+                static fn (AccountMembership $membership) => (string)$membership->identityIdentifier() !== (string)$removeMembership->identityIdentifier()
             )
         );
         $this->assertHasOwner($updatedMemberships);
@@ -151,7 +151,7 @@ class Account
     {
         $memberships ??= $this->memberships;
         $ids = array_map(
-            static fn (AccountMembership $membership) => (string)$membership->userIdentifier(),
+            static fn (AccountMembership $membership) => (string)$membership->identityIdentifier(),
             $memberships
         );
         if (count($ids) !== count(array_unique($ids))) {
@@ -159,9 +159,8 @@ class Account
         }
     }
 
-    private function findMembershipByUserIdentifier(UserIdentifier $userIdentifier): ?AccountMembership
+    private function findMembershipByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?AccountMembership
     {
-        return array_find($this->memberships, fn ($membership) => (string)$membership->userIdentifier() === (string)$userIdentifier);
-
+        return array_find($this->memberships, fn ($membership) => (string)$membership->identityIdentifier() === (string)$identityIdentifier);
     }
 }

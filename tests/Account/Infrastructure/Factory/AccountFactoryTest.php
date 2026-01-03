@@ -33,8 +33,8 @@ use Source\Account\Infrastructure\Factory\AccountFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -90,8 +90,8 @@ class AccountFactoryTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $userId = new UserIdentifier(StrTestHelper::generateUuid());
-        $memberships = [new AccountMembership($userId, AccountRole::OWNER)];
+        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
 
         $factory = $this->app->make(AccountFactoryInterface::class);
         $account = $factory->create(
