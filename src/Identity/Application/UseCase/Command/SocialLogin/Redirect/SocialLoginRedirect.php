@@ -6,13 +6,13 @@ namespace Source\Identity\Application\UseCase\Command\SocialLogin\Redirect;
 
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
-use Source\Identity\Domain\Service\SocialOAuthClientInterface;
+use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 
 readonly class SocialLoginRedirect implements SocialLoginRedirectInterface
 {
     public function __construct(
-        private SocialOAuthClientInterface $socialOAuthClient,
-        private OAuthStateGeneratorInterface $oauthStateGenerator,
+        private SocialOAuthServiceInterface   $socialOAuthClient,
+        private OAuthStateGeneratorInterface  $oauthStateGenerator,
         private OAuthStateRepositoryInterface $oauthStateRepository,
     ) {
     }

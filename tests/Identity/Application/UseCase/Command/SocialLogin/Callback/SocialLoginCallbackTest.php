@@ -18,7 +18,7 @@ use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
-use Source\Identity\Domain\Service\SocialOAuthClientInterface;
+use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\OAuthCode;
 use Source\Identity\Domain\ValueObject\OAuthState;
@@ -44,14 +44,14 @@ class SocialLoginCallbackTest extends TestCase
     public function test__construct(): void
     {
         $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $accountProvisioningService = Mockery::mock(AccountProvisioningServiceInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(AccountProvisioningServiceInterface::class, $accountProvisioningService);
@@ -86,7 +86,7 @@ class SocialLoginCallbackTest extends TestCase
             ->with($state)
             ->andReturnNull();
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
             ->once()
             ->with($provider, $code)
@@ -116,7 +116,7 @@ class SocialLoginCallbackTest extends TestCase
             ->andReturn($identity);
 
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(AccountProvisioningServiceInterface::class, $accountProvisioningService);
@@ -153,7 +153,7 @@ class SocialLoginCallbackTest extends TestCase
             ->with($state)
             ->andReturnNull();
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
             ->once()
             ->with($provider, $code)
@@ -191,7 +191,7 @@ class SocialLoginCallbackTest extends TestCase
             ->andReturn($existingUser);
 
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(AccountProvisioningServiceInterface::class, $accountProvisioningService);
@@ -212,14 +212,14 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function testProcessWhenUserNotFoundCreatesNewUser(): void
     {
-        $provider = SocialProvider::INSTAGRAM;
+        $provider = SocialProvider::KAKAO;
         $code = new OAuthCode('code');
         $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
         $input = new SocialLoginCallbackInput($provider, $code, $state);
         $output = new SocialLoginCallbackOutput();
 
-        $email = new Email('insta-user@example.com');
-        $profile = new SocialProfile($provider, 'provider-user-3', $email, 'Insta User');
+        $email = new Email('kakao-user@example.com');
+        $profile = new SocialProfile($provider, 'provider-user-3', $email, 'Kakao User');
         $newUser = $this->createIdentity($email);
 
         $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
@@ -228,7 +228,7 @@ class SocialLoginCallbackTest extends TestCase
             ->with($state)
             ->andReturnNull();
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('fetchProfile')
             ->once()
             ->with($provider, $code)
@@ -270,7 +270,7 @@ class SocialLoginCallbackTest extends TestCase
             ->andReturn($newUser);
 
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(AccountProvisioningServiceInterface::class, $accountProvisioningService);
@@ -303,7 +303,7 @@ class SocialLoginCallbackTest extends TestCase
             ->with($state)
             ->andThrow(new RuntimeException('state mismatch'));
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldNotReceive('fetchProfile');
 
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
@@ -312,7 +312,7 @@ class SocialLoginCallbackTest extends TestCase
         $authService = Mockery::mock(AuthServiceInterface::class);
 
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(AccountProvisioningServiceInterface::class, $accountProvisioningService);

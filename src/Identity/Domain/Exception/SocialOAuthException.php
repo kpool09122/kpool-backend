@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Source\Monetization\Payment\Domain\Exception;
+namespace Source\Identity\Domain\Exception;
 
 use DomainException;
 use Throwable;
 
-class PaymentGatewayException extends DomainException
+class SocialOAuthException extends DomainException
 {
     public function __construct(
         string $message,

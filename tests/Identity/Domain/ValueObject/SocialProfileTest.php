@@ -13,8 +13,8 @@ class SocialProfileTest extends TestCase
 {
     public function test__construct(): void
     {
-        $provider = SocialProvider::INSTAGRAM;
-        $providerUserId = 'instagram-user-1';
+        $provider = SocialProvider::KAKAO;
+        $providerUserId = 'kakao-user-1';
         $email = new Email('user@example.com');
         $name = 'Test User';
         $avatarUrl = 'https://example.com/avatar.png';
