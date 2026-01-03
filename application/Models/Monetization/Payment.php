@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $refunded_amount
  * @property ?\Illuminate\Support\Carbon $last_refunded_at
  * @property ?string $last_refund_reason
+ * @property ?string $stripe_payment_intent_id
+ * @property ?string $stripe_payment_method_id
  */
 class Payment extends Model
 {
@@ -55,6 +57,8 @@ class Payment extends Model
         'refunded_amount',
         'last_refunded_at',
         'last_refund_reason',
+        'stripe_payment_intent_id',
+        'stripe_payment_method_id',
     ];
 
     protected function casts(): array

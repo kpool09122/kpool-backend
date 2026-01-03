@@ -18,6 +18,7 @@ services:
       - MAIL_PORT=1025
       - MAIL_FROM_ADDRESS=noreply@kpool.local
       - MAIL_FROM_NAME=Kpool
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
     depends_on:
       - testing_db
       - redis

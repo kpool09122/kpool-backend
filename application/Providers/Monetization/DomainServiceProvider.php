@@ -17,8 +17,10 @@ use Source\Monetization\Billing\Infrastructure\Factory\InvoiceFactory;
 use Source\Monetization\Billing\Infrastructure\Repository\InvoiceRepository;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
+use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Infrastructure\Factory\PaymentFactory;
 use Source\Monetization\Payment\Infrastructure\Repository\PaymentRepository;
+use Source\Monetization\Payment\Infrastructure\Service\PaymentGateway;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
 use Source\Monetization\Settlement\Domain\Factory\TransferFactoryInterface;
 use Source\Monetization\Settlement\Domain\Service\FeeCalculatorService;
@@ -41,6 +43,7 @@ class DomainServiceProvider extends ServiceProvider
         // Payment
         $this->app->singleton(PaymentFactoryInterface::class, PaymentFactory::class);
         $this->app->singleton(PaymentRepositoryInterface::class, PaymentRepository::class);
+        $this->app->singleton(PaymentGatewayInterface::class, PaymentGateway::class);
         $this->app->singleton(PaymentMatcherServiceInterface::class, PaymentMatcherService::class);
         $this->app->singleton(TaxDocumentPolicyServiceInterface::class, TaxDocumentPolicyService::class);
         $this->app->singleton(InvoiceFactoryInterface::class, InvoiceFactory::class);

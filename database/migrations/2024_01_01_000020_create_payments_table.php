@@ -30,8 +30,11 @@ return new class extends Migration
             $table->unsignedBigInteger('refunded_amount')->default(0)->comment('返金済み金額');
             $table->timestamp('last_refunded_at')->nullable()->comment('最終返金日時');
             $table->text('last_refund_reason')->nullable()->comment('最終返金理由');
+            $table->string('stripe_payment_intent_id', 64)->nullable()->comment('Stripe Payment Intent ID');
+            $table->string('stripe_payment_method_id', 64)->nullable()->comment('Stripe Payment Method ID');
 
             $table->index('order_id');
+            $table->index('stripe_payment_intent_id');
             $table->index('buyer_monetization_account_id');
             $table->index('status');
         });
