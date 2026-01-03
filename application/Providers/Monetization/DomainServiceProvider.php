@@ -6,9 +6,11 @@ namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
+use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyService;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
 use Source\Monetization\Billing\Infrastructure\Factory\InvoiceFactory;
+use Source\Monetization\Billing\Infrastructure\Repository\InvoiceRepository;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Infrastructure\Factory\PaymentFactory;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
@@ -30,6 +32,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PaymentMatcherServiceInterface::class, PaymentMatcherService::class);
         $this->app->singleton(TaxDocumentPolicyServiceInterface::class, TaxDocumentPolicyService::class);
         $this->app->singleton(InvoiceFactoryInterface::class, InvoiceFactory::class);
+        $this->app->singleton(InvoiceRepositoryInterface::class, InvoiceRepository::class);
         $this->app->singleton(SettlementBatchFactoryInterface::class, SettlementBatchFactory::class);
         $this->app->singleton(TransferFactoryInterface::class, TransferFactory::class);
         $this->app->singleton(FeeCalculatorServiceInterface::class, FeeCalculatorService::class);
