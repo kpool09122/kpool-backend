@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentInput;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentInterface;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
@@ -28,7 +29,6 @@ use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -223,7 +223,7 @@ class RecordPaymentTest extends TestCase
         return new Invoice(
             $invoiceIdentifier,
             new OrderIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             [new InvoiceLine('Test Product', $total, 1)],
             $total,
             new Money(0, $total->currency()),
@@ -248,6 +248,7 @@ class RecordPaymentTest extends TestCase
         return new Payment(
             $paymentIdentifier,
             new OrderIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $money,
             $paymentMethod,
             $now,

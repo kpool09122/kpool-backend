@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('invoices', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('請求書ID');
             $table->uuid('order_id')->comment('注文ID');
-            $table->uuid('customer_id')->comment('顧客ID');
+            $table->uuid('buyer_monetization_account_id')->comment('購入者MonetizationアカウントID');
             $table->string('currency', 3)->comment('通貨コード');
             $table->unsignedBigInteger('subtotal')->comment('小計');
             $table->unsignedBigInteger('discount_amount')->comment('割引額');
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->text('void_reason')->nullable()->comment('失効理由');
 
             $table->index('order_id');
-            $table->index('customer_id');
+            $table->index('buyer_monetization_account_id');
             $table->index('status');
         });
 

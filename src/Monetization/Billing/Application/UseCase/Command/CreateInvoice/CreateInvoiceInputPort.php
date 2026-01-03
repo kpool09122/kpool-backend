@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice;
 
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 interface CreateInvoiceInputPort
 {
     public function orderIdentifier(): OrderIdentifier;
 
-    public function customerIdentifier(): UserIdentifier;
+    public function buyerMonetizationAccountIdentifier(): MonetizationAccountIdentifier;
 
     /**
      * @return InvoiceLine[]

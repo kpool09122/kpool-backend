@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
@@ -16,7 +17,6 @@ use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class TransferTest extends TestCase
@@ -32,7 +32,7 @@ class TransferTest extends TestCase
         $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $settlementAccount = new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
@@ -67,7 +67,7 @@ class TransferTest extends TestCase
     {
         $settlementAccount = new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::KRW,
@@ -273,7 +273,7 @@ class TransferTest extends TestCase
             $settlementBatchIdentifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
             $settlementAccount ?? new SettlementAccount(
                 new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-                new UserIdentifier(StrTestHelper::generateUuid()),
+                new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
                 'KBank',
                 '6789',
                 Currency::JPY,

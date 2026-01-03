@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccount;
+use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountInterface;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoice;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInterface;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPayment;
@@ -22,6 +24,10 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // Account
+        $this->app->singleton(ProvisionMonetizationAccountInterface::class, ProvisionMonetizationAccount::class);
+
+        // Billing
         $this->app->singleton(CreateInvoiceInterface::class, CreateInvoice::class);
         $this->app->singleton(RecordPaymentInterface::class, RecordPayment::class);
         $this->app->singleton(AuthorizePaymentInterface::class, AuthorizePayment::class);

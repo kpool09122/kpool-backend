@@ -7,6 +7,7 @@ namespace Source\Monetization\Billing\Domain\Entity;
 use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
@@ -14,7 +15,6 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 class Invoice
 {
@@ -24,7 +24,7 @@ class Invoice
     public function __construct(
         private readonly InvoiceIdentifier $invoiceIdentifier,
         private readonly OrderIdentifier $orderIdentifier,
-        private readonly UserIdentifier $customerIdentifier,
+        private readonly MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         private readonly array $lines,
         private readonly Money $subtotal,
         private readonly Money $discountAmount,
@@ -51,9 +51,9 @@ class Invoice
         return $this->orderIdentifier;
     }
 
-    public function customerIdentifier(): UserIdentifier
+    public function buyerMonetizationAccountIdentifier(): MonetizationAccountIdentifier
     {
-        return $this->customerIdentifier;
+        return $this->buyerMonetizationAccountIdentifier;
     }
 
     /**

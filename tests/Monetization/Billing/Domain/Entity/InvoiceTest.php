@@ -9,6 +9,7 @@ use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
@@ -18,7 +19,6 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class InvoiceTest extends TestCase
@@ -32,7 +32,7 @@ class InvoiceTest extends TestCase
     {
         $invoiceIdentifier = new InvoiceIdentifier(StrTestHelper::generateUuid());
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $invoiceLines = [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)];
         $subtotal = new Money(1000, Currency::JPY);
         $discountAmount = new Money(100, Currency::JPY);
@@ -55,7 +55,7 @@ class InvoiceTest extends TestCase
         $invoice = $this->createInvoice([
             'invoiceIdentifier' => $invoiceIdentifier,
             'orderIdentifier' => $orderIdentifier,
-            'customerIdentifier' => $customerIdentifier,
+            'buyerMonetizationAccountIdentifier' => $buyerMonetizationAccountIdentifier,
             'invoiceLines' => $invoiceLines,
             'subtotal' => $subtotal,
             'discountAmount' => $discountAmount,
@@ -72,7 +72,7 @@ class InvoiceTest extends TestCase
 
         $this->assertSame($invoiceIdentifier, $invoice->invoiceIdentifier());
         $this->assertSame($orderIdentifier, $invoice->orderIdentifier());
-        $this->assertSame($customerIdentifier, $invoice->customerIdentifier());
+        $this->assertSame($buyerMonetizationAccountIdentifier, $invoice->buyerMonetizationAccountIdentifier());
         $this->assertSame($invoiceLines, $invoice->lines());
         $this->assertSame($total->currency(), $invoice->currency());
         $this->assertSame($subtotal, $invoice->subtotal());
@@ -376,7 +376,7 @@ class InvoiceTest extends TestCase
         return new Invoice(
             $values['invoiceIdentifier'] ?? new InvoiceIdentifier(StrTestHelper::generateUuid()),
             $values['orderIdentifier'] ?? new OrderIdentifier(StrTestHelper::generateUuid()),
-            $values['customerIdentifier'] ?? new UserIdentifier(StrTestHelper::generateUuid()),
+            $values['buyerMonetizationAccountIdentifier'] ?? new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $values['invoiceLines'] ?? [new InvoiceLine('Standard plan', new Money(1000, Currency::KRW), 1)],
             $values['subtotal'] ?? new Money(1000, Currency::KRW),
             $values['discountAmount'] ?? new Money(100, Currency::KRW),

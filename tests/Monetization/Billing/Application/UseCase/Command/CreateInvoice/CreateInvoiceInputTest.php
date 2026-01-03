@@ -6,6 +6,7 @@ namespace Tests\Monetization\Billing\Application\UseCase\Command\CreateInvoice;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInput;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
@@ -14,7 +15,6 @@ use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class CreateInvoiceInputTest extends TestCase
@@ -27,7 +27,7 @@ class CreateInvoiceInputTest extends TestCase
     public function test__construct(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -49,7 +49,7 @@ class CreateInvoiceInputTest extends TestCase
 
         $input = new CreateInvoiceInput(
             orderIdentifier: $orderIdentifier,
-            customerIdentifier: $customerIdentifier,
+            buyerMonetizationAccountIdentifier: $buyerMonetizationAccountIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
             currency: $currency,
@@ -65,7 +65,7 @@ class CreateInvoiceInputTest extends TestCase
         );
 
         $this->assertSame($orderIdentifier, $input->orderIdentifier());
-        $this->assertSame($customerIdentifier, $input->customerIdentifier());
+        $this->assertSame($buyerMonetizationAccountIdentifier, $input->buyerMonetizationAccountIdentifier());
         $this->assertSame($lines, $input->lines());
         $this->assertSame($shippingCost, $input->shippingCost());
         $this->assertSame($currency, $input->currency());
@@ -88,7 +88,7 @@ class CreateInvoiceInputTest extends TestCase
     public function testWithNullOptionalParameters(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -100,7 +100,7 @@ class CreateInvoiceInputTest extends TestCase
 
         $input = new CreateInvoiceInput(
             orderIdentifier: $orderIdentifier,
-            customerIdentifier: $customerIdentifier,
+            buyerMonetizationAccountIdentifier: $buyerMonetizationAccountIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
             currency: Currency::JPY,

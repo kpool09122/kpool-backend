@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\SettlementBatch;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
@@ -18,7 +19,6 @@ use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class SettlementBatchTest extends TestCase
@@ -792,7 +792,7 @@ class SettlementBatchTest extends TestCase
     {
         return new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '9876',
             Currency::JPY,

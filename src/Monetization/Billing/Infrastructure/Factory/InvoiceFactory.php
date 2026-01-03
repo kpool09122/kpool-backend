@@ -6,6 +6,7 @@ namespace Source\Monetization\Billing\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use DomainException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
@@ -17,7 +18,6 @@ use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 readonly class InvoiceFactory implements InvoiceFactoryInterface
 {
@@ -32,7 +32,7 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
      */
     public function create(
         OrderIdentifier $orderIdentifier,
-        UserIdentifier $customerId,
+        MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         array $lines,
         Currency $currency,
         DateTimeImmutable $issuedAt,
@@ -63,7 +63,7 @@ readonly class InvoiceFactory implements InvoiceFactoryInterface
         return new Invoice(
             new InvoiceIdentifier($this->generator->generate()),
             $orderIdentifier,
-            $customerId,
+            $buyerMonetizationAccountIdentifier,
             $lines,
             $subtotal,
             $discountAmount,

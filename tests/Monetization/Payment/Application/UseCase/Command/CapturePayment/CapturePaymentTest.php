@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use RuntimeException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInterface;
 use Source\Monetization\Payment\Domain\Entity\Payment;
@@ -139,6 +140,7 @@ class CapturePaymentTest extends TestCase
     private function createAuthorizedPayment(PaymentIdentifier $paymentIdentifier): Payment
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
@@ -151,6 +153,7 @@ class CapturePaymentTest extends TestCase
         return new Payment(
             $paymentIdentifier,
             $orderIdentifier,
+            $buyerMonetizationAccountIdentifier,
             $money,
             $paymentMethod,
             $now,

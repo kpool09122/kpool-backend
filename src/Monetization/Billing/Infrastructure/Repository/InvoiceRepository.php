@@ -7,6 +7,7 @@ namespace Source\Monetization\Billing\Infrastructure\Repository;
 use Application\Models\Monetization\Invoice as InvoiceEloquent;
 use DateTimeImmutable;
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
@@ -17,7 +18,6 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 class InvoiceRepository implements InvoiceRepositoryInterface
 {
@@ -43,7 +43,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
             ['id' => (string) $invoice->invoiceIdentifier()],
             [
                 'order_id' => (string) $invoice->orderIdentifier(),
-                'customer_id' => (string) $invoice->customerIdentifier(),
+                'buyer_monetization_account_id' => (string) $invoice->buyerMonetizationAccountIdentifier(),
                 'currency' => $invoice->currency()->value,
                 'subtotal' => $invoice->subtotal()->amount(),
                 'discount_amount' => $invoice->discountAmount()->amount(),
@@ -101,7 +101,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         return new Invoice(
             new InvoiceIdentifier($eloquent->id),
             new OrderIdentifier($eloquent->order_id),
-            new UserIdentifier($eloquent->customer_id),
+            new MonetizationAccountIdentifier($eloquent->buyer_monetization_account_id),
             $lines,
             new Money($eloquent->subtotal, $currency),
             new Money($eloquent->discount_amount, $currency),

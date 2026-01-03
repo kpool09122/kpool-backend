@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property string $id
  * @property string $order_id
- * @property string $customer_id
+ * @property string $buyer_monetization_account_id
  * @property string $currency
  * @property int $subtotal
  * @property int $discount_amount
@@ -41,7 +41,7 @@ class Invoice extends Model
     protected $fillable = [
         'id',
         'order_id',
-        'customer_id',
+        'buyer_monetization_account_id',
         'currency',
         'subtotal',
         'discount_amount',

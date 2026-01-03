@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Monetization\Settlement\Application\UseCase\Command\SettleRevenue;
 
 use DateTimeImmutable;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInput;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
@@ -14,7 +15,6 @@ use Source\Monetization\Settlement\Domain\ValueObject\SettlementScheduleIdentifi
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -29,7 +29,7 @@ class SettleRevenueInputTest extends TestCase
     {
         $account = new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
@@ -81,7 +81,7 @@ class SettleRevenueInputTest extends TestCase
     {
         $account = new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,

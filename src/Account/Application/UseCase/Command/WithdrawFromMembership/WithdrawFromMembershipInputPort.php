@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Application\UseCase\Command\WithdrawFromMembership;
 
 use Source\Account\Domain\Entity\AccountMembership;
-use Source\Account\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface WithdrawFromMembershipInputPort
 {

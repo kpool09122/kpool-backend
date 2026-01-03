@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Application\UseCase\Command\DeleteAccount;
 
-use Source\Account\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class DeleteAccountInput implements DeleteAccountInputPort
 {

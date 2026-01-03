@@ -7,6 +7,7 @@ namespace Tests\Monetization\Settlement\Application\UseCase\Command\SettleRevenu
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInput;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInterface;
 use Source\Monetization\Settlement\Domain\Entity\SettlementBatch;
@@ -23,7 +24,6 @@ use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -107,7 +107,7 @@ class SettleRevenueTest extends TestCase
     {
         return new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,

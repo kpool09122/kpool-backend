@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Infrastructure\Factory;
 
 use DateTimeImmutable;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
@@ -23,6 +24,7 @@ readonly class PaymentFactory implements PaymentFactoryInterface
 
     public function create(
         OrderIdentifier   $orderIdentifier,
+        MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         Money             $money,
         PaymentMethod     $paymentMethod,
         DateTimeImmutable $createdAt,
@@ -30,6 +32,7 @@ readonly class PaymentFactory implements PaymentFactoryInterface
         return new Payment(
             new PaymentIdentifier($this->generator->generate()),
             $orderIdentifier,
+            $buyerMonetizationAccountIdentifier,
             $money,
             $paymentMethod,
             $createdAt,
