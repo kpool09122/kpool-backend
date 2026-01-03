@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -39,6 +40,8 @@ class DraftSong
      * @param ImagePath|null $coverImagePath
      * @param ExternalContentLink|null $musicVideoLink
      * @param ApprovalStatus $status
+     * @param PrincipalIdentifier|null $mergerIdentifier
+     * @param DateTimeImmutable|null $mergedAt
      */
     public function __construct(
         private readonly SongIdentifier           $songIdentifier,
@@ -57,6 +60,8 @@ class DraftSong
         private ?ImagePath                        $coverImagePath,
         private ?ExternalContentLink              $musicVideoLink,
         private ApprovalStatus                    $status,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -198,5 +203,25 @@ class DraftSong
     public function setStatus(ApprovalStatus $status): void
     {
         $this->status = $status;
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }

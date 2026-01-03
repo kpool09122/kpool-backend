@@ -258,6 +258,40 @@ class DraftSongTest extends TestCase
     }
 
     /**
+     * 正常系：MergerIdentifierのsetter/getterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $createDraftSong = $this->createDummyDraftSong();
+        $song = $createDraftSong->song;
+
+        $this->assertNull($song->mergerIdentifier());
+
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $song->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame((string)$mergerIdentifier, (string)$song->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetter/getterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergedAt(): void
+    {
+        $createDraftSong = $this->createDummyDraftSong();
+        $song = $createDraftSong->song;
+
+        $this->assertNull($song->mergedAt());
+
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $song->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $song->mergedAt());
+    }
+
+    /**
      * ダミーのDraftSongを作成するヘルパーメソッド
      *
      * @return DraftSongTestData

@@ -61,6 +61,8 @@ use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSong;
 use Source\Wiki\Song\Application\UseCase\Command\EditSong\EditSongInterface;
+use Source\Wiki\Song\Application\UseCase\Command\MergeSong\MergeSong;
+use Source\Wiki\Song\Application\UseCase\Command\MergeSong\MergeSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSong;
 use Source\Wiki\Song\Application\UseCase\Command\PublishSong\PublishSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSong;
@@ -104,6 +106,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateSongInterface::class, CreateSong::class);
         $this->app->singleton(AutomaticCreateDraftSongInterface::class, AutomaticCreateDraftSong::class);
         $this->app->singleton(EditSongInterface::class, EditSong::class);
+        $this->app->singleton(MergeSongInterface::class, MergeSong::class);
         $this->app->singleton(CreateAgencyInterface::class, CreateAgency::class);
         $this->app->singleton(AutomaticCreateDraftAgencyInterface::class, AutomaticCreateDraftAgency::class);
         $this->app->singleton(EditAgencyInterface::class, EditAgency::class);

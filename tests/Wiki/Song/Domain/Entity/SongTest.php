@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -294,6 +295,40 @@ class SongTest extends TestCase
 
         $largerVersion = new Version(5);
         $this->assertFalse($song->isVersionGreaterThan($largerVersion));
+    }
+
+    /**
+     * 正常系：MergerIdentifierのsetter/getterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $this->assertNull($song->mergerIdentifier());
+
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $song->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame((string)$mergerIdentifier, (string)$song->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetter/getterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergedAt(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $this->assertNull($song->mergedAt());
+
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $song->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $song->mergedAt());
     }
 
     /**
