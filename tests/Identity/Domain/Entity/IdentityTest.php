@@ -86,7 +86,7 @@ class IdentityTest extends TestCase
      */
     public function testAddSocialConnection(): void
     {
-        $connection = new SocialConnection(SocialProvider::INSTAGRAM, 'provider-user-id');
+        $connection = new SocialConnection(SocialProvider::KAKAO, 'provider-user-id');
         $identity = $this->createIdentity();
         $identity->addSocialConnection($connection);
         $this->assertContains($connection, $identity->socialConnections());

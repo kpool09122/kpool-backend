@@ -9,7 +9,7 @@ use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
-use Source\Identity\Domain\Service\SocialOAuthClientInterface;
+use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 
 readonly class SocialLoginCallback implements SocialLoginCallbackInterface
@@ -17,12 +17,12 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
     private const DEFAULT_REDIRECT_URL = '/auth/callback';
 
     public function __construct(
-        private OAuthStateRepositoryInterface $oauthStateRepository,
-        private SocialOAuthClientInterface $socialOAuthClient,
-        private IdentityRepositoryInterface $identityRepository,
-        private IdentityFactoryInterface $identityFactory,
+        private OAuthStateRepositoryInterface       $oauthStateRepository,
+        private SocialOAuthServiceInterface         $socialOAuthClient,
+        private IdentityRepositoryInterface         $identityRepository,
+        private IdentityFactoryInterface            $identityFactory,
         private AccountProvisioningServiceInterface $accountProvisioningService,
-        private AuthServiceInterface $authService,
+        private AuthServiceInterface                $authService,
     ) {
     }
 

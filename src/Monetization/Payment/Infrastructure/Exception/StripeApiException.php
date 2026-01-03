@@ -11,11 +11,8 @@ class StripeApiException extends PaymentGatewayException
 {
     public static function fromStripeException(ApiErrorException $e): self
     {
-        $error = $e->getError();
-
         return new self(
             $e->getMessage(),
-            $error?->code,
             $e
         );
     }

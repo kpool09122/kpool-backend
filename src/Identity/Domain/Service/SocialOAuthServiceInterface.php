@@ -9,7 +9,7 @@ use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 
-interface SocialOAuthClientInterface
+interface SocialOAuthServiceInterface
 {
     public function buildRedirectUrl(SocialProvider $provider, OAuthState $state): string;
 

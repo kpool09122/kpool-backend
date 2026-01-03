@@ -110,7 +110,7 @@ class IdentityRepositoryTest extends TestCase
     public function testFindBySocialConnectionReturnsNullWhenNotFound(): void
     {
         $repository = $this->app->make(IdentityRepositoryInterface::class);
-        $result = $repository->findBySocialConnection(SocialProvider::INSTAGRAM, 'nonexistent-id');
+        $result = $repository->findBySocialConnection(SocialProvider::KAKAO, 'nonexistent-id');
 
         $this->assertNull($result);
     }
@@ -259,7 +259,7 @@ class IdentityRepositoryTest extends TestCase
             [
                 new SocialConnection(SocialProvider::GOOGLE, 'google-id-1'),
                 new SocialConnection(SocialProvider::LINE, 'line-id-1'),
-                new SocialConnection(SocialProvider::INSTAGRAM, 'instagram-id-1'),
+                new SocialConnection(SocialProvider::KAKAO, 'kakao-id-1'),
             ]
         );
 

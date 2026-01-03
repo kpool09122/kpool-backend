@@ -19,7 +19,7 @@ class SocialProviderTest extends TestCase
     {
         $this->assertSame(SocialProvider::GOOGLE, SocialProvider::fromString('google'));
         $this->assertSame(SocialProvider::LINE, SocialProvider::fromString('line'));
-        $this->assertSame(SocialProvider::INSTAGRAM, SocialProvider::fromString('instagram'));
+        $this->assertSame(SocialProvider::KAKAO, SocialProvider::fromString('kakao'));
     }
 
     /**

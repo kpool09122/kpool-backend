@@ -14,7 +14,7 @@ use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLogin
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectOutput;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
 use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
-use Source\Identity\Domain\Service\SocialOAuthClientInterface;
+use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Tests\TestCase;
@@ -29,10 +29,10 @@ class SocialLoginRedirectTest extends TestCase
      */
     public function test__construct(): void
     {
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
         $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
 
@@ -69,14 +69,14 @@ class SocialLoginRedirectTest extends TestCase
             ->andReturnNull()
             ->ordered('sequence');
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('buildRedirectUrl')
             ->once()
             ->with($provider, $state)
             ->andReturn($redirectUrl)
             ->ordered('sequence');
 
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
 
@@ -112,10 +112,10 @@ class SocialLoginRedirectTest extends TestCase
             ->with($state)
             ->andThrow(new RuntimeException('failed to store state'));
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldNotReceive('buildRedirectUrl');
 
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
 
@@ -151,13 +151,13 @@ class SocialLoginRedirectTest extends TestCase
             ->with($state)
             ->andReturnNull();
 
-        $socialOAuthClient = Mockery::mock(SocialOAuthClientInterface::class);
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
         $socialOAuthClient->shouldReceive('buildRedirectUrl')
             ->once()
             ->with($provider, $state)
             ->andThrow(new RuntimeException('failed to build redirect url'));
 
-        $this->app->instance(SocialOAuthClientInterface::class, $socialOAuthClient);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
 
