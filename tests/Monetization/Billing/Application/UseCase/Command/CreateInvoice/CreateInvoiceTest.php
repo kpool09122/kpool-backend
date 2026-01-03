@@ -9,6 +9,7 @@ use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInput;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInterface;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
@@ -26,7 +27,6 @@ use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,7 +41,7 @@ class CreateInvoiceTest extends TestCase
     public function testProcessCreatesInvoiceWithProductAndShipping(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -63,7 +63,7 @@ class CreateInvoiceTest extends TestCase
 
         $input = new CreateInvoiceInput(
             orderIdentifier: $orderIdentifier,
-            customerIdentifier: $customerIdentifier,
+            buyerMonetizationAccountIdentifier: $buyerMonetizationAccountIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
             currency: $currency,
@@ -78,7 +78,7 @@ class CreateInvoiceTest extends TestCase
             registrationNumber: $registrationNumber,
         );
 
-        $expectedInvoice = $this->createDummyInvoice($customerIdentifier, $currency);
+        $expectedInvoice = $this->createDummyInvoice($buyerMonetizationAccountIdentifier, $currency);
 
         $taxDocument = new TaxDocument(
             TaxDocumentType::JP_QUALIFIED_INVOICE,
@@ -93,14 +93,14 @@ class CreateInvoiceTest extends TestCase
             ->once()
             ->withArgs(function (
                 OrderIdentifier $orderId,
-                UserIdentifier $customerId,
+                MonetizationAccountIdentifier $buyerAccountId,
                 array $invoiceLines,
                 Currency $cur,
                 DateTimeImmutable $issuedAt,
                 DateTimeImmutable $dueDate,
                 ?Discount $disc,
                 array $taxes,
-            ) use ($orderIdentifier, $customerIdentifier, $currency, $discount, $taxLines) {
+            ) use ($orderIdentifier, $buyerMonetizationAccountIdentifier, $currency, $discount, $taxLines) {
                 // 2つのInvoiceLine: 商品明細 + 送料
                 if (count($invoiceLines) !== 2) {
                     return false;
@@ -123,7 +123,7 @@ class CreateInvoiceTest extends TestCase
                 }
 
                 return $orderId === $orderIdentifier &&
-                    $customerId === $customerIdentifier &&
+                    $buyerAccountId === $buyerMonetizationAccountIdentifier &&
                     $cur === $currency &&
                     $disc === $discount &&
                     $taxes === $taxLines;
@@ -176,7 +176,7 @@ class CreateInvoiceTest extends TestCase
     public function testProcessWithZeroShippingCost(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Test Product',
@@ -188,7 +188,7 @@ class CreateInvoiceTest extends TestCase
 
         $input = new CreateInvoiceInput(
             orderIdentifier: $orderIdentifier,
-            customerIdentifier: $customerIdentifier,
+            buyerMonetizationAccountIdentifier: $buyerMonetizationAccountIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
             currency: Currency::JPY,
@@ -203,14 +203,14 @@ class CreateInvoiceTest extends TestCase
             registrationNumber: null,
         );
 
-        $expectedInvoice = $this->createDummyInvoice($customerIdentifier, Currency::JPY);
+        $expectedInvoice = $this->createDummyInvoice($buyerMonetizationAccountIdentifier, Currency::JPY);
 
         $invoiceFactory = Mockery::mock(InvoiceFactoryInterface::class);
         $invoiceFactory->shouldReceive('create')
             ->once()
             ->withArgs(function (
                 OrderIdentifier $orderId,
-                UserIdentifier $customerId,
+                MonetizationAccountIdentifier $buyerAccountId,
                 array $invoiceLines,
             ) {
                 // 送料0円の場合、商品明細のみ（1件）
@@ -254,7 +254,7 @@ class CreateInvoiceTest extends TestCase
     public function testProcessWithMultipleLines(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $lines = [
             new InvoiceLine(
                 'Product A',
@@ -271,7 +271,7 @@ class CreateInvoiceTest extends TestCase
 
         $input = new CreateInvoiceInput(
             orderIdentifier: $orderIdentifier,
-            customerIdentifier: $customerIdentifier,
+            buyerMonetizationAccountIdentifier: $buyerMonetizationAccountIdentifier,
             lines: $lines,
             shippingCost: $shippingCost,
             currency: Currency::JPY,
@@ -286,14 +286,14 @@ class CreateInvoiceTest extends TestCase
             registrationNumber: null,
         );
 
-        $expectedInvoice = $this->createDummyInvoice($customerIdentifier, Currency::JPY);
+        $expectedInvoice = $this->createDummyInvoice($buyerMonetizationAccountIdentifier, Currency::JPY);
 
         $invoiceFactory = Mockery::mock(InvoiceFactoryInterface::class);
         $invoiceFactory->shouldReceive('create')
             ->once()
             ->withArgs(function (
                 OrderIdentifier $orderId,
-                UserIdentifier $customerId,
+                MonetizationAccountIdentifier $buyerAccountId,
                 array $invoiceLines,
             ) {
                 // 2つの商品明細 + 送料 = 3件
@@ -339,12 +339,12 @@ class CreateInvoiceTest extends TestCase
     public function testProcessRejectsEmptyLines(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
-        $customerIdentifier = new UserIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $shippingCost = new Money(500, Currency::JPY);
 
         $input = new CreateInvoiceInput(
             orderIdentifier: $orderIdentifier,
-            customerIdentifier: $customerIdentifier,
+            buyerMonetizationAccountIdentifier: $buyerMonetizationAccountIdentifier,
             lines: [],
             shippingCost: $shippingCost,
             currency: Currency::JPY,
@@ -379,7 +379,7 @@ class CreateInvoiceTest extends TestCase
         $useCase->process($input);
     }
 
-    private function createDummyInvoice(UserIdentifier $customerIdentifier, Currency $currency): Invoice
+    private function createDummyInvoice(MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier, Currency $currency): Invoice
     {
         $issuedAt = new DateTimeImmutable();
         $dueDate = $issuedAt->modify('+14 days');
@@ -387,7 +387,7 @@ class CreateInvoiceTest extends TestCase
         return new Invoice(
             new InvoiceIdentifier(StrTestHelper::generateUuid()),
             new OrderIdentifier(StrTestHelper::generateUuid()),
-            $customerIdentifier,
+            $buyerMonetizationAccountIdentifier,
             [new InvoiceLine('Test', new Money(1000, $currency), 1)],
             new Money(1000, $currency),
             new Money(0, $currency),

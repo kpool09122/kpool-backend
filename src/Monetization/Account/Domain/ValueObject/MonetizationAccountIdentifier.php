@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Domain\ValueObject;
+namespace Source\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class AccountIdentifier extends StringBaseValue
+class MonetizationAccountIdentifier extends StringBaseValue
 {
-    public function __construct(string $id)
-    {
+    public function __construct(
+        protected string $id,
+    ) {
         parent::__construct($id);
         $this->validate($id);
     }
@@ -19,7 +20,7 @@ class AccountIdentifier extends StringBaseValue
     protected function validate(string $value): void
     {
         if (! UuidValidator::isValid($value)) {
-            throw new InvalidArgumentException('Invalid AccountIdentifier.');
+            throw new InvalidArgumentException('Invalid MonetizationAccountIdentifier.');
         }
     }
 }

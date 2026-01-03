@@ -36,7 +36,7 @@ readonly class CreateInvoice implements CreateInvoiceInterface
 
         $invoice = $this->invoiceFactory->create(
             $input->orderIdentifier(),
-            $input->customerIdentifier(),
+            $input->buyerMonetizationAccountIdentifier(),
             $invoiceLines,
             $input->currency(),
             $issuedAt,

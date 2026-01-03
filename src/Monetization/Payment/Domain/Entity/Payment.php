@@ -6,6 +6,7 @@ namespace Source\Monetization\Payment\Domain\Entity;
 
 use DateTimeImmutable;
 use DomainException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
@@ -17,6 +18,7 @@ class Payment
     public function __construct(
         private readonly PaymentIdentifier $paymentId,
         private readonly OrderIdentifier   $orderIdentifier,
+        private readonly MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         private readonly Money             $money,
         private readonly PaymentMethod     $paymentMethod,
         private readonly DateTimeImmutable $createdAt,
@@ -39,6 +41,11 @@ class Payment
     public function orderIdentifier(): OrderIdentifier
     {
         return $this->orderIdentifier;
+    }
+
+    public function buyerMonetizationAccountIdentifier(): MonetizationAccountIdentifier
+    {
+        return $this->buyerMonetizationAccountIdentifier;
     }
 
     public function money(): Money

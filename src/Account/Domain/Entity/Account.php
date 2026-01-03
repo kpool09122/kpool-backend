@@ -8,13 +8,13 @@ use DomainException;
 use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
 use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
-use Source\Account\Domain\ValueObject\AccountIdentifier;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\UserIdentifier;
 

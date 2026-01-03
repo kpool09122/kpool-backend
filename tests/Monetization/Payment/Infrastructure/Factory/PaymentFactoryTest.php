@@ -6,6 +6,7 @@ namespace Monetization\Payment\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
@@ -42,6 +43,7 @@ class PaymentFactoryTest extends TestCase
     public function testCreate(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(100, Currency::KRW);
         $method = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
@@ -53,6 +55,7 @@ class PaymentFactoryTest extends TestCase
         $factory = $this->app->make(PaymentFactoryInterface::class);
         $payment = $factory->create(
             $orderIdentifier,
+            $buyerMonetizationAccountIdentifier,
             $money,
             $method,
             $createdAt,
@@ -60,6 +63,7 @@ class PaymentFactoryTest extends TestCase
 
         $this->assertTrue(UuidValidator::isValid((string)$payment->paymentId()));
         $this->assertSame($orderIdentifier, $payment->orderIdentifier());
+        $this->assertSame($buyerMonetizationAccountIdentifier, $payment->buyerMonetizationAccountIdentifier());
         $this->assertSame($money, $payment->money());
         $this->assertSame($method, $payment->paymentMethod());
         $this->assertSame($createdAt, $payment->createdAt());

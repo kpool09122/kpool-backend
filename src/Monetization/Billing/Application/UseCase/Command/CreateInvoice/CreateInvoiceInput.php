@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice;
 
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 readonly class CreateInvoiceInput implements CreateInvoiceInputPort
 {
     /**
      * @param OrderIdentifier $orderIdentifier
-     * @param UserIdentifier $customerIdentifier
+     * @param MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier
      * @param InvoiceLine[] $lines
      * @param Money $shippingCost
      * @param Currency $currency
@@ -33,7 +33,7 @@ readonly class CreateInvoiceInput implements CreateInvoiceInputPort
      */
     public function __construct(
         private OrderIdentifier $orderIdentifier,
-        private UserIdentifier $customerIdentifier,
+        private MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         private array $lines,
         private Money $shippingCost,
         private Currency $currency,
@@ -54,9 +54,9 @@ readonly class CreateInvoiceInput implements CreateInvoiceInputPort
         return $this->orderIdentifier;
     }
 
-    public function customerIdentifier(): UserIdentifier
+    public function buyerMonetizationAccountIdentifier(): MonetizationAccountIdentifier
     {
-        return $this->customerIdentifier;
+        return $this->buyerMonetizationAccountIdentifier;
     }
 
     /**

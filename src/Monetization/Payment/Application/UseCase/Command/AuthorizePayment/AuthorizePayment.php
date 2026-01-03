@@ -25,6 +25,7 @@ readonly class AuthorizePayment implements AuthorizePaymentInterface
 
         $payment = $this->paymentFactory->create(
             $input->orderIdentifier(),
+            $input->buyerMonetizationAccountIdentifier(),
             $input->money(),
             $input->paymentMethod(),
             $now,

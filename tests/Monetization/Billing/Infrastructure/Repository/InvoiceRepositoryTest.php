@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
@@ -18,7 +19,6 @@ use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\CreateInvoice;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -93,7 +93,7 @@ class InvoiceRepositoryTest extends TestCase
         $invoice = new Invoice(
             new InvoiceIdentifier($invoiceId),
             new OrderIdentifier($orderId),
-            new UserIdentifier($customerId),
+            new MonetizationAccountIdentifier($customerId),
             $lines,
             new Money(1000, Currency::JPY),
             new Money(0, Currency::JPY),
@@ -110,7 +110,7 @@ class InvoiceRepositoryTest extends TestCase
         $this->assertDatabaseHas('invoices', [
             'id' => $invoiceId,
             'order_id' => $orderId,
-            'customer_id' => $customerId,
+            'buyer_monetization_account_id' => $customerId,
             'currency' => 'JPY',
             'subtotal' => 1000,
             'discount_amount' => 0,
@@ -158,7 +158,7 @@ class InvoiceRepositoryTest extends TestCase
         $invoice = new Invoice(
             $invoiceIdentifier,
             new OrderIdentifier($orderId),
-            new UserIdentifier($customerId),
+            new MonetizationAccountIdentifier($customerId),
             $lines,
             new Money(2000, Currency::JPY),
             new Money(0, Currency::JPY),
@@ -219,7 +219,7 @@ class InvoiceRepositoryTest extends TestCase
         $invoice = new Invoice(
             new InvoiceIdentifier($invoiceId),
             new OrderIdentifier($orderId),
-            new UserIdentifier($customerId),
+            new MonetizationAccountIdentifier($customerId),
             $lines,
             new Money(1000, Currency::JPY),
             new Money(0, Currency::JPY),
@@ -274,7 +274,7 @@ class InvoiceRepositoryTest extends TestCase
         $invoice = new Invoice(
             new InvoiceIdentifier($invoiceId),
             new OrderIdentifier($orderId),
-            new UserIdentifier($customerId),
+            new MonetizationAccountIdentifier($customerId),
             $lines,
             new Money(3500, Currency::JPY),
             new Money(0, Currency::JPY),
@@ -317,7 +317,7 @@ class InvoiceRepositoryTest extends TestCase
         $invoice = new Invoice(
             new InvoiceIdentifier($invoiceId),
             new OrderIdentifier($orderId),
-            new UserIdentifier($customerId),
+            new MonetizationAccountIdentifier($customerId),
             $lines,
             new Money(1000, Currency::JPY),
             new Money(0, Currency::JPY),

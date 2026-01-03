@@ -6,12 +6,12 @@ namespace Monetization\Settlement\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class SettlementBatchFactoryTest extends TestCase
     {
         $account = new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::USD,

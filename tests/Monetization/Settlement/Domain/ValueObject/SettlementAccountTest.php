@@ -6,10 +6,10 @@ namespace Tests\Monetization\Settlement\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class SettlementAccountTest extends TestCase
@@ -22,11 +22,11 @@ class SettlementAccountTest extends TestCase
     public function test__construct(): void
     {
         $accountId = new SettlementAccountIdentifier(StrTestHelper::generateUuid());
-        $ownerId = new UserIdentifier(StrTestHelper::generateUuid());
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
 
         $account = new SettlementAccount(
             $accountId,
-            $ownerId,
+            $monetizationAccountId,
             'KBank',
             '1234',
             Currency::JPY,
@@ -34,7 +34,7 @@ class SettlementAccountTest extends TestCase
         );
 
         $this->assertSame($accountId, $account->settlementAccountIdentifier());
-        $this->assertSame($ownerId, $account->ownerIdentifier());
+        $this->assertSame($monetizationAccountId, $account->monetizationAccountIdentifier());
         $this->assertSame('KBank', $account->bankName());
         $this->assertSame('1234', $account->accountNumberLast4());
         $this->assertSame(Currency::JPY, $account->currency());
@@ -52,7 +52,7 @@ class SettlementAccountTest extends TestCase
 
         new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '12A4',
             Currency::USD,
@@ -71,7 +71,7 @@ class SettlementAccountTest extends TestCase
 
         new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             '',
             '0000',
             Currency::KRW,

@@ -7,6 +7,7 @@ namespace Tests\Monetization\Payment\Application\UseCase\Command\AuthorizePaymen
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
 use Source\Monetization\Payment\Domain\Entity\Payment;
@@ -35,6 +36,7 @@ class AuthorizePaymentTest extends TestCase
     public function testProcessCreatesAndAuthorizesPayment(): void
     {
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
         $paymentMethod = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
@@ -43,15 +45,15 @@ class AuthorizePaymentTest extends TestCase
             true,
         );
 
-        $input = new AuthorizePaymentInput($orderIdentifier, $money, $paymentMethod);
+        $input = new AuthorizePaymentInput($orderIdentifier, $buyerMonetizationAccountIdentifier, $money, $paymentMethod);
 
-        $pendingPayment = $this->createPendingPayment($orderIdentifier, $money, $paymentMethod);
+        $pendingPayment = $this->createPendingPayment($orderIdentifier, $buyerMonetizationAccountIdentifier, $money, $paymentMethod);
 
         $paymentFactory = Mockery::mock(PaymentFactoryInterface::class);
         $paymentFactory->shouldReceive('create')
             ->once()
-            ->withArgs(function (OrderIdentifier $oi, Money $m, PaymentMethod $pm, DateTimeImmutable $createdAt) use ($orderIdentifier, $money, $paymentMethod) {
-                return $oi === $orderIdentifier && $m === $money && $pm === $paymentMethod;
+            ->withArgs(function (OrderIdentifier $oi, MonetizationAccountIdentifier $buyerId, Money $m, PaymentMethod $pm, DateTimeImmutable $createdAt) use ($orderIdentifier, $buyerMonetizationAccountIdentifier, $money, $paymentMethod) {
+                return $oi === $orderIdentifier && $buyerId === $buyerMonetizationAccountIdentifier && $m === $money && $pm === $paymentMethod;
             })
             ->andReturn($pendingPayment);
 
@@ -80,11 +82,12 @@ class AuthorizePaymentTest extends TestCase
         $this->assertNotNull($result->authorizedAt());
     }
 
-    private function createPendingPayment(OrderIdentifier $orderIdentifier, Money $money, PaymentMethod $paymentMethod): Payment
+    private function createPendingPayment(OrderIdentifier $orderIdentifier, MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier, Money $money, PaymentMethod $paymentMethod): Payment
     {
         return new Payment(
             new PaymentIdentifier(StrTestHelper::generateUuid()),
             $orderIdentifier,
+            $buyerMonetizationAccountIdentifier,
             $money,
             $paymentMethod,
             new DateTimeImmutable(),

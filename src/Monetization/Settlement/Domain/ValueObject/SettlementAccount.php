@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Monetization\Settlement\Domain\ValueObject;
 
 use InvalidArgumentException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 readonly class SettlementAccount
 {
     public function __construct(
         private SettlementAccountIdentifier $settlementAccountIdentifier,
-        private UserIdentifier $ownerIdentifier,
+        private MonetizationAccountIdentifier $monetizationAccountIdentifier,
         private string $bankName,
         private string $accountNumberLast4,
         private Currency $currency,
@@ -27,9 +27,9 @@ readonly class SettlementAccount
         return $this->settlementAccountIdentifier;
     }
 
-    public function ownerIdentifier(): UserIdentifier
+    public function monetizationAccountIdentifier(): MonetizationAccountIdentifier
     {
-        return $this->ownerIdentifier;
+        return $this->monetizationAccountIdentifier;
     }
 
     public function bankName(): string

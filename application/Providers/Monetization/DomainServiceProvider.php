@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
+use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
+use Source\Monetization\Account\Infrastructure\Factory\MonetizationAccountFactory;
+use Source\Monetization\Account\Infrastructure\Repository\MonetizationAccountRepository;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyService;
@@ -28,6 +32,11 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // Account
+        $this->app->singleton(MonetizationAccountFactoryInterface::class, MonetizationAccountFactory::class);
+        $this->app->singleton(MonetizationAccountRepositoryInterface::class, MonetizationAccountRepository::class);
+
+        // Payment
         $this->app->singleton(PaymentFactoryInterface::class, PaymentFactory::class);
         $this->app->singleton(PaymentMatcherServiceInterface::class, PaymentMatcherService::class);
         $this->app->singleton(TaxDocumentPolicyServiceInterface::class, TaxDocumentPolicyService::class);

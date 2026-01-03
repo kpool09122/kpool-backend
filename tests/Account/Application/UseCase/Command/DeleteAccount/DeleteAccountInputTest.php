@@ -6,7 +6,7 @@ namespace Tests\Account\Application\UseCase\Command\DeleteAccount;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInput;
-use Source\Account\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class DeleteAccountInputTest extends TestCase

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Account\Domain\Repository;
 
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 
 interface AccountRepositoryInterface

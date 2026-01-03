@@ -7,6 +7,7 @@ namespace Tests\Monetization\Shared\Service;
 use DateTimeImmutable;
 use DomainException;
 use Exception;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
@@ -21,7 +22,6 @@ use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -130,7 +130,7 @@ class PaymentMatcherServiceTest extends TestCase
         return new Invoice(
             new InvoiceIdentifier(StrTestHelper::generateUuid()),
             $orderIdentifier,
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             [new InvoiceLine('Pro plan', new Money(500, Currency::JPY), 2)],
             new Money(1000, Currency::JPY),
             new Money(100, Currency::JPY),
@@ -150,6 +150,7 @@ class PaymentMatcherServiceTest extends TestCase
         return new Payment(
             new PaymentIdentifier(StrTestHelper::generateUuid()),
             $orderIdentifier,
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $money,
             new PaymentMethod(
                 new PaymentMethodIdentifier(StrTestHelper::generateUuid()),

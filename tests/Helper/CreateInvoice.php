@@ -6,18 +6,18 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 
 class CreateInvoice
 {
     /**
      * @param array{
      *     order_id?: string,
-     *     customer_id?: string,
+     *     buyer_monetization_account_id?: string,
      *     currency?: Currency,
      *     subtotal?: int,
      *     discount_amount?: int,
@@ -42,7 +42,7 @@ class CreateInvoice
         array $overrides = []
     ): void {
         $orderId = $overrides['order_id'] ?? StrTestHelper::generateUuid();
-        $customerId = $overrides['customer_id'] ?? StrTestHelper::generateUuid();
+        $buyerMonetizationAccountId = $overrides['buyer_monetization_account_id'] ?? StrTestHelper::generateUuid();
         $currency = $overrides['currency'] ?? Currency::JPY;
         $subtotal = $overrides['subtotal'] ?? 1000;
         $discountAmount = $overrides['discount_amount'] ?? 0;
@@ -55,7 +55,7 @@ class CreateInvoice
         DB::table('invoices')->insert([
             'id' => (string) $invoiceIdentifier,
             'order_id' => $orderId,
-            'customer_id' => $customerId,
+            'buyer_monetization_account_id' => $buyerMonetizationAccountId,
             'currency' => $currency->value,
             'subtotal' => $subtotal,
             'discount_amount' => $discountAmount,
@@ -115,15 +115,15 @@ class CreateInvoice
      *     lines?: array<array{description: string, currency: Currency, unit_price: int, quantity: int}>
      * } $overrides
      */
-    public static function createWithOrderAndCustomer(
+    public static function createWithOrderAndBuyerMonetizationAccount(
         InvoiceIdentifier $invoiceIdentifier,
         OrderIdentifier $orderIdentifier,
-        UserIdentifier $customerIdentifier,
+        MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         array $overrides = []
     ): void {
         self::create($invoiceIdentifier, array_merge($overrides, [
             'order_id' => (string) $orderIdentifier,
-            'customer_id' => (string) $customerIdentifier,
+            'buyer_monetization_account_id' => (string) $buyerMonetizationAccountIdentifier,
         ]));
     }
 }

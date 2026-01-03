@@ -7,6 +7,7 @@ namespace Tests\Monetization\Payment\Domain\Entity;
 use DateTimeImmutable;
 use DomainException;
 use PHPUnit\Framework\TestCase;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
@@ -32,6 +33,7 @@ class PaymentTest extends TestCase
 
         $this->assertSame($dummyPayment->paymentId, $payment->paymentId());
         $this->assertSame($dummyPayment->orderIdentifier, $payment->orderIdentifier());
+        $this->assertSame($dummyPayment->buyerMonetizationAccountIdentifier, $payment->buyerMonetizationAccountIdentifier());
         $this->assertSame($dummyPayment->money, $payment->money());
         $this->assertSame($dummyPayment->method, $payment->paymentMethod());
         $this->assertSame($dummyPayment->createdAt, $payment->createdAt());
@@ -224,6 +226,7 @@ class PaymentTest extends TestCase
     ): PaymentTestData {
         $paymentId = new PaymentIdentifier(StrTestHelper::generateUuid());
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
+        $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money ??= new Money(1000, Currency::JPY);
         $method = new PaymentMethod(
             new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
@@ -243,6 +246,7 @@ class PaymentTest extends TestCase
         $payment = new Payment(
             $paymentId,
             $orderIdentifier,
+            $buyerMonetizationAccountIdentifier,
             $money,
             $method,
             $createdAt,
@@ -258,6 +262,7 @@ class PaymentTest extends TestCase
         return new PaymentTestData(
             $paymentId,
             $orderIdentifier,
+            $buyerMonetizationAccountIdentifier,
             $money,
             $method,
             $createdAt,
@@ -281,6 +286,7 @@ readonly class PaymentTestData
     public function __construct(
         public PaymentIdentifier $paymentId,
         public OrderIdentifier $orderIdentifier,
+        public MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         public Money $money,
         public PaymentMethod $method,
         public DateTimeImmutable $createdAt,

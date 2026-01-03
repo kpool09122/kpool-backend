@@ -7,6 +7,7 @@ namespace Tests\Monetization\Settlement\Domain\Service;
 use DateTimeImmutable;
 use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\Service\SettlementServiceInterface;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
@@ -18,7 +19,6 @@ use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
-use Source\Shared\Domain\ValueObject\UserIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -171,7 +171,7 @@ class SettlementServiceTest extends TestCase
     {
         return new SettlementAccount(
             new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new UserIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             'KBank',
             '1234',
             Currency::JPY,
