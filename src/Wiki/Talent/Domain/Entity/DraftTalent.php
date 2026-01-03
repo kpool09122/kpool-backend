@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -35,6 +36,8 @@ class DraftTalent
      * @param ImagePath|null $imageLink
      * @param RelevantVideoLinks $relevantVideoLinks
      * @param ApprovalStatus $status
+     * @param PrincipalIdentifier|null $mergerIdentifier
+     * @param DateTimeImmutable|null $mergedAt
      */
     public function __construct(
         private readonly TalentIdentifier         $talentIdentifier,
@@ -51,6 +54,8 @@ class DraftTalent
         private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
         private ApprovalStatus                    $status,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -186,5 +191,25 @@ class DraftTalent
     public function setStatus(ApprovalStatus $status): void
     {
         $this->status = $status;
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }

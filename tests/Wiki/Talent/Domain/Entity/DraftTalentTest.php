@@ -238,6 +238,38 @@ class DraftTalentTest extends TestCase
     }
 
     /**
+     * 正常系：MergerIdentifierのsetterが正しく動作すること.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $draftTalentInfo = $this->createDummyDraftTalent();
+        $this->assertNull($draftTalentInfo->talent->mergerIdentifier());
+
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $draftTalentInfo->talent->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame($mergerIdentifier, $draftTalentInfo->talent->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetterが正しく動作すること.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testSetMergedAt(): void
+    {
+        $draftTalentInfo = $this->createDummyDraftTalent();
+        $this->assertNull($draftTalentInfo->talent->mergedAt());
+
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $draftTalentInfo->talent->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $draftTalentInfo->talent->mergedAt());
+    }
+
+    /**
      * @throws ExceedMaxRelevantVideoLinksException
      */
     private function createDummyDraftTalent(): DraftTalentTestData

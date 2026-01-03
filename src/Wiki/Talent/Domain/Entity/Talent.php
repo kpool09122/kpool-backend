@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -32,6 +34,8 @@ class Talent
      * @param ImagePath|null $imageLink
      * @param RelevantVideoLinks $relevantVideoLinks
      * @param Version $version
+     * @param PrincipalIdentifier|null $mergerIdentifier
+     * @param DateTimeImmutable|null $mergedAt
      */
     public function __construct(
         private readonly TalentIdentifier         $talentIdentifier,
@@ -46,6 +50,8 @@ class Talent
         private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
         private Version                           $version,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -176,5 +182,25 @@ class Talent
     public function isVersionGreaterThan(Version $version): bool
     {
         return $this->version->value() > $version->value();
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }

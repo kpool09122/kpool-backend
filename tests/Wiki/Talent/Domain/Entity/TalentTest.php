@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -254,6 +255,38 @@ class TalentTest extends TestCase
 
         $higherVersion = new Version(2);
         $this->assertFalse($talentInfo->talent->isVersionGreaterThan($higherVersion));
+    }
+
+    /**
+     * 正常系：MergerIdentifierのsetterが正しく動作すること.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $talentInfo = $this->createDummyDraftTalent();
+        $this->assertNull($talentInfo->talent->mergerIdentifier());
+
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $talentInfo->talent->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame($mergerIdentifier, $talentInfo->talent->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetterが正しく動作すること.
+     *
+     * @return void
+     * @throws ExceedMaxRelevantVideoLinksException
+     */
+    public function testSetMergedAt(): void
+    {
+        $talentInfo = $this->createDummyDraftTalent();
+        $this->assertNull($talentInfo->talent->mergedAt());
+
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $talentInfo->talent->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $talentInfo->talent->mergedAt());
     }
 
     /**

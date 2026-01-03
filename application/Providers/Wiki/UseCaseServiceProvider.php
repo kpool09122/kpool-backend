@@ -81,6 +81,8 @@ use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\EditTalent\EditTalentInterface;
+use Source\Wiki\Talent\Application\UseCase\Command\MergeTalent\MergeTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\MergeTalent\MergeTalentInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\PublishTalent\PublishTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\PublishTalent\PublishTalentInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\RejectTalent\RejectTalent;
@@ -99,6 +101,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreateTalentInterface::class, CreateTalent::class);
         $this->app->singleton(AutomaticCreateDraftTalentInterface::class, AutomaticCreateDraftTalent::class);
         $this->app->singleton(EditTalentInterface::class, EditTalent::class);
+        $this->app->singleton(MergeTalentInterface::class, MergeTalent::class);
         $this->app->singleton(CreateGroupInterface::class, CreateGroup::class);
         $this->app->singleton(AutomaticCreateDraftGroupInterface::class, AutomaticCreateDraftGroup::class);
         $this->app->singleton(EditGroupInterface::class, EditGroup::class);
