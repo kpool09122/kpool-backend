@@ -53,7 +53,7 @@ class PolicyTest extends TestCase
     }
 
     /**
-     * 正常系: AGENCY_MANAGEMENTはAPPROVE, REJECT, TRANSLATE, PUBLISHを全リソースに対してOWN_AGENCYスコープでALLOWを返すこと.
+     * 正常系: AGENCY_MANAGEMENTはAPPROVE, REJECT, TRANSLATE, PUBLISH, MERGEを全リソースに対してOWN_AGENCYスコープでALLOWを返すこと.
      *
      * @return void
      */
@@ -65,17 +65,18 @@ class PolicyTest extends TestCase
 
         $statement = $statements[0];
         $this->assertSame(Effect::ALLOW, $statement->effect());
-        $this->assertCount(4, $statement->actions());
+        $this->assertCount(5, $statement->actions());
         $this->assertContains(Action::APPROVE, $statement->actions());
         $this->assertContains(Action::REJECT, $statement->actions());
         $this->assertContains(Action::TRANSLATE, $statement->actions());
         $this->assertContains(Action::PUBLISH, $statement->actions());
+        $this->assertContains(Action::MERGE, $statement->actions());
         $this->assertSame(ResourceType::cases(), $statement->resourceTypes());
         $this->assertSame(ScopeCondition::OWN_AGENCY, $statement->scopeCondition());
     }
 
     /**
-     * 正常系: GROUP_MANAGEMENTはAPPROVE, REJECT, TRANSLATE, PUBLISHをGROUP, TALENT, SONGに対してOWN_GROUPSスコープでALLOWを返すこと.
+     * 正常系: GROUP_MANAGEMENTはAPPROVE, REJECT, TRANSLATE, PUBLISH, MERGEをGROUP, TALENT, SONGに対してOWN_GROUPSスコープでALLOWを返すこと.
      *
      * @return void
      */
@@ -87,11 +88,12 @@ class PolicyTest extends TestCase
 
         $statement = $statements[0];
         $this->assertSame(Effect::ALLOW, $statement->effect());
-        $this->assertCount(4, $statement->actions());
+        $this->assertCount(5, $statement->actions());
         $this->assertContains(Action::APPROVE, $statement->actions());
         $this->assertContains(Action::REJECT, $statement->actions());
         $this->assertContains(Action::TRANSLATE, $statement->actions());
         $this->assertContains(Action::PUBLISH, $statement->actions());
+        $this->assertContains(Action::MERGE, $statement->actions());
         $this->assertCount(3, $statement->resourceTypes());
         $this->assertContains(ResourceType::GROUP, $statement->resourceTypes());
         $this->assertContains(ResourceType::TALENT, $statement->resourceTypes());
@@ -111,12 +113,12 @@ class PolicyTest extends TestCase
         $this->assertCount(3, $statements);
 
         // 共通のアクション
-        $expectedActions = [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH];
+        $expectedActions = [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE];
 
         // GROUP に対する Statement
         $groupStatement = $statements[0];
         $this->assertSame(Effect::ALLOW, $groupStatement->effect());
-        $this->assertCount(5, $groupStatement->actions());
+        $this->assertCount(6, $groupStatement->actions());
         foreach ($expectedActions as $action) {
             $this->assertContains($action, $groupStatement->actions());
         }
@@ -126,7 +128,7 @@ class PolicyTest extends TestCase
         // TALENT に対する Statement
         $talentStatement = $statements[1];
         $this->assertSame(Effect::ALLOW, $talentStatement->effect());
-        $this->assertCount(5, $talentStatement->actions());
+        $this->assertCount(6, $talentStatement->actions());
         foreach ($expectedActions as $action) {
             $this->assertContains($action, $talentStatement->actions());
         }
@@ -136,7 +138,7 @@ class PolicyTest extends TestCase
         // SONG に対する Statement
         $songStatement = $statements[2];
         $this->assertSame(Effect::ALLOW, $songStatement->effect());
-        $this->assertCount(5, $songStatement->actions());
+        $this->assertCount(6, $songStatement->actions());
         foreach ($expectedActions as $action) {
             $this->assertContains($action, $songStatement->actions());
         }

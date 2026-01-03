@@ -13,6 +13,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -226,6 +227,52 @@ DESCRIPTION
         // 現在のバージョンより大きいバージョン
         $largerVersion = new Version(7);
         $this->assertFalse($agency->isVersionGreaterThan($largerVersion));
+    }
+
+    /**
+     * 正常系：MergerIdentifierのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        // 初期値はnull
+        $this->assertNull($agency->mergerIdentifier());
+
+        // 値を設定
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $agency->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame($mergerIdentifier, $agency->mergerIdentifier());
+
+        // nullを設定
+        $agency->setMergerIdentifier(null);
+        $this->assertNull($agency->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergedAt(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        // 初期値はnull
+        $this->assertNull($agency->mergedAt());
+
+        // 値を設定
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $agency->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $agency->mergedAt());
+
+        // nullを設定
+        $agency->setMergedAt(null);
+        $this->assertNull($agency->mergedAt());
     }
 
     /**

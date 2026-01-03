@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -11,6 +12,7 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Group
@@ -25,6 +27,8 @@ class Group
      * @param Description $description
      * @param ImagePath|null $imagePath
      * @param Version $version
+     * @param PrincipalIdentifier|null $mergerIdentifier
+     * @param DateTimeImmutable|null $mergedAt
      */
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,
@@ -36,6 +40,8 @@ class Group
         private Description                       $description,
         private ?ImagePath                        $imagePath,
         private Version                           $version,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -122,5 +128,25 @@ class Group
     public function isVersionGreaterThan(Version $version): bool
     {
         return $this->version->value() > $version->value();
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }

@@ -14,4 +14,5 @@ enum Action: string
     case TRANSLATE = 'translate';
     case PUBLISH = 'publish';
     case ROLLBACK = 'rollback';
+    case MERGE = 'merge';
 }

@@ -191,6 +191,52 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
     }
 
     /**
+     * 正常系：MergerIdentifierのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergerIdentifier(): void
+    {
+        $createDraftAgency = $this->createDummyDraftAgency();
+        $agency = $createDraftAgency->draftAgency;
+
+        // 初期値はnull
+        $this->assertNull($agency->mergerIdentifier());
+
+        // 値を設定
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $agency->setMergerIdentifier($mergerIdentifier);
+        $this->assertSame($mergerIdentifier, $agency->mergerIdentifier());
+
+        // nullを設定
+        $agency->setMergerIdentifier(null);
+        $this->assertNull($agency->mergerIdentifier());
+    }
+
+    /**
+     * 正常系：MergedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetMergedAt(): void
+    {
+        $createDraftAgency = $this->createDummyDraftAgency();
+        $agency = $createDraftAgency->draftAgency;
+
+        // 初期値はnull
+        $this->assertNull($agency->mergedAt());
+
+        // 値を設定
+        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $agency->setMergedAt($mergedAt);
+        $this->assertSame($mergedAt, $agency->mergedAt());
+
+        // nullを設定
+        $agency->setMergedAt(null);
+        $this->assertNull($agency->mergedAt());
+    }
+
+    /**
      * ダミーのDraftAgencyを作成するヘルパーメソッド
      *
      * @return DraftAgencyTestData

@@ -42,7 +42,7 @@ enum Policy: string
             self::AGENCY_MANAGEMENT => [
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                     resourceTypes: ResourceType::cases(),
                     scopeCondition: ScopeCondition::OWN_AGENCY,
                 ),
@@ -50,7 +50,7 @@ enum Policy: string
             self::GROUP_MANAGEMENT => [
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                     resourceTypes: [ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG],
                     scopeCondition: ScopeCondition::OWN_GROUPS,
                 ),
@@ -58,19 +58,19 @@ enum Policy: string
             self::TALENT_MANAGEMENT => [
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                     resourceTypes: [ResourceType::GROUP],
                     scopeCondition: ScopeCondition::OWN_GROUPS,
                 ),
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                     resourceTypes: [ResourceType::TALENT],
                     scopeCondition: ScopeCondition::OWN_TALENTS,
                 ),
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                     resourceTypes: [ResourceType::SONG],
                     scopeCondition: ScopeCondition::OWN_GROUPS_OR_TALENTS,
                 ),

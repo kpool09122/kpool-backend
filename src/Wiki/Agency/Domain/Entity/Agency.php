@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Entity;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -11,6 +12,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Agency
@@ -26,6 +28,8 @@ class Agency
         private ?FoundedIn                        $foundedIn,
         private Description                       $description,
         private Version                           $version,
+        private ?PrincipalIdentifier              $mergerIdentifier = null,
+        private ?DateTimeImmutable                $mergedAt = null,
     ) {
     }
 
@@ -122,5 +126,25 @@ class Agency
     public function updateVersion(): void
     {
         $this->version = Version::nextVersion($this->version);
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function setMergerIdentifier(?PrincipalIdentifier $mergerIdentifier): void
+    {
+        $this->mergerIdentifier = $mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function setMergedAt(?DateTimeImmutable $mergedAt): void
+    {
+        $this->mergedAt = $mergedAt;
     }
 }
