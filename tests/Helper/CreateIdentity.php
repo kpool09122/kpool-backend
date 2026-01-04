@@ -19,7 +19,9 @@ class CreateIdentity
      *     language?: string,
      *     profile_image?: ?string,
      *     password?: string,
-     *     email_verified_at?: ?DateTimeImmutable
+     *     email_verified_at?: ?DateTimeImmutable,
+     *     delegation_identifier?: ?string,
+     *     original_identity_identifier?: ?string
      * } $overrides
      */
     public static function create(IdentityIdentifier $identityIdentifier, array $overrides = []): void
@@ -34,6 +36,8 @@ class CreateIdentity
             'email_verified_at' => isset($overrides['email_verified_at'])
                 ? $overrides['email_verified_at']->format('Y-m-d H:i:s')
                 : null,
+            'delegation_identifier' => $overrides['delegation_identifier'] ?? null,
+            'original_identity_identifier' => $overrides['original_identity_identifier'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

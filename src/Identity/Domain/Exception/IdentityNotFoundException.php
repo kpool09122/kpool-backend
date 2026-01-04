@@ -6,10 +6,10 @@ namespace Source\Identity\Domain\Exception;
 
 use Exception;
 
-class UserNotFoundException extends Exception
+class IdentityNotFoundException extends Exception
 {
     public function __construct(
-        string $message = 'User is not found.',
+        string $message = 'Identity is not found.',
     ) {
         parent::__construct($message, 0);
     }

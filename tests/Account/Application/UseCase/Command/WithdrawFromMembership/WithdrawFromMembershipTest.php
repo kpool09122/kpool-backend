@@ -15,6 +15,7 @@ use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
 use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -234,6 +235,7 @@ class WithdrawFromMembershipTest extends TestCase
         $memberships = [$ownerMembership, $withdrawMembership];
 
         $status = AccountStatus::ACTIVE;
+        $accountCategory = AccountCategory::GENERAL;
 
         $account = new Account(
             $identifier,
@@ -242,6 +244,7 @@ class WithdrawFromMembershipTest extends TestCase
             $accountName,
             $contractInfo,
             $status,
+            $accountCategory,
             $memberships,
             DeletionReadinessChecklist::ready(),
         );

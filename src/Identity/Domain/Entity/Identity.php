@@ -10,6 +10,7 @@ use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\UserName;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -27,6 +28,8 @@ class Identity
      * @param HashedPassword $hashedPassword
      * @param DateTimeImmutable|null $emailVerifiedAt
      * @param SocialConnection[] $socialConnections
+     * @param DelegationIdentifier|null $delegationIdentifier
+     * @param IdentityIdentifier|null $originalIdentityIdentifier
      */
     public function __construct(
         private readonly IdentityIdentifier $identityIdentifier,
@@ -37,6 +40,8 @@ class Identity
         private HashedPassword              $hashedPassword,
         private ?DateTimeImmutable          $emailVerifiedAt,
         private array                       $socialConnections = [],
+        private readonly ?DelegationIdentifier $delegationIdentifier = null,
+        private readonly ?IdentityIdentifier $originalIdentityIdentifier = null,
     ) {
     }
 
@@ -141,5 +146,20 @@ class Identity
             $this->socialConnections,
             static fn (SocialConnection $existing) => $existing->equals($connection)
         );
+    }
+
+    public function delegationIdentifier(): ?DelegationIdentifier
+    {
+        return $this->delegationIdentifier;
+    }
+
+    public function originalIdentityIdentifier(): ?IdentityIdentifier
+    {
+        return $this->originalIdentityIdentifier;
+    }
+
+    public function isDelegatedIdentity(): bool
+    {
+        return $this->delegationIdentifier !== null;
     }
 }

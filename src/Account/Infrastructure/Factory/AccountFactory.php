@@ -7,6 +7,7 @@ namespace Source\Account\Infrastructure\Factory;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
@@ -45,6 +46,7 @@ readonly class AccountFactory implements AccountFactoryInterface
             $name,
             $contractInfo,
             AccountStatus::ACTIVE,
+            AccountCategory::GENERAL,
             $memberships,
             DeletionReadinessChecklist::ready(),
         );

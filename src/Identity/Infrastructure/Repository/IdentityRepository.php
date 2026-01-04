@@ -14,15 +14,16 @@ use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 
-class IdentityRepository implements IdentityRepositoryInterface
+readonly class IdentityRepository implements IdentityRepositoryInterface
 {
     public function __construct(
-        private readonly UuidGeneratorInterface $uuidGenerator,
+        private UuidGeneratorInterface $uuidGenerator,
     ) {
     }
 
@@ -70,10 +71,61 @@ class IdentityRepository implements IdentityRepositoryInterface
                 'email_verified_at' => $identity->emailVerifiedAt() !== null
                     ? Carbon::createFromImmutable($identity->emailVerifiedAt())
                     : null,
+                'delegation_identifier' => $identity->delegationIdentifier() !== null
+                    ? (string) $identity->delegationIdentifier()
+                    : null,
+                'original_identity_identifier' => $identity->originalIdentityIdentifier() !== null
+                    ? (string) $identity->originalIdentityIdentifier()
+                    : null,
             ]
         );
 
         $this->syncSocialConnections($eloquent, $identity->socialConnections());
+    }
+
+    public function findById(IdentityIdentifier $identifier): ?Identity
+    {
+        $eloquent = IdentityEloquent::query()
+            ->with(['socialConnections'])
+            ->where('id', (string) $identifier)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Identity
+    {
+        $eloquent = IdentityEloquent::query()
+            ->with(['socialConnections'])
+            ->where('delegation_identifier', (string) $delegationIdentifier)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
+    public function findDelegatedIdentities(IdentityIdentifier $originalIdentityIdentifier): array
+    {
+        return IdentityEloquent::query()
+            ->with(['socialConnections'])
+            ->where('original_identity_identifier', (string) $originalIdentityIdentifier)
+            ->get()
+            ->map(fn (IdentityEloquent $eloquent) => $this->toDomainEntity($eloquent))
+            ->toArray();
+    }
+
+    public function deleteByDelegation(DelegationIdentifier $delegationIdentifier): void
+    {
+        IdentityEloquent::query()
+            ->where('delegation_identifier', (string) $delegationIdentifier)
+            ->delete();
     }
 
     /**
@@ -111,7 +163,13 @@ class IdentityRepository implements IdentityRepositoryInterface
             $eloquent->email_verified_at !== null
                 ? $eloquent->email_verified_at->toDateTimeImmutable()
                 : null,
-            $socialConnections
+            $socialConnections,
+            $eloquent->delegation_identifier !== null
+                ? new DelegationIdentifier($eloquent->delegation_identifier)
+                : null,
+            $eloquent->original_identity_identifier !== null
+                ? new IdentityIdentifier($eloquent->original_identity_identifier)
+                : null,
         );
     }
 }

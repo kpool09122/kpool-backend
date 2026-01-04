@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -121,6 +122,7 @@ class PaymentRepositoryTest extends TestCase
             new AccountName('Test Account'),
             $contractInfo,
             AccountStatus::ACTIVE,
+            AccountCategory::GENERAL,
             $memberships,
             DeletionReadinessChecklist::ready(),
         );
