@@ -308,57 +308,6 @@ class EditGroupTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがグループを編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $dummyData = $this->createDummyEditGroup(base64EncodedImage: null);
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [(string) $dummyData->groupIdentifier], []);
-
-        $input = new EditGroupInput(
-            $dummyData->groupIdentifier,
-            $dummyData->name,
-            $dummyData->agencyIdentifier,
-            $dummyData->description,
-            $dummyData->base64EncodedImage,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyData->groupIdentifier)
-            ->andReturn($dummyData->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyData->group)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-
-        $editGroup = $this->app->make(EditGroupInterface::class);
-        $editGroup->process($input);
-    }
-
-    /**
      * 正常系：MEMBER_ACTORがグループを編集できること.
      *
      * @return void

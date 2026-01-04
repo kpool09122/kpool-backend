@@ -283,55 +283,6 @@ class EditAgencyTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがAgencyを編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $dummyAgency = $this->createDummyEditAgency();
-
-        $groupId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
-
-        $input = new EditAgencyInput(
-            $dummyAgency->agencyIdentifier,
-            $dummyAgency->name,
-            $dummyAgency->CEO,
-            $dummyAgency->foundedIn,
-            $dummyAgency->description,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
-        $draftAgencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyAgency->agencyIdentifier)
-            ->andReturn($dummyAgency->agency);
-        $draftAgencyRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyAgency->agency)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
-
-        $editAgency = $this->app->make(EditAgencyInterface::class);
-        $editAgency->process($input);
-    }
-
-    /**
      * 正常系：TALENT_ACTORがAgencyを編集できること.
      *
      * @return void

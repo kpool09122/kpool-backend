@@ -12,7 +12,6 @@ enum Policy: string
     case FULL_ACCESS = 'full_access';
     case BASIC_EDITING = 'basic_editing';
     case AGENCY_MANAGEMENT = 'agency_management';
-    case GROUP_MANAGEMENT = 'group_management';
     case TALENT_MANAGEMENT = 'talent_management';
     case DENY_AGENCY_APPROVAL = 'deny_agency_approval';
     case DENY_ROLLBACK = 'deny_rollback';
@@ -45,14 +44,6 @@ enum Policy: string
                     actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                     resourceTypes: ResourceType::cases(),
                     scopeCondition: ScopeCondition::OWN_AGENCY,
-                ),
-            ],
-            self::GROUP_MANAGEMENT => [
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
-                    resourceTypes: [ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG],
-                    scopeCondition: ScopeCondition::OWN_GROUPS,
                 ),
             ],
             self::TALENT_MANAGEMENT => [

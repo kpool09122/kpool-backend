@@ -234,49 +234,6 @@ class CreateAgencyTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがAgencyを作成できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $groupId = StrTestHelper::generateUuid();
-        $dummyCreateAgency = $this->createDummyCreateAgencyData(Role::GROUP_ACTOR, null, [$groupId]);
-
-        $input = new CreateAgencyInput(
-            $dummyCreateAgency->publishedAgencyIdentifier,
-            $dummyCreateAgency->language,
-            $dummyCreateAgency->name,
-            $dummyCreateAgency->CEO,
-            $dummyCreateAgency->foundedIn,
-            $dummyCreateAgency->description,
-            $dummyCreateAgency->principalIdentifier,
-        );
-
-        [$agencyFactory, $agencyRepository, $draftAgencyRepository] = $this->mockAgencyFactoryAndRepository(
-            $dummyCreateAgency,
-            null,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($dummyCreateAgency->principalIdentifier)
-            ->once()
-            ->andReturn($dummyCreateAgency->principal);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftAgencyFactoryInterface::class, $agencyFactory);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
-
-        $createAgency = $this->app->make(CreateAgencyInterface::class);
-        $createAgency->process($input);
-    }
-
-    /**
      * 正常系：TALENT_ACTORがAgencyを作成できること.
      *
      * @return void

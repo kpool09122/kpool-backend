@@ -33,15 +33,6 @@ class RoleTest extends TestCase
         $this->assertContains(Policy::AGENCY_MANAGEMENT, $policies);
     }
 
-    public function testGroupActorPolicies(): void
-    {
-        $policies = Role::GROUP_ACTOR->policies();
-        $this->assertCount(3, $policies);
-        $this->assertContains(Policy::BASIC_EDITING, $policies);
-        $this->assertContains(Policy::GROUP_MANAGEMENT, $policies);
-        $this->assertContains(Policy::DENY_AGENCY_APPROVAL, $policies);
-    }
-
     public function testTalentActorPolicies(): void
     {
         $policies = Role::TALENT_ACTOR->policies();

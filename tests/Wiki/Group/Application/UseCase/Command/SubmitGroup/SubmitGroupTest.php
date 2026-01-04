@@ -369,66 +369,6 @@ class SubmitGroupTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがグループを提出できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $groupId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
-
-        $dummySubmitGroup = $this->createDummySubmitGroup(
-            groupId: $groupId,
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySubmitGroup->groupIdentifier)
-            ->andReturn($dummySubmitGroup->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->group)
-            ->andReturn(null);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummySubmitGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $useCase = $this->app->make(SubmitGroupInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
-    }
-
-    /**
      * 正常系：MEMBER_ACTORがグループを提出できること.
      *
      * @return void

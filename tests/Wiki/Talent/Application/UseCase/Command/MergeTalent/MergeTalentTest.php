@@ -266,61 +266,6 @@ class MergeTalentTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがTalentをマージできること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws TalentNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $dummyTalent = $this->createDummyMergeTalent();
-        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
-
-        $groupIds = array_map(static fn ($g) => (string) $g, $dummyTalent->groupIdentifiers);
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, $groupIds, []);
-
-        $input = new MergeTalentInput(
-            $dummyTalent->talentIdentifier,
-            $dummyTalent->name,
-            $dummyTalent->realName,
-            $dummyTalent->agencyIdentifier,
-            $dummyTalent->groupIdentifiers,
-            $dummyTalent->birthday,
-            $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
-            $principalIdentifier,
-            $mergedAt,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
-        $draftTalentRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyTalent->talentIdentifier)
-            ->andReturn($dummyTalent->talent);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyTalent->talent)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
-
-        $mergeTalent = $this->app->make(MergeTalentInterface::class);
-        $mergeTalent->process($input);
-    }
-
-    /**
      * 正常系：TALENT_ACTORがTalentをマージできること.
      *
      * @return void

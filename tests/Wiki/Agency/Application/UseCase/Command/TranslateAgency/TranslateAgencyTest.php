@@ -308,52 +308,6 @@ class TranslateAgencyTest extends TestCase
     }
 
     /**
-     * 異常系：GROUP_ACTORが事務所情報を翻訳しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AgencyNotFoundException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedGroupActor(): void
-    {
-        $dummyTranslateAgency = $this->createDummyTranslateAgency();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $groupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
-
-        $input = new TranslateAgencyInput(
-            $dummyTranslateAgency->agencyIdentifier,
-            $dummyTranslateAgency->publishedAgencyIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-        $agencyRepository->shouldReceive('findById')
-            ->with($dummyTranslateAgency->agencyIdentifier)
-            ->once()
-            ->andReturn($dummyTranslateAgency->agency);
-
-        $agencyService = Mockery::mock(TranslationServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
-        $this->app->instance(TranslationServiceInterface::class, $agencyService);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
-        $this->expectException(UnauthorizedException::class);
-        $translateAgency = $this->app->make(TranslateAgencyInterface::class);
-        $translateAgency->process($input);
-    }
-
-    /**
      * 異常系：TALENT_ACTORが事務所情報を翻訳しようとした場合、例外がスローされること.
      *
      * @return void

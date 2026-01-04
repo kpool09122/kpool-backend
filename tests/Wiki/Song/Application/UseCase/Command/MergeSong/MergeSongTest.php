@@ -274,61 +274,6 @@ class MergeSongTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがSongをマージできること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $dummySong = $this->createDummyMergeSong();
-        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [(string) $dummySong->groupIdentifier], []);
-
-        $input = new MergeSongInput(
-            $dummySong->songIdentifier,
-            $dummySong->name,
-            $dummySong->agencyIdentifier,
-            $dummySong->groupIdentifier,
-            $dummySong->talentIdentifier,
-            $dummySong->lyricist,
-            $dummySong->composer,
-            $dummySong->releaseDate,
-            $dummySong->overView,
-            $dummySong->musicVideoLink,
-            $principalIdentifier,
-            $mergedAt,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySong->songIdentifier)
-            ->andReturn($dummySong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySong->song)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-
-        $mergeSong = $this->app->make(MergeSongInterface::class);
-        $mergeSong->process($input);
-    }
-
-    /**
      * 正常系：TALENT_ACTORがSongをマージできること.
      *
      * @return void

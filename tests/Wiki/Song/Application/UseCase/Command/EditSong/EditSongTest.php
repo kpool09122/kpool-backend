@@ -350,65 +350,6 @@ class EditSongTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORが曲を編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $dummyEditSong = $this->createDummyEditSong();
-        $agencyId = (string)$dummyEditSong->agencyIdentifier;
-        $groupId = (string)$dummyEditSong->groupIdentifier;
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$groupId], []);
-
-        $input = new EditSongInput(
-            $dummyEditSong->songIdentifier,
-            $dummyEditSong->name,
-            $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->groupIdentifier,
-            $dummyEditSong->talentIdentifier,
-            $dummyEditSong->lyricist,
-            $dummyEditSong->composer,
-            $dummyEditSong->releaseDate,
-            $dummyEditSong->overView,
-            null,
-            $dummyEditSong->musicVideoLink,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyEditSong->songIdentifier)
-            ->andReturn($dummyEditSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyEditSong->song)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-
-        $editSong = $this->app->make(EditSongInterface::class);
-        $editSong->process($input);
-    }
-
-    /**
      * 正常系：TALENT_ACTORが曲を編集できること.
      *
      * @return void
