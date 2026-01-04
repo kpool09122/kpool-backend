@@ -377,7 +377,7 @@ class RejectSongTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $anotherAgencyId, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -429,118 +429,6 @@ class RejectSongTest extends TestCase
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
 
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
-
-        $input = new RejectSongInput(
-            $dummyRejectSong->songIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyRejectSong->songIdentifier)
-            ->andReturn($dummyRejectSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyRejectSong->song)
-            ->andReturn(null);
-
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-        $songHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyRejectSong->history);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyRejectSong->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $rejectSong = $this->app->make(RejectSongInterface::class);
-        $result = $rejectSong->process($input);
-
-        $this->assertSame(ApprovalStatus::Rejected, $result->status());
-    }
-
-    /**
-     * 異常系：GROUP_ACTORが自分の所属していないグループの歌を却下しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedGroupScope(): void
-    {
-        $dummyRejectSong = $this->createDummyRejectSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string) $dummyRejectSong->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$anotherGroupId], []);
-
-        $input = new RejectSongInput(
-            $dummyRejectSong->songIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyRejectSong->songIdentifier)
-            ->andReturn($dummyRejectSong->song);
-
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $rejectSong = $this->app->make(RejectSongInterface::class);
-        $rejectSong->process($input);
-    }
-
-    /**
-     * 正常系：GROUP_ACTORが自分の所属するグループの歌を却下できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedGroupActor(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-
-        $dummyRejectSong = $this->createDummyRejectSong(
-            operatorIdentifier: $principalIdentifier,
-        );
-        $agencyId = (string) $dummyRejectSong->agencyIdentifier;
-        $groupId = (string) $dummyRejectSong->groupIdentifier;
-
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, [$groupId], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,

@@ -236,55 +236,6 @@ class MergeGroupTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがGroupをマージできること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $dummyGroup = $this->createDummyMergeGroup();
-        $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [(string) $dummyGroup->groupIdentifier], []);
-
-        $input = new MergeGroupInput(
-            $dummyGroup->groupIdentifier,
-            $dummyGroup->name,
-            $dummyGroup->agencyIdentifier,
-            $dummyGroup->description,
-            $principalIdentifier,
-            $mergedAt,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $draftGroupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyGroup->groupIdentifier)
-            ->andReturn($dummyGroup->group);
-        $draftGroupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyGroup->group)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
-
-        $mergeGroup = $this->app->make(MergeGroupInterface::class);
-        $mergeGroup->process($input);
-    }
-
-    /**
      * 正常系：TALENT_ACTORがGroupをマージできること.
      *
      * @return void

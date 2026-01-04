@@ -888,67 +888,6 @@ class PublishAgencyTest extends TestCase
     }
 
     /**
-     * 異常系：GROUP_ACTORが事務所を公開しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AgencyNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedGroupActor(): void
-    {
-        $dummyPublishAgency = $this->createDummyPublishAgency();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $groupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
-
-        $input = new PublishAgencyInput(
-            $dummyPublishAgency->agencyIdentifier,
-            null,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
-        $draftAgencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyPublishAgency->agencyIdentifier)
-            ->andReturn($dummyPublishAgency->agency);
-
-        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
-
-        $agencyService = Mockery::mock(AgencyServiceInterface::class);
-        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
-        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
-
-        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
-        $agencySnapshotFactory->shouldNotReceive('create');
-
-        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
-        $agencySnapshotRepository->shouldNotReceive('save');
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
-        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
-        $this->app->instance(AgencyServiceInterface::class, $agencyService);
-        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
-        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
-        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
-        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
-
-        $this->expectException(UnauthorizedException::class);
-        $publishAgency = $this->app->make(PublishAgencyInterface::class);
-        $publishAgency->process($input);
-    }
-
-    /**
      * 異常系：TALENT_ACTORが事務所を公開しようとした場合、例外がスローされること.
      *
      * @return void

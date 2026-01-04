@@ -76,32 +76,6 @@ class PolicyTest extends TestCase
     }
 
     /**
-     * 正常系: GROUP_MANAGEMENTはAPPROVE, REJECT, TRANSLATE, PUBLISH, MERGEをGROUP, TALENT, SONGに対してOWN_GROUPSスコープでALLOWを返すこと.
-     *
-     * @return void
-     */
-    public function testGroupManagementStatements(): void
-    {
-        $statements = Policy::GROUP_MANAGEMENT->statements();
-
-        $this->assertCount(1, $statements);
-
-        $statement = $statements[0];
-        $this->assertSame(Effect::ALLOW, $statement->effect());
-        $this->assertCount(5, $statement->actions());
-        $this->assertContains(Action::APPROVE, $statement->actions());
-        $this->assertContains(Action::REJECT, $statement->actions());
-        $this->assertContains(Action::TRANSLATE, $statement->actions());
-        $this->assertContains(Action::PUBLISH, $statement->actions());
-        $this->assertContains(Action::MERGE, $statement->actions());
-        $this->assertCount(3, $statement->resourceTypes());
-        $this->assertContains(ResourceType::GROUP, $statement->resourceTypes());
-        $this->assertContains(ResourceType::TALENT, $statement->resourceTypes());
-        $this->assertContains(ResourceType::SONG, $statement->resourceTypes());
-        $this->assertSame(ScopeCondition::OWN_GROUPS, $statement->scopeCondition());
-    }
-
-    /**
      * 正常系: TALENT_MANAGEMENTは3つのStatementを返すこと.
      *
      * @return void

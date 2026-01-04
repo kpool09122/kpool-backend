@@ -468,53 +468,6 @@ class RejectAgencyTest extends TestCase
     }
 
     /**
-     * 異常系：GROUP_ACTORが事務所を却下しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AgencyNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedGroupActor(): void
-    {
-        $dummyRejectAgency = $this->createDummyRejectAgency();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $groupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
-
-        $input = new RejectAgencyInput(
-            $dummyRejectAgency->agencyIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
-        $draftAgencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyRejectAgency->agencyIdentifier)
-            ->andReturn($dummyRejectAgency->agency);
-
-        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
-        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
-        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
-        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $useCase = $this->app->make(RejectAgencyInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
      * 異常系：TALENT_ACTORが事務所を却下しようとした場合、例外がスローされること.
      *
      * @return void

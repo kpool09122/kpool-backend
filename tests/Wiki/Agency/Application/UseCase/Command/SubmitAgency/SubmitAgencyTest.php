@@ -367,65 +367,6 @@ class SubmitAgencyTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがAgencyを提出できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws AgencyNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $groupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, null, [$groupId], []);
-
-        $dummySubmitAgency = $this->createDummySubmitAgency(
-            operatorIdentifier: $principalIdentifier,
-        );
-
-        $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
-        $draftAgencyRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySubmitAgency->agencyIdentifier)
-            ->andReturn($dummySubmitAgency->agency);
-        $draftAgencyRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitAgency->agency)
-            ->andReturn(null);
-
-        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
-        $agencyHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummySubmitAgency->history);
-        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
-        $agencyHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitAgency->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
-        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
-        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
-
-        $useCase = $this->app->make(SubmitAgencyInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
-    }
-
-    /**
      * 正常系：TALENT_ACTORがAgencyを提出できること.
      *
      * @return void

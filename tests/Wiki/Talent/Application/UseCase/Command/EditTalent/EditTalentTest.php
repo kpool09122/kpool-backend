@@ -352,68 +352,6 @@ class EditTalentTest extends TestCase
     }
 
     /**
-     * 正常系：GROUP_ACTORがメンバーを編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws TalentNotFoundException
-     * @throws UnauthorizedException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithGroupActor(): void
-    {
-        $editTalentInfo = $this->createEditTalentInfo();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string)$editTalentInfo->agencyIdentifier;
-        $groupIds = array_map(static fn ($groupId) => (string)$groupId, $editTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::GROUP_ACTOR, $agencyId, $groupIds, []);
-
-        $input = new EditTalentInput(
-            $editTalentInfo->talentIdentifier,
-            $editTalentInfo->name,
-            $editTalentInfo->realName,
-            $editTalentInfo->agencyIdentifier,
-            $editTalentInfo->groupIdentifiers,
-            $editTalentInfo->birthday,
-            $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
-            $editTalentInfo->relevantVideoLinks,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $talentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
-            ->once()
-            ->with($editTalentInfo->talentIdentifier)
-            ->andReturn($editTalentInfo->draftTalent);
-        $talentRepository->shouldReceive('save')
-            ->once()
-            ->with($editTalentInfo->draftTalent)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($editTalentInfo->base64EncodedImage)
-            ->andReturn($editTalentInfo->imageLink);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftTalentRepositoryInterface::class, $talentRepository);
-
-        $useCase = $this->app->make(EditTalentInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
      * 正常系：MEMBER_ACTORがメンバーを編集できること.
      *
      * @return void
