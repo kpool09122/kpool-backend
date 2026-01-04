@@ -11,6 +11,7 @@ use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
 use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -92,6 +93,24 @@ class AccountTest extends TestCase
         $dummyAccount->account->attachMember($newMember);
 
         $this->assertContains($newMember, $dummyAccount->account->memberships());
+    }
+
+    /**
+     * 正常系: 正しくアカウントカテゴリーを変更できること.
+     *
+     * @return void
+     */
+    public function testSetAccountCategory(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+
+        $this->assertSame($dummyAccount->accountCategory, $dummyAccount->account->accountCategory());
+
+        $newCategory = AccountCategory::AGENCY;
+        $dummyAccount->account->setAccountCategory($newCategory);
+
+        $this->assertSame($newCategory, $dummyAccount->account->accountCategory());
+        $this->assertNotSame($dummyAccount->accountCategory, $dummyAccount->account->accountCategory());
     }
 
     /**
@@ -297,6 +316,7 @@ class AccountTest extends TestCase
         }
 
         $status = AccountStatus::ACTIVE;
+        $accountCategory = AccountCategory::GENERAL;
 
         $deletionReadiness ??= DeletionReadinessChecklist::ready();
 
@@ -307,6 +327,7 @@ class AccountTest extends TestCase
             $accountName,
             $contractInfo,
             $status,
+            $accountCategory,
             $memberships,
             $deletionReadiness,
         );
@@ -318,6 +339,7 @@ class AccountTest extends TestCase
             $accountName,
             $contractInfo,
             $status,
+            $accountCategory,
             $memberships,
             $account,
             $deletionReadiness,
@@ -340,6 +362,7 @@ readonly class AccountTestData
         public AccountName $accountName,
         public ContractInfo $contractInfo,
         public AccountStatus $status,
+        public AccountCategory $accountCategory,
         public array $memberships,
         public Account $account,
         public DeletionReadinessChecklist $deletionReadiness,

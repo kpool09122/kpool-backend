@@ -8,6 +8,7 @@ use DomainException;
 use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
 use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -27,6 +28,7 @@ class Account
      * @param AccountName $name
      * @param ContractInfo $contractInfo
      * @param AccountStatus $status
+     * @param AccountCategory $accountCategory
      * @param list<AccountMembership> $memberships
      * @param DeletionReadinessChecklist $deletionReadiness
      */
@@ -37,6 +39,7 @@ class Account
         private AccountName $name,
         private ContractInfo $contractInfo,
         private AccountStatus $status,
+        private AccountCategory $accountCategory,
         private array $memberships,
         private DeletionReadinessChecklist $deletionReadiness,
     ) {
@@ -72,6 +75,16 @@ class Account
     public function status(): AccountStatus
     {
         return $this->status;
+    }
+
+    public function accountCategory(): AccountCategory
+    {
+        return $this->accountCategory;
+    }
+
+    public function setAccountCategory(AccountCategory $category): void
+    {
+        $this->accountCategory = $category;
     }
 
     /**

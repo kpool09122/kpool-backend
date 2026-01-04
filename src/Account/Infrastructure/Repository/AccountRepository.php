@@ -10,6 +10,7 @@ use DateTimeImmutable;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -52,6 +53,7 @@ class AccountRepository implements AccountRepositoryInterface
                 'type' => $account->type()->value,
                 'name' => (string) $account->name(),
                 'status' => $account->status()->value,
+                'category' => $account->accountCategory()->value,
                 'contract_info' => $this->contractInfoToArray($account->contractInfo()),
             ]
         );
@@ -126,6 +128,7 @@ class AccountRepository implements AccountRepositoryInterface
             new AccountName($eloquent->name),
             $this->arrayToContractInfo($eloquent->contract_info),
             AccountStatus::from($eloquent->status),
+            AccountCategory::from($eloquent->category),
             $memberships,
             DeletionReadinessChecklist::ready(),
         );

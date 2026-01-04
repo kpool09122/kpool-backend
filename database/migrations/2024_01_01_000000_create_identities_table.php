@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('profile_image', 2048)->nullable()->comment('プロフィール画像');
             $table->string('password', 255)->comment('パスワード');
             $table->timestamp('email_verified_at')->nullable()->comment('メール認証日時');
+            $table->uuid('delegation_identifier')->nullable()->unique()->comment('委譲ID（代理用Identityの場合のみ）');
+            $table->uuid('original_identity_identifier')->nullable()->index()->comment('元のアイデンティティID（代理用Identityの場合のみ）');
             $table->timestamps();
         });
 

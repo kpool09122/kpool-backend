@@ -7,6 +7,8 @@ namespace Application\Providers\Account;
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\Service\DelegationTerminationService;
+use Source\Account\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Account\Infrastructure\Factory\AccountFactory;
 use Source\Account\Infrastructure\Repository\AccountRepository;
 
@@ -16,5 +18,6 @@ class DomainServiceProvider extends ServiceProvider
     {
         $this->app->singleton(AccountFactoryInterface::class, AccountFactory::class);
         $this->app->singleton(AccountRepositoryInterface::class, AccountRepository::class);
+        $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);
     }
 }

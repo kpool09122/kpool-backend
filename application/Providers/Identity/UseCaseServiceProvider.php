@@ -17,6 +17,8 @@ use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLogin
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirect;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInterface;
+use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentity;
+use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityInterface;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmail;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
 
@@ -31,5 +33,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RegisterUserInterface::class, RegisterUser::class);
         $this->app->singleton(SocialLoginRedirectInterface::class, SocialLoginRedirect::class);
         $this->app->singleton(SocialLoginCallbackInterface::class, SocialLoginCallback::class);
+        $this->app->singleton(SwitchIdentityInterface::class, SwitchIdentity::class);
     }
 }

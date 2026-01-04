@@ -7,6 +7,7 @@ namespace Account\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountType;
@@ -93,6 +94,8 @@ class AccountFactoryTest extends TestCase
         $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
         $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
 
+        $accountCategory = AccountCategory::GENERAL;
+
         $factory = $this->app->make(AccountFactoryInterface::class);
         $account = $factory->create(
             $email,
@@ -107,6 +110,7 @@ class AccountFactoryTest extends TestCase
         $this->assertSame($accountType, $account->type());
         $this->assertSame($accountName, $account->name());
         $this->assertSame($contractInfo, $account->contractInfo());
+        $this->assertSame(AccountCategory::GENERAL, $account->accountCategory());
         $this->assertSame($memberships, $account->memberships());
         $this->assertEquals(DeletionReadinessChecklist::ready(), $account->deletionReadiness());
     }

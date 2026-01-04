@@ -14,6 +14,7 @@ use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -180,6 +181,7 @@ class CreateAccountTest extends TestCase
         $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
 
         $status = AccountStatus::ACTIVE;
+        $accountCategory = AccountCategory::GENERAL;
 
         $account = new Account(
             $identifier,
@@ -188,6 +190,7 @@ class CreateAccountTest extends TestCase
             $accountName,
             $contractInfo,
             $status,
+            $accountCategory,
             $memberships,
             DeletionReadinessChecklist::ready(),
         );
@@ -200,6 +203,7 @@ class CreateAccountTest extends TestCase
             $accountType,
             $accountName,
             $contractInfo,
+            $accountCategory,
             $memberships,
             $account,
             $input,
@@ -221,6 +225,7 @@ readonly class CreateAccountTestData
         public AccountType $accountType,
         public AccountName $accountName,
         public ContractInfo $contractInfo,
+        public AccountCategory $accountCategory,
         public array $memberships,
         public Account $account,
         public CreateAccountInput $input,

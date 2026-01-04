@@ -14,6 +14,7 @@ use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
@@ -208,6 +209,7 @@ class DeleteAccountTest extends TestCase
         $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
 
         $status = AccountStatus::ACTIVE;
+        $accountCategory = AccountCategory::GENERAL;
 
         $deletionReadiness ??= DeletionReadinessChecklist::ready();
 
@@ -218,6 +220,7 @@ class DeleteAccountTest extends TestCase
             $accountName,
             $contractInfo,
             $status,
+            $accountCategory,
             $memberships,
             $deletionReadiness,
         );
@@ -228,6 +231,7 @@ class DeleteAccountTest extends TestCase
             $accountType,
             $accountName,
             $contractInfo,
+            $accountCategory,
             $memberships,
             $account,
             $deletionReadiness,
@@ -249,6 +253,7 @@ readonly class DeleteAccountTestData
         public AccountType $accountType,
         public AccountName $accountName,
         public ContractInfo $contractInfo,
+        public AccountCategory $accountCategory,
         public array $memberships,
         public Account $account,
         public DeletionReadinessChecklist $deletionReadiness,

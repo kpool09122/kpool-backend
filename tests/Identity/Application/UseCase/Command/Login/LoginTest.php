@@ -12,7 +12,7 @@ use Source\Identity\Application\UseCase\Command\Login\Login;
 use Source\Identity\Application\UseCase\Command\Login\LoginInput;
 use Source\Identity\Application\UseCase\Command\Login\LoginInterface;
 use Source\Identity\Domain\Entity\Identity;
-use Source\Identity\Domain\Exception\UserNotFoundException;
+use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
@@ -48,7 +48,7 @@ class LoginTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UserNotFoundException
+     * @throws IdentityNotFoundException
      */
     public function testProcess(): void
     {
@@ -119,7 +119,7 @@ class LoginTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(LoginInterface::class);
 
-        $this->expectException(UserNotFoundException::class);
+        $this->expectException(IdentityNotFoundException::class);
 
         $useCase->process($input);
     }
@@ -129,7 +129,7 @@ class LoginTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UserNotFoundException
+     * @throws IdentityNotFoundException
      */
     public function testWhenEmailIsNotVerified(): void
     {
@@ -177,7 +177,7 @@ class LoginTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UserNotFoundException
+     * @throws IdentityNotFoundException
      */
     public function testWhenFailedToVerifyPassword(): void
     {

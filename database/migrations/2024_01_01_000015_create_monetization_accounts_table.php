@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('type', 32)->comment('Account Type (corporation, individual)');
             $table->string('name', 64)->comment('Account Name');
             $table->string('status', 32)->comment('Account Status (active, pending, suspended)');
+            $table->string('category', 32)->default('general')->comment('Account Category (agency, talent, general)');
             $table->json('contract_info')->comment('Contract Information (JSON)');
             $table->timestamps();
 

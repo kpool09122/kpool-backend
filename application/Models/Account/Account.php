@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $type
  * @property string $name
  * @property string $status
+ * @property string $category
  * @property array $contract_info
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
@@ -31,6 +32,7 @@ class Account extends Model
         'type',
         'name',
         'status',
+        'category',
         'contract_info',
     ];
 
