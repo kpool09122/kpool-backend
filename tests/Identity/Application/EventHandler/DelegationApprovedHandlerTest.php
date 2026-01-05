@@ -10,12 +10,14 @@ use Mockery;
 use Source\Account\Domain\Event\DelegationApproved;
 use Source\Identity\Application\EventHandler\DelegationApprovedHandler;
 use Source\Identity\Domain\Entity\Identity;
+use Source\Identity\Domain\Event\DelegatedIdentityCreated;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\UserName;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -35,9 +37,11 @@ class DelegationApprovedHandlerTest extends TestCase
     {
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $handler = $this->app->make(DelegationApprovedHandler::class);
 
@@ -45,7 +49,7 @@ class DelegationApprovedHandlerTest extends TestCase
     }
 
     /**
-     * 正常系: 委譲が承認された時に委譲Identityが作成されること.
+     * 正常系: 委譲が承認された時に委譲Identityが作成され、イベントが発行されること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -66,8 +70,9 @@ class DelegationApprovedHandlerTest extends TestCase
         );
 
         $originalIdentity = $this->createIdentity($delegatorId);
+        $delegatedIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
         $delegatedIdentity = $this->createDelegatedIdentity(
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $delegatedIdentityId,
             $delegationId,
             $delegatorId,
         );
@@ -87,8 +92,20 @@ class DelegationApprovedHandlerTest extends TestCase
             ->with($originalIdentity, $delegationId)
             ->andReturn($delegatedIdentity);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(static function ($dispatchedEvent) use ($delegationId, $delegatedIdentityId, $delegatorId) {
+                return $dispatchedEvent instanceof DelegatedIdentityCreated
+                    && (string) $dispatchedEvent->delegationIdentifier() === (string) $delegationId
+                    && (string) $dispatchedEvent->delegatedIdentityIdentifier() === (string) $delegatedIdentityId
+                    && (string) $dispatchedEvent->originalIdentityIdentifier() === (string) $delegatorId;
+            }))
+            ->andReturnNull();
+
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $handler = $this->app->make(DelegationApprovedHandler::class);
 
@@ -125,8 +142,12 @@ class DelegationApprovedHandlerTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldNotReceive('createDelegatedIdentity');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
+
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $handler = $this->app->make(DelegationApprovedHandler::class);
 

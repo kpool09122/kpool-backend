@@ -17,7 +17,9 @@ class CreatePrincipal
      *     role?: Role,
      *     agency_id?: ?string,
      *     group_ids?: string[],
-     *     talent_ids?: string[]
+     *     talent_ids?: string[],
+     *     delegation_identifier?: ?string,
+     *     enabled?: bool
      * } $overrides
      * @throws JsonException
      */
@@ -32,6 +34,8 @@ class CreatePrincipal
             'role' => ($overrides['role'] ?? Role::ADMINISTRATOR)->value,
             'agency_id' => $overrides['agency_id'] ?? null,
             'talent_ids' => json_encode($overrides['talent_ids'] ?? [], JSON_THROW_ON_ERROR),
+            'delegation_identifier' => $overrides['delegation_identifier'] ?? null,
+            'enabled' => $overrides['enabled'] ?? true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

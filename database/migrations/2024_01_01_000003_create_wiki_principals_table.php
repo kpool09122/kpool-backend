@@ -17,10 +17,13 @@ return new class extends Migration
             $table->string('role', 32)->comment('ロール');
             $table->uuid('agency_id')->nullable()->comment('事務所ID');
             $table->json('talent_ids')->comment('タレントID');
+            $table->uuid('delegation_identifier')->nullable()->comment('委譲ID (nullなら本人)');
+            $table->boolean('enabled')->default(true)->comment('有効フラグ');
             $table->timestamps();
 
             $table->foreign('identity_id')->references('id')->on('identities')->onDelete('cascade');
             $table->unique('identity_id');
+            $table->unique('delegation_identifier');
         });
 
         Schema::create('wiki_principal_groups', static function (Blueprint $table) {

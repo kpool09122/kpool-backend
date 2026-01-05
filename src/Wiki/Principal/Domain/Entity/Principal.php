@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Domain\Entity;
 
+use DomainException;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -17,6 +19,8 @@ class Principal
      * @param string|null $agencyId
      * @param string[] $groupIds
      * @param string[] $talentIds
+     * @param DelegationIdentifier|null $delegationIdentifier
+     * @param bool $enabled
      */
     public function __construct(
         private readonly PrincipalIdentifier $principalIdentifier,
@@ -25,6 +29,8 @@ class Principal
         private readonly ?string             $agencyId,
         private readonly array               $groupIds,
         private readonly array               $talentIds,
+        private readonly ?DelegationIdentifier $delegationIdentifier = null,
+        private bool                         $enabled = true,
     ) {
     }
 
@@ -67,5 +73,29 @@ class Principal
     public function talentIds(): array
     {
         return $this->talentIds;
+    }
+
+    public function delegationIdentifier(): ?DelegationIdentifier
+    {
+        return $this->delegationIdentifier;
+    }
+
+    public function isDelegatedPrincipal(): bool
+    {
+        return $this->delegationIdentifier !== null;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enabled): void
+    {
+        if (! $this->isDelegatedPrincipal()) {
+            throw new DomainException('Cannot change enabled status of non-delegated principal.');
+        }
+
+        $this->enabled = $enabled;
     }
 }

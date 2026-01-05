@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Factory;
 
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
@@ -28,6 +29,25 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
             null,
             [],
             [],
+            null,
+            true,
+        );
+    }
+
+    public function createDelegatedPrincipal(
+        Principal $originalPrincipal,
+        DelegationIdentifier $delegationIdentifier,
+        IdentityIdentifier $delegatedIdentityIdentifier,
+    ): Principal {
+        return new Principal(
+            new PrincipalIdentifier($this->uuidGenerator->generate()),
+            $delegatedIdentityIdentifier,
+            $originalPrincipal->role(),
+            $originalPrincipal->agencyId(),
+            $originalPrincipal->groupIds(),
+            $originalPrincipal->talentIds(),
+            $delegationIdentifier,
+            true,
         );
     }
 }

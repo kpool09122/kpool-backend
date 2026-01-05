@@ -13,6 +13,11 @@ use Tests\Helper\StrTestHelper;
 
 class DelegationApprovedTest extends TestCase
 {
+    /**
+     * 正常系: インスタンスが正しく作成できること.
+     *
+     * @return void
+     */
     public function test__construct(): void
     {
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
