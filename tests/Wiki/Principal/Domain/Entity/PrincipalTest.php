@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Domain\Entity;
 
+use DomainException;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\ValueObject\Role;
@@ -87,5 +89,92 @@ class PrincipalTest extends TestCase
         $principal->setRole($newRole);
         $this->assertNotSame($role, $principal->role());
         $this->assertSame($newRole, $principal->role());
+    }
+
+    /**
+     * 正常系：通常のPrincipalはdelegationIdentifierがnullでenabledがtrueであること.
+     */
+    public function testNonDelegatedPrincipal(): void
+    {
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            Role::TALENT_ACTOR,
+            null,
+            [],
+            [],
+        );
+
+        $this->assertNull($principal->delegationIdentifier());
+        $this->assertFalse($principal->isDelegatedPrincipal());
+        $this->assertTrue($principal->isEnabled());
+    }
+
+    /**
+     * 正常系：代理用PrincipalはdelegationIdentifierを持ち、isDelegatedPrincipalがtrueになること.
+     */
+    public function testDelegatedPrincipal(): void
+    {
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            Role::TALENT_ACTOR,
+            null,
+            [],
+            [],
+            $delegationIdentifier,
+            true,
+        );
+
+        $this->assertSame($delegationIdentifier, $principal->delegationIdentifier());
+        $this->assertTrue($principal->isDelegatedPrincipal());
+        $this->assertTrue($principal->isEnabled());
+    }
+
+    /**
+     * 正常系：代理用PrincipalのsetEnabledが正しく動作すること.
+     */
+    public function testSetEnabledOnDelegatedPrincipal(): void
+    {
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            Role::TALENT_ACTOR,
+            null,
+            [],
+            [],
+            $delegationIdentifier,
+            true,
+        );
+
+        $this->assertTrue($principal->isEnabled());
+
+        $principal->setEnabled(false);
+        $this->assertFalse($principal->isEnabled());
+
+        $principal->setEnabled(true);
+        $this->assertTrue($principal->isEnabled());
+    }
+
+    /**
+     * 異常系：通常のPrincipalでsetEnabledを呼ぶと例外が発生すること.
+     */
+    public function testSetEnabledOnNonDelegatedPrincipalThrowsException(): void
+    {
+        $principal = new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            Role::TALENT_ACTOR,
+            null,
+            [],
+            [],
+        );
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot change enabled status of non-delegated principal.');
+
+        $principal->setEnabled(false);
     }
 }

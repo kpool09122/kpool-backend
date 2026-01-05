@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -120,6 +121,7 @@ class PrincipalRepositoryTest extends TestCase
         CreateGroup::create($groupId);
         $groupIds = [$groupId];
         $talentIds = [StrTestHelper::generateUuid()];
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
 
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
@@ -128,6 +130,7 @@ class PrincipalRepositoryTest extends TestCase
             $agencyId,
             $groupIds,
             $talentIds,
+            $delegationIdentifier,
         );
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
@@ -138,6 +141,7 @@ class PrincipalRepositoryTest extends TestCase
             'identity_id' => (string) $identityIdentifier,
             'role' => Role::AGENCY_ACTOR->value,
             'agency_id' => $agencyId,
+            'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
         $this->assertDatabaseHas('wiki_principal_groups', [
@@ -181,5 +185,90 @@ class PrincipalRepositoryTest extends TestCase
             'id' => (string) $principalIdentifier,
             'role' => Role::ADMINISTRATOR->value,
         ]);
+    }
+
+    /**
+     * 正常系: 正しくDelegation IDに紐づくプリンシパルを取得できること.
+     *
+     * @throws BindingResolutionException
+     * @throws JsonException
+     * @return void
+     */
+    #[Group('useDb')]
+    public function testFindByDelegation(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
+            'delegation_identifier' => (string) $delegationIdentifier,
+        ]);
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $result = $repository->findByDelegation($delegationIdentifier);
+
+        $this->assertNotNull($result);
+        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
+        $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
+        $this->assertSame((string) $delegationIdentifier, (string) $result->delegationIdentifier());
+    }
+
+    /**
+     * 正常系: 指定したDelegation IDを持つプリンシパルが存在しない場合、NULLが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByDelegationWhenNotFound(): void
+    {
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $result = $repository->findByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * 正常系: 正しくDelegation IDに紐づくプリンシパルを削除できること.
+     *
+     * @throws BindingResolutionException
+     * @throws JsonException
+     * @return void
+     */
+    #[Group('useDb')]
+    public function testDeleteByDelegation(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
+            'delegation_identifier' => (string) $delegationIdentifier,
+        ]);
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository->deleteByDelegation($delegationIdentifier);
+
+        $this->assertDatabaseMissing('wiki_principals', [
+            'id' => (string) $principalIdentifier,
+        ]);
+    }
+
+    /**
+     * 正常系: 存在しないDelegation IDを指定しても例外が発生しないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testDeleteByDelegationWhenNotFound(): void
+    {
+        $this->expectNotToPerformAssertions();
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $repository->deleteByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
     }
 }

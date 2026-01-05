@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Domain\Event;
+namespace Tests\Identity\Domain\Event;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Domain\Event\DelegationRevoked;
+use Source\Identity\Domain\Event\DelegatedIdentityDeleted;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Tests\Helper\StrTestHelper;
 
-class DelegationRevokedTest extends TestCase
+class DelegatedIdentityDeletedTest extends TestCase
 {
     /**
      * 正常系: インスタンスが正しく作成できること.
@@ -20,14 +20,14 @@ class DelegationRevokedTest extends TestCase
     public function test__construct(): void
     {
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $revokedAt = new DateTimeImmutable();
+        $deletedAt = new DateTimeImmutable();
 
-        $event = new DelegationRevoked(
+        $event = new DelegatedIdentityDeleted(
             $delegationIdentifier,
-            $revokedAt,
+            $deletedAt,
         );
 
         $this->assertSame($delegationIdentifier, $event->delegationIdentifier());
-        $this->assertSame($revokedAt, $event->revokedAt());
+        $this->assertSame($deletedAt, $event->deletedAt());
     }
 }

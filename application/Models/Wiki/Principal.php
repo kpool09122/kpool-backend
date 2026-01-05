@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  * @property string $role
  * @property ?string $agency_id
  * @property array<string> $talent_ids
+ * @property ?string $delegation_identifier
+ * @property bool $enabled
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
@@ -31,12 +33,15 @@ class Principal extends Model
         'role',
         'agency_id',
         'talent_ids',
+        'delegation_identifier',
+        'enabled',
     ];
 
     protected function casts(): array
     {
         return [
             'talent_ids' => 'array',
+            'enabled' => 'boolean',
         ];
     }
 
