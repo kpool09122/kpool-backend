@@ -92,7 +92,8 @@ class SubmitContactTest extends TestCase
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('save')
             ->once()
-            ->with($contact);
+            ->with($contact)
+            ->andReturnNull();
 
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
         $this->app->instance(EmailServiceInterface::class, $emailService);
@@ -150,7 +151,8 @@ class SubmitContactTest extends TestCase
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('save')
             ->once()
-            ->with($contact);
+            ->with($contact)
+            ->andReturnNull();
 
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
         $this->app->instance(EmailServiceInterface::class, $emailService);
@@ -214,7 +216,8 @@ class SubmitContactTest extends TestCase
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('save')
             ->once()
-            ->with($contact);
+            ->with($contact)
+            ->andReturnNull();
 
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
         $this->app->instance(EmailServiceInterface::class, $emailService);
