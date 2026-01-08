@@ -20,6 +20,7 @@ use Source\Account\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Domain\ValueObject\AffiliationTerms;
+use Source\Account\Domain\ValueObject\DelegationDirection;
 use Source\Account\Domain\ValueObject\DelegationStatus;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -184,6 +185,7 @@ class RequestDelegationTest extends TestCase
             $delegateIdentifier,
             $delegatorIdentifier,
             DelegationStatus::PENDING,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             null,
             null,
@@ -234,6 +236,7 @@ class RequestDelegationTest extends TestCase
             $delegateIdentifier,
             $delegatorIdentifier,
             DelegationStatus::PENDING,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             null,
             null,

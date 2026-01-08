@@ -11,6 +11,7 @@ use Source\Account\Domain\Entity\OperationDelegation;
 use Source\Account\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Account\Domain\ValueObject\AffiliationIdentifier;
+use Source\Account\Domain\ValueObject\DelegationDirection;
 use Source\Account\Domain\ValueObject\DelegationStatus;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -71,6 +72,7 @@ class DelegationTerminationServiceTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             DelegationStatus::APPROVED,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             new DateTimeImmutable(),
             null,

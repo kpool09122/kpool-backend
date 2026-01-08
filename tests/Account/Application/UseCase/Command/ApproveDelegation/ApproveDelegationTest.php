@@ -16,6 +16,7 @@ use Source\Account\Domain\Entity\OperationDelegation;
 use Source\Account\Domain\Event\DelegationApproved;
 use Source\Account\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Domain\ValueObject\AffiliationIdentifier;
+use Source\Account\Domain\ValueObject\DelegationDirection;
 use Source\Account\Domain\ValueObject\DelegationStatus;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
@@ -149,6 +150,7 @@ class ApproveDelegationTest extends TestCase
             $delegateIdentifier,
             $delegatorIdentifier,
             DelegationStatus::PENDING,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             null,
             null,

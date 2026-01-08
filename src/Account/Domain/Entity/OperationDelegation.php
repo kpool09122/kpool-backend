@@ -7,6 +7,7 @@ namespace Source\Account\Domain\Entity;
 use DateTimeImmutable;
 use DomainException;
 use Source\Account\Domain\ValueObject\AffiliationIdentifier;
+use Source\Account\Domain\ValueObject\DelegationDirection;
 use Source\Account\Domain\ValueObject\DelegationStatus;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -19,6 +20,7 @@ class OperationDelegation
         private readonly IdentityIdentifier $delegateIdentifier,
         private readonly IdentityIdentifier $delegatorIdentifier,
         private DelegationStatus $status,
+        private readonly DelegationDirection $direction,
         private readonly DateTimeImmutable $requestedAt,
         private ?DateTimeImmutable $approvedAt,
         private ?DateTimeImmutable $revokedAt,
@@ -48,6 +50,11 @@ class OperationDelegation
     public function status(): DelegationStatus
     {
         return $this->status;
+    }
+
+    public function direction(): DelegationDirection
+    {
+        return $this->direction;
     }
 
     public function requestedAt(): DateTimeImmutable

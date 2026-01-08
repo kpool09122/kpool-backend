@@ -9,6 +9,7 @@ use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\Entity\OperationDelegation;
 use Source\Account\Domain\ValueObject\AffiliationIdentifier;
+use Source\Account\Domain\ValueObject\DelegationDirection;
 use Source\Account\Domain\ValueObject\DelegationStatus;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -23,6 +24,7 @@ class OperationDelegationTest extends TestCase
         $delegateIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $delegatorIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $status = DelegationStatus::PENDING;
+        $direction = DelegationDirection::FROM_AGENCY;
         $requestedAt = new DateTimeImmutable();
 
         $delegation = new OperationDelegation(
@@ -31,6 +33,7 @@ class OperationDelegationTest extends TestCase
             $delegateIdentifier,
             $delegatorIdentifier,
             $status,
+            $direction,
             $requestedAt,
             null,
             null,
@@ -41,9 +44,27 @@ class OperationDelegationTest extends TestCase
         $this->assertSame($delegateIdentifier, $delegation->delegateIdentifier());
         $this->assertSame($delegatorIdentifier, $delegation->delegatorIdentifier());
         $this->assertSame($status, $delegation->status());
+        $this->assertSame($direction, $delegation->direction());
         $this->assertSame($requestedAt, $delegation->requestedAt());
         $this->assertNull($delegation->approvedAt());
         $this->assertNull($delegation->revokedAt());
+    }
+
+    public function testDirectionFromTalent(): void
+    {
+        $delegation = new OperationDelegation(
+            new DelegationIdentifier(StrTestHelper::generateUuid()),
+            new AffiliationIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            DelegationStatus::PENDING,
+            DelegationDirection::FROM_TALENT,
+            new DateTimeImmutable(),
+            null,
+            null,
+        );
+
+        $this->assertSame(DelegationDirection::FROM_TALENT, $delegation->direction());
     }
 
     public function testApprove(): void
@@ -118,6 +139,7 @@ class OperationDelegationTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             DelegationStatus::PENDING,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             null,
             null,
@@ -132,6 +154,7 @@ class OperationDelegationTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             DelegationStatus::APPROVED,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             new DateTimeImmutable(),
             null,
@@ -146,6 +169,7 @@ class OperationDelegationTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             DelegationStatus::REVOKED,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             new DateTimeImmutable(),
             new DateTimeImmutable(),

@@ -13,6 +13,7 @@ use Source\Account\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Domain\Repository\DelegationRepositoryInterface;
 use Source\Account\Domain\ValueObject\AffiliationIdentifier;
 use Source\Account\Domain\ValueObject\AffiliationStatus;
+use Source\Account\Domain\ValueObject\DelegationDirection;
 use Source\Account\Domain\ValueObject\DelegationStatus;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Infrastructure\Service\DelegationValidator;
@@ -287,6 +288,7 @@ class DelegationValidatorTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             $status,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             $status->isApproved() ? new DateTimeImmutable() : null,
             $status->isRevoked() ? new DateTimeImmutable() : null,
