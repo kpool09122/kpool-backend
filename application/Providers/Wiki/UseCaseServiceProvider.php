@@ -49,10 +49,18 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
+use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRole;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
+use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
+use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSongInterface;
 use Source\Wiki\Song\Application\UseCase\Command\AutomaticCreateDraftSong\AutomaticCreateDraftSong;
@@ -142,5 +150,9 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(TranslateSongInterface::class, TranslateSong::class);
         $this->app->singleton(RollbackSongInterface::class, RollbackSong::class);
         $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
+        $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
+        $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
+        $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
+        $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
     }
 }
