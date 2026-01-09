@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
+use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
@@ -23,11 +25,14 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
                 'is_default' => $principalGroup->isDefault(),
             ]
         );
+
+        $this->syncMembers($principalGroup);
     }
 
     public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup
     {
         $eloquent = PrincipalGroupEloquent::query()
+            ->with('memberships')
             ->where('id', (string) $principalGroupIdentifier)
             ->first();
 
@@ -44,7 +49,30 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findByAccountId(AccountIdentifier $accountIdentifier): array
     {
         $eloquentModels = PrincipalGroupEloquent::query()
+            ->with('memberships')
             ->where('account_id', (string) $accountIdentifier)
+            ->get();
+
+        return $eloquentModels->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
+    }
+
+    /**
+     * @return array<PrincipalGroup>
+     */
+    public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array
+    {
+        $principalGroupIds = PrincipalGroupMembershipEloquent::query()
+            ->where('principal_id', (string) $principalIdentifier)
+            ->pluck('principal_group_id')
+            ->toArray();
+
+        if (empty($principalGroupIds)) {
+            return [];
+        }
+
+        $eloquentModels = PrincipalGroupEloquent::query()
+            ->with('memberships')
+            ->whereIn('id', $principalGroupIds)
             ->get();
 
         return $eloquentModels->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
@@ -53,6 +81,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup
     {
         $eloquent = PrincipalGroupEloquent::query()
+            ->with('memberships')
             ->where('account_id', (string) $accountIdentifier)
             ->where('is_default', true)
             ->first();
@@ -71,14 +100,58 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ->delete();
     }
 
+    private function syncMembers(PrincipalGroup $principalGroup): void
+    {
+        $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
+
+        $existingMemberIds = PrincipalGroupMembershipEloquent::query()
+            ->where('principal_group_id', $principalGroupId)
+            ->pluck('principal_id')
+            ->toArray();
+
+        $currentMemberIds = array_map(
+            static fn (PrincipalIdentifier $identifier) => (string) $identifier,
+            $principalGroup->members()
+        );
+
+        $toAdd = array_diff($currentMemberIds, $existingMemberIds);
+        $toRemove = array_diff($existingMemberIds, $currentMemberIds);
+
+        if (! empty($toRemove)) {
+            PrincipalGroupMembershipEloquent::query()
+                ->where('principal_group_id', $principalGroupId)
+                ->whereIn('principal_id', $toRemove)
+                ->delete();
+        }
+
+        if (! empty($toAdd)) {
+            $records = array_map(
+                static fn (string $principalId) => [
+                    'principal_group_id' => $principalGroupId,
+                    'principal_id' => $principalId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                $toAdd
+            );
+            PrincipalGroupMembershipEloquent::query()->insert($records);
+        }
+    }
+
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
     {
-        return new PrincipalGroup(
+        $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier($eloquent->id),
             new AccountIdentifier($eloquent->account_id),
             $eloquent->name,
             $eloquent->is_default,
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
         );
+
+        foreach ($eloquent->memberships as $membership) {
+            $principalGroup->addMember(new PrincipalIdentifier($membership->principal_id));
+        }
+
+        return $principalGroup;
     }
 }

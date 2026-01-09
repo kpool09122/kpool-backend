@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -35,5 +36,13 @@ class PrincipalGroup extends Model
         return [
             'is_default' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<PrincipalGroupMembership, $this>
+     */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(PrincipalGroupMembership::class, 'principal_group_id', 'id');
     }
 }

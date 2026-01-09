@@ -8,12 +8,17 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Infrastructure\Repository\PrincipalGroupRepository;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateIdentity;
+use Tests\Helper\CreatePrincipal;
 use Tests\Helper\CreatePrincipalGroup;
+use Tests\Helper\CreatePrincipalGroupMembership;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -297,5 +302,221 @@ class PrincipalGroupRepositoryTest extends TestCase
             'name' => 'Updated Name',
             'is_default' => false,
         ]);
+    }
+
+    /**
+     * 正常系: PrincipalIdに紐づくPrincipalGroupを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByPrincipalId(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $principalGroupId1 = StrTestHelper::generateUuid();
+        $principalGroupId2 = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
+        $identityId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId1),
+            new AccountIdentifier($accountId),
+            ['name' => 'Group 1']
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId2),
+            new AccountIdentifier($accountId),
+            ['name' => 'Group 2']
+        );
+        CreateIdentity::create(new IdentityIdentifier($identityId), ['email' => 'test1@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId),
+            new IdentityIdentifier($identityId),
+        );
+
+        // 中間テーブルにメンバーシップを追加
+        CreatePrincipalGroupMembership::create($principalGroupId1, $principalId);
+        CreatePrincipalGroupMembership::create($principalGroupId2, $principalId);
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findByPrincipalId(new PrincipalIdentifier($principalId));
+
+        $this->assertCount(2, $result);
+        $names = array_map(static fn ($g) => $g->name(), $result);
+        $this->assertContains('Group 1', $names);
+        $this->assertContains('Group 2', $names);
+    }
+
+    /**
+     * 正常系: 指定したPrincipalIdを持つPrincipalGroupが存在しない場合、空配列が返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByPrincipalIdWhenNotFound(): void
+    {
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findByPrincipalId(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+
+        $this->assertSame([], $result);
+    }
+
+    /**
+     * 正常系: PrincipalGroupのメンバーが正しく保存されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveSyncsMembersAddition(): void
+    {
+        $principalGroupId = StrTestHelper::generateUuid();
+        $accountId = StrTestHelper::generateUuid();
+        $principalId1 = StrTestHelper::generateUuid();
+        $principalId2 = StrTestHelper::generateUuid();
+        $identityId1 = StrTestHelper::generateUuid();
+        $identityId2 = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateIdentity::create(new IdentityIdentifier($identityId1), ['email' => 'test1@example.com']);
+        CreateIdentity::create(new IdentityIdentifier($identityId2), ['email' => 'test2@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId1),
+            new IdentityIdentifier($identityId1),
+        );
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId2),
+            new IdentityIdentifier($identityId2),
+        );
+
+        $principalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            'Test Group',
+            false,
+            new DateTimeImmutable(),
+        );
+        $principalGroup->addMember(new PrincipalIdentifier($principalId1));
+        $principalGroup->addMember(new PrincipalIdentifier($principalId2));
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository->save($principalGroup);
+
+        $this->assertDatabaseHas('principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId1,
+        ]);
+        $this->assertDatabaseHas('principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId2,
+        ]);
+    }
+
+    /**
+     * 正常系: PrincipalGroupのメンバーが正しく削除されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveSyncsMembersRemoval(): void
+    {
+        $principalGroupId = StrTestHelper::generateUuid();
+        $accountId = StrTestHelper::generateUuid();
+        $principalId1 = StrTestHelper::generateUuid();
+        $principalId2 = StrTestHelper::generateUuid();
+        $identityId1 = StrTestHelper::generateUuid();
+        $identityId2 = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateIdentity::create(new IdentityIdentifier($identityId1), ['email' => 'test1@example.com']);
+        CreateIdentity::create(new IdentityIdentifier($identityId2), ['email' => 'test2@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId1),
+            new IdentityIdentifier($identityId1),
+        );
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId2),
+            new IdentityIdentifier($identityId2),
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+        );
+        CreatePrincipalGroupMembership::create($principalGroupId, $principalId1);
+        CreatePrincipalGroupMembership::create($principalGroupId, $principalId2);
+
+        // 事前確認
+        $this->assertDatabaseHas('principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId1,
+        ]);
+        $this->assertDatabaseHas('principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId2,
+        ]);
+
+        // principalId2 を削除
+        $principalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            'Test Group',
+            false,
+            new DateTimeImmutable(),
+        );
+        $principalGroup->addMember(new PrincipalIdentifier($principalId1));
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository->save($principalGroup);
+
+        $this->assertDatabaseHas('principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId1,
+        ]);
+        $this->assertDatabaseMissing('principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId2,
+        ]);
+    }
+
+    /**
+     * 正常系: findByIdでメンバーも取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdWithMembers(): void
+    {
+        $principalGroupId = StrTestHelper::generateUuid();
+        $accountId = StrTestHelper::generateUuid();
+        $principalId1 = StrTestHelper::generateUuid();
+        $principalId2 = StrTestHelper::generateUuid();
+        $identityId1 = StrTestHelper::generateUuid();
+        $identityId2 = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateIdentity::create(new IdentityIdentifier($identityId1), ['email' => 'test1@example.com']);
+        CreateIdentity::create(new IdentityIdentifier($identityId2), ['email' => 'test2@example.com']);
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId1),
+            new IdentityIdentifier($identityId1),
+        );
+        CreatePrincipal::create(
+            new PrincipalIdentifier($principalId2),
+            new IdentityIdentifier($identityId2),
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+        );
+        CreatePrincipalGroupMembership::create($principalGroupId, $principalId1);
+        CreatePrincipalGroupMembership::create($principalGroupId, $principalId2);
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findById(new PrincipalGroupIdentifier($principalGroupId));
+
+        $this->assertNotNull($result);
+        $this->assertSame(2, $result->memberCount());
+        $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId1)));
+        $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId2)));
     }
 }
