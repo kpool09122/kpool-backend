@@ -51,6 +51,8 @@ use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRole;
+use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRole;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicy;
@@ -59,10 +61,16 @@ use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrin
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRole;
+use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicy;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicyInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\DeleteRole\DeleteRole;
+use Source\Wiki\Principal\Application\UseCase\Command\DeleteRole\DeleteRoleInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\DetachPolicyFromRole\DetachPolicyFromRole;
+use Source\Wiki\Principal\Application\UseCase\Command\DetachPolicyFromRole\DetachPolicyFromRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
@@ -158,6 +166,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
         $this->app->singleton(CreatePolicyInterface::class, CreatePolicy::class);
         $this->app->singleton(DeletePolicyInterface::class, DeletePolicy::class);
+        $this->app->singleton(CreateRoleInterface::class, CreateRole::class);
+        $this->app->singleton(DeleteRoleInterface::class, DeleteRole::class);
+        $this->app->singleton(AttachPolicyToRoleInterface::class, AttachPolicyToRole::class);
+        $this->app->singleton(DetachPolicyFromRoleInterface::class, DetachPolicyFromRole::class);
         $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
         $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
     }
