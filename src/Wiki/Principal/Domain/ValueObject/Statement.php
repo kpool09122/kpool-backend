@@ -12,12 +12,13 @@ final readonly class Statement
     /**
      * @param Action[] $actions
      * @param ResourceType[] $resourceTypes
+     * @param Condition|null $condition 条件（null は制約なし）
      */
     public function __construct(
         private Effect $effect,
         private array $actions,
         private array $resourceTypes,
-        private ScopeCondition $scopeCondition = ScopeCondition::NONE,
+        private ?Condition $condition = null,
     ) {
     }
 
@@ -42,8 +43,8 @@ final readonly class Statement
         return $this->resourceTypes;
     }
 
-    public function scopeCondition(): ScopeCondition
+    public function condition(): ?Condition
     {
-        return $this->scopeCondition;
+        return $this->condition;
     }
 }
