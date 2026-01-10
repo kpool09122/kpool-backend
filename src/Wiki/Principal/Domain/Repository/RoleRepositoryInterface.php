@@ -14,6 +14,12 @@ interface RoleRepositoryInterface
     public function findById(RoleIdentifier $roleIdentifier): ?Role;
 
     /**
+     * @param RoleIdentifier[] $roleIdentifiers
+     * @return array<string, Role> roleIdentifier をキーとした連想配列
+     */
+    public function findByIds(array $roleIdentifiers): array;
+
+    /**
      * @return array<Role>
      */
     public function findAll(): array;

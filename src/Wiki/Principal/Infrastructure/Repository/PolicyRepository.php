@@ -47,6 +47,30 @@ class PolicyRepository implements PolicyRepositoryInterface
     }
 
     /**
+     * @param PolicyIdentifier[] $policyIdentifiers
+     * @return array<string, Policy>
+     */
+    public function findByIds(array $policyIdentifiers): array
+    {
+        if (empty($policyIdentifiers)) {
+            return [];
+        }
+
+        $ids = array_map(fn (PolicyIdentifier $id) => (string) $id, $policyIdentifiers);
+
+        $eloquentModels = PolicyEloquent::query()
+            ->whereIn('id', $ids)
+            ->get();
+
+        $result = [];
+        foreach ($eloquentModels as $eloquent) {
+            $result[$eloquent->id] = $this->toDomainEntity($eloquent);
+        }
+
+        return $result;
+    }
+
+    /**
      * @return array<Policy>
      */
     public function findAll(): array

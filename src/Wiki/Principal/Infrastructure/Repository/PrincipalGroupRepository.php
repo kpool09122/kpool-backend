@@ -6,8 +6,8 @@ namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
+use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use DateTimeImmutable;
-use Illuminate\Support\Facades\DB;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -35,7 +35,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup
     {
         $eloquent = PrincipalGroupEloquent::query()
-            ->with('memberships')
+            ->with(['memberships', 'roleAttachments'])
             ->where('id', (string) $principalGroupIdentifier)
             ->first();
 
@@ -52,7 +52,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findByAccountId(AccountIdentifier $accountIdentifier): array
     {
         $eloquentModels = PrincipalGroupEloquent::query()
-            ->with('memberships')
+            ->with(['memberships', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
             ->get();
 
@@ -64,18 +64,11 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
      */
     public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array
     {
-        $principalGroupIds = PrincipalGroupMembershipEloquent::query()
-            ->where('principal_id', (string) $principalIdentifier)
-            ->pluck('principal_group_id')
-            ->toArray();
-
-        if (empty($principalGroupIds)) {
-            return [];
-        }
-
         $eloquentModels = PrincipalGroupEloquent::query()
-            ->with('memberships')
-            ->whereIn('id', $principalGroupIds)
+            ->with(['memberships', 'roleAttachments'])
+            ->whereHas('memberships', function ($query) use ($principalIdentifier) {
+                $query->where('principal_id', (string) $principalIdentifier);
+            })
             ->get();
 
         return $eloquentModels->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
@@ -84,7 +77,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup
     {
         $eloquent = PrincipalGroupEloquent::query()
-            ->with('memberships')
+            ->with(['memberships', 'roleAttachments'])
             ->where('account_id', (string) $accountIdentifier)
             ->where('is_default', true)
             ->first();
@@ -145,17 +138,20 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     {
         $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
 
-        // 現在のアタッチメントを削除
-        DB::table('principal_group_role_attachments')
+        PrincipalGroupRoleAttachmentEloquent::query()
             ->where('principal_group_id', $principalGroupId)
             ->delete();
 
-        // 新しいアタッチメントを挿入
-        foreach ($principalGroup->roles() as $roleIdentifier) {
-            DB::table('principal_group_role_attachments')->insert([
+        $records = array_map(
+            static fn (RoleIdentifier $roleIdentifier) => [
                 'principal_group_id' => $principalGroupId,
                 'role_id' => (string) $roleIdentifier,
-            ]);
+            ],
+            $principalGroup->roles()
+        );
+
+        if (! empty($records)) {
+            PrincipalGroupRoleAttachmentEloquent::query()->insert($records);
         }
     }
 
@@ -173,14 +169,8 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             $principalGroup->addMember(new PrincipalIdentifier($membership->principal_id));
         }
 
-        // Load roles
-        $roleIds = DB::table('principal_group_role_attachments')
-            ->where('principal_group_id', $eloquent->id)
-            ->pluck('role_id')
-            ->toArray();
-
-        foreach ($roleIds as $roleId) {
-            $principalGroup->addRole(new RoleIdentifier($roleId));
+        foreach ($eloquent->roleAttachments as $roleAttachment) {
+            $principalGroup->addRole(new RoleIdentifier($roleAttachment->role_id));
         }
 
         return $principalGroup;

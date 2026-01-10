@@ -45,4 +45,12 @@ class PrincipalGroup extends Model
     {
         return $this->hasMany(PrincipalGroupMembership::class, 'principal_group_id', 'id');
     }
+
+    /**
+     * @return HasMany<PrincipalGroupRoleAttachment, $this>
+     */
+    public function roleAttachments(): HasMany
+    {
+        return $this->hasMany(PrincipalGroupRoleAttachment::class, 'principal_group_id', 'id');
+    }
 }

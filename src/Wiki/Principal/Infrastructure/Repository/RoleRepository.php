@@ -42,6 +42,50 @@ class RoleRepository implements RoleRepositoryInterface
     }
 
     /**
+     * @param RoleIdentifier[] $roleIdentifiers
+     * @return array<string, Role>
+     */
+    public function findByIds(array $roleIdentifiers): array
+    {
+        if (empty($roleIdentifiers)) {
+            return [];
+        }
+
+        $ids = array_map(fn (RoleIdentifier $id) => (string) $id, $roleIdentifiers);
+
+        // Role と PolicyAttachments を一括取得
+        $eloquentModels = RoleEloquent::query()
+            ->whereIn('id', $ids)
+            ->get();
+
+        // PolicyAttachments を一括取得
+        $policyAttachments = DB::table('role_policy_attachments')
+            ->whereIn('role_id', $ids)
+            ->get()
+            ->groupBy('role_id');
+
+        $result = [];
+        foreach ($eloquentModels as $eloquent) {
+            $roleId = $eloquent->id;
+            $policyIds = $policyAttachments->get($roleId, collect())->pluck('policy_id')->toArray();
+            $policies = array_map(
+                fn (string $policyId) => new PolicyIdentifier($policyId),
+                $policyIds
+            );
+
+            $result[$roleId] = new Role(
+                new RoleIdentifier($roleId),
+                $eloquent->name,
+                $policies,
+                $eloquent->is_system_role,
+                new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
+            );
+        }
+
+        return $result;
+    }
+
+    /**
      * @return array<Role>
      */
     public function findAll(): array
