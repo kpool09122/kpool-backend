@@ -53,10 +53,14 @@ use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGro
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRole;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRoleInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicy;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicy;
+use Source\Wiki\Principal\Application\UseCase\Command\DeletePolicy\DeletePolicyInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
@@ -152,6 +156,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
         $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
         $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
+        $this->app->singleton(CreatePolicyInterface::class, CreatePolicy::class);
+        $this->app->singleton(DeletePolicyInterface::class, DeletePolicy::class);
         $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
         $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
     }
