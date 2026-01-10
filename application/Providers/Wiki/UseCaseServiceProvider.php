@@ -53,6 +53,8 @@ use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGro
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRole;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRoleInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroup;
+use Source\Wiki\Principal\Application\UseCase\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRole;
 use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicy;
@@ -71,6 +73,8 @@ use Source\Wiki\Principal\Application\UseCase\Command\DeleteRole\DeleteRole;
 use Source\Wiki\Principal\Application\UseCase\Command\DeleteRole\DeleteRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\DetachPolicyFromRole\DetachPolicyFromRole;
 use Source\Wiki\Principal\Application\UseCase\Command\DetachPolicyFromRole\DetachPolicyFromRoleInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroup;
+use Source\Wiki\Principal\Application\UseCase\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
 use Source\Wiki\Song\Application\UseCase\Command\ApproveSong\ApproveSong;
@@ -172,5 +176,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(DetachPolicyFromRoleInterface::class, DetachPolicyFromRole::class);
         $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
         $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
+        $this->app->singleton(AttachRoleToPrincipalGroupInterface::class, AttachRoleToPrincipalGroup::class);
+        $this->app->singleton(DetachRoleFromPrincipalGroupInterface::class, DetachRoleFromPrincipalGroup::class);
     }
 }

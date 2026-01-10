@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -160,6 +161,104 @@ class PrincipalGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $this->assertFalse($principalGroup->hasMember($principalIdentifier));
+    }
+
+    /**
+     * 正常系: 初期状態でrolesが空であること
+     */
+    public function testRolesReturnsEmptyArrayByDefault(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+
+        $this->assertSame([], $principalGroup->roles());
+    }
+
+    /**
+     * 正常系: Roleを追加できること
+     */
+    public function testAddRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier);
+
+        $this->assertTrue($principalGroup->hasRole($roleIdentifier));
+        $this->assertCount(1, $principalGroup->roles());
+    }
+
+    /**
+     * 正常系: 複数のRoleを追加できること
+     */
+    public function testAddMultipleRoles(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier1 = new RoleIdentifier(StrTestHelper::generateUuid());
+        $roleIdentifier2 = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier1);
+        $principalGroup->addRole($roleIdentifier2);
+
+        $this->assertCount(2, $principalGroup->roles());
+        $this->assertTrue($principalGroup->hasRole($roleIdentifier1));
+        $this->assertTrue($principalGroup->hasRole($roleIdentifier2));
+    }
+
+    /**
+     * 正常系: 重複するRoleは追加されないこと（冪等性）
+     */
+    public function testAddRoleDuplicate(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->addRole($roleIdentifier);
+
+        $this->assertCount(1, $principalGroup->roles());
+    }
+
+    /**
+     * 正常系: Roleを削除できること
+     */
+    public function testRemoveRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier);
+        $principalGroup->removeRole($roleIdentifier);
+
+        $this->assertFalse($principalGroup->hasRole($roleIdentifier));
+        $this->assertCount(0, $principalGroup->roles());
+    }
+
+    /**
+     * 正常系: 存在しないRoleを削除しても例外が発生しないこと（冪等性）
+     */
+    public function testRemoveRoleNotFound(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->removeRole($roleIdentifier);
+
+        $this->assertCount(0, $principalGroup->roles());
+    }
+
+    /**
+     * 正常系: hasRoleでRoleの存在を確認できること
+     */
+    public function testHasRole(): void
+    {
+        $principalGroup = $this->createPrincipalGroup();
+        $roleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+        $otherRoleIdentifier = new RoleIdentifier(StrTestHelper::generateUuid());
+
+        $principalGroup->addRole($roleIdentifier);
+
+        $this->assertTrue($principalGroup->hasRole($roleIdentifier));
+        $this->assertFalse($principalGroup->hasRole($otherRoleIdentifier));
     }
 
     private function createPrincipalGroup(): PrincipalGroup

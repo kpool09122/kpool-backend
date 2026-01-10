@@ -8,12 +8,16 @@ use DateTimeImmutable;
 use DomainException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalGroup
 {
     /** @var array<string, PrincipalIdentifier> */
     private array $members = [];
+
+    /** @var RoleIdentifier[] */
+    private array $roles = [];
 
     public function __construct(
         private readonly PrincipalGroupIdentifier $principalGroupIdentifier,
@@ -83,5 +87,41 @@ class PrincipalGroup
         }
 
         unset($this->members[(string) $principalIdentifier]);
+    }
+
+    /**
+     * @return RoleIdentifier[]
+     */
+    public function roles(): array
+    {
+        return $this->roles;
+    }
+
+    public function hasRole(RoleIdentifier $roleIdentifier): bool
+    {
+        foreach ($this->roles as $role) {
+            if ((string) $role === (string) $roleIdentifier) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function addRole(RoleIdentifier $roleIdentifier): void
+    {
+        if ($this->hasRole($roleIdentifier)) {
+            return;
+        }
+
+        $this->roles[] = $roleIdentifier;
+    }
+
+    public function removeRole(RoleIdentifier $roleIdentifier): void
+    {
+        $this->roles = array_values(array_filter(
+            $this->roles,
+            fn (RoleIdentifier $r) => (string) $r !== (string) $roleIdentifier
+        ));
     }
 }

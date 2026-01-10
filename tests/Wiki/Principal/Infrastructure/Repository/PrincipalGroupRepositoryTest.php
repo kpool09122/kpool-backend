@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateAccount;
@@ -19,6 +20,7 @@ use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
 use Tests\Helper\CreatePrincipalGroup;
 use Tests\Helper\CreatePrincipalGroupMembership;
+use Tests\Helper\CreateRole;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -518,5 +520,141 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->assertSame(2, $result->memberCount());
         $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId1)));
         $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId2)));
+    }
+
+    /**
+     * 正常系: PrincipalGroupのRoleが正しく保存されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveSyncsRolesAddition(): void
+    {
+        $principalGroupId = StrTestHelper::generateUuid();
+        $accountId = StrTestHelper::generateUuid();
+        $roleId1 = StrTestHelper::generateUuid();
+        $roleId2 = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateRole::create(new RoleIdentifier($roleId1), ['name' => 'Role 1']);
+        CreateRole::create(new RoleIdentifier($roleId2), ['name' => 'Role 2']);
+
+        $principalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            'Test Group',
+            false,
+            new DateTimeImmutable(),
+        );
+        $principalGroup->addRole(new RoleIdentifier($roleId1));
+        $principalGroup->addRole(new RoleIdentifier($roleId2));
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository->save($principalGroup);
+
+        $this->assertDatabaseHas('principal_group_role_attachments', [
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId1,
+        ]);
+        $this->assertDatabaseHas('principal_group_role_attachments', [
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId2,
+        ]);
+    }
+
+    /**
+     * 正常系: PrincipalGroupのRoleが正しく削除されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveSyncsRolesRemoval(): void
+    {
+        $principalGroupId = StrTestHelper::generateUuid();
+        $accountId = StrTestHelper::generateUuid();
+        $roleId1 = StrTestHelper::generateUuid();
+        $roleId2 = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateRole::create(new RoleIdentifier($roleId1), ['name' => 'Role 1']);
+        CreateRole::create(new RoleIdentifier($roleId2), ['name' => 'Role 2']);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+        );
+
+        // 既存のRoleアタッチメントを作成
+        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+            ['principal_group_id' => $principalGroupId, 'role_id' => $roleId1],
+            ['principal_group_id' => $principalGroupId, 'role_id' => $roleId2],
+        ]);
+
+        // 事前確認
+        $this->assertDatabaseHas('principal_group_role_attachments', [
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId1,
+        ]);
+        $this->assertDatabaseHas('principal_group_role_attachments', [
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId2,
+        ]);
+
+        // roleId2 を削除
+        $principalGroup = new PrincipalGroup(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+            'Test Group',
+            false,
+            new DateTimeImmutable(),
+        );
+        $principalGroup->addRole(new RoleIdentifier($roleId1));
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $repository->save($principalGroup);
+
+        $this->assertDatabaseHas('principal_group_role_attachments', [
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId1,
+        ]);
+        $this->assertDatabaseMissing('principal_group_role_attachments', [
+            'principal_group_id' => $principalGroupId,
+            'role_id' => $roleId2,
+        ]);
+    }
+
+    /**
+     * 正常系: findByIdでRoleも取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdWithRoles(): void
+    {
+        $principalGroupId = StrTestHelper::generateUuid();
+        $accountId = StrTestHelper::generateUuid();
+        $roleId1 = StrTestHelper::generateUuid();
+        $roleId2 = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateRole::create(new RoleIdentifier($roleId1), ['name' => 'Role 1']);
+        CreateRole::create(new RoleIdentifier($roleId2), ['name' => 'Role 2']);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId),
+            new AccountIdentifier($accountId),
+        );
+
+        // Roleアタッチメントを作成
+        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+            ['principal_group_id' => $principalGroupId, 'role_id' => $roleId1],
+            ['principal_group_id' => $principalGroupId, 'role_id' => $roleId2],
+        ]);
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findById(new PrincipalGroupIdentifier($principalGroupId));
+
+        $this->assertNotNull($result);
+        $this->assertCount(2, $result->roles());
+        $this->assertTrue($result->hasRole(new RoleIdentifier($roleId1)));
+        $this->assertTrue($result->hasRole(new RoleIdentifier($roleId2)));
     }
 }

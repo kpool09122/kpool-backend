@@ -7,10 +7,12 @@ namespace Source\Wiki\Principal\Infrastructure\Repository;
 use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
@@ -27,6 +29,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         );
 
         $this->syncMembers($principalGroup);
+        $this->syncRoles($principalGroup);
     }
 
     public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup
@@ -138,6 +141,24 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         }
     }
 
+    private function syncRoles(PrincipalGroup $principalGroup): void
+    {
+        $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
+
+        // 現在のアタッチメントを削除
+        DB::table('principal_group_role_attachments')
+            ->where('principal_group_id', $principalGroupId)
+            ->delete();
+
+        // 新しいアタッチメントを挿入
+        foreach ($principalGroup->roles() as $roleIdentifier) {
+            DB::table('principal_group_role_attachments')->insert([
+                'principal_group_id' => $principalGroupId,
+                'role_id' => (string) $roleIdentifier,
+            ]);
+        }
+    }
+
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
     {
         $principalGroup = new PrincipalGroup(
@@ -150,6 +171,16 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
         foreach ($eloquent->memberships as $membership) {
             $principalGroup->addMember(new PrincipalIdentifier($membership->principal_id));
+        }
+
+        // Load roles
+        $roleIds = DB::table('principal_group_role_attachments')
+            ->where('principal_group_id', $eloquent->id)
+            ->pluck('role_id')
+            ->toArray();
+
+        foreach ($roleIds as $roleId) {
+            $principalGroup->addRole(new RoleIdentifier($roleId));
         }
 
         return $principalGroup;
