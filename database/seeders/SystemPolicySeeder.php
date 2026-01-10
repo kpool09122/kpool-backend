@@ -78,7 +78,7 @@ class SystemPolicySeeder extends Seeder
             statements: [
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
                     resourceTypes: ResourceType::cases(),
                     condition: new Condition([
                         new ConditionClause(
@@ -103,7 +103,7 @@ class SystemPolicySeeder extends Seeder
                 // Group 承認系（自分の Group）
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
                     resourceTypes: [ResourceType::GROUP],
                     condition: new Condition([
                         new ConditionClause(
@@ -116,7 +116,7 @@ class SystemPolicySeeder extends Seeder
                 // Talent 承認系（自分のタレント）
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
                     resourceTypes: [ResourceType::TALENT],
                     condition: new Condition([
                         new ConditionClause(
@@ -129,7 +129,7 @@ class SystemPolicySeeder extends Seeder
                 // Song 承認系（自分の Group の Song）
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
                     resourceTypes: [ResourceType::SONG],
                     condition: new Condition([
                         new ConditionClause(
@@ -142,7 +142,7 @@ class SystemPolicySeeder extends Seeder
                 // Song 承認系（自分の Talent の Song）
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
                     resourceTypes: [ResourceType::SONG],
                     condition: new Condition([
                         new ConditionClause(

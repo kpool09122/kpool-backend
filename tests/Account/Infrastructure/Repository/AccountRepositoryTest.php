@@ -8,11 +8,9 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -37,36 +35,19 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AccountRepositoryTest extends TestCase
 {
-    /**
-     * FK制約を満たすため、事前にIdentityを作成するヘルパーメソッド
-     */
-    private function createIdentityForTest(string $identityId): void
-    {
-        CreateIdentity::create(
-            new IdentityIdentifier($identityId),
-            ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
-        );
-    }
-
     private function createTestAccount(
         ?string $accountId = null,
         ?string $email = null,
-        ?string $ownerIdentityId = null,
+        ?DateTimeImmutable $billingStartDate = new DateTimeImmutable('2024-01-01 00:00:00'),
     ): Account {
         $accountId ??= StrTestHelper::generateUuid();
         $email ??= StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
-        $ownerIdentityId ??= StrTestHelper::generateUuid();
-
-        // FK制約のためIdentityを事前に作成
-        $this->createIdentityForTest($ownerIdentityId);
 
         $billingAddress = new BillingAddress(
             CountryCode::JAPAN,
@@ -103,15 +84,8 @@ class AccountRepositoryTest extends TestCase
             BillingMethod::CREDIT_CARD,
             $plan,
             $taxInfo,
-            new DateTimeImmutable('2024-01-01 00:00:00'),
+            $billingStartDate,
         );
-
-        $memberships = [
-            new AccountMembership(
-                new IdentityIdentifier($ownerIdentityId),
-                AccountRole::OWNER,
-            ),
-        ];
 
         return new Account(
             new AccountIdentifier($accountId),
@@ -121,7 +95,6 @@ class AccountRepositoryTest extends TestCase
             $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
-            $memberships,
             DeletionReadinessChecklist::ready(),
         );
     }
@@ -148,8 +121,6 @@ class AccountRepositoryTest extends TestCase
         $this->assertSame($account->type(), $result->type());
         $this->assertSame((string) $account->name(), (string) $result->name());
         $this->assertSame($account->status(), $result->status());
-        $this->assertCount(1, $result->memberships());
-        $this->assertSame(AccountRole::OWNER, $result->memberships()[0]->role());
     }
 
     /**
@@ -223,42 +194,6 @@ class AccountRepositoryTest extends TestCase
             'name' => 'Test Account',
             'status' => 'active',
         ]);
-
-        $this->assertDatabaseHas('account_memberships', [
-            'account_id' => $accountId,
-            'role' => 'owner',
-        ]);
-    }
-
-    /**
-     * 正常系: 正しく既存のAccountを更新できること
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testSaveWithExistingAccount(): void
-    {
-        $accountId = StrTestHelper::generateUuid();
-        $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
-        $ownerIdentityId = StrTestHelper::generateUuid();
-        $account = $this->createTestAccount(accountId: $accountId, email: $email, ownerIdentityId: $ownerIdentityId);
-
-        $repository = $this->app->make(AccountRepositoryInterface::class);
-        $repository->save($account);
-
-        // メンバーを追加して更新（FK制約のためIdentityを事前に作成）
-        $newMemberIdentityId = StrTestHelper::generateUuid();
-        $this->createIdentityForTest($newMemberIdentityId);
-        $account->attachMember(new AccountMembership(
-            new IdentityIdentifier($newMemberIdentityId),
-            AccountRole::ADMIN,
-        ));
-        $repository->save($account);
-
-        $result = $repository->findById(new AccountIdentifier($accountId));
-
-        $this->assertNotNull($result);
-        $this->assertCount(2, $result->memberships());
     }
 
     /**
@@ -284,7 +219,6 @@ class AccountRepositoryTest extends TestCase
         // 削除後の確認
         $this->assertNull($repository->findById(new AccountIdentifier($accountId)));
         $this->assertDatabaseMissing('accounts', ['id' => $accountId]);
-        $this->assertDatabaseMissing('account_memberships', ['account_id' => $accountId]);
     }
 
     /**
@@ -340,79 +274,15 @@ class AccountRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: 複数メンバーを持つAccountが正しく保存・取得できること
+     * 正常系: billingStartDateがnullの場合も正しく保存・取得できること
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testMultipleMemberships(): void
+    public function testContractInfoPersistenceWithNullBillingStartDate(): void
     {
         $accountId = StrTestHelper::generateUuid();
-        $ownerIdentityId = StrTestHelper::generateUuid();
-        $adminIdentityId = StrTestHelper::generateUuid();
-        $memberIdentityId = StrTestHelper::generateUuid();
-
-        // FK制約のためIdentityを事前に作成
-        $this->createIdentityForTest($ownerIdentityId);
-        $this->createIdentityForTest($adminIdentityId);
-        $this->createIdentityForTest($memberIdentityId);
-
-        $billingAddress = new BillingAddress(
-            CountryCode::JAPAN,
-            new PostalCode('123-4567'),
-            new StateOrProvince('Tokyo'),
-            new City('Shibuya'),
-            new AddressLine('1-2-3 Shibuya'),
-            null,
-            null,
-        );
-
-        $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
-        $billingContact = new BillingContact(
-            new ContractName('Test Contact'),
-            new Email($email),
-            null,
-        );
-
-        $plan = new Plan(
-            new PlanName('Standard Plan'),
-            BillingCycle::MONTHLY,
-            new PlanDescription(''),
-            new Money(0, Currency::JPY),
-        );
-
-        $taxInfo = new TaxInfo(
-            TaxRegion::JP,
-            TaxCategory::EXEMPT,
-            null,
-        );
-
-        $contractInfo = new ContractInfo(
-            $billingAddress,
-            $billingContact,
-            BillingMethod::INVOICE,
-            $plan,
-            $taxInfo,
-            null,
-        );
-
-        $memberships = [
-            new AccountMembership(new IdentityIdentifier($ownerIdentityId), AccountRole::OWNER),
-            new AccountMembership(new IdentityIdentifier($adminIdentityId), AccountRole::ADMIN),
-            new AccountMembership(new IdentityIdentifier($memberIdentityId), AccountRole::MEMBER),
-        ];
-
-        $account = new Account(
-            new AccountIdentifier($accountId),
-            new Email($email),
-            AccountType::INDIVIDUAL,
-            new AccountName('Multi Member Account'),
-            $contractInfo,
-            AccountStatus::PENDING,
-            AccountCategory::GENERAL,
-            $memberships,
-            DeletionReadinessChecklist::ready(),
-        );
+        $account = $this->createTestAccount(accountId: $accountId, billingStartDate: null);
 
         $repository = $this->app->make(AccountRepositoryInterface::class);
         $repository->save($account);
@@ -420,11 +290,6 @@ class AccountRepositoryTest extends TestCase
         $result = $repository->findById(new AccountIdentifier($accountId));
 
         $this->assertNotNull($result);
-        $this->assertCount(3, $result->memberships());
-
-        $roles = array_map(fn ($m) => $m->role(), $result->memberships());
-        $this->assertContains(AccountRole::OWNER, $roles);
-        $this->assertContains(AccountRole::ADMIN, $roles);
-        $this->assertContains(AccountRole::MEMBER, $roles);
+        $this->assertNull($result->contractInfo()->billingStartDate());
     }
 }

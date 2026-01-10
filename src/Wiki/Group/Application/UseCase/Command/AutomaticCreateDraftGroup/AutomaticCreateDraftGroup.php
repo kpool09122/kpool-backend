@@ -8,9 +8,12 @@ use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInterface
 {
@@ -18,6 +21,7 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
         private AutomaticDraftGroupCreationServiceInterface $automaticDraftGroupCreationService,
         private DraftGroupRepositoryInterface $groupRepository,
         private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -34,8 +38,14 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
             throw new PrincipalNotFoundException();
         }
 
-        $role = $principal->role();
-        if ($role !== Role::ADMINISTRATOR && $role !== Role::SENIOR_COLLABORATOR) {
+        $resource = new ResourceIdentifier(
+            type: ResourceType::GROUP,
+            agencyId: $principal->agencyId(),
+            groupIds: $principal->groupIds(),
+            talentIds: $principal->talentIds(),
+        );
+
+        if (! $this->policyEvaluator->evaluate($principal, Action::AUTOMATIC_CREATE, $resource)) {
             throw new UnauthorizedException();
         }
 

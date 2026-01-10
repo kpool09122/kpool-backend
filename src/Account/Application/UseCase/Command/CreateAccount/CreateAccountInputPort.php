@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Account\Application\UseCase\Command\CreateAccount;
 
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\ValueObject\AccountName;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\ContractInfo;
@@ -19,9 +18,4 @@ interface CreateAccountInputPort
     public function accountName(): AccountName;
 
     public function contractInfo(): ContractInfo;
-
-    /**
-     * @return AccountMembership[]
-     */
-    public function initialMembers(): array;
 }

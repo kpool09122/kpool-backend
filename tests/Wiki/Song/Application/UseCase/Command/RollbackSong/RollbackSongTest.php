@@ -13,7 +13,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -91,7 +90,6 @@ class RollbackSongTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -189,7 +187,6 @@ class RollbackSongTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -368,7 +365,6 @@ class RollbackSongTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::SENIOR_COLLABORATOR,
             null,
             [],
             []
@@ -401,6 +397,7 @@ class RollbackSongTest extends TestCase
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
 
+        $this->setPolicyEvaluatorResult(false);
         $rollbackSong = $this->app->make(RollbackSongInterface::class);
 
         $this->expectException(DisallowedException::class);
@@ -423,7 +420,6 @@ class RollbackSongTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -480,7 +476,6 @@ class RollbackSongTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -539,7 +534,6 @@ class RollbackSongTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []

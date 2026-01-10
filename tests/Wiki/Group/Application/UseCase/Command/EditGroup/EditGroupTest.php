@@ -23,7 +23,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -65,7 +65,7 @@ class EditGroupTest extends TestCase
         $dummyData = $this->createDummyEditGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new EditGroupInput(
             $dummyData->groupIdentifier,
@@ -75,6 +75,10 @@ class EditGroupTest extends TestCase
             $dummyData->base64EncodedImage,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -205,20 +209,19 @@ class EditGroupTest extends TestCase
     }
 
     /**
-     * 正常系：COLLABORATORがグループを編集できること.
+     * 異常系：権限がない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws GroupNotFoundException
-     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testProcessWithCollaborator(): void
+    public function testUnauthorized(): void
     {
         $dummyData = $this->createDummyEditGroup(base64EncodedImage: null);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new EditGroupInput(
             $dummyData->groupIdentifier,
@@ -229,210 +232,9 @@ class EditGroupTest extends TestCase
             $principalIdentifier,
         );
 
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyData->groupIdentifier)
-            ->andReturn($dummyData->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyData->group)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-
-        $editGroup = $this->app->make(EditGroupInterface::class);
-        $editGroup->process($input);
-    }
-
-    /**
-     * 正常系：AGENCY_ACTORがグループを編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithAgencyActor(): void
-    {
-        $dummyData = $this->createDummyEditGroup(base64EncodedImage: null);
-        $agencyId = (string)$dummyData->agencyIdentifier;
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
-
-        $input = new EditGroupInput(
-            $dummyData->groupIdentifier,
-            $dummyData->name,
-            $dummyData->agencyIdentifier,
-            $dummyData->description,
-            $dummyData->base64EncodedImage,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyData->groupIdentifier)
-            ->andReturn($dummyData->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyData->group)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-
-        $editGroup = $this->app->make(EditGroupInterface::class);
-        $editGroup->process($input);
-    }
-
-    /**
-     * 正常系：MEMBER_ACTORがグループを編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithMemberActor(): void
-    {
-        $dummyData = $this->createDummyEditGroup(base64EncodedImage: null);
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [(string) $dummyData->groupIdentifier], [$memberId]);
-
-        $input = new EditGroupInput(
-            $dummyData->groupIdentifier,
-            $dummyData->name,
-            $dummyData->agencyIdentifier,
-            $dummyData->description,
-            $dummyData->base64EncodedImage,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyData->groupIdentifier)
-            ->andReturn($dummyData->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyData->group)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-
-        $editGroup = $this->app->make(EditGroupInterface::class);
-        $editGroup->process($input);
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORがグループを編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $dummyData = $this->createDummyEditGroup(base64EncodedImage: null);
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
-
-        $input = new EditGroupInput(
-            $dummyData->groupIdentifier,
-            $dummyData->name,
-            $dummyData->agencyIdentifier,
-            $dummyData->description,
-            $dummyData->base64EncodedImage,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyData->groupIdentifier)
-            ->andReturn($dummyData->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyData->group)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-
-        $editGroup = $this->app->make(EditGroupInterface::class);
-        $editGroup->process($input);
-    }
-
-    /**
-     * 異常系：NONEロールがグループを編集しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithNoneRole(): void
-    {
-        $dummyData = $this->createDummyEditGroup(base64EncodedImage: null);
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
-
-        $input = new EditGroupInput(
-            $dummyData->groupIdentifier,
-            $dummyData->name,
-            $dummyData->agencyIdentifier,
-            $dummyData->description,
-            $dummyData->base64EncodedImage,
-            $principalIdentifier,
-        );
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

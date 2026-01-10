@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Account\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
 use Source\Account\Domain\ValueObject\BillingAddress;
@@ -34,9 +32,7 @@ use Source\Account\Infrastructure\Factory\AccountFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AccountFactoryTest extends TestCase
@@ -44,7 +40,6 @@ class AccountFactoryTest extends TestCase
     /**
      * 正常系: DIが正しく動作すること.
      *
-     * @return void
      * @throws BindingResolutionException
      */
     public function test__construct(): void
@@ -56,7 +51,6 @@ class AccountFactoryTest extends TestCase
     /**
      * 正常系: 正しくAccountエンティティが作成できること.
      *
-     * @return void
      * @throws BindingResolutionException
      */
     public function testCreate(): void
@@ -91,27 +85,20 @@ class AccountFactoryTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
-
-        $accountCategory = AccountCategory::GENERAL;
-
         $factory = $this->app->make(AccountFactoryInterface::class);
         $account = $factory->create(
             $email,
             $accountType,
             $accountName,
             $contractInfo,
-            $memberships,
         );
 
-        $this->assertTrue(UuidValidator::isValid((string)$account->accountIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string) $account->accountIdentifier()));
         $this->assertSame($email, $account->email());
         $this->assertSame($accountType, $account->type());
         $this->assertSame($accountName, $account->name());
         $this->assertSame($contractInfo, $account->contractInfo());
         $this->assertSame(AccountCategory::GENERAL, $account->accountCategory());
-        $this->assertSame($memberships, $account->memberships());
         $this->assertEquals(DeletionReadinessChecklist::ready(), $account->deletionReadiness());
     }
 }

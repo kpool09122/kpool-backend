@@ -8,16 +8,20 @@ use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyInterface
 {
     public function __construct(
         private AutomaticDraftAgencyCreationServiceInterface $automaticDraftAgencyCreationService,
-        private DraftAgencyRepositoryInterface               $agencyRepository,
-        private PrincipalRepositoryInterface                 $principalRepository,
+        private DraftAgencyRepositoryInterface $agencyRepository,
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
 
@@ -35,8 +39,14 @@ readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyI
             throw new PrincipalNotFoundException();
         }
 
-        $role = $principal->role();
-        if ($role !== Role::ADMINISTRATOR && $role !== Role::SENIOR_COLLABORATOR) {
+        $resource = new ResourceIdentifier(
+            type: ResourceType::AGENCY,
+            agencyId: $principal->agencyId(),
+            groupIds: $principal->groupIds(),
+            talentIds: $principal->talentIds(),
+        );
+
+        if (! $this->policyEvaluator->evaluate($principal, Action::AUTOMATIC_CREATE, $resource)) {
             throw new UnauthorizedException();
         }
 

@@ -18,7 +18,6 @@ use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -174,7 +173,6 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         return new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            Role::ADMINISTRATOR,
             null,
             [],
             [],
@@ -189,7 +187,6 @@ class DelegatedIdentityCreatedHandlerTest extends TestCase
         return new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            Role::ADMINISTRATOR,
             null,
             [],
             [],

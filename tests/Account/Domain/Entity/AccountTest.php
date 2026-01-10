@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Account\Domain\Entity;
 
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Exception\AccountDeletionBlockedException;
-use Source\Account\Domain\Exception\AccountMembershipNotFoundException;
-use Source\Account\Domain\Exception\DisallowedToWithdrawByOwnerException;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -39,7 +34,6 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 
@@ -47,58 +41,22 @@ class AccountTest extends TestCase
 {
     /**
      * 正常系: インスタンスが正しく作成できること.
-     *
-     * @return void
      */
     public function test__construct(): void
     {
         $dummyAccount = $this->createDummyAccountTestData();
 
-        $this->assertSame((string)$dummyAccount->identifier, (string)$dummyAccount->account->accountIdentifier());
-        $this->assertSame((string)$dummyAccount->email, (string)$dummyAccount->account->email());
+        $this->assertSame((string) $dummyAccount->identifier, (string) $dummyAccount->account->accountIdentifier());
+        $this->assertSame((string) $dummyAccount->email, (string) $dummyAccount->account->email());
         $this->assertSame($dummyAccount->accountType, $dummyAccount->account->type());
-        $this->assertSame((string)$dummyAccount->accountName, (string)$dummyAccount->account->name());
+        $this->assertSame((string) $dummyAccount->accountName, (string) $dummyAccount->account->name());
         $this->assertSame($dummyAccount->contractInfo, $dummyAccount->account->contractInfo());
         $this->assertSame($dummyAccount->status, $dummyAccount->account->status());
-        $this->assertSame($dummyAccount->memberships, $dummyAccount->account->memberships());
         $this->assertSame($dummyAccount->deletionReadiness, $dummyAccount->account->deletionReadiness());
     }
 
     /**
-     * 正常系: 所有者のいないアカウントは作成できないこと.
-     *
-     * @return void
-     */
-    public function testNoOwner(): void
-    {
-        $memberships = [new AccountMembership(new IdentityIdentifier(StrTestHelper::generateUuid()), AccountRole::MEMBER)];
-        $this->expectException(DomainException::class);
-        $this->createDummyAccountTestData($memberships);
-    }
-
-    /**
-     * 正常系: メンバーを正しく追加できること.
-     *
-     * @return void
-     */
-    public function testAttachMembership(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-
-        $newMember = new AccountMembership(
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            AccountRole::MEMBER
-        );
-
-        $dummyAccount->account->attachMember($newMember);
-
-        $this->assertContains($newMember, $dummyAccount->account->memberships());
-    }
-
-    /**
      * 正常系: 正しくアカウントカテゴリーを変更できること.
-     *
-     * @return void
      */
     public function testSetAccountCategory(): void
     {
@@ -114,118 +72,7 @@ class AccountTest extends TestCase
     }
 
     /**
-     * 異常系: 重複メンバーを正しく追加しようとした場合、例外をスローすること.
-     *
-     * @return void
-     */
-    public function testAttachMembershipThrowsDomainException(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-
-        $newMember = new AccountMembership(
-            $dummyAccount->memberships[0]->identityIdentifier(),
-            AccountRole::MEMBER
-        );
-
-        $this->expectException(DomainException::class);
-        $dummyAccount->account->attachMember($newMember);
-    }
-
-    /**
-     * 正常系: メンバーを正しく削除できること.
-     *
-     * @return void
-     */
-    public function testDetachMembership(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-
-        $newMember = new AccountMembership(
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            AccountRole::MEMBER
-        );
-
-        $dummyAccount->account->attachMember($newMember);
-
-        $this->assertContains($newMember, $dummyAccount->account->memberships());
-
-        $dummyAccount->account->detachMember($newMember);
-
-        $this->assertNotContains($newMember, $dummyAccount->account->memberships());
-    }
-
-    /**
-     * 異常系: アカウント所有者はdetachできないこと.
-     *
-     * @return void
-     */
-    public function testDetachMembershipWhenCorporateOwner(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-
-        $member = $dummyAccount->memberships[0];
-
-        $this->expectException(DisallowedToWithdrawByOwnerException::class);
-
-        $dummyAccount->account->detachMember($member);
-    }
-
-    /**
-     * 異常系: アカウントに存在しないメンバーをdetachできないこと.
-     *
-     * @return void
-     */
-    public function testDetachMembershipWhenNotFound(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-
-        $nonMember = new AccountMembership(
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            AccountRole::MEMBER
-        );
-
-        $this->expectException(AccountMembershipNotFoundException::class);
-
-        $dummyAccount->account->detachMember($nonMember);
-    }
-
-    /**
-     * 異常系: オーナーが入力上でMEMBERに偽装されてもdetachできないこと.
-     *
-     * @return void
-     */
-    public function testDetachMembershipWhenOwnerRoleSpoofed(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-        $owner = $dummyAccount->memberships[0];
-
-        $spoofedMembership = new AccountMembership(
-            $owner->identityIdentifier(),
-            AccountRole::MEMBER
-        );
-
-        $this->expectException(DisallowedToWithdrawByOwnerException::class);
-
-        $dummyAccount->account->detachMember($spoofedMembership);
-    }
-
-    /**
-     * 異常系: アカウント所有者を削除しようとした場合、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testDetachUserThrowsDomainException(): void
-    {
-        $dummyAccount = $this->createDummyAccountTestData();
-
-        $this->expectException(DomainException::class);
-        $dummyAccount->account->detachMember($dummyAccount->memberships[0]);
-    }
-
-    /**
      * 正常系: 削除に必要な前提条件を満たしていれば例外が発生しないこと.
-     *
-     * @return void
      */
     public function testAssertDeletable(): void
     {
@@ -237,8 +84,6 @@ class AccountTest extends TestCase
 
     /**
      * 異常系: 削除前提条件が不足している場合、理由とともに例外がスローされること.
-     *
-     * @return void
      */
     public function testAssertDeletableThrowsWhenNotReady(): void
     {
@@ -269,14 +114,7 @@ class AccountTest extends TestCase
         }
     }
 
-    /**
-     * テスト用のダミーAccount情報
-     *
-     * @param AccountMembership[] $memberships
-     * @return AccountTestData
-     */
     private function createDummyAccountTestData(
-        array $memberships = [],
         ?DeletionReadinessChecklist $deletionReadiness = null
     ): AccountTestData {
         $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -310,11 +148,6 @@ class AccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        if ($memberships === []) {
-            $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
-        }
-
         $status = AccountStatus::ACTIVE;
         $accountCategory = AccountCategory::GENERAL;
 
@@ -328,7 +161,6 @@ class AccountTest extends TestCase
             $contractInfo,
             $status,
             $accountCategory,
-            $memberships,
             $deletionReadiness,
         );
 
@@ -340,21 +172,14 @@ class AccountTest extends TestCase
             $contractInfo,
             $status,
             $accountCategory,
-            $memberships,
             $account,
             $deletionReadiness,
         );
     }
 }
 
-/**
- * テスト用のAccountデータ
- */
 readonly class AccountTestData
 {
-    /**
-     * @param AccountMembership[] $memberships
-     */
     public function __construct(
         public AccountIdentifier $identifier,
         public Email $email,
@@ -363,7 +188,6 @@ readonly class AccountTestData
         public ContractInfo $contractInfo,
         public AccountStatus $status,
         public AccountCategory $accountCategory,
-        public array $memberships,
         public Account $account,
         public DeletionReadinessChecklist $deletionReadiness,
     ) {

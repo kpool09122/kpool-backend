@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -80,7 +79,7 @@ class SubmitTalentTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -229,7 +228,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -275,7 +274,7 @@ class SubmitTalentTest extends TestCase
     public function testProcessWithCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -338,7 +337,7 @@ class SubmitTalentTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
@@ -404,7 +403,7 @@ class SubmitTalentTest extends TestCase
         $groupIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $talentId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, [$talentId]);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             agencyId: $agencyId,
@@ -469,7 +468,7 @@ class SubmitTalentTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $submitTalentInfo = $this->createSubmitTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -533,7 +532,7 @@ class SubmitTalentTest extends TestCase
         $submitTalentInfo = $this->createSubmitTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitTalentInput(
             $submitTalentInfo->talentIdentifier,
@@ -559,6 +558,8 @@ class SubmitTalentTest extends TestCase
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $submitTalent = $this->app->make(SubmitTalentInterface::class);

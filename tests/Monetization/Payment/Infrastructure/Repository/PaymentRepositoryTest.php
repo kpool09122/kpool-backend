@@ -8,11 +8,9 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -47,10 +45,8 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -63,12 +59,6 @@ class PaymentRepositoryTest extends TestCase
     {
         $accountId = StrTestHelper::generateUuid();
         $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
-        $ownerIdentityId = StrTestHelper::generateUuid();
-
-        CreateIdentity::create(
-            new IdentityIdentifier($ownerIdentityId),
-            ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
-        );
 
         $billingAddress = new BillingAddress(
             CountryCode::JAPAN,
@@ -108,13 +98,6 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $memberships = [
-            new AccountMembership(
-                new IdentityIdentifier($ownerIdentityId),
-                AccountRole::OWNER,
-            ),
-        ];
-
         $account = new Account(
             new AccountIdentifier($accountId),
             new Email($email),
@@ -123,7 +106,6 @@ class PaymentRepositoryTest extends TestCase
             $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
-            $memberships,
             DeletionReadinessChecklist::ready(),
         );
 

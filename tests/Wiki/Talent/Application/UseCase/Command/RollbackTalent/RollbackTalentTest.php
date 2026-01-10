@@ -12,7 +12,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -89,7 +88,6 @@ class RollbackTalentTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -243,7 +241,6 @@ class RollbackTalentTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::SENIOR_COLLABORATOR,
             null,
             [],
             []
@@ -268,6 +265,7 @@ class RollbackTalentTest extends TestCase
         $this->app->instance(TalentHistoryFactoryInterface::class, Mockery::mock(TalentHistoryFactoryInterface::class));
         $this->app->instance(TalentHistoryRepositoryInterface::class, Mockery::mock(TalentHistoryRepositoryInterface::class));
 
+        $this->setPolicyEvaluatorResult(false);
         $rollbackTalent = $this->app->make(RollbackTalentInterface::class);
         $rollbackTalent->process($input);
     }
@@ -290,7 +288,6 @@ class RollbackTalentTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -340,7 +337,6 @@ class RollbackTalentTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -390,7 +386,6 @@ class RollbackTalentTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -448,7 +443,6 @@ class RollbackTalentTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []

@@ -11,7 +11,6 @@ use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateIdentity;
@@ -43,7 +42,6 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
-        $this->assertSame(Role::ADMINISTRATOR, $result->role());
     }
 
     /**
@@ -75,9 +73,7 @@ class PrincipalRepositoryTest extends TestCase
         CreateIdentity::create($identityIdentifier);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
-            'role' => Role::COLLABORATOR,
-        ]);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $result = $repository->findByIdentityIdentifier($identityIdentifier);
@@ -85,7 +81,6 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
-        $this->assertSame(Role::COLLABORATOR, $result->role());
     }
 
     /**
@@ -126,7 +121,6 @@ class PrincipalRepositoryTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier($principalId),
             $identityIdentifier,
-            Role::AGENCY_ACTOR,
             $agencyId,
             $groupIds,
             $talentIds,
@@ -139,7 +133,6 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_principals', [
             'id' => $principalId,
             'identity_id' => (string) $identityIdentifier,
-            'role' => Role::AGENCY_ACTOR->value,
             'agency_id' => $agencyId,
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
@@ -165,14 +158,11 @@ class PrincipalRepositoryTest extends TestCase
 
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        CreatePrincipal::create($principalIdentifier, $identityIdentifier, [
-            'role' => Role::NONE,
-        ]);
+        CreatePrincipal::create($principalIdentifier, $identityIdentifier);
 
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            Role::ADMINISTRATOR,
             null,
             [],
             [],
@@ -183,7 +173,6 @@ class PrincipalRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('wiki_principals', [
             'id' => (string) $principalIdentifier,
-            'role' => Role::ADMINISTRATOR->value,
         ]);
     }
 

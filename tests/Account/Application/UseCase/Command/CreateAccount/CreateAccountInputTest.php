@@ -6,9 +6,7 @@ namespace Tests\Account\Application\UseCase\Command\CreateAccount;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
 use Source\Account\Domain\ValueObject\BillingAddress;
@@ -30,16 +28,12 @@ use Source\Account\Domain\ValueObject\TaxInfo;
 use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Tests\Helper\StrTestHelper;
 
 class CreateAccountInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが正しく作成できること.
-     *
-     * @return void
      */
     public function test__construct(): void
     {
@@ -47,26 +41,18 @@ class CreateAccountInputTest extends TestCase
         $accountType = AccountType::INDIVIDUAL;
         $accountName = new AccountName('test-account');
         $contractInfo = $this->createContractInfo();
-        $initialMembers = [
-            new AccountMembership(
-                new IdentityIdentifier(StrTestHelper::generateUuid()),
-                AccountRole::OWNER,
-            ),
-        ];
 
         $input = new CreateAccountInput(
             $email,
             $accountType,
             $accountName,
             $contractInfo,
-            $initialMembers,
         );
 
         $this->assertSame($email, $input->email());
         $this->assertSame($accountType, $input->accountType());
         $this->assertSame($accountName, $input->accountName());
         $this->assertSame($contractInfo, $input->contractInfo());
-        $this->assertSame($initialMembers, $input->initialMembers());
     }
 
     private function createContractInfo(): ContractInfo

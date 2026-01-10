@@ -26,7 +26,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -65,7 +64,7 @@ class TranslateAgencyTest extends TestCase
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -209,7 +208,7 @@ class TranslateAgencyTest extends TestCase
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -236,6 +235,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->setPolicyEvaluatorResult(false);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -255,7 +255,7 @@ class TranslateAgencyTest extends TestCase
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -322,7 +322,7 @@ class TranslateAgencyTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [$groupId], [$talentId]);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -349,6 +349,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->setPolicyEvaluatorResult(false);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -368,7 +369,7 @@ class TranslateAgencyTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -395,6 +396,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->setPolicyEvaluatorResult(false);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
@@ -415,7 +417,7 @@ class TranslateAgencyTest extends TestCase
         $dummyTranslateAgency = $this->createDummyTranslateAgency($agencyId);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -481,7 +483,7 @@ class TranslateAgencyTest extends TestCase
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -546,7 +548,7 @@ class TranslateAgencyTest extends TestCase
         $dummyTranslateAgency = $this->createDummyTranslateAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateAgencyInput(
             $dummyTranslateAgency->agencyIdentifier,
@@ -573,6 +575,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->setPolicyEvaluatorResult(false);
         $this->expectException(UnauthorizedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);

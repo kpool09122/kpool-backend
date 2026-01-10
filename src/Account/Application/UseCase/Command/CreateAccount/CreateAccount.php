@@ -35,7 +35,6 @@ readonly class CreateAccount implements CreateAccountInterface
             $input->accountType(),
             $input->accountName(),
             $input->contractInfo(),
-            $input->initialMembers(),
         );
 
         $this->accountRepository->save($account);

@@ -23,7 +23,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -61,7 +60,7 @@ class MergeAgencyTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -205,7 +204,7 @@ class MergeAgencyTest extends TestCase
 
         $agencyId = (string) $dummyAgency->agencyIdentifier;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new MergeAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -256,7 +255,7 @@ class MergeAgencyTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -282,6 +281,8 @@ class MergeAgencyTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $mergeAgency = $this->app->make(MergeAgencyInterface::class);
@@ -302,7 +303,7 @@ class MergeAgencyTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeAgencyInput(
             $dummyAgency->agencyIdentifier,
@@ -328,6 +329,8 @@ class MergeAgencyTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $mergeAgency = $this->app->make(MergeAgencyInterface::class);
@@ -349,7 +352,7 @@ class MergeAgencyTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeAgencyInput(
             $dummyAgency->agencyIdentifier,

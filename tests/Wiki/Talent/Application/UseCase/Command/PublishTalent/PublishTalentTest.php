@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -97,7 +96,7 @@ class PublishTalentTest extends TestCase
     public function testProcessWhenAlreadyPublished(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -236,7 +235,7 @@ class PublishTalentTest extends TestCase
     public function testProcessForTheFirstTime(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
@@ -457,7 +456,7 @@ class PublishTalentTest extends TestCase
         $publishTalentInfo = $this->createPublishTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -526,7 +525,7 @@ class PublishTalentTest extends TestCase
         $publishTalentInfo = $this->createPublishTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -581,7 +580,7 @@ class PublishTalentTest extends TestCase
         $publishTalentInfo = $this->createPublishTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -644,7 +643,7 @@ class PublishTalentTest extends TestCase
         $publishTalentInfo = $this->createPublishTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -674,6 +673,8 @@ class PublishTalentTest extends TestCase
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $publishTalent = $this->app->make(PublishTalentInterface::class);
         $publishTalent->process($input);
@@ -695,7 +696,7 @@ class PublishTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -726,6 +727,8 @@ class PublishTalentTest extends TestCase
         $this->app->instance(TalentFactoryInterface::class, $talentFactory);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $publishTalent = $this->app->make(PublishTalentInterface::class);
@@ -771,7 +774,7 @@ class PublishTalentTest extends TestCase
 
         $agencyId = (string) $publishTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $publishTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -871,7 +874,7 @@ class PublishTalentTest extends TestCase
         $agencyId = (string) $publishTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], [$talentId]);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -900,6 +903,8 @@ class PublishTalentTest extends TestCase
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $publishTalent = $this->app->make(PublishTalentInterface::class);
@@ -946,7 +951,7 @@ class PublishTalentTest extends TestCase
         $agencyId = (string) $publishTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $publishTalentInfo->groupIdentifiers);
         $talentId = (string) $publishTalentInfo->talentIdentifier; // 自分自身のTalent IDを使用
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, [$talentId]);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -1041,7 +1046,7 @@ class PublishTalentTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $publishTalentInfo = $this->createPublishTalentInfo(
             hasPublishedTalent: false,
@@ -1176,7 +1181,7 @@ class PublishTalentTest extends TestCase
         );
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishTalentInput(
             $publishTalentInfo->talentIdentifier,
@@ -1205,6 +1210,8 @@ class PublishTalentTest extends TestCase
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $publishTalent = $this->app->make(PublishTalentInterface::class);

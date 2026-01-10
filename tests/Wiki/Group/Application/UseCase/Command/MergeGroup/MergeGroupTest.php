@@ -22,7 +22,6 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -61,7 +60,7 @@ class MergeGroupTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeGroupInput(
             $dummyGroup->groupIdentifier,
@@ -201,7 +200,7 @@ class MergeGroupTest extends TestCase
 
         $agencyId = (string) $dummyGroup->agencyIdentifier;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new MergeGroupInput(
             $dummyGroup->groupIdentifier,
@@ -251,7 +250,7 @@ class MergeGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $talentId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [(string) $dummyGroup->groupIdentifier], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [(string) $dummyGroup->groupIdentifier], [$talentId]);
 
         $input = new MergeGroupInput(
             $dummyGroup->groupIdentifier,
@@ -299,7 +298,7 @@ class MergeGroupTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeGroupInput(
             $dummyGroup->groupIdentifier,
@@ -324,6 +323,8 @@ class MergeGroupTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $mergeGroup = $this->app->make(MergeGroupInterface::class);
@@ -344,7 +345,7 @@ class MergeGroupTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeGroupInput(
             $dummyGroup->groupIdentifier,
@@ -369,6 +370,8 @@ class MergeGroupTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $mergeGroup = $this->app->make(MergeGroupInterface::class);

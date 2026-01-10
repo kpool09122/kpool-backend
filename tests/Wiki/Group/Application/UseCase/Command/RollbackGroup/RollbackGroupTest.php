@@ -29,7 +29,6 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -85,7 +84,6 @@ class RollbackGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -182,7 +180,6 @@ class RollbackGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -361,7 +358,6 @@ class RollbackGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::SENIOR_COLLABORATOR,
             null,
             [],
             []
@@ -394,6 +390,7 @@ class RollbackGroupTest extends TestCase
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
 
+        $this->setPolicyEvaluatorResult(false);
         $rollbackGroup = $this->app->make(RollbackGroupInterface::class);
 
         $this->expectException(DisallowedException::class);
@@ -416,7 +413,6 @@ class RollbackGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -473,7 +469,6 @@ class RollbackGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -532,7 +527,6 @@ class RollbackGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []

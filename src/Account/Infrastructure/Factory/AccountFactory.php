@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\Infrastructure\Factory;
 
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
@@ -24,20 +23,11 @@ readonly class AccountFactory implements AccountFactoryInterface
     ) {
     }
 
-    /**
-     * @param Email $email
-     * @param AccountType $type
-     * @param AccountName $name
-     * @param ContractInfo $contractInfo
-     * @param AccountMembership[] $memberships
-     * @return Account
-     */
     public function create(
         Email $email,
         AccountType $type,
         AccountName $name,
         ContractInfo $contractInfo,
-        array $memberships
     ): Account {
         return new Account(
             new AccountIdentifier($this->generator->generate()),
@@ -47,7 +37,6 @@ readonly class AccountFactory implements AccountFactoryInterface
             $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
-            $memberships,
             DeletionReadinessChecklist::ready(),
         );
     }

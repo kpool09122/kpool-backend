@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Source\Account\Infrastructure\Repository;
 
 use Application\Models\Account\Account as AccountEloquent;
-use Application\Models\Account\AccountMembership as AccountMembershipEloquent;
 use DateTimeImmutable;
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -37,15 +34,12 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
-use Symfony\Component\Uid\Uuid;
 
 class AccountRepository implements AccountRepositoryInterface
 {
     public function save(Account $account): void
     {
-        // アカウント情報を保存
         AccountEloquent::query()->updateOrCreate(
             ['id' => (string) $account->accountIdentifier()],
             [
@@ -57,27 +51,11 @@ class AccountRepository implements AccountRepositoryInterface
                 'contract_info' => $this->contractInfoToArray($account->contractInfo()),
             ]
         );
-
-        // 既存のメンバーシップを削除して再作成（更新のため）
-        AccountMembershipEloquent::query()
-            ->where('account_id', (string) $account->accountIdentifier())
-            ->delete();
-
-        // メンバーシップを保存
-        foreach ($account->memberships() as $membership) {
-            AccountMembershipEloquent::query()->create([
-                'id' => (string) Uuid::v7(),
-                'account_id' => (string) $account->accountIdentifier(),
-                'identity_id' => (string) $membership->identityIdentifier(),
-                'role' => $membership->role()->value,
-            ]);
-        }
     }
 
     public function findById(AccountIdentifier $identifier): ?Account
     {
         $eloquent = AccountEloquent::query()
-            ->with('memberships')
             ->where('id', (string) $identifier)
             ->first();
 
@@ -91,7 +69,6 @@ class AccountRepository implements AccountRepositoryInterface
     public function findByEmail(Email $email): ?Account
     {
         $eloquent = AccountEloquent::query()
-            ->with('memberships')
             ->where('email', (string) $email)
             ->first();
 
@@ -104,7 +81,6 @@ class AccountRepository implements AccountRepositoryInterface
 
     public function delete(Account $account): void
     {
-        // Cascade deleteがあるのでaccountを削除すればメンバーシップも削除される
         AccountEloquent::query()
             ->where('id', (string) $account->accountIdentifier())
             ->delete();
@@ -112,15 +88,6 @@ class AccountRepository implements AccountRepositoryInterface
 
     private function toDomainEntity(AccountEloquent $eloquent): Account
     {
-        /** @var AccountMembership[] $memberships */
-        $memberships = $eloquent->memberships->map(function ($m) {
-            /** @var AccountMembershipEloquent $m */
-            return new AccountMembership(
-                new IdentityIdentifier($m->identity_id),
-                AccountRole::from($m->role),
-            );
-        })->all();
-
         return new Account(
             new AccountIdentifier($eloquent->id),
             new Email($eloquent->email),
@@ -129,7 +96,6 @@ class AccountRepository implements AccountRepositoryInterface
             $this->arrayToContractInfo($eloquent->contract_info),
             AccountStatus::from($eloquent->status),
             AccountCategory::from($eloquent->category),
-            $memberships,
             DeletionReadinessChecklist::ready(),
         );
     }

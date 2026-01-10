@@ -55,8 +55,6 @@ use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachP
 use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroupInterface;
-use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRole;
-use Source\Wiki\Principal\Application\UseCase\Command\ChangePrincipalRole\ChangePrincipalRoleInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicy;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
@@ -140,7 +138,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(MergeAgencyInterface::class, MergeAgency::class);
         $this->app->singleton(GetAgencyInterface::class, GetAgency::class);
         $this->app->singleton(GetAgenciesInterface::class, GetAgencies::class);
-        $this->app->singleton(ChangePrincipalRoleInterface::class, ChangePrincipalRole::class);
         $this->app->singleton(SubmitAgencyInterface::class, SubmitAgency::class);
         $this->app->singleton(ApproveAgencyInterface::class, ApproveAgency::class);
         $this->app->singleton(RejectAgencyInterface::class, RejectAgency::class);

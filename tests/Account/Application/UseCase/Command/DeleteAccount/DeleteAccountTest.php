@@ -11,12 +11,10 @@ use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInput;
 use Source\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -42,7 +40,6 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -52,7 +49,6 @@ class DeleteAccountTest extends TestCase
     /**
      * 正常系: 正しくDIが動作すること
      *
-     * @return void
      * @throws BindingResolutionException
      */
     public function test__construct(): void
@@ -66,7 +62,6 @@ class DeleteAccountTest extends TestCase
     /**
      * 正常系: 正しくアカウントが削除できること.
      *
-     * @return void
      * @throws BindingResolutionException
      * @throws AccountNotFoundException
      */
@@ -89,18 +84,16 @@ class DeleteAccountTest extends TestCase
         $useCase = $this->app->make(DeleteAccountInterface::class);
         $account = $useCase->process($input);
 
-        $this->assertSame((string)$dummyData->identifier, (string)$account->accountIdentifier());
-        $this->assertSame((string)$dummyData->email, (string)$account->email());
+        $this->assertSame((string) $dummyData->identifier, (string) $account->accountIdentifier());
+        $this->assertSame((string) $dummyData->email, (string) $account->email());
         $this->assertSame($dummyData->accountType, $account->type());
-        $this->assertSame((string)$dummyData->accountName, (string)$account->name());
+        $this->assertSame((string) $dummyData->accountName, (string) $account->name());
         $this->assertSame($dummyData->contractInfo, $account->contractInfo());
-        $this->assertSame($dummyData->memberships, $account->memberships());
     }
 
     /**
      * 異常系: IDに紐づくアカウントが見つからない場合、例外がスローされること.
      *
-     * @return void
      * @throws BindingResolutionException
      */
     public function testThrowsAccountNotFoundException(): void
@@ -125,7 +118,6 @@ class DeleteAccountTest extends TestCase
     /**
      * 異常系: 削除前提条件を満たしていない場合、例外がスローされること.
      *
-     * @return void
      * @throws BindingResolutionException
      * @throws AccountNotFoundException
      */
@@ -166,11 +158,6 @@ class DeleteAccountTest extends TestCase
         }
     }
 
-    /**
-     * テスト用のダミーAccount情報
-     *
-     * @return DeleteAccountTestData
-     */
     private function createDummyAccountTestData(
         ?DeletionReadinessChecklist $deletionReadiness = null
     ): DeleteAccountTestData {
@@ -205,9 +192,6 @@ class DeleteAccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
-
         $status = AccountStatus::ACTIVE;
         $accountCategory = AccountCategory::GENERAL;
 
@@ -221,7 +205,6 @@ class DeleteAccountTest extends TestCase
             $contractInfo,
             $status,
             $accountCategory,
-            $memberships,
             $deletionReadiness,
         );
 
@@ -232,21 +215,14 @@ class DeleteAccountTest extends TestCase
             $accountName,
             $contractInfo,
             $accountCategory,
-            $memberships,
             $account,
             $deletionReadiness,
         );
     }
 }
 
-/**
- * テスト用のAccountデータ
- */
 readonly class DeleteAccountTestData
 {
-    /**
-     * @param AccountMembership[] $memberships
-     */
     public function __construct(
         public AccountIdentifier $identifier,
         public Email $email,
@@ -254,7 +230,6 @@ readonly class DeleteAccountTestData
         public AccountName $accountName,
         public ContractInfo $contractInfo,
         public AccountCategory $accountCategory,
-        public array $memberships,
         public Account $account,
         public DeletionReadinessChecklist $deletionReadiness,
     ) {

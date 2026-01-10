@@ -35,8 +35,6 @@ use Source\Account\Application\UseCase\Command\RevokeDelegationPermission\Revoke
 use Source\Account\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermissionInterface as RevokeDelegationPermissionInterfaceNew;
 use Source\Account\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliation;
 use Source\Account\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationInterface;
-use Source\Account\Application\UseCase\Command\WithdrawFromMembership\WithdrawFromMembership;
-use Source\Account\Application\UseCase\Command\WithdrawFromMembership\WithdrawFromMembershipInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -49,7 +47,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RemoveIdentityFromIdentityGroupInterface::class, RemoveIdentityFromIdentityGroup::class);
         $this->app->singleton(GrantDelegationPermissionInterface::class, GrantDelegationPermission::class);
         $this->app->singleton(RevokeDelegationPermissionInterfaceNew::class, RevokeDelegationPermissionUseCase::class);
-        $this->app->singleton(WithdrawFromMembershipInterface::class, WithdrawFromMembership::class);
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);
         $this->app->singleton(RevokeDelegationInterface::class, RevokeDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);

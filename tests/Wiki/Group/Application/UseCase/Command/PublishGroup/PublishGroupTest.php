@@ -34,7 +34,6 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -89,7 +88,7 @@ class PublishGroupTest extends TestCase
     public function testProcessWhenAlreadyPublished(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: true,
@@ -191,7 +190,7 @@ class PublishGroupTest extends TestCase
     public function testProcessForTheFirstTime(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             hasPublishedGroup: false,
@@ -441,7 +440,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -499,7 +498,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup(hasPublishedGroup: true);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -561,7 +560,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -595,6 +594,8 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -613,7 +614,7 @@ class PublishGroupTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -699,7 +700,7 @@ class PublishGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -733,6 +734,8 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -752,7 +755,7 @@ class PublishGroupTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             agencyId: $agencyId,
@@ -838,7 +841,7 @@ class PublishGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherGroupId = StrTestHelper::generateUuid();
         $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [$anotherGroupId], [$memberId]);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -870,6 +873,8 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);
         $publishGroup->process($input);
@@ -890,7 +895,7 @@ class PublishGroupTest extends TestCase
         $groupId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [$groupId], [$memberId]);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             groupId: $groupId,
@@ -973,7 +978,7 @@ class PublishGroupTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishGroup = $this->createDummyPublishGroup(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -1056,7 +1061,7 @@ class PublishGroupTest extends TestCase
         $dummyPublishGroup = $this->createDummyPublishGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishGroupInput(
             $dummyPublishGroup->groupIdentifier,
@@ -1087,6 +1092,8 @@ class PublishGroupTest extends TestCase
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $publishGroup = $this->app->make(PublishGroupInterface::class);

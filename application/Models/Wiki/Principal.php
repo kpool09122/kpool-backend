@@ -11,7 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $identity_id
- * @property string $role
  * @property ?string $agency_id
  * @property array<string> $talent_ids
  * @property ?string $delegation_identifier
@@ -30,7 +29,6 @@ class Principal extends Model
     protected $fillable = [
         'id',
         'identity_id',
-        'role',
         'agency_id',
         'talent_ids',
         'delegation_identifier',

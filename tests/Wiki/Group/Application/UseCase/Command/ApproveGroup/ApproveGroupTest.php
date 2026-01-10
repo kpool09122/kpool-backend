@@ -28,7 +28,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -75,7 +75,7 @@ class ApproveGroupTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyApproveGroup = $this->createDummyApproveGroup(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -86,6 +86,10 @@ class ApproveGroupTest extends TestCase
             $dummyApproveGroup->publishedGroupIdentifier,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -281,13 +285,17 @@ class ApproveGroupTest extends TestCase
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
             $dummyApproveGroup->publishedGroupIdentifier,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -322,7 +330,7 @@ class ApproveGroupTest extends TestCase
     }
 
     /**
-     * 異常系：承認権限がないロール（Collaborator）の場合、例外がスローされること.
+     * 異常系：権限がない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -330,12 +338,12 @@ class ApproveGroupTest extends TestCase
      * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
      */
-    public function testUnauthorizedRole(): void
+    public function testUnauthorized(): void
     {
         $dummyApproveGroup = $this->createDummyApproveGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveGroupInput(
             $dummyApproveGroup->groupIdentifier,
@@ -343,364 +351,9 @@ class ApproveGroupTest extends TestCase
             $principalIdentifier,
         );
 
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveGroup->groupIdentifier)
-            ->andReturn($dummyApproveGroup->group);
-
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveGroup = $this->app->make(ApproveGroupInterface::class);
-        $approveGroup->process($input);
-    }
-
-    /**
-     * 異常系：MEMBER_ACTORが自分の所属していないグループを承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedMemberScope(): void
-    {
-        $dummyApproveGroup = $this->createDummyApproveGroup();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $anotherGroupId = StrTestHelper::generateUuid();
-        $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
-
-        $input = new ApproveGroupInput(
-            $dummyApproveGroup->groupIdentifier,
-            $dummyApproveGroup->publishedGroupIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveGroup->groupIdentifier)
-            ->andReturn($dummyApproveGroup->group);
-
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveGroup = $this->app->make(ApproveGroupInterface::class);
-        $approveGroup->process($input);
-    }
-
-    /**
-     * 正常系：MEMBER_ACTORが自分の所属するグループを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedMemberActor(): void
-    {
-        $groupId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
-
-        $dummyApproveGroup = $this->createDummyApproveGroup(
-            groupId: $groupId,
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new ApproveGroupInput(
-            $dummyApproveGroup->groupIdentifier,
-            $dummyApproveGroup->publishedGroupIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveGroup->group)
-            ->andReturn(null);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveGroup->groupIdentifier)
-            ->andReturn($dummyApproveGroup->group);
-
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
-            ->once()
-            ->with($dummyApproveGroup->translationSetIdentifier, $dummyApproveGroup->groupIdentifier)
-            ->andReturn(false);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-        $approveGroup = $this->app->make(ApproveGroupInterface::class);
-        $group = $approveGroup->process($input);
-        $this->assertNotSame($dummyApproveGroup->status, $group->status());
-        $this->assertSame(ApprovalStatus::Approved, $group->status());
-    }
-
-    /**
-     * 異常系：AGENCY_ACTORが他の事務所のグループを承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedAgencyScope(): void
-    {
-        $dummyApproveGroup = $this->createDummyApproveGroup();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
-
-        $input = new ApproveGroupInput(
-            $dummyApproveGroup->groupIdentifier,
-            $dummyApproveGroup->publishedGroupIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveGroup->groupIdentifier)
-            ->andReturn($dummyApproveGroup->group);
-
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveGroup = $this->app->make(ApproveGroupInterface::class);
-        $approveGroup->process($input);
-    }
-
-    /**
-     * 正常系：AGENCY_ACTORが自分の事務所に所属するグループを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedAgencyActor(): void
-    {
-        $agencyId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
-
-        $dummyApproveGroup = $this->createDummyApproveGroup(
-            agencyId: $agencyId,
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new ApproveGroupInput(
-            $dummyApproveGroup->groupIdentifier,
-            $dummyApproveGroup->publishedGroupIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveGroup->group)
-            ->andReturn(null);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveGroup->groupIdentifier)
-            ->andReturn($dummyApproveGroup->group);
-
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
-            ->once()
-            ->with($dummyApproveGroup->translationSetIdentifier, $dummyApproveGroup->groupIdentifier)
-            ->andReturn(false);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-        $approveGroup = $this->app->make(ApproveGroupInterface::class);
-        $group = $approveGroup->process($input);
-        $this->assertNotSame($dummyApproveGroup->status, $group->status());
-        $this->assertSame(ApprovalStatus::Approved, $group->status());
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORがグループを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
-
-        $dummyApproveGroup = $this->createDummyApproveGroup(
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new ApproveGroupInput(
-            $dummyApproveGroup->groupIdentifier,
-            $dummyApproveGroup->publishedGroupIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveGroup->group)
-            ->andReturn(null);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveGroup->groupIdentifier)
-            ->andReturn($dummyApproveGroup->group);
-
-        $groupService = Mockery::mock(GroupServiceInterface::class);
-        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
-            ->once()
-            ->with($dummyApproveGroup->translationSetIdentifier, $dummyApproveGroup->groupIdentifier)
-            ->andReturn(false);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupServiceInterface::class, $groupService);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-        $approveGroup = $this->app->make(ApproveGroupInterface::class);
-        $group = $approveGroup->process($input);
-        $this->assertNotSame($dummyApproveGroup->status, $group->status());
-        $this->assertSame(ApprovalStatus::Approved, $group->status());
-    }
-
-    /**
-     * 異常系：NONEロールがグループを承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedNoneRole(): void
-    {
-        $dummyApproveGroup = $this->createDummyApproveGroup();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
-
-        $input = new ApproveGroupInput(
-            $dummyApproveGroup->groupIdentifier,
-            $dummyApproveGroup->publishedGroupIdentifier,
-            $principalIdentifier,
-        );
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

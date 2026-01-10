@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -79,7 +78,7 @@ class RejectSongTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: $principalIdentifier,
@@ -269,7 +268,7 @@ class RejectSongTest extends TestCase
         $dummyRejectSong = $this->createDummyRejectSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -296,6 +295,8 @@ class RejectSongTest extends TestCase
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $rejectSong = $this->app->make(RejectSongInterface::class);
         $rejectSong->process($input);
@@ -314,7 +315,7 @@ class RejectSongTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: $principalIdentifier,
@@ -377,7 +378,7 @@ class RejectSongTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -404,6 +405,8 @@ class RejectSongTest extends TestCase
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $rejectSong = $this->app->make(RejectSongInterface::class);
         $rejectSong->process($input);
@@ -428,7 +431,7 @@ class RejectSongTest extends TestCase
         );
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -488,7 +491,7 @@ class RejectSongTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -515,6 +518,8 @@ class RejectSongTest extends TestCase
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $rejectSong = $this->app->make(RejectSongInterface::class);
         $rejectSong->process($input);
@@ -540,7 +545,7 @@ class RejectSongTest extends TestCase
         $agencyId = (string) $dummyRejectSong->agencyIdentifier;
         $talentId = (string) $dummyRejectSong->talentIdentifier;
 
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], [$talentId]);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -597,7 +602,7 @@ class RejectSongTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyRejectSong = $this->createDummyRejectSong(
             operatorIdentifier: $principalIdentifier,
@@ -659,7 +664,7 @@ class RejectSongTest extends TestCase
         $dummyRejectSong = $this->createDummyRejectSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new RejectSongInput(
             $dummyRejectSong->songIdentifier,
@@ -685,6 +690,8 @@ class RejectSongTest extends TestCase
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
         $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
         $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $rejectSong = $this->app->make(RejectSongInterface::class);

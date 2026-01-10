@@ -15,7 +15,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -73,7 +73,7 @@ class EditSongTest extends TestCase
         $dummyEditSong = $this->createDummyEditSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new EditSongInput(
             $dummyEditSong->songIdentifier,
@@ -89,6 +89,10 @@ class EditSongTest extends TestCase
             $dummyEditSong->musicVideoLink,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -235,20 +239,19 @@ class EditSongTest extends TestCase
     }
 
     /**
-     * 正常系：COLLABORATORが曲を編集できること.
+     * 異常系：権限がない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws SongNotFoundException
-     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testProcessWithCollaborator(): void
+    public function testUnauthorized(): void
     {
         $dummyEditSong = $this->createDummyEditSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new EditSongInput(
             $dummyEditSong->songIdentifier,
@@ -265,235 +268,9 @@ class EditSongTest extends TestCase
             $principalIdentifier,
         );
 
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyEditSong->songIdentifier)
-            ->andReturn($dummyEditSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyEditSong->song)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-
-        $editSong = $this->app->make(EditSongInterface::class);
-        $editSong->process($input);
-    }
-
-    /**
-     * 正常系：AGENCY_ACTORが曲を編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithAgencyActor(): void
-    {
-        $dummyEditSong = $this->createDummyEditSong();
-        $agencyId = (string)$dummyEditSong->agencyIdentifier;
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
-
-        $input = new EditSongInput(
-            $dummyEditSong->songIdentifier,
-            $dummyEditSong->name,
-            $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->groupIdentifier,
-            $dummyEditSong->talentIdentifier,
-            $dummyEditSong->lyricist,
-            $dummyEditSong->composer,
-            $dummyEditSong->releaseDate,
-            $dummyEditSong->overView,
-            null,
-            $dummyEditSong->musicVideoLink,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyEditSong->songIdentifier)
-            ->andReturn($dummyEditSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyEditSong->song)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-
-        $editSong = $this->app->make(EditSongInterface::class);
-        $editSong->process($input);
-    }
-
-    /**
-     * 正常系：TALENT_ACTORが曲を編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithTalentActor(): void
-    {
-        $dummyEditSong = $this->createDummyEditSong();
-        $agencyId = (string)$dummyEditSong->agencyIdentifier;
-        $talentId = (string)$dummyEditSong->talentIdentifier;
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
-
-        $input = new EditSongInput(
-            $dummyEditSong->songIdentifier,
-            $dummyEditSong->name,
-            $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->groupIdentifier,
-            $dummyEditSong->talentIdentifier,
-            $dummyEditSong->lyricist,
-            $dummyEditSong->composer,
-            $dummyEditSong->releaseDate,
-            $dummyEditSong->overView,
-            null,
-            $dummyEditSong->musicVideoLink,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyEditSong->songIdentifier)
-            ->andReturn($dummyEditSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyEditSong->song)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-
-        $editSong = $this->app->make(EditSongInterface::class);
-        $editSong->process($input);
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORが曲を編集できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $dummyEditSong = $this->createDummyEditSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
-
-        $input = new EditSongInput(
-            $dummyEditSong->songIdentifier,
-            $dummyEditSong->name,
-            $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->groupIdentifier,
-            $dummyEditSong->talentIdentifier,
-            $dummyEditSong->lyricist,
-            $dummyEditSong->composer,
-            $dummyEditSong->releaseDate,
-            $dummyEditSong->overView,
-            null,
-            $dummyEditSong->musicVideoLink,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyEditSong->songIdentifier)
-            ->andReturn($dummyEditSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyEditSong->song)
-            ->andReturn(null);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-
-        $editSong = $this->app->make(EditSongInterface::class);
-        $editSong->process($input);
-    }
-
-    /**
-     * 異常系：NONEロールが曲を編集しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithNoneRole(): void
-    {
-        $dummyEditSong = $this->createDummyEditSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
-
-        $input = new EditSongInput(
-            $dummyEditSong->songIdentifier,
-            $dummyEditSong->name,
-            $dummyEditSong->agencyIdentifier,
-            $dummyEditSong->groupIdentifier,
-            $dummyEditSong->talentIdentifier,
-            $dummyEditSong->lyricist,
-            $dummyEditSong->composer,
-            $dummyEditSong->releaseDate,
-            $dummyEditSong->overView,
-            null,
-            $dummyEditSong->musicVideoLink,
-            $principalIdentifier,
-        );
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

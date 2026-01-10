@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('wiki_principals', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('プリンシパル ID');
             $table->uuid('identity_id')->comment('Identity ID');
-            $table->string('role', 32)->comment('ロール');
             $table->uuid('agency_id')->nullable()->comment('事務所ID');
             $table->json('talent_ids')->comment('タレントID');
             $table->uuid('delegation_identifier')->nullable()->comment('委譲ID (nullなら本人)');

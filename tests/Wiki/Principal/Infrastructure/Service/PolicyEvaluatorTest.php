@@ -88,7 +88,6 @@ class PolicyEvaluatorTest extends TestCase
         return new Principal(
             new PrincipalIdentifier($principalId),
             new IdentityIdentifier($identityId),
-            \Source\Wiki\Principal\Domain\ValueObject\Role::NONE,
             $agencyId,
             $groupIds,
             $talentIds
@@ -243,6 +242,35 @@ class PolicyEvaluatorTest extends TestCase
             $this->assertFalse(
                 $policyEvaluator->evaluate($principal, $action, $resource),
                 "Action {$action->value} should be denied for principal with no roles"
+            );
+        }
+    }
+
+    /**
+     * 正常系: RoleにPolicyがない場合は全てのアクションが拒否される.
+     */
+    #[Group('useDb')]
+    public function testRoleWithoutPoliciesDeniesAllActions(): void
+    {
+        $role = $this->createAndSaveRole([]);
+
+        $principal = $this->createPrincipal();
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        foreach (Action::cases() as $action) {
+            $this->assertFalse(
+                $policyEvaluator->evaluate($principal, $action, $resource),
+                "Action {$action->value} should be denied for role without policies"
             );
         }
     }
@@ -467,6 +495,155 @@ class PolicyEvaluatorTest extends TestCase
     }
 
     /**
+     * 正常系: Condition評価 - resource:groupId eq ${principal.wikiGroupIds}（配列同士の比較）.
+     */
+    #[Group('useDb')]
+    public function testConditionGroupIdsEqualsArrayIntersection(): void
+    {
+        $groupId1 = StrTestHelper::generateUuid();
+        $groupId2 = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::GROUP],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_GROUP_ID,
+                        ConditionOperator::EQUALS,
+                        ConditionValue::PRINCIPAL_WIKI_GROUP_IDS
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal(null, [$groupId1, $groupId2]);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        // 交差がある場合は許可
+        $matchingGroup = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId2]);
+        $this->assertTrue(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $matchingGroup),
+            'APPROVE should be allowed when groupIds intersect'
+        );
+
+        // 交差がない場合は拒否
+        $nonMatchingGroup = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $nonMatchingGroup),
+            'APPROVE should be denied when groupIds do not intersect'
+        );
+    }
+
+    /**
+     * 正常系: Condition評価 - resource:agencyId ne ${principal.agencyId}.
+     */
+    #[Group('useDb')]
+    public function testConditionAgencyIdNotEquals(): void
+    {
+        $principalAgencyId = StrTestHelper::generateUuid();
+        $otherAgencyId = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::AGENCY],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_AGENCY_ID,
+                        ConditionOperator::NOT_EQUALS,
+                        ConditionValue::PRINCIPAL_AGENCY_ID
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal($principalAgencyId);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $otherAgency = new ResourceIdentifier(ResourceType::AGENCY, $otherAgencyId);
+        $this->assertTrue(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency),
+            'APPROVE should be allowed when agencyId does not match'
+        );
+
+        $ownAgency = new ResourceIdentifier(ResourceType::AGENCY, $principalAgencyId);
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency),
+            'APPROVE should be denied when agencyId matches'
+        );
+    }
+
+    /**
+     * 正常系: Condition評価 - 型不一致のEQUALSはfalseになる.
+     */
+    #[Group('useDb')]
+    public function testConditionEqualsWithTypeMismatch(): void
+    {
+        $principalAgencyId = StrTestHelper::generateUuid();
+        $groupId = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::GROUP],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_GROUP_ID,
+                        ConditionOperator::EQUALS,
+                        ConditionValue::PRINCIPAL_AGENCY_ID
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal($principalAgencyId, [$groupId]);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $resource = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
+            'APPROVE should be denied when condition value type mismatches resource value type'
+        );
+    }
+
+    /**
      * 正常系: Condition評価 - resource:groupId in ${principal.wikiGroupIds}
      */
     #[Group('useDb')]
@@ -516,6 +693,192 @@ class PolicyEvaluatorTest extends TestCase
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherGroup),
             'APPROVE on other group should be denied'
+        );
+    }
+
+    /**
+     * 正常系: Condition評価 - resource:agencyId in ${principal.agencyId}（スカラー比較）.
+     */
+    #[Group('useDb')]
+    public function testConditionAgencyIdInScalar(): void
+    {
+        $principalAgencyId = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::AGENCY],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_AGENCY_ID,
+                        ConditionOperator::IN,
+                        ConditionValue::PRINCIPAL_AGENCY_ID
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal($principalAgencyId);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $ownAgency = new ResourceIdentifier(ResourceType::AGENCY, $principalAgencyId);
+        $this->assertTrue(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency),
+            'APPROVE should be allowed when agencyId is in principal agencyId'
+        );
+
+        $otherAgency = new ResourceIdentifier(ResourceType::AGENCY, StrTestHelper::generateUuid());
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency),
+            'APPROVE should be denied when agencyId is not in principal agencyId'
+        );
+    }
+
+    /**
+     * 正常系: Condition評価 - resource:agencyId in ${principal.agencyId} でresourceがnullの場合は拒否.
+     */
+    #[Group('useDb')]
+    public function testConditionAgencyIdInWithNullResource(): void
+    {
+        $principalAgencyId = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::AGENCY],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_AGENCY_ID,
+                        ConditionOperator::IN,
+                        ConditionValue::PRINCIPAL_AGENCY_ID
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal($principalAgencyId);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
+            'APPROVE should be denied when agencyId is null'
+        );
+    }
+
+    /**
+     * 正常系: Condition評価 - principal groupIds が空の場合は IN が false になる.
+     */
+    #[Group('useDb')]
+    public function testConditionGroupIdInWithEmptyPrincipalGroups(): void
+    {
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::GROUP],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_GROUP_ID,
+                        ConditionOperator::IN,
+                        ConditionValue::PRINCIPAL_WIKI_GROUP_IDS
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal(null, []);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $resource = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
+            'APPROVE should be denied when principal groupIds are empty'
+        );
+    }
+
+    /**
+     * 正常系: Condition評価 - resource:groupId not_in ${principal.wikiGroupIds}.
+     */
+    #[Group('useDb')]
+    public function testConditionGroupIdNotIn(): void
+    {
+        $groupId = StrTestHelper::generateUuid();
+
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::APPROVE],
+                [ResourceType::GROUP],
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_GROUP_ID,
+                        ConditionOperator::NOT_IN,
+                        ConditionValue::PRINCIPAL_WIKI_GROUP_IDS
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal(null, [$groupId]);
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $otherGroup = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $this->assertTrue(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $otherGroup),
+            'APPROVE should be allowed when groupId is not in principal groups'
+        );
+
+        $ownGroup = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
+        $this->assertFalse(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $ownGroup),
+            'APPROVE should be denied when groupId is in principal groups'
         );
     }
 

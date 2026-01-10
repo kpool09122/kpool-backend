@@ -13,13 +13,11 @@ use Source\Account\Application\UseCase\Command\RequestAffiliation\RequestAffilia
 use Source\Account\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInterface;
 use Source\Account\Domain\Entity\Account;
 use Source\Account\Domain\Entity\AccountAffiliation;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -48,7 +46,6 @@ use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -57,8 +54,6 @@ class RequestAffiliationTest extends TestCase
 {
     /**
      * 正常系: 正しくアフィリエーションを作成できること
-     *
-     * @return void
      */
     public function testProcess(): void
     {
@@ -109,8 +104,6 @@ class RequestAffiliationTest extends TestCase
 
     /**
      * 異常系: Agency Accountが存在しない場合、例外がスローされること
-     *
-     * @return void
      */
     public function testThrowsWhenAgencyAccountNotFound(): void
     {
@@ -139,8 +132,6 @@ class RequestAffiliationTest extends TestCase
 
     /**
      * 異常系: Talent Accountが存在しない場合、例外がスローされること
-     *
-     * @return void
      */
     public function testThrowsWhenTalentAccountNotFound(): void
     {
@@ -173,8 +164,6 @@ class RequestAffiliationTest extends TestCase
 
     /**
      * 異常系: Agency AccountのカテゴリがAGENCYでない場合、例外がスローされること
-     *
-     * @return void
      */
     public function testThrowsWhenAgencyAccountHasInvalidCategory(): void
     {
@@ -188,7 +177,6 @@ class RequestAffiliationTest extends TestCase
             $this->createContractInfo(),
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
-            [$this->createOwnerMembership()],
             DeletionReadinessChecklist::ready(),
         );
 
@@ -215,8 +203,6 @@ class RequestAffiliationTest extends TestCase
 
     /**
      * 異常系: Talent AccountのカテゴリがTALENTでない場合、例外がスローされること
-     *
-     * @return void
      */
     public function testThrowsWhenTalentAccountHasInvalidCategory(): void
     {
@@ -230,7 +216,6 @@ class RequestAffiliationTest extends TestCase
             $this->createContractInfo(),
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
-            [$this->createOwnerMembership()],
             DeletionReadinessChecklist::ready(),
         );
 
@@ -261,8 +246,6 @@ class RequestAffiliationTest extends TestCase
 
     /**
      * 異常系: 既にアクティブなアフィリエーションが存在する場合、例外がスローされること
-     *
-     * @return void
      */
     public function testThrowsWhenActiveAffiliationAlreadyExists(): void
     {
@@ -307,7 +290,6 @@ class RequestAffiliationTest extends TestCase
         $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
 
         $contractInfo = $this->createContractInfo();
-        $ownerMembership = $this->createOwnerMembership();
 
         $agencyAccount = new Account(
             $agencyAccountIdentifier,
@@ -317,7 +299,6 @@ class RequestAffiliationTest extends TestCase
             $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::AGENCY,
-            [$ownerMembership],
             DeletionReadinessChecklist::ready(),
         );
 
@@ -329,7 +310,6 @@ class RequestAffiliationTest extends TestCase
             $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::TALENT,
-            [$ownerMembership],
             DeletionReadinessChecklist::ready(),
         );
 
@@ -393,14 +373,6 @@ class RequestAffiliationTest extends TestCase
             billingMethod: BillingMethod::INVOICE,
             plan: $plan,
             taxInfo: $taxInfo,
-        );
-    }
-
-    private function createOwnerMembership(): AccountMembership
-    {
-        return new AccountMembership(
-            new IdentityIdentifier(StrTestHelper::generateUuid()),
-            AccountRole::OWNER,
         );
     }
 }

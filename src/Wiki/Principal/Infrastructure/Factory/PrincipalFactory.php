@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class PrincipalFactory implements PrincipalFactoryInterface
@@ -25,7 +24,6 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
         return new Principal(
             new PrincipalIdentifier($this->uuidGenerator->generate()),
             $identityIdentifier,
-            Role::NONE,
             null,
             [],
             [],
@@ -42,7 +40,6 @@ readonly class PrincipalFactory implements PrincipalFactoryInterface
         return new Principal(
             new PrincipalIdentifier($this->uuidGenerator->generate()),
             $delegatedIdentityIdentifier,
-            $originalPrincipal->role(),
             $originalPrincipal->agencyId(),
             $originalPrincipal->groupIds(),
             $originalPrincipal->talentIds(),

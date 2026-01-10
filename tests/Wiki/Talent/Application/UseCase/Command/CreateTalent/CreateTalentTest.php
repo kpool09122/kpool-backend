@@ -16,7 +16,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -79,7 +79,7 @@ class CreateTalentTest extends TestCase
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -94,6 +94,10 @@ class CreateTalentTest extends TestCase
             $createTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -147,7 +151,7 @@ class CreateTalentTest extends TestCase
     }
 
     /**
-     * 正常系：COLLABORATORがメンバーを作成できること.
+     * 正常系：権限があるユーザーがメンバーを作成できること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -155,12 +159,12 @@ class CreateTalentTest extends TestCase
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testAuthorizedCollaborator(): void
+    public function testAuthorized(): void
     {
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -175,6 +179,10 @@ class CreateTalentTest extends TestCase
             $createTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -217,21 +225,19 @@ class CreateTalentTest extends TestCase
     }
 
     /**
-     * 正常系：AGENCY_ACTORがメンバーを作成できること.
+     * 異常系：権限がないユーザーがメンバーを作成しようとした場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testAuthorizedAgencyActor(): void
+    public function testUnauthorized(): void
     {
         $createTalentInfo = $this->createCreateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string)$createTalentInfo->agencyIdentifier;
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [],  []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
@@ -247,217 +253,9 @@ class CreateTalentTest extends TestCase
             $principalIdentifier,
         );
 
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($createTalentInfo->base64EncodedImage)
-            ->andReturn($createTalentInfo->imageLink);
-
-        $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
-        $talentFactory->shouldReceive('create')
-            ->once()
-            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
-            ->andReturn($createTalentInfo->draftTalent);
-
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
-            ->once()
-            ->with($createTalentInfo->publishedTalentIdentifier)
-            ->andReturn(null);
-
-        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($createTalentInfo->draftTalent)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
-        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
-
-        $useCase = $this->app->make(CreateTalentInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
-     * 正常系：TALENT_ACTORがメンバーを作成できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedTalentActor(): void
-    {
-        $createTalentInfo = $this->createCreateTalentInfo();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string)$createTalentInfo->agencyIdentifier;
-        $groupIds = array_map(static fn ($groupId) => (string)$groupId, $createTalentInfo->groupIdentifiers);
-        $talentId = (string)$createTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $groupIds,  [$talentId]);
-
-        $input = new CreateTalentInput(
-            $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->language,
-            $createTalentInfo->name,
-            $createTalentInfo->realName,
-            $createTalentInfo->agencyIdentifier,
-            $createTalentInfo->groupIdentifiers,
-            $createTalentInfo->birthday,
-            $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
-            $createTalentInfo->relevantVideoLinks,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($createTalentInfo->base64EncodedImage)
-            ->andReturn($createTalentInfo->imageLink);
-
-        $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
-        $talentFactory->shouldReceive('create')
-            ->once()
-            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
-            ->andReturn($createTalentInfo->draftTalent);
-
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
-            ->once()
-            ->with($createTalentInfo->publishedTalentIdentifier)
-            ->andReturn(null);
-
-        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($createTalentInfo->draftTalent)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
-        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
-
-        $useCase = $this->app->make(CreateTalentInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORがメンバーを作成できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $createTalentInfo = $this->createCreateTalentInfo();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
-
-        $input = new CreateTalentInput(
-            $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->language,
-            $createTalentInfo->name,
-            $createTalentInfo->realName,
-            $createTalentInfo->agencyIdentifier,
-            $createTalentInfo->groupIdentifiers,
-            $createTalentInfo->birthday,
-            $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
-            $createTalentInfo->relevantVideoLinks,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($createTalentInfo->base64EncodedImage)
-            ->andReturn($createTalentInfo->imageLink);
-
-        $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
-        $talentFactory->shouldReceive('create')
-            ->once()
-            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
-            ->andReturn($createTalentInfo->draftTalent);
-
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
-            ->once()
-            ->with($createTalentInfo->publishedTalentIdentifier)
-            ->andReturn(null);
-
-        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($createTalentInfo->draftTalent)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftTalentFactoryInterface::class, $talentFactory);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
-        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
-
-        $useCase = $this->app->make(CreateTalentInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
-     * 異常系：NONEロールがメンバーを作成しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithNoneRole(): void
-    {
-        $createTalentInfo = $this->createCreateTalentInfo();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
-
-        $input = new CreateTalentInput(
-            $createTalentInfo->publishedTalentIdentifier,
-            $createTalentInfo->language,
-            $createTalentInfo->name,
-            $createTalentInfo->realName,
-            $createTalentInfo->agencyIdentifier,
-            $createTalentInfo->groupIdentifiers,
-            $createTalentInfo->birthday,
-            $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
-            $createTalentInfo->relevantVideoLinks,
-            $principalIdentifier,
-        );
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

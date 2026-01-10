@@ -19,7 +19,6 @@ use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -39,7 +38,6 @@ class CreatePrincipalTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $role = Role::NONE;
 
         $input = new CreatePrincipalInput(
             $identityIdentifier,
@@ -49,7 +47,6 @@ class CreatePrincipalTest extends TestCase
         $expectedPrincipal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            $role,
             null,
             [],
             [],
@@ -104,7 +101,6 @@ class CreatePrincipalTest extends TestCase
 
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
-        $this->assertSame($role, $result->role());
         $this->assertTrue($defaultPrincipalGroup->hasMember($principalIdentifier));
     }
 
@@ -121,7 +117,6 @@ class CreatePrincipalTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $role = Role::NONE;
 
         $input = new CreatePrincipalInput(
             $identityIdentifier,
@@ -131,7 +126,6 @@ class CreatePrincipalTest extends TestCase
         $expectedPrincipal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            $role,
             null,
             [],
             [],
@@ -183,7 +177,6 @@ class CreatePrincipalTest extends TestCase
 
         $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
-        $this->assertSame($role, $result->role());
         $this->assertTrue($existingDefaultPrincipalGroup->hasMember($principalIdentifier));
     }
 
@@ -198,7 +191,6 @@ class CreatePrincipalTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $role = Role::NONE;
 
         $input = new CreatePrincipalInput(
             $identityIdentifier,
@@ -208,7 +200,6 @@ class CreatePrincipalTest extends TestCase
         $existingPrincipal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            $role,
             null,
             [],
             [],

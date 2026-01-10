@@ -11,12 +11,10 @@ use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
 use Source\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Domain\ValueObject\AccountCategory;
 use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
 use Source\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Domain\ValueObject\AccountType;
 use Source\Account\Domain\ValueObject\AddressLine;
@@ -41,7 +39,6 @@ use Source\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -51,7 +48,6 @@ class CreateAccountTest extends TestCase
     /**
      * 正常系: 正しくDIが動作すること
      *
-     * @return void
      * @throws BindingResolutionException
      */
     public function test__construct(): void
@@ -67,7 +63,6 @@ class CreateAccountTest extends TestCase
     /**
      * 正常系: 正しくアカウントを作成できること.
      *
-     * @return void
      * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
      */
@@ -88,7 +83,7 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName, $testData->contractInfo, $testData->memberships)
+            ->with($testData->email, $testData->accountType, $testData->accountName, $testData->contractInfo)
             ->andReturn($testData->account);
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
@@ -98,18 +93,16 @@ class CreateAccountTest extends TestCase
 
         $account = $useCase->process($testData->input);
 
-        $this->assertSame((string)$testData->identifier, (string)$account->accountIdentifier());
-        $this->assertSame((string)$testData->email, (string)$account->email());
+        $this->assertSame((string) $testData->identifier, (string) $account->accountIdentifier());
+        $this->assertSame((string) $testData->email, (string) $account->email());
         $this->assertSame($testData->accountType, $account->type());
-        $this->assertSame((string)$testData->accountName, (string)$account->name());
+        $this->assertSame((string) $testData->accountName, (string) $account->name());
         $this->assertSame($testData->contractInfo, $account->contractInfo());
-        $this->assertSame($testData->memberships, $account->memberships());
     }
 
     /**
      * 異常系: アカウントが重複した時に、例外がスローされること.
      *
-     * @return void
      * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
      */
@@ -139,11 +132,6 @@ class CreateAccountTest extends TestCase
         $useCase->process($input);
     }
 
-    /**
-     * テスト用のダミーAccount情報
-     *
-     * @return CreateAccountTestData
-     */
     private function createDummyAccountTestData(): CreateAccountTestData
     {
         $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -177,9 +165,6 @@ class CreateAccountTest extends TestCase
             taxInfo: $taxInfo,
         );
 
-        $identityId = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $memberships = [new AccountMembership($identityId, AccountRole::OWNER)];
-
         $status = AccountStatus::ACTIVE;
         $accountCategory = AccountCategory::GENERAL;
 
@@ -191,11 +176,10 @@ class CreateAccountTest extends TestCase
             $contractInfo,
             $status,
             $accountCategory,
-            $memberships,
             DeletionReadinessChecklist::ready(),
         );
 
-        $input = new CreateAccountInput($email, $accountType, $accountName, $contractInfo, $memberships);
+        $input = new CreateAccountInput($email, $accountType, $accountName, $contractInfo);
 
         return new CreateAccountTestData(
             $identifier,
@@ -204,21 +188,14 @@ class CreateAccountTest extends TestCase
             $accountName,
             $contractInfo,
             $accountCategory,
-            $memberships,
             $account,
             $input,
         );
     }
 }
 
-/**
- * テスト用のAccountデータ
- */
 readonly class CreateAccountTestData
 {
-    /**
-     * @param AccountMembership[] $memberships
-     */
     public function __construct(
         public AccountIdentifier $identifier,
         public Email $email,
@@ -226,7 +203,6 @@ readonly class CreateAccountTestData
         public AccountName $accountName,
         public ContractInfo $contractInfo,
         public AccountCategory $accountCategory,
-        public array $memberships,
         public Account $account,
         public CreateAccountInput $input,
     ) {

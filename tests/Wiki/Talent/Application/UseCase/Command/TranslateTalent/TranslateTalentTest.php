@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -78,7 +77,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -224,7 +223,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -249,6 +248,8 @@ class TranslateTalentTest extends TestCase
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $translateTalent->process($input);
@@ -269,7 +270,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -336,7 +337,7 @@ class TranslateTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -361,6 +362,8 @@ class TranslateTalentTest extends TestCase
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $translateTalent->process($input);
@@ -383,7 +386,7 @@ class TranslateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -453,7 +456,7 @@ class TranslateTalentTest extends TestCase
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
         $anotherTalentId = StrTestHelper::generateUuid(); // 別のTalent IDを使用
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], [$anotherTalentId]);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -478,6 +481,8 @@ class TranslateTalentTest extends TestCase
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $translateTalent->process($input);
@@ -501,7 +506,7 @@ class TranslateTalentTest extends TestCase
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
         $talentId = (string) $translateTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, [$talentId]);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -568,7 +573,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -634,7 +639,7 @@ class TranslateTalentTest extends TestCase
         $translateTalentInfo = $this->createTranslateTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateTalentInput(
             $translateTalentInfo->talentIdentifier,
@@ -658,6 +663,8 @@ class TranslateTalentTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);

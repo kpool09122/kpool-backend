@@ -24,7 +24,6 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -68,7 +67,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -217,7 +216,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -247,6 +246,8 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $translateGroup->process($input);
@@ -266,7 +267,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -332,7 +333,7 @@ class TranslateGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
 
@@ -359,6 +360,8 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $translateGroup->process($input);
@@ -379,7 +382,7 @@ class TranslateGroupTest extends TestCase
         $agencyId = (string) $dummyTranslateGroup->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
 
@@ -443,7 +446,7 @@ class TranslateGroupTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherGroupId = StrTestHelper::generateUuid();
         $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$anotherGroupId], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [$anotherGroupId], [$memberId]);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
 
@@ -470,6 +473,8 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);
         $translateGroup->process($input);
@@ -490,7 +495,7 @@ class TranslateGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [(string) $dummyTranslateGroup->groupIdentifier], [$memberId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [(string) $dummyTranslateGroup->groupIdentifier], [$memberId]);
 
         $input = new TranslateGroupInput($dummyTranslateGroup->groupIdentifier, $principalIdentifier);
 
@@ -553,7 +558,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -618,7 +623,7 @@ class TranslateGroupTest extends TestCase
         $dummyTranslateGroup = $this->createDummyTranslateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateGroupInput(
             $dummyTranslateGroup->groupIdentifier,
@@ -647,6 +652,8 @@ class TranslateGroupTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $translateGroup = $this->app->make(TranslateGroupInterface::class);

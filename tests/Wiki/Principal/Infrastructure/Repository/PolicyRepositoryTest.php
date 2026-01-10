@@ -38,6 +38,17 @@ class PolicyRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系: 空のID配列の場合は空配列が返ること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testFindByIdsWithEmptyIdentifiers(): void
+    {
+        $repository = $this->app->make(PolicyRepositoryInterface::class);
+        $this->assertSame([], $repository->findByIds([]));
+    }
+
+    /**
      * 正常系: 正しくPolicyを保存できること
      *
      * @throws BindingResolutionException
