@@ -12,7 +12,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
@@ -55,14 +55,14 @@ readonly class SubmitTalent implements SubmitTalentInterface
             static fn ($groupIdentifier) => (string) $groupIdentifier,
             $talent->groupIdentifiers()
         );
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::TALENT,
             agencyId: (string) $talent->agencyIdentifier(),
             groupIds: $groupIds,
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resource)) {
             throw new UnauthorizedException();
         }
 

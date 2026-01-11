@@ -13,7 +13,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class EditAgency implements EditAgencyInterface
@@ -45,13 +45,13 @@ readonly class EditAgency implements EditAgencyInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),
             groupIds: [],
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resource)) {
             throw new UnauthorizedException();
         }
 

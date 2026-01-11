@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -27,7 +28,9 @@ class GroupTest extends TestCase
      */
     public function test__construct(): void
     {
-        $createGroup = $this->createDummyGroup();
+        $createGroup = $this->createDummyGroup(
+            isOfficial: false,
+        );
         $group = $createGroup->group;
 
         $this->assertSame((string)$createGroup->groupIdentifier, (string)$group->groupIdentifier());
@@ -39,6 +42,14 @@ class GroupTest extends TestCase
         $this->assertSame((string)$createGroup->description, (string)$group->description());
         $this->assertSame((string)$createGroup->imagePath, (string)$group->imagePath());
         $this->assertSame($createGroup->version->value(), $group->version()->value());
+        $this->assertFalse($group->isOfficial());
+        $this->assertSame($createGroup->ownerIdentifier, $group->ownerAccountIdentifier());
+
+        $createGroup = $this->createDummyGroup(
+            isOfficial: true
+        );
+        $group = $createGroup->group;
+        $this->assertTrue($group->isOfficial());
     }
 
     /**
@@ -242,12 +253,39 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     }
 
     /**
+     * 正常系: 正しくMarkOfficialが動作すること.
+     *
+     * @return void
+     */
+    public function testMarkOfficial(): void
+    {
+        $createGroup = $this->createDummyGroup(
+            isOfficial: false
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $group = $createGroup->group;
+        $group->markOfficial($accountIdentifier);
+        $this->assertTrue($group->isOfficial());
+        $this->assertSame($accountIdentifier, $group->ownerAccountIdentifier());
+
+        $createGroup = $this->createDummyGroup(
+            isOfficial: true
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $group = $createGroup->group;
+        $group->markOfficial($accountIdentifier);
+        $this->assertTrue($group->isOfficial());
+        $this->assertNotSame($accountIdentifier, $group->ownerAccountIdentifier());
+    }
+
+    /**
      * ダミーのGroupを作成するヘルパーメソッド
      *
      * @return GroupTestData
      */
-    private function createDummyGroup(): GroupTestData
-    {
+    private function createDummyGroup(
+        ?bool $isOfficial = null,
+    ): GroupTestData {
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
@@ -260,6 +298,8 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
 데뷔 초의 밝고 귀여운 콘셉트에서 해마다 성장을 거듭하며, 세련되고 멋진 퍼포먼스까지 다채로운 모습을 보여주고 있습니다. 중독성 있는 멜로디와 따라 하기 쉬운 안무가 특징으로, 폭넓은 세대로부터 지지를 받고 있습니다. 한국이나 일본뿐만 아니라, 세계적인 스타디움 투어를 성공시키는 등 K팝을 대표하는 최정상 그룹으로서 지금도 전 세계 팬들을 계속해서 사로잡고 있습니다. 팬덤명은 \'원스(ONCE)\'입니다.');
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $version = new Version(1);
+        $isOfficial ??= false;
+        $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
 
         $group = new Group(
             $groupIdentifier,
@@ -271,6 +311,10 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $description,
             $imagePath,
             $version,
+            null,
+            null,
+            $isOfficial,
+            $ownerIdentifier,
         );
 
         return new GroupTestData(
@@ -283,6 +327,8 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             description: $description,
             imagePath: $imagePath,
             version: $version,
+            isOfficial: $isOfficial,
+            ownerIdentifier: $ownerIdentifier,
             group: $group,
         );
     }
@@ -306,6 +352,8 @@ readonly class GroupTestData
         public Description              $description,
         public ImagePath                $imagePath,
         public Version                  $version,
+        public bool                     $isOfficial,
+        public ?AccountIdentifier        $ownerIdentifier,
         public Group                    $group,
     ) {
     }

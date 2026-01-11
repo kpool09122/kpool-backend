@@ -22,6 +22,8 @@ return new class extends Migration
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
             $table->json('relevant_video_links')->comment('関連動画リン一覧')->default('[]');
+            $table->boolean('is_official')->default(false)->comment('Official flag');
+            $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
             $table->softDeletes();

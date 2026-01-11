@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -52,6 +53,8 @@ class Talent
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
+        private bool                              $isOfficial = false,
+        private ?AccountIdentifier                $ownerAccountIdentifier = null,
     ) {
     }
 
@@ -202,5 +205,25 @@ class Talent
     public function setMergedAt(?DateTimeImmutable $mergedAt): void
     {
         $this->mergedAt = $mergedAt;
+    }
+
+    public function isOfficial(): bool
+    {
+        return $this->isOfficial;
+    }
+
+    public function ownerAccountIdentifier(): ?AccountIdentifier
+    {
+        return $this->ownerAccountIdentifier;
+    }
+
+    public function markOfficial(AccountIdentifier $ownerAccountIdentifier): void
+    {
+        if ($this->isOfficial) {
+            return;
+        }
+
+        $this->isOfficial = true;
+        $this->ownerAccountIdentifier = $ownerAccountIdentifier;
     }
 }

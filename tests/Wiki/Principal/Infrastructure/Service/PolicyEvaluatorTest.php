@@ -28,7 +28,7 @@ use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateIdentity;
@@ -209,7 +209,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
         foreach (Action::cases() as $action) {
             $this->assertTrue(
                 $policyEvaluator->evaluate($principal, $action, $resource),
@@ -237,7 +237,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
         foreach (Action::cases() as $action) {
             $this->assertFalse(
                 $policyEvaluator->evaluate($principal, $action, $resource),
@@ -266,7 +266,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
         foreach (Action::cases() as $action) {
             $this->assertFalse(
                 $policyEvaluator->evaluate($principal, $action, $resource),
@@ -290,7 +290,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
         foreach (Action::cases() as $action) {
             $this->assertFalse(
                 $policyEvaluator->evaluate($principal, $action, $resource),
@@ -342,7 +342,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
 
         // ROLLBACKは拒否される
         $this->assertFalse(
@@ -415,7 +415,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
 
         // 両方のアクションが許可される
         $this->assertTrue(
@@ -473,21 +473,21 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // 自分のAgencyへのAPPROVEは許可
-        $ownAgency = new ResourceIdentifier(ResourceType::AGENCY, $principalAgencyId);
+        $ownAgency = new Resource(ResourceType::AGENCY, $principalAgencyId);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency),
             'APPROVE on own agency should be allowed'
         );
 
         // 他のAgencyへのAPPROVEは拒否
-        $otherAgency = new ResourceIdentifier(ResourceType::AGENCY, StrTestHelper::generateUuid());
+        $otherAgency = new Resource(ResourceType::AGENCY, StrTestHelper::generateUuid());
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency),
             'APPROVE on other agency should be denied'
         );
 
         // agencyIdがnullのリソースへのAPPROVEは拒否
-        $noAgency = new ResourceIdentifier(ResourceType::AGENCY);
+        $noAgency = new Resource(ResourceType::AGENCY);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $noAgency),
             'APPROVE on resource without agencyId should be denied'
@@ -533,14 +533,14 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // 交差がある場合は許可
-        $matchingGroup = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId2]);
+        $matchingGroup = new Resource(ResourceType::GROUP, null, [$groupId2]);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $matchingGroup),
             'APPROVE should be allowed when groupIds intersect'
         );
 
         // 交差がない場合は拒否
-        $nonMatchingGroup = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $nonMatchingGroup = new Resource(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $nonMatchingGroup),
             'APPROVE should be denied when groupIds do not intersect'
@@ -585,13 +585,13 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $otherAgency = new ResourceIdentifier(ResourceType::AGENCY, $otherAgencyId);
+        $otherAgency = new Resource(ResourceType::AGENCY, $otherAgencyId);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency),
             'APPROVE should be allowed when agencyId does not match'
         );
 
-        $ownAgency = new ResourceIdentifier(ResourceType::AGENCY, $principalAgencyId);
+        $ownAgency = new Resource(ResourceType::AGENCY, $principalAgencyId);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency),
             'APPROVE should be denied when agencyId matches'
@@ -636,7 +636,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
+        $resource = new Resource(ResourceType::GROUP, null, [$groupId]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
             'APPROVE should be denied when condition value type mismatches resource value type'
@@ -682,14 +682,14 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // 自分のGroupへのAPPROVEは許可
-        $ownGroup = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
+        $ownGroup = new Resource(ResourceType::GROUP, null, [$groupId]);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $ownGroup),
             'APPROVE on own group should be allowed'
         );
 
         // 他のGroupへのAPPROVEは拒否
-        $otherGroup = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $otherGroup = new Resource(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherGroup),
             'APPROVE on other group should be denied'
@@ -733,13 +733,13 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $ownAgency = new ResourceIdentifier(ResourceType::AGENCY, $principalAgencyId);
+        $ownAgency = new Resource(ResourceType::AGENCY, $principalAgencyId);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency),
             'APPROVE should be allowed when agencyId is in principal agencyId'
         );
 
-        $otherAgency = new ResourceIdentifier(ResourceType::AGENCY, StrTestHelper::generateUuid());
+        $otherAgency = new Resource(ResourceType::AGENCY, StrTestHelper::generateUuid());
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency),
             'APPROVE should be denied when agencyId is not in principal agencyId'
@@ -783,7 +783,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::AGENCY);
+        $resource = new Resource(ResourceType::AGENCY);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
             'APPROVE should be denied when agencyId is null'
@@ -825,7 +825,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $resource = new Resource(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
             'APPROVE should be denied when principal groupIds are empty'
@@ -869,13 +869,13 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $otherGroup = new ResourceIdentifier(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
+        $otherGroup = new Resource(ResourceType::GROUP, null, [StrTestHelper::generateUuid()]);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherGroup),
             'APPROVE should be allowed when groupId is not in principal groups'
         );
 
-        $ownGroup = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
+        $ownGroup = new Resource(ResourceType::GROUP, null, [$groupId]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $ownGroup),
             'APPROVE should be denied when groupId is in principal groups'
@@ -921,14 +921,14 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // 自分のTalentへのAPPROVEは許可
-        $ownTalent = new ResourceIdentifier(ResourceType::TALENT, null, [], [$talentId]);
+        $ownTalent = new Resource(ResourceType::TALENT, null, [], [$talentId]);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $ownTalent),
             'APPROVE on own talent should be allowed'
         );
 
         // 他のTalentへのAPPROVEは拒否
-        $otherTalent = new ResourceIdentifier(ResourceType::TALENT, null, [], [StrTestHelper::generateUuid()]);
+        $otherTalent = new Resource(ResourceType::TALENT, null, [], [StrTestHelper::generateUuid()]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $otherTalent),
             'APPROVE on other talent should be denied'
@@ -980,21 +980,21 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // 両方一致する場合は許可
-        $matchingBoth = new ResourceIdentifier(ResourceType::GROUP, $agencyId, [$groupId]);
+        $matchingBoth = new Resource(ResourceType::GROUP, $agencyId, [$groupId]);
         $this->assertTrue(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $matchingBoth),
             'APPROVE should be allowed when both conditions match'
         );
 
         // agencyIdのみ一致する場合は拒否
-        $matchingAgencyOnly = new ResourceIdentifier(ResourceType::GROUP, $agencyId, [StrTestHelper::generateUuid()]);
+        $matchingAgencyOnly = new Resource(ResourceType::GROUP, $agencyId, [StrTestHelper::generateUuid()]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $matchingAgencyOnly),
             'APPROVE should be denied when only agencyId matches'
         );
 
         // groupIdのみ一致する場合は拒否
-        $matchingGroupOnly = new ResourceIdentifier(ResourceType::GROUP, StrTestHelper::generateUuid(), [$groupId]);
+        $matchingGroupOnly = new Resource(ResourceType::GROUP, StrTestHelper::generateUuid(), [$groupId]);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $matchingGroupOnly),
             'APPROVE should be denied when only groupId matches'
@@ -1037,12 +1037,16 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        // NOTE: ResourceIdentifierにはisOfficialが含まれていないため、このテストは将来の拡張用
-        // 現状はConditionを評価しようとしてもisOfficialを取得できないためfalseになる
-        $resource = new ResourceIdentifier(ResourceType::GROUP);
+        $resource = new Resource(ResourceType::GROUP);
         $this->assertFalse(
             $policyEvaluator->evaluate($principal, Action::APPROVE, $resource),
-            'APPROVE should be denied when isOfficial condition cannot be evaluated'
+            'APPROVE should be denied when isOfficial is false'
+        );
+
+        $officialResource = new Resource(ResourceType::GROUP, null, [], [], true);
+        $this->assertTrue(
+            $policyEvaluator->evaluate($principal, Action::APPROVE, $officialResource),
+            'APPROVE should be allowed when isOfficial is true'
         );
     }
 
@@ -1076,7 +1080,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $resource = new ResourceIdentifier(ResourceType::GROUP);
+        $resource = new Resource(ResourceType::GROUP);
 
         // CREATE, EDIT, SUBMITは許可
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::CREATE, $resource));
@@ -1172,7 +1176,7 @@ class PolicyEvaluatorTest extends TestCase
             $this->policyRepository
         );
 
-        $agency = new ResourceIdentifier(ResourceType::AGENCY);
+        $agency = new Resource(ResourceType::AGENCY);
 
         // Agencyへの承認系アクションは拒否される
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $agency));
@@ -1186,12 +1190,12 @@ class PolicyEvaluatorTest extends TestCase
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::SUBMIT, $agency));
 
         // 自分のGroupへの承認は許可される
-        $ownGroup = new ResourceIdentifier(ResourceType::GROUP, null, [$groupId]);
+        $ownGroup = new Resource(ResourceType::GROUP, null, [$groupId]);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $ownGroup));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::TRANSLATE, $ownGroup));
 
         // 自分のTalentへの承認は許可される
-        $ownTalent = new ResourceIdentifier(ResourceType::TALENT, null, [], [$talentId]);
+        $ownTalent = new Resource(ResourceType::TALENT, null, [], [$talentId]);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $ownTalent));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::TRANSLATE, $ownTalent));
     }
@@ -1248,26 +1252,26 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // 自分のAgencyへの承認は許可される
-        $ownAgency = new ResourceIdentifier(ResourceType::AGENCY, $agencyId);
+        $ownAgency = new Resource(ResourceType::AGENCY, $agencyId);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::TRANSLATE, $ownAgency));
 
         // 他のAgencyへの承認は拒否される
-        $otherAgency = new ResourceIdentifier(ResourceType::AGENCY, StrTestHelper::generateUuid());
+        $otherAgency = new Resource(ResourceType::AGENCY, StrTestHelper::generateUuid());
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::TRANSLATE, $otherAgency));
 
         // agencyIdがnullのAgencyへの承認は拒否される
-        $noAgency = new ResourceIdentifier(ResourceType::AGENCY);
+        $noAgency = new Resource(ResourceType::AGENCY);
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $noAgency));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::TRANSLATE, $noAgency));
 
         // Group（agencyIdが一致）への承認は許可される
-        $groupInAgency = new ResourceIdentifier(ResourceType::GROUP, $agencyId);
+        $groupInAgency = new Resource(ResourceType::GROUP, $agencyId);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $groupInAgency));
 
         // Group（agencyIdが異なる）への承認は拒否される
-        $groupOtherAgency = new ResourceIdentifier(ResourceType::GROUP, StrTestHelper::generateUuid());
+        $groupOtherAgency = new Resource(ResourceType::GROUP, StrTestHelper::generateUuid());
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $groupOtherAgency));
 
         // agencyIdがnullのPrincipalは承認できない
@@ -1338,19 +1342,19 @@ class PolicyEvaluatorTest extends TestCase
         );
 
         // Groupが一致するSongへの承認は許可
-        $songByGroup = new ResourceIdentifier(ResourceType::SONG, null, [$groupId], []);
+        $songByGroup = new Resource(ResourceType::SONG, null, [$groupId], []);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $songByGroup));
 
         // Talentが一致するSongへの承認は許可
-        $songByTalent = new ResourceIdentifier(ResourceType::SONG, null, [], [$talentId]);
+        $songByTalent = new Resource(ResourceType::SONG, null, [], [$talentId]);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $songByTalent));
 
         // 両方一致するSongへの承認は許可
-        $songByBoth = new ResourceIdentifier(ResourceType::SONG, null, [$groupId], [$talentId]);
+        $songByBoth = new Resource(ResourceType::SONG, null, [$groupId], [$talentId]);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $songByBoth));
 
         // どちらも一致しないSongへの承認は拒否
-        $songByNeither = new ResourceIdentifier(
+        $songByNeither = new Resource(
             ResourceType::SONG,
             null,
             [StrTestHelper::generateUuid()],

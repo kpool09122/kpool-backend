@@ -17,7 +17,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class RejectGroup implements RejectGroupInterface
@@ -51,13 +51,13 @@ readonly class RejectGroup implements RejectGroupInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::GROUP,
             agencyId: $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
             groupIds: [(string) $group->groupIdentifier()],
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::REJECT, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::REJECT, $resource)) {
             throw new UnauthorizedException();
         }
 

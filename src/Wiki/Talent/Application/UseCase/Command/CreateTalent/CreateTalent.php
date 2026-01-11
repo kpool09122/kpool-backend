@@ -10,7 +10,7 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
@@ -47,13 +47,13 @@ readonly class CreateTalent implements CreateTalentInterface
             static fn ($groupIdentifier) => (string) $groupIdentifier,
             $input->groupIdentifiers()
         );
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::TALENT,
             agencyId: null,
             groupIds: $groupIds,
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resource)) {
             throw new UnauthorizedException();
         }
 

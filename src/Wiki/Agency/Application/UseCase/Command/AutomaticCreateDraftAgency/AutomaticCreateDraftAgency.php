@@ -12,7 +12,7 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyInterface
@@ -39,7 +39,7 @@ readonly class AutomaticCreateDraftAgency implements AutomaticCreateDraftAgencyI
             throw new PrincipalNotFoundException();
         }
 
-        $resource = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::AGENCY,
             agencyId: $principal->agencyId(),
             groupIds: $principal->groupIds(),

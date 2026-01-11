@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property ?string $image_path
  * @property int $version
+ * @property bool $is_official
+ * @property ?string $owner_account_id
  */
 class Group extends Model
 {
@@ -35,9 +37,12 @@ class Group extends Model
         'description',
         'image_path',
         'version',
+        'is_official',
+        'owner_account_id',
     ];
 
     protected $casts = [
         'version' => 'integer',
+        'is_official' => 'boolean',
     ];
 }

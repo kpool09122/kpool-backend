@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Agency\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -27,7 +28,9 @@ class AgencyTest extends TestCase
      */
     public function test__construct(): void
     {
-        $createAgency = $this->createDummyAgency();
+        $createAgency = $this->createDummyAgency(
+            isOfficial: false
+        );
         $agency = $createAgency->agency;
 
         $this->assertSame((string)$createAgency->agencyIdentifier, (string)$agency->agencyIdentifier());
@@ -38,7 +41,15 @@ class AgencyTest extends TestCase
         $this->assertSame($createAgency->normalizedCEO, $agency->normalizedCEO());
         $this->assertSame($createAgency->foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$createAgency->description, (string)$agency->description());
+        $this->assertFalse($agency->isOfficial());
+        $this->assertSame($createAgency->ownerIdentifier, $agency->ownerAccountIdentifier());
         $this->assertSame($createAgency->version->value(), $agency->version()->value());
+
+        $createAgency = $this->createDummyAgency(
+            isOfficial: true
+        );
+        $agency = $createAgency->agency;
+        $this->assertTrue($agency->isOfficial());
     }
 
     /**
@@ -276,12 +287,39 @@ DESCRIPTION
     }
 
     /**
+     * 正常系: 正しくMarkOfficialが動作すること.
+     *
+     * @return void
+     */
+    public function testMarkOfficial(): void
+    {
+        $createAgency = $this->createDummyAgency(
+            isOfficial: false
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $agency = $createAgency->agency;
+        $agency->markOfficial($accountIdentifier);
+        $this->assertTrue($agency->isOfficial());
+        $this->assertSame($accountIdentifier, $agency->ownerAccountIdentifier());
+
+        $createAgency = $this->createDummyAgency(
+            isOfficial: true
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $agency = $createAgency->agency;
+        $agency->markOfficial($accountIdentifier);
+        $this->assertTrue($agency->isOfficial());
+        $this->assertNotSame($accountIdentifier, $agency->ownerAccountIdentifier());
+    }
+
+    /**
      * ダミーのAgencyを作成するヘルパーメソッド
      *
      * @return AgencyTestData
      */
-    private function createDummyAgency(): AgencyTestData
-    {
+    private function createDummyAgency(
+        ?bool $isOfficial = null,
+    ): AgencyTestData {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
@@ -308,6 +346,9 @@ DESCRIPTION
 DESCRIPTION
         );
         $version = new Version(1);
+        $isOfficial ??= false;
+        $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
+
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
@@ -319,7 +360,12 @@ DESCRIPTION
             $foundedIn,
             $description,
             $version,
+            null,
+            null,
+            $isOfficial,
+            $ownerIdentifier,
         );
+
 
         return new AgencyTestData(
             agencyIdentifier: $agencyIdentifier,
@@ -332,6 +378,8 @@ DESCRIPTION
             foundedIn: $foundedIn,
             description: $description,
             version: $version,
+            isOfficial: $isOfficial,
+            ownerIdentifier: $ownerIdentifier,
             agency: $agency,
         );
     }
@@ -353,6 +401,8 @@ readonly class AgencyTestData
         public FoundedIn                $foundedIn,
         public Description              $description,
         public Version                  $version,
+        public bool                     $isOfficial,
+        public ?AccountIdentifier        $ownerIdentifier,
         public Agency                   $agency,
     ) {
     }

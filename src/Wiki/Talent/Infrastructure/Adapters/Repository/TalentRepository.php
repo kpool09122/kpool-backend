@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\Group;
 use Application\Models\Wiki\Talent as TalentModel;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -72,6 +73,8 @@ final class TalentRepository implements TalentRepositoryInterface
                 'image_link' => $talent->imageLink() ? (string) $talent->imageLink() : null,
                 'relevant_video_links' => $talent->relevantVideoLinks()->toStringArray(),
                 'version' => $talent->version()->value(),
+                'is_official' => $talent->isOfficial(),
+                'owner_account_id' => $talent->ownerAccountIdentifier() ? (string) $talent->ownerAccountIdentifier() : null,
             ],
         );
 
@@ -103,6 +106,10 @@ final class TalentRepository implements TalentRepositoryInterface
             $talentModel->image_link ? new ImagePath($talentModel->image_link) : null,
             $relevantVideoLinks,
             new Version($talentModel->version),
+            null,
+            null,
+            (bool) $talentModel->is_official,
+            $talentModel->owner_account_id ? new AccountIdentifier($talentModel->owner_account_id) : null,
         );
     }
 }

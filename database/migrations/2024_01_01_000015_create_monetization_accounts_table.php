@@ -26,20 +26,6 @@ return new class extends Migration
             $table->index('status');
         });
 
-        // account_memberships テーブル（Account と Identity の中間テーブル）
-        Schema::create('account_memberships', static function (Blueprint $table) {
-            $table->uuid('id')->primary()->comment('AccountMembership ID');
-            $table->uuid('account_id')->comment('Account ID');
-            $table->uuid('identity_id')->comment('Identity ID');
-            $table->string('role', 32)->comment('Role (owner, admin, member, billing_contact)');
-            $table->timestamps();
-
-            $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
-            $table->foreign('identity_id')->references('id')->on('identities')->onDelete('cascade');
-            $table->unique(['account_id', 'identity_id']);
-            $table->index('identity_id');
-        });
-
         // monetization_accounts テーブル
         Schema::create('monetization_accounts', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('MonetizationAccount ID');
@@ -61,7 +47,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('monetization_accounts');
-        Schema::dropIfExists('account_memberships');
         Schema::dropIfExists('accounts');
     }
 };

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\Group as GroupModel;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -59,6 +60,8 @@ final class GroupRepository implements GroupRepositoryInterface
                'description' => (string)$group->description(),
                'image_path' => $group->imagePath() ? (string)$group->imagePath() : null,
                'version' => $group->version()->value(),
+               'is_official' => $group->isOfficial(),
+               'owner_account_id' => $group->ownerAccountIdentifier() ? (string) $group->ownerAccountIdentifier() : null,
             ],
         );
     }
@@ -75,6 +78,10 @@ final class GroupRepository implements GroupRepositoryInterface
             new Description($model->description),
             $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version),
+            null,
+            null,
+            (bool) $model->is_official,
+            $model->owner_account_id ? new AccountIdentifier($model->owner_account_id) : null,
         );
     }
 }

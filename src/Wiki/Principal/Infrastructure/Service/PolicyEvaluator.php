@@ -17,7 +17,7 @@ use Source\Wiki\Principal\Domain\ValueObject\ConditionValue;
 use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class PolicyEvaluator implements PolicyEvaluatorInterface
@@ -31,8 +31,8 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
 
     public function evaluate(
         Principal $principal,
-        Action $action,
-        ResourceIdentifier $resource,
+        Action    $action,
+        Resource  $resource,
     ): bool {
         // PrincipalGroup → Role → Policy の階層を辿って Statement を収集
         $statements = $this->collectStatements($principal);
@@ -135,7 +135,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
      *
      * @param Condition|null $condition null の場合は制約なし（true）
      */
-    private function matchesCondition(?Condition $condition, ResourceIdentifier $resource, Principal $principal): bool
+    private function matchesCondition(?Condition $condition, Resource $resource, Principal $principal): bool
     {
         if ($condition === null) {
             return true;
@@ -154,7 +154,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     /**
      * 単一の ConditionClause を評価する.
      */
-    private function evaluateClause(ConditionClause $clause, ResourceIdentifier $resource, Principal $principal): bool
+    private function evaluateClause(ConditionClause $clause, Resource $resource, Principal $principal): bool
     {
         // リソースの値を取得
         $resourceValue = $this->getResourceValue($clause->key(), $resource);
@@ -169,15 +169,15 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     /**
      * リソースから条件キーに対応する値を取得.
      *
-     * @return string|string[]|null
+     * @return string|string[]|bool|null
      */
-    private function getResourceValue(ConditionKey $key, ResourceIdentifier $resource): string|array|null
+    private function getResourceValue(ConditionKey $key, Resource $resource): string|array|bool|null
     {
         return match ($key) {
             ConditionKey::RESOURCE_AGENCY_ID => $resource->agencyId(),
             ConditionKey::RESOURCE_GROUP_ID => $resource->groupIds(),
             ConditionKey::RESOURCE_TALENT_ID => $resource->talentIds(),
-            ConditionKey::RESOURCE_IS_OFFICIAL => null, // ResourceIdentifier には isOfficial が含まれていない
+            ConditionKey::RESOURCE_IS_OFFICIAL => $resource->isOfficial(),
         };
     }
 

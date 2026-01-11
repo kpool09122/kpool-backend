@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property ?string $image_link
  * @property array $relevant_video_links
  * @property int $version
+ * @property bool $is_official
+ * @property ?string $owner_account_id
  * @property-read Collection<int, Group> $groups
  */
 class Talent extends Model
@@ -46,12 +48,15 @@ class Talent extends Model
         'image_link',
         'relevant_video_links',
         'version',
+        'is_official',
+        'owner_account_id',
     ];
 
     protected $casts = [
         'birthday' => 'date',
         'relevant_video_links' => 'array',
         'version' => 'integer',
+        'is_official' => 'boolean',
     ];
 
     /**

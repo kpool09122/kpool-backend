@@ -49,6 +49,12 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertification;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertificationInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertification;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\AttachPolicyToRole\AttachPolicyToRole;
@@ -175,5 +181,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
         $this->app->singleton(AttachRoleToPrincipalGroupInterface::class, AttachRoleToPrincipalGroup::class);
         $this->app->singleton(DetachRoleFromPrincipalGroupInterface::class, DetachRoleFromPrincipalGroup::class);
+        $this->app->singleton(RequestCertificationInterface::class, RequestCertification::class);
+        $this->app->singleton(ApproveCertificationInterface::class, ApproveCertification::class);
+        $this->app->singleton(RejectCertificationInterface::class, RejectCertification::class);
     }
 }

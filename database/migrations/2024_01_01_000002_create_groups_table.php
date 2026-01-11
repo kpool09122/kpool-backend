@@ -20,6 +20,8 @@ return new class extends Migration
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->text('description')->comment('概要')->default('');
             $table->string('image_path', 255)->nullable()->comment('画像パス');
+            $table->boolean('is_official')->default(false)->comment('Official flag');
+            $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
         });

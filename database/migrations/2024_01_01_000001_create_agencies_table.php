@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('normalized_CEO', 32)->comment('正規化されたCEO名')->default('');
             $table->date('founded_in')->nullable()->comment('設立年');
             $table->text('description')->comment('概要')->default('');
+            $table->boolean('is_official')->default(false)->comment('Official flag');
+            $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
         });

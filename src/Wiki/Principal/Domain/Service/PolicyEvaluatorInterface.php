@@ -6,13 +6,13 @@ namespace Source\Wiki\Principal\Domain\Service;
 
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 
 interface PolicyEvaluatorInterface
 {
     public function evaluate(
         Principal $principal,
-        Action $action,
-        ResourceIdentifier $resource,
+        Action    $action,
+        Resource  $resource,
     ): bool;
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -33,7 +34,9 @@ class SongTest extends TestCase
      */
     public function test__construct(): void
     {
-        $createSong = $this->createDummySong();
+        $createSong = $this->createDummySong(
+            isOfficial: false,
+        );
         $this->assertSame((string)$createSong->songIdentifier, (string)$createSong->song->songIdentifier());
         $this->assertSame((string)$createSong->translationSetIdentifier, (string)$createSong->song->translationSetIdentifier());
         $this->assertSame($createSong->language->value, $createSong->song->language()->value);
@@ -46,6 +49,14 @@ class SongTest extends TestCase
         $this->assertSame((string)$createSong->overView, (string)$createSong->song->overView());
         $this->assertSame((string)$createSong->coverImagePath, (string)$createSong->song->coverImagePath());
         $this->assertSame((string)$createSong->musicVideoLink, (string)$createSong->song->musicVideoLink());
+        $this->assertSame($createSong->version->value(), $createSong->song->version()->value());
+        $this->assertFalse($createSong->song->isOfficial());
+        $this->assertSame($createSong->ownerIdentifier, $createSong->song->ownerAccountIdentifier());
+
+        $createGroup = $this->createDummySong(
+            isOfficial: true
+        );
+        $this->assertTrue($createGroup->song->isOfficial());
     }
 
     /**
@@ -332,12 +343,39 @@ class SongTest extends TestCase
     }
 
     /**
+     * 正常系: 正しくMarkOfficialが動作すること.
+     *
+     * @return void
+     */
+    public function testMarkOfficial(): void
+    {
+        $createSong = $this->createDummySong(
+            isOfficial: false
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $song = $createSong->song;
+        $song->markOfficial($accountIdentifier);
+        $this->assertTrue($song->isOfficial());
+        $this->assertSame($accountIdentifier, $song->ownerAccountIdentifier());
+
+        $createSong = $this->createDummySong(
+            isOfficial: true
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $song = $createSong->song;
+        $song->markOfficial($accountIdentifier);
+        $this->assertTrue($song->isOfficial());
+        $this->assertNotSame($accountIdentifier, $song->ownerAccountIdentifier());
+    }
+
+    /**
      * ダミーのSongを作成するヘルパーメソッド
      *
      * @return SongTestData
      */
-    private function createDummySong(): SongTestData
-    {
+    private function createDummySong(
+        ?bool $isOfficial = null,
+    ): SongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
@@ -352,6 +390,8 @@ class SongTest extends TestCase
         $coverImagePath = new ImagePath('/resources/public/images/test.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $version = new Version(1);
+        $isOfficial ??= false;
+        $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
 
         $song = new Song(
             $songIdentifier,
@@ -367,7 +407,11 @@ class SongTest extends TestCase
             $overView,
             $coverImagePath,
             $musicVideoLink,
-            $version
+            $version,
+            null,
+            null,
+            $isOfficial,
+            $ownerIdentifier,
         );
 
         return new SongTestData(
@@ -384,8 +428,10 @@ class SongTest extends TestCase
             overView: $overView,
             coverImagePath: $coverImagePath,
             musicVideoLink: $musicVideoLink,
+            version: $version,
+            isOfficial: $isOfficial,
+            ownerIdentifier: $ownerIdentifier,
             song: $song,
-            version: $version
         );
     }
 }
@@ -409,8 +455,10 @@ readonly class SongTestData
         public Overview                 $overView,
         public ImagePath                $coverImagePath,
         public ExternalContentLink      $musicVideoLink,
+        public Version                  $version,
+        public bool                     $isOfficial,
+        public ?AccountIdentifier        $ownerIdentifier,
         public Song                     $song,
-        public Version                  $version
     ) {
     }
 }
