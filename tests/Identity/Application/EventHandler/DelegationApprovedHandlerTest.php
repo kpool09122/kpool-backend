@@ -7,7 +7,7 @@ namespace Tests\Identity\Application\EventHandler;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Domain\Event\DelegationApproved;
+use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Identity\Application\EventHandler\DelegationApprovedHandler;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Event\DelegatedIdentityCreated;

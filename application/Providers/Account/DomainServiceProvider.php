@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
-use Source\Account\Domain\Factory\AccountFactoryInterface;
-use Source\Account\Domain\Factory\DelegationPermissionFactoryInterface;
-use Source\Account\Domain\Factory\IdentityGroupFactoryInterface;
-use Source\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Domain\Repository\DelegationPermissionRepositoryInterface;
-use Source\Account\Domain\Repository\IdentityGroupRepositoryInterface;
-use Source\Account\Domain\Service\DelegationTerminationService;
-use Source\Account\Domain\Service\DelegationTerminationServiceInterface;
-use Source\Account\Infrastructure\Factory\AccountFactory;
-use Source\Account\Infrastructure\Factory\DelegationPermissionFactory;
-use Source\Account\Infrastructure\Factory\IdentityGroupFactory;
-use Source\Account\Infrastructure\Repository\AccountRepository;
-use Source\Account\Infrastructure\Repository\DelegationPermissionRepository;
-use Source\Account\Infrastructure\Repository\IdentityGroupRepository;
+use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Infrastructure\Factory\AccountFactory;
+use Source\Account\Account\Infrastructure\Repository\AccountRepository;
+use Source\Account\Delegation\Domain\Service\DelegationTerminationService;
+use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
+use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
+use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
+use Source\Account\DelegationPermission\Infrastructure\Factory\DelegationPermissionFactory;
+use Source\Account\DelegationPermission\Infrastructure\Repository\DelegationPermissionRepository;
+use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
+use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
+use Source\Account\IdentityGroup\Infrastructure\Factory\IdentityGroupFactory;
+use Source\Account\IdentityGroup\Infrastructure\Repository\IdentityGroupRepository;
 
 class DomainServiceProvider extends ServiceProvider
 {

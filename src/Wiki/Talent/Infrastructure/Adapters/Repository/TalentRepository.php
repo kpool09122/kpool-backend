@@ -57,7 +57,6 @@ final class TalentRepository implements TalentRepositoryInterface
         $birthday = $talent->birthday();
         $birthdayValue = $birthday?->format('Y-m-d');
 
-        /** @var TalentModel $talentModel */
         $talentModel = TalentModel::query()->updateOrCreate(
             [
                 'id' => (string) $talent->talentIdentifier(),

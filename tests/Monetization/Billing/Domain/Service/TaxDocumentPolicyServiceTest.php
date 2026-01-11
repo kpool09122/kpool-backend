@@ -6,9 +6,9 @@ namespace Tests\Monetization\Billing\Domain\Service;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Tests\TestCase;
 
 class TaxDocumentPolicyServiceTest extends TestCase

@@ -16,6 +16,11 @@ readonly class RejectCertification implements RejectCertificationInterface
     ) {
     }
 
+    /**
+     * @param RejectCertificationInputPort $input
+     * @return OfficialCertification
+     * @throws OfficialCertificationNotFoundException
+     */
     public function process(RejectCertificationInputPort $input): OfficialCertification
     {
         $certification = $this->repository->findById($input->certificationIdentifier());

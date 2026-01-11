@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\EventHandler;
 
 use DateTimeImmutable;
-use Source\Account\Domain\Event\DelegationRevoked;
+use Source\Account\Delegation\Domain\Event\DelegationRevoked;
 use Source\Identity\Domain\Event\DelegatedIdentityDeleted;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;

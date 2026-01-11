@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Models\Wiki\Role as RoleEloquent;
+use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
-use Illuminate\Support\Facades\DB;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
@@ -24,13 +24,13 @@ class RoleRepository implements RoleRepositoryInterface
             ]
         );
 
-        // Sync role_policy_attachments
         $this->syncPolicies($role);
     }
 
     public function findById(RoleIdentifier $roleIdentifier): ?Role
     {
         $eloquent = RoleEloquent::query()
+            ->with('policyAttachments')
             ->where('id', (string) $roleIdentifier)
             ->first();
 
@@ -51,35 +51,16 @@ class RoleRepository implements RoleRepositoryInterface
             return [];
         }
 
-        $ids = array_map(fn (RoleIdentifier $id) => (string) $id, $roleIdentifiers);
+        $ids = array_map(static fn (RoleIdentifier $id) => (string) $id, $roleIdentifiers);
 
-        // Role と PolicyAttachments を一括取得
         $eloquentModels = RoleEloquent::query()
+            ->with('policyAttachments')
             ->whereIn('id', $ids)
             ->get();
 
-        // PolicyAttachments を一括取得
-        $policyAttachments = DB::table('role_policy_attachments')
-            ->whereIn('role_id', $ids)
-            ->get()
-            ->groupBy('role_id');
-
         $result = [];
         foreach ($eloquentModels as $eloquent) {
-            $roleId = $eloquent->id;
-            $policyIds = $policyAttachments->get($roleId, collect())->pluck('policy_id')->toArray();
-            $policies = array_map(
-                fn (string $policyId) => new PolicyIdentifier($policyId),
-                $policyIds
-            );
-
-            $result[$roleId] = new Role(
-                new RoleIdentifier($roleId),
-                $eloquent->name,
-                $policies,
-                $eloquent->is_system_role,
-                new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
-            );
+            $result[$eloquent->id] = $this->toDomainEntity($eloquent);
         }
 
         return $result;
@@ -90,18 +71,15 @@ class RoleRepository implements RoleRepositoryInterface
      */
     public function findAll(): array
     {
-        $eloquentModels = RoleEloquent::query()->get();
+        $eloquentModels = RoleEloquent::query()
+            ->with('policyAttachments')
+            ->get();
 
         return $eloquentModels->map(fn (RoleEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
     public function delete(Role $role): void
     {
-        // 先にアタッチメントを削除
-        DB::table('role_policy_attachments')
-            ->where('role_id', (string) $role->roleIdentifier())
-            ->delete();
-
         RoleEloquent::query()
             ->where('id', (string) $role->roleIdentifier())
             ->delete();
@@ -111,31 +89,28 @@ class RoleRepository implements RoleRepositoryInterface
     {
         $roleId = (string) $role->roleIdentifier();
 
-        // 現在のアタッチメントを削除
-        DB::table('role_policy_attachments')
+        RolePolicyAttachmentEloquent::query()
             ->where('role_id', $roleId)
             ->delete();
 
-        // 新しいアタッチメントを挿入
-        foreach ($role->policies() as $policyIdentifier) {
-            DB::table('role_policy_attachments')->insert([
+        $records = array_map(
+            static fn (PolicyIdentifier $policyIdentifier) => [
                 'role_id' => $roleId,
                 'policy_id' => (string) $policyIdentifier,
-            ]);
+            ],
+            $role->policies()
+        );
+
+        if (! empty($records)) {
+            RolePolicyAttachmentEloquent::query()->insert($records);
         }
     }
 
     private function toDomainEntity(RoleEloquent $eloquent): Role
     {
-        $policyIds = DB::table('role_policy_attachments')
-            ->where('role_id', $eloquent->id)
-            ->pluck('policy_id')
-            ->toArray();
-
-        $policies = array_map(
-            fn (string $policyId) => new PolicyIdentifier($policyId),
-            $policyIds
-        );
+        $policies = $eloquent->policyAttachments->map(
+            fn (RolePolicyAttachmentEloquent $attachment) => new PolicyIdentifier($attachment->policy_id)
+        )->all();
 
         return new Role(
             new RoleIdentifier($eloquent->id),

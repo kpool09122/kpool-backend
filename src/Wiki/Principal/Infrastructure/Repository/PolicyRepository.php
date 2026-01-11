@@ -56,13 +56,14 @@ class PolicyRepository implements PolicyRepositoryInterface
             return [];
         }
 
-        $ids = array_map(fn (PolicyIdentifier $id) => (string) $id, $policyIdentifiers);
+        $ids = array_map(static fn (PolicyIdentifier $id) => (string) $id, $policyIdentifiers);
 
         $eloquentModels = PolicyEloquent::query()
             ->whereIn('id', $ids)
             ->get();
 
         $result = [];
+        /** @var PolicyEloquent $eloquent */
         foreach ($eloquentModels as $eloquent) {
             $result[$eloquent->id] = $this->toDomainEntity($eloquent);
         }
@@ -106,8 +107,8 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         return [
             'effect' => $statement->effect()->value,
-            'actions' => array_map(fn (Action $action) => $action->value, $statement->actions()),
-            'resource_types' => array_map(fn (ResourceType $resourceType) => $resourceType->value, $statement->resourceTypes()),
+            'actions' => array_map(static fn (Action $action) => $action->value, $statement->actions()),
+            'resource_types' => array_map(static fn (ResourceType $resourceType) => $resourceType->value, $statement->resourceTypes()),
             'condition' => $statement->condition() !== null
                 ? $this->serializeCondition($statement->condition())
                 : null,
@@ -120,7 +121,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     private function serializeCondition(Condition $condition): array
     {
         return array_map(
-            fn (ConditionClause $clause) => [
+            static fn (ConditionClause $clause) => [
                 'key' => $clause->key()->value,
                 'operator' => $clause->operator()->value,
                 'value' => $clause->value() instanceof ConditionValue
@@ -161,8 +162,8 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         return new Statement(
             Effect::from($data['effect']),
-            array_map(fn (string $action) => Action::from($action), $data['actions']),
-            array_map(fn (string $resourceType) => ResourceType::from($resourceType), $data['resource_types']),
+            array_map(static fn (string $action) => Action::from($action), $data['actions']),
+            array_map(static fn (string $resourceType) => ResourceType::from($resourceType), $data['resource_types']),
             $data['condition'] !== null
                 ? $this->deserializeCondition($data['condition'])
                 : null,

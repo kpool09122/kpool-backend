@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -15,6 +16,8 @@ use Illuminate\Support\Carbon;
  * @property bool $is_default
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
+ * @property-read Collection<int, PrincipalGroupMembership> $memberships
+ * @property-read Collection<int, PrincipalGroupRoleAttachment> $roleAttachments
  */
 class PrincipalGroup extends Model
 {

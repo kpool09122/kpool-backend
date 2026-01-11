@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Infrastructure\Repository;
 
 use Application\Models\Wiki\OfficialCertification as OfficialCertificationModel;
-use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
@@ -70,12 +69,12 @@ class OfficialCertificationRepository implements OfficialCertificationRepository
 
     private function toEntity(OfficialCertificationModel $model): OfficialCertification
     {
-        $requestedAt = new DateTimeImmutable($model->requested_at->toDateTimeString());
+        $requestedAt = $model->requested_at->toDateTimeImmutable();
         $approvedAt = $model->approved_at
-            ? new DateTimeImmutable($model->approved_at->toDateTimeString())
+            ? $model->approved_at->toDateTimeImmutable()
             : null;
         $rejectedAt = $model->rejected_at
-            ? new DateTimeImmutable($model->rejected_at->toDateTimeString())
+            ? $model->rejected_at->toDateTimeImmutable()
             : null;
 
         return new OfficialCertification(

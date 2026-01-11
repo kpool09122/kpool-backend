@@ -8,5 +8,9 @@ use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 
 interface RequestCertificationInterface
 {
+    /**
+     * @param RequestCertificationInputPort $input
+     * @return OfficialCertification
+     */
     public function process(RequestCertificationInputPort $input): OfficialCertification;
 }

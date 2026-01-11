@@ -6,7 +6,6 @@ namespace Source\Monetization\Billing\Infrastructure\Repository;
 
 use Application\Models\Monetization\Invoice as InvoiceEloquent;
 use DateTimeImmutable;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
@@ -15,6 +14,7 @@ use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;

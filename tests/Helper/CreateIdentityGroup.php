@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
-use Source\Account\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class CreateIdentityGroup

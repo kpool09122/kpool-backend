@@ -6,7 +6,7 @@ namespace Source\Monetization\Billing\Domain\ValueObject;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Source\Account\Domain\ValueObject\CountryCode;
+use Source\Shared\Domain\ValueObject\CountryCode;
 
 readonly class TaxDocument
 {

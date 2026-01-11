@@ -8,9 +8,9 @@ use DateTimeImmutable;
 use Exception;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
+use Source\Shared\Domain\ValueObject\CountryCode;
 
 class TaxDocumentTest extends TestCase
 {

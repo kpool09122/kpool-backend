@@ -17,6 +17,10 @@ readonly class RequestCertification implements RequestCertificationInterface
     ) {
     }
 
+    /**
+     * @param RequestCertificationInputPort $input
+     * @return OfficialCertification
+     */
     public function process(RequestCertificationInputPort $input): OfficialCertification
     {
         $existing = $this->repository->findByResource(
