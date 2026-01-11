@@ -10,7 +10,7 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -45,14 +45,14 @@ readonly class EditSong implements EditSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::SONG,
             agencyId: (string) $input->agencyIdentifier(),
             groupIds: [(string) $input->groupIdentifier()],
             talentIds: [(string) $input->talentIdentifier()],
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resource)) {
             throw new UnauthorizedException();
         }
 

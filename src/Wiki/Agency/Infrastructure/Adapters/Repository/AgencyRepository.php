@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\Agency as AgencyModel;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -39,6 +40,10 @@ class AgencyRepository implements AgencyRepositoryInterface
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
             new Description($agencyModel->description),
             new Version($agencyModel->version),
+            null,
+            null,
+            (bool) $agencyModel->is_official,
+            $agencyModel->owner_account_id ? new AccountIdentifier($agencyModel->owner_account_id) : null,
         );
     }
 
@@ -63,6 +68,10 @@ class AgencyRepository implements AgencyRepositoryInterface
                 $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
                 new Description($agencyModel->description),
                 new Version($agencyModel->version),
+                null,
+                null,
+                (bool) $agencyModel->is_official,
+                $agencyModel->owner_account_id ? new AccountIdentifier($agencyModel->owner_account_id) : null,
             );
         })->toArray();
     }
@@ -83,6 +92,8 @@ class AgencyRepository implements AgencyRepositoryInterface
                 'founded_in' => $agency->foundedIn(),
                 'description' => (string)$agency->description(),
                 'version' => $agency->version()->value(),
+                'is_official' => $agency->isOfficial(),
+                'owner_account_id' => $agency->ownerAccountIdentifier() ? (string) $agency->ownerAccountIdentifier() : null,
             ]
         );
     }

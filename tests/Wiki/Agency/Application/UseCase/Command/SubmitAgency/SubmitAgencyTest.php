@@ -27,7 +27,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -70,7 +69,7 @@ class SubmitAgencyTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
             operatorIdentifier: $principalIdentifier,
@@ -131,7 +130,7 @@ class SubmitAgencyTest extends TestCase
         $dummySubmitAgency = $this->createDummySubmitAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitAgencyInput(
             $dummySubmitAgency->agencyIdentifier,
@@ -217,7 +216,7 @@ class SubmitAgencyTest extends TestCase
         $dummySubmitAgency = $this->createDummySubmitAgency(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitAgencyInput(
             $dummySubmitAgency->agencyIdentifier,
@@ -261,7 +260,7 @@ class SubmitAgencyTest extends TestCase
     public function testProcessWithCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
             operatorIdentifier: $principalIdentifier,
@@ -320,7 +319,7 @@ class SubmitAgencyTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
             agencyId: $agencyId,
@@ -381,7 +380,7 @@ class SubmitAgencyTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [$groupId], [$talentId]);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
             operatorIdentifier: $principalIdentifier,
@@ -439,7 +438,7 @@ class SubmitAgencyTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummySubmitAgency = $this->createDummySubmitAgency(
             operatorIdentifier: $principalIdentifier,
@@ -498,7 +497,7 @@ class SubmitAgencyTest extends TestCase
         $dummySubmitAgency = $this->createDummySubmitAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitAgencyInput($dummySubmitAgency->agencyIdentifier, $principalIdentifier);
 
@@ -521,6 +520,8 @@ class SubmitAgencyTest extends TestCase
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $useCase = $this->app->make(SubmitAgencyInterface::class);

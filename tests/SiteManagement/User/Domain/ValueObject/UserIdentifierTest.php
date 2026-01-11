@@ -19,8 +19,8 @@ class UserIdentifierTest extends TestCase
     public function test__construct(): void
     {
         $id = StrTestHelper::generateUuid();
-        $accountIdentifier = new UserIdentifier($id);
-        $this->assertSame($id, (string)$accountIdentifier);
+        $userIdentifier = new UserIdentifier($id);
+        $this->assertSame($id, (string)$userIdentifier);
     }
 
     /**

@@ -12,7 +12,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -67,7 +66,7 @@ class AutomaticCreateDraftSongTest extends TestCase
     {
         $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
+        $principal = $this->makePrincipal($principalIdentifier);
         $draftSong = $this->makeDraftSong();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -110,7 +109,7 @@ class AutomaticCreateDraftSongTest extends TestCase
     {
         $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
+        $principal = $this->makePrincipal($principalIdentifier);
         $draftSong = $this->makeDraftSong();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -153,7 +152,7 @@ class AutomaticCreateDraftSongTest extends TestCase
     {
         $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
+        $principal = $this->makePrincipal($principalIdentifier);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -169,6 +168,7 @@ class AutomaticCreateDraftSongTest extends TestCase
         $this->app->instance(DraftSongRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftSongInput($payload, $principalIdentifier);
+        $this->setPolicyEvaluatorResult(false);
         $useCase = $this->app->make(AutomaticCreateDraftSongInterface::class);
 
         $this->expectException(UnauthorizedException::class);
@@ -223,9 +223,9 @@ class AutomaticCreateDraftSongTest extends TestCase
         );
     }
 
-    private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
+    private function makePrincipal(PrincipalIdentifier $principalIdentifier): Principal
     {
-        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
     }
 
     private function makeDraftSong(): DraftSong

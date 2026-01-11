@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -34,7 +35,9 @@ class TalentTest extends TestCase
      */
     public function test__construct(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent(
+            isOfficial: false,
+        );
 
         $this->assertSame((string)$talentInfo->talentIdentifier, (string)$talentInfo->talent->talentIdentifier());
         $this->assertSame($talentInfo->language->value, $talentInfo->talent->language()->value);
@@ -45,6 +48,14 @@ class TalentTest extends TestCase
         $this->assertSame((string)$talentInfo->career, (string)$talentInfo->talent->career());
         $this->assertSame((string)$talentInfo->imagePath, (string)$talentInfo->talent->imageLink());
         $this->assertSame([(string)$talentInfo->link1, (string)$talentInfo->link2, (string)$talentInfo->link3], $talentInfo->talent->relevantVideoLinks()->toStringArray());
+        $this->assertSame($talentInfo->version->value(), $talentInfo->talent->version()->value());
+        $this->assertFalse($talentInfo->talent->isOfficial());
+        $this->assertSame($talentInfo->ownerIdentifier, $talentInfo->talent->ownerAccountIdentifier());
+
+        $talentInfo = $this->createDummyTalent(
+            isOfficial: true
+        );
+        $this->assertTrue($talentInfo->talent->isOfficial());
     }
 
     /**
@@ -55,7 +66,7 @@ class TalentTest extends TestCase
      */
     public function testSetName(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
 
         $this->assertSame((string)$talentInfo->name, (string)$talentInfo->talent->name());
 
@@ -73,7 +84,7 @@ class TalentTest extends TestCase
      */
     public function testSetRealName(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
 
         $this->assertSame((string)$talentInfo->realName, (string)$talentInfo->talent->realName());
 
@@ -91,7 +102,7 @@ class TalentTest extends TestCase
      */
     public function testSetGroupIdentifier(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertSame($talentInfo->groupIdentifiers, $talentInfo->talent->groupIdentifiers());
 
         $newGroupIdentifiers = [
@@ -115,7 +126,7 @@ class TalentTest extends TestCase
      */
     public function testSetBirthday(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertSame((string)$talentInfo->birthday, (string)$talentInfo->talent->birthday());
 
         $newBirthday = new Birthday(new DateTimeImmutable('1995-01-01'));
@@ -132,7 +143,7 @@ class TalentTest extends TestCase
      */
     public function testSetCareer(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertSame((string)$talentInfo->career, (string)$talentInfo->talent->career());
 
         $newCareer = new Career('### **經歷介紹範例**
@@ -153,7 +164,7 @@ class TalentTest extends TestCase
      */
     public function testSetImageLink(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertSame((string)$talentInfo->imagePath, (string)$talentInfo->talent->imageLink());
 
         $newImagePath = new ImagePath('/resources/public/images/after.webp');
@@ -171,7 +182,7 @@ class TalentTest extends TestCase
      */
     public function testRelevantVideoLinks(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertSame($talentInfo->relevantVideoLinks->toStringArray(), $talentInfo->talent->relevantVideoLinks()->toStringArray());
 
         $link4 = new ExternalContentLink('https://example4.youtube.com/watch?v=dQw4w9WgXcQ');
@@ -191,7 +202,7 @@ class TalentTest extends TestCase
      */
     public function testHasSameVersionReturnsTrue(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
 
         $sameVersion = new Version(1);
         $this->assertTrue($talentInfo->talent->hasSameVersion($sameVersion));
@@ -205,7 +216,7 @@ class TalentTest extends TestCase
      */
     public function testHasSameVersionReturnsFalse(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
 
         $differentVersion = new Version(2);
         $this->assertFalse($talentInfo->talent->hasSameVersion($differentVersion));
@@ -248,7 +259,7 @@ class TalentTest extends TestCase
      */
     public function testIsVersionGreaterThanReturnsFalse(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
 
         $sameVersion = new Version(1);
         $this->assertFalse($talentInfo->talent->isVersionGreaterThan($sameVersion));
@@ -265,7 +276,7 @@ class TalentTest extends TestCase
      */
     public function testSetMergerIdentifier(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertNull($talentInfo->talent->mergerIdentifier());
 
         $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -281,7 +292,7 @@ class TalentTest extends TestCase
      */
     public function testSetMergedAt(): void
     {
-        $talentInfo = $this->createDummyDraftTalent();
+        $talentInfo = $this->createDummyTalent();
         $this->assertNull($talentInfo->talent->mergedAt());
 
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
@@ -290,10 +301,37 @@ class TalentTest extends TestCase
     }
 
     /**
+     * 正常系: 正しくMarkOfficialが動作すること.
+     *
+     * @return void
+     */
+    public function testMarkOfficial(): void
+    {
+        $createTalent = $this->createDummyTalent(
+            isOfficial: false
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talent = $createTalent->talent;
+        $talent->markOfficial($accountIdentifier);
+        $this->assertTrue($talent->isOfficial());
+        $this->assertSame($accountIdentifier, $talent->ownerAccountIdentifier());
+
+        $createTalent = $this->createDummyTalent(
+            isOfficial: true
+        );
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $talent = $createTalent->talent;
+        $talent->markOfficial($accountIdentifier);
+        $this->assertTrue($talent->isOfficial());
+        $this->assertNotSame($accountIdentifier, $talent->ownerAccountIdentifier());
+    }
+
+    /**
      * @throws ExceedMaxRelevantVideoLinksException
      */
-    private function createDummyDraftTalent(): TalentTestData
-    {
+    private function createDummyTalent(
+        ?bool $isOfficial = null,
+    ): TalentTestData {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
@@ -315,6 +353,8 @@ class TalentTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $version = new Version(1);
+        $isOfficial ??= false;
+        $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
@@ -328,6 +368,10 @@ class TalentTest extends TestCase
             $imagePath,
             $relevantVideoLinks,
             $version,
+            null,
+            null,
+            $isOfficial,
+            $ownerIdentifier,
         );
 
         return new TalentTestData(
@@ -345,6 +389,9 @@ class TalentTest extends TestCase
             link2: $link2,
             link3: $link3,
             relevantVideoLinks: $relevantVideoLinks,
+            version: $version,
+            isOfficial: $isOfficial,
+            ownerIdentifier: $ownerIdentifier,
             talent: $talent,
         );
     }
@@ -373,7 +420,10 @@ readonly class TalentTestData
         public ExternalContentLink      $link1,
         public ExternalContentLink      $link2,
         public ExternalContentLink      $link3,
-        public RelevantVideoLinks $relevantVideoLinks,
+        public RelevantVideoLinks       $relevantVideoLinks,
+        public Version                  $version,
+        public bool                     $isOfficial,
+        public ?AccountIdentifier        $ownerIdentifier,
         public Talent $talent,
     ) {
     }

@@ -24,7 +24,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -43,7 +42,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $payload = $this->makePayload();
         $draftAgency = $this->makeDraftAgency();
@@ -86,7 +85,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $payload = $this->makePayload();
         $draftAgency = $this->makeDraftAgency();
@@ -162,7 +161,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
     public function testProcessWithUnauthorizedRole(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $payload = $this->makePayload();
 
@@ -180,6 +179,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
         $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
+        $this->setPolicyEvaluatorResult(false);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
         $this->expectException(UnauthorizedException::class);

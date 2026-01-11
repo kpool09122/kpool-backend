@@ -14,7 +14,7 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class CreateGroup implements CreateGroupInterface
@@ -41,13 +41,13 @@ readonly class CreateGroup implements CreateGroupInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::GROUP,
             agencyId: (string) $input->agencyIdentifier(),
             groupIds: [],
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::CREATE, $resource)) {
             throw new UnauthorizedException();
         }
 

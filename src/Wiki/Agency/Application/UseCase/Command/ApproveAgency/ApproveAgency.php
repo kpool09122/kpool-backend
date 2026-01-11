@@ -19,7 +19,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class ApproveAgency implements ApproveAgencyInterface
@@ -56,7 +56,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $resourceIdentifier = new ResourceIdentifier(
+        $resourceIdentifier = new Resource(
             type: ResourceType::AGENCY,
             agencyId: (string) $agency->agencyIdentifier(),
             groupIds: [],

@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -68,7 +67,7 @@ class MergeSongTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeSongInput(
             $dummySong->songIdentifier,
@@ -233,7 +232,7 @@ class MergeSongTest extends TestCase
 
         $agencyId = (string) $dummySong->agencyIdentifier;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new MergeSongInput(
             $dummySong->songIdentifier,
@@ -288,7 +287,7 @@ class MergeSongTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [(string) $dummySong->groupIdentifier], [(string) $dummySong->talentIdentifier]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [(string) $dummySong->groupIdentifier], [(string) $dummySong->talentIdentifier]);
 
         $input = new MergeSongInput(
             $dummySong->songIdentifier,
@@ -342,7 +341,7 @@ class MergeSongTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeSongInput(
             $dummySong->songIdentifier,
@@ -373,6 +372,8 @@ class MergeSongTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $mergeSong = $this->app->make(MergeSongInterface::class);
@@ -393,7 +394,7 @@ class MergeSongTest extends TestCase
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new MergeSongInput(
             $dummySong->songIdentifier,
@@ -424,6 +425,8 @@ class MergeSongTest extends TestCase
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $mergeSong = $this->app->make(MergeSongInterface::class);

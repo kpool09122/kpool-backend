@@ -8,7 +8,6 @@ use DomainException;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -24,7 +23,6 @@ class PrincipalTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $role = Role::AGENCY_ACTOR;
         $agencyId = StrTestHelper::generateUuid();
         $groupIds = [
             StrTestHelper::generateUuid(),
@@ -34,14 +32,12 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            $role,
             $agencyId,
             $groupIds,
             $memberIds,
         );
         $this->assertSame((string)$principalIdentifier, (string)$principal->principalIdentifier());
         $this->assertSame((string)$identityIdentifier, (string)$principal->identityIdentifier());
-        $this->assertSame($role->value, $principal->role()->value);
         $this->assertSame($agencyId, $principal->agencyId());
         $this->assertSame($groupIds, $principal->groupIds());
         $this->assertSame($memberIds, $principal->talentIds());
@@ -49,7 +45,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             $identityIdentifier,
-            $role,
             null,
             [],
             [],
@@ -60,38 +55,6 @@ class PrincipalTest extends TestCase
     }
 
     /**
-     * 正常系：Roleのsetterが正しく動作すること.
-     *
-     * @return void
-     */
-    public function testSetRole(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $role = Role::AGENCY_ACTOR;
-        $agencyId = StrTestHelper::generateUuid();
-        $groupIds = [
-            StrTestHelper::generateUuid(),
-            StrTestHelper::generateUuid(),
-        ];
-        $memberIds = [StrTestHelper::generateUuid()];
-        $principal = new Principal(
-            $principalIdentifier,
-            $identityIdentifier,
-            $role,
-            $agencyId,
-            $groupIds,
-            $memberIds,
-        );
-        $this->assertSame($role, $principal->role());
-
-        $newRole = Role::ADMINISTRATOR;
-        $principal->setRole($newRole);
-        $this->assertNotSame($role, $principal->role());
-        $this->assertSame($newRole, $principal->role());
-    }
-
-    /**
      * 正常系：通常のPrincipalはdelegationIdentifierがnullでenabledがtrueであること.
      */
     public function testNonDelegatedPrincipal(): void
@@ -99,7 +62,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             null,
             [],
             [],
@@ -119,7 +81,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             null,
             [],
             [],
@@ -141,7 +102,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             null,
             [],
             [],
@@ -166,7 +126,6 @@ class PrincipalTest extends TestCase
         $principal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             null,
             [],
             [],

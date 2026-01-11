@@ -25,7 +25,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -69,7 +69,7 @@ class CreateGroupTest extends TestCase
         $createDummyCreateGroup = $this->createDummyCreateGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new CreateGroupInput(
             $createDummyCreateGroup->publishedGroupIdentifier,
@@ -86,6 +86,11 @@ class CreateGroupTest extends TestCase
             ->with($principalIdentifier)
             ->once()
             ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->once()
+            ->andReturn(true);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
@@ -112,6 +117,7 @@ class CreateGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -138,12 +144,12 @@ class CreateGroupTest extends TestCase
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testAuthorizedCollaborator(): void
+    public function testAuthorized(): void
     {
         $createDummyCreateGroup = $this->createDummyCreateGroup(base64EncodedImage: null);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new CreateGroupInput(
             $createDummyCreateGroup->publishedGroupIdentifier,
@@ -160,6 +166,11 @@ class CreateGroupTest extends TestCase
             ->with($principalIdentifier)
             ->once()
             ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->once()
+            ->andReturn(true);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
 
@@ -182,6 +193,7 @@ class CreateGroupTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
@@ -192,20 +204,18 @@ class CreateGroupTest extends TestCase
     }
 
     /**
-     * 正常系：AGENCY_ACTORがグループを作成できること.
+     * 異常系：権限がない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function testAuthorizedAgencyActor(): void
+    public function testUnauthorized(): void
     {
         $createDummyCreateGroup = $this->createDummyCreateGroup(base64EncodedImage: null);
-        $agencyId = (string)$createDummyCreateGroup->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new CreateGroupInput(
             $createDummyCreateGroup->publishedGroupIdentifier,
@@ -223,126 +233,10 @@ class CreateGroupTest extends TestCase
             ->once()
             ->andReturn($principal);
 
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
-        $groupFactory->shouldReceive('create')
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
             ->once()
-            ->with($principalIdentifier, $createDummyCreateGroup->language, $createDummyCreateGroup->name)
-            ->andReturn($createDummyCreateGroup->group);
-
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($createDummyCreateGroup->publishedGroupIdentifier)
-            ->andReturn(null);
-
-        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $draftGroupRepository->shouldReceive('save')
-            ->once()
-            ->with($createDummyCreateGroup->group)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
-
-        $useCase = $this->app->make(CreateGroupInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORがグループを作成できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $createDummyCreateGroup = $this->createDummyCreateGroup(base64EncodedImage: null);
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
-
-        $input = new CreateGroupInput(
-            $createDummyCreateGroup->publishedGroupIdentifier,
-            $createDummyCreateGroup->language,
-            $createDummyCreateGroup->name,
-            $createDummyCreateGroup->agencyIdentifier,
-            $createDummyCreateGroup->description,
-            $createDummyCreateGroup->base64EncodedImage,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $imageService = Mockery::mock(ImageServiceInterface::class);
-
-        $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
-        $groupFactory->shouldReceive('create')
-            ->once()
-            ->with($principalIdentifier, $createDummyCreateGroup->language, $createDummyCreateGroup->name)
-            ->andReturn($createDummyCreateGroup->group);
-
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($createDummyCreateGroup->publishedGroupIdentifier)
-            ->andReturn(null);
-
-        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $draftGroupRepository->shouldReceive('save')
-            ->once()
-            ->with($createDummyCreateGroup->group)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(ImageServiceInterface::class, $imageService);
-        $this->app->instance(DraftGroupFactoryInterface::class, $groupFactory);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
-
-        $useCase = $this->app->make(CreateGroupInterface::class);
-        $useCase->process($input);
-    }
-
-    /**
-     * 異常系：NONEロールがグループを作成しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithNoneRole(): void
-    {
-        $createDummyCreateGroup = $this->createDummyCreateGroup(base64EncodedImage: null);
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
-
-        $input = new CreateGroupInput(
-            $createDummyCreateGroup->publishedGroupIdentifier,
-            $createDummyCreateGroup->language,
-            $createDummyCreateGroup->name,
-            $createDummyCreateGroup->agencyIdentifier,
-            $createDummyCreateGroup->description,
-            $createDummyCreateGroup->base64EncodedImage,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
+            ->andReturn(false);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
@@ -350,6 +244,7 @@ class CreateGroupTest extends TestCase
         $draftGroupRepository->shouldNotReceive('save');
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);

@@ -14,7 +14,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -83,7 +83,7 @@ class ApproveSongTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyApproveSong = $this->createDummyApproveSong(
             operatorIdentifier: $principalIdentifier,
@@ -94,6 +94,10 @@ class ApproveSongTest extends TestCase
             $dummyApproveSong->publishedSongIdentifier,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -291,13 +295,17 @@ class ApproveSongTest extends TestCase
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
             $dummyApproveSong->publishedSongIdentifier,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -332,7 +340,7 @@ class ApproveSongTest extends TestCase
     }
 
     /**
-     * 異常系：承認権限がないロール（Collaborator）の場合、例外がスローされること.
+     * 異常系：権限がない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -340,12 +348,12 @@ class ApproveSongTest extends TestCase
      * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
      */
-    public function testUnauthorizedRole(): void
+    public function testUnauthorized(): void
     {
         $dummyApproveSong = $this->createDummyApproveSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveSongInput(
             $dummyApproveSong->songIdentifier,
@@ -353,562 +361,9 @@ class ApproveSongTest extends TestCase
             $principalIdentifier,
         );
 
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $approveSong->process($input);
-    }
-
-    /**
-     * 正常系：ADMINISTRATORがSongを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithAdministrator(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
-
-        $dummyApproveSong = $this->createDummyApproveSong(
-            operatorIdentifier: $principalIdentifier,
-        );
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->song)
-            ->andReturn(null);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
-            ->once()
-            ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
-            ->andReturn(false);
-
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-        $songHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveSong->history);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $result = $approveSong->process($input);
-
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
-    }
-
-    /**
-     * 異常系：AGENCY_ACTORが自分の所属していないグループのSongを承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedAgencyScope(): void
-    {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $anotherAgencyId, [], []);
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $approveSong->process($input);
-    }
-
-    /**
-     * 正常系：AGENCY_ACTORが自分の所属するグループのSongを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedAgencyActor(): void
-    {
-        $agencyId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
-
-        $dummyApproveSong = $this->createDummyApproveSong(
-            agencyId: $agencyId,
-            operatorIdentifier: $principalIdentifier,
-        );
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->song)
-            ->andReturn(null);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
-            ->once()
-            ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
-            ->andReturn(false);
-
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-        $songHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveSong->history);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $result = $approveSong->process($input);
-
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
-    }
-
-    /**
-     * 異常系：TALENT_ACTORが自分の所属していないグループのSongを承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedTalentScope(): void
-    {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
-        $anotherGroupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $approveSong->process($input);
-    }
-
-    /**
-     * 正常系：TALENT_ACTORが自分の所属するグループのSongを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedTalentActor(): void
-    {
-        $groupId = StrTestHelper::generateUuid();
-        $agencyId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$groupId], []);
-
-        $dummyApproveSong = $this->createDummyApproveSong(
-            agencyId: $agencyId,
-            groupId: $groupId,
-            operatorIdentifier: $principalIdentifier,
-        );
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->song)
-            ->andReturn(null);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
-            ->once()
-            ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
-            ->andReturn(false);
-
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-        $songHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveSong->history);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $result = $approveSong->process($input);
-
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
-    }
-
-    /**
-     * 異常系：TALENT_ACTORが自分以外のSongを承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedTalentScopeWithoutMe(): void
-    {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string) $dummyApproveSong->agencyIdentifier;
-        $anotherTalentId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$anotherTalentId]);
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $this->expectException(UnauthorizedException::class);
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $approveSong->process($input);
-    }
-
-    /**
-     * 正常系：TALENT_ACTORが自分のSongを承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testAuthorizedTalentActorWithMe(): void
-    {
-        $talentId = StrTestHelper::generateUuid();
-        $agencyId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
-
-        $dummyApproveSong = $this->createDummyApproveSong(
-            agencyId: $agencyId,
-            talentId: $talentId,
-            operatorIdentifier: $principalIdentifier,
-        );
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->song)
-            ->andReturn(null);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
-            ->once()
-            ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
-            ->andReturn(false);
-
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-        $songHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveSong->history);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $result = $approveSong->process($input);
-
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORが曲を承認できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
-
-        $dummyApproveSong = $this->createDummyApproveSong(
-            operatorIdentifier: $principalIdentifier,
-        );
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
-        $draftSongRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummyApproveSong->songIdentifier)
-            ->andReturn($dummyApproveSong->song);
-        $draftSongRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->song)
-            ->andReturn(null);
-
-        $songService = Mockery::mock(SongServiceInterface::class);
-        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
-            ->once()
-            ->with($dummyApproveSong->translationSetIdentifier, $dummyApproveSong->songIdentifier)
-            ->andReturn(false);
-
-        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
-        $songHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummyApproveSong->history);
-        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
-        $songHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummyApproveSong->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
-        $this->app->instance(SongServiceInterface::class, $songService);
-        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
-        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
-
-        $approveSong = $this->app->make(ApproveSongInterface::class);
-        $result = $approveSong->process($input);
-
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
-    }
-
-    /**
-     * 異常系：NONEロールが曲を承認しようとした場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws SongNotFoundException
-     * @throws InvalidStatusException
-     * @throws PrincipalNotFoundException
-     */
-    public function testUnauthorizedNoneRole(): void
-    {
-        $dummyApproveSong = $this->createDummyApproveSong();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
-
-        $input = new ApproveSongInput(
-            $dummyApproveSong->songIdentifier,
-            $dummyApproveSong->publishedSongIdentifier,
-            $principalIdentifier,
-        );
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

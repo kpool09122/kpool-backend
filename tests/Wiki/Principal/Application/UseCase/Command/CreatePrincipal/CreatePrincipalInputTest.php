@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInput;
 use Tests\Helper\StrTestHelper;
@@ -19,10 +20,13 @@ class CreatePrincipalInputTest extends TestCase
     public function test__construct(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $input = new CreatePrincipalInput(
             $identityIdentifier,
+            $accountIdentifier,
         );
 
         $this->assertSame((string) $identityIdentifier, (string) $input->identityIdentifier());
+        $this->assertSame((string) $accountIdentifier, (string) $input->accountIdentifier());
     }
 }

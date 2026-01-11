@@ -7,32 +7,29 @@ namespace Tests\Monetization\Payment\Infrastructure\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Domain\Entity\Account;
-use Source\Account\Domain\Entity\AccountMembership;
-use Source\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Domain\ValueObject\AccountCategory;
-use Source\Account\Domain\ValueObject\AccountName;
-use Source\Account\Domain\ValueObject\AccountRole;
-use Source\Account\Domain\ValueObject\AccountStatus;
-use Source\Account\Domain\ValueObject\AccountType;
-use Source\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Domain\ValueObject\BillingMethod;
-use Source\Account\Domain\ValueObject\City;
-use Source\Account\Domain\ValueObject\ContractInfo;
-use Source\Account\Domain\ValueObject\ContractName;
-use Source\Account\Domain\ValueObject\CountryCode;
-use Source\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Domain\ValueObject\Plan;
-use Source\Account\Domain\ValueObject\PlanDescription;
-use Source\Account\Domain\ValueObject\PlanName;
-use Source\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Domain\ValueObject\StateOrProvince;
-use Source\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Domain\ValueObject\TaxRegion;
+use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountName;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
+use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Account\Domain\ValueObject\AddressLine;
+use Source\Account\Account\Domain\ValueObject\BillingAddress;
+use Source\Account\Account\Domain\ValueObject\BillingContact;
+use Source\Account\Account\Domain\ValueObject\BillingCycle;
+use Source\Account\Account\Domain\ValueObject\BillingMethod;
+use Source\Account\Account\Domain\ValueObject\City;
+use Source\Account\Account\Domain\ValueObject\ContractInfo;
+use Source\Account\Account\Domain\ValueObject\ContractName;
+use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Account\Domain\ValueObject\Plan;
+use Source\Account\Account\Domain\ValueObject\PlanDescription;
+use Source\Account\Account\Domain\ValueObject\PlanName;
+use Source\Account\Account\Domain\ValueObject\PostalCode;
+use Source\Account\Account\Domain\ValueObject\StateOrProvince;
+use Source\Account\Account\Domain\ValueObject\TaxCategory;
+use Source\Account\Account\Domain\ValueObject\TaxInfo;
+use Source\Account\Account\Domain\ValueObject\TaxRegion;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
@@ -45,12 +42,11 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -63,12 +59,6 @@ class PaymentRepositoryTest extends TestCase
     {
         $accountId = StrTestHelper::generateUuid();
         $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
-        $ownerIdentityId = StrTestHelper::generateUuid();
-
-        CreateIdentity::create(
-            new IdentityIdentifier($ownerIdentityId),
-            ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
-        );
 
         $billingAddress = new BillingAddress(
             CountryCode::JAPAN,
@@ -108,13 +98,6 @@ class PaymentRepositoryTest extends TestCase
             null,
         );
 
-        $memberships = [
-            new AccountMembership(
-                new IdentityIdentifier($ownerIdentityId),
-                AccountRole::OWNER,
-            ),
-        ];
-
         $account = new Account(
             new AccountIdentifier($accountId),
             new Email($email),
@@ -123,7 +106,6 @@ class PaymentRepositoryTest extends TestCase
             $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
-            $memberships,
             DeletionReadinessChecklist::ready(),
         );
 

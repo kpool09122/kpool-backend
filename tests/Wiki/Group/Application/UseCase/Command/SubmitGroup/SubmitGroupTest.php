@@ -26,7 +26,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -71,7 +71,7 @@ class SubmitGroupTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummySubmitGroup = $this->createDummySubmitGroup(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -81,6 +81,10 @@ class SubmitGroupTest extends TestCase
             $dummySubmitGroup->groupIdentifier,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -132,7 +136,6 @@ class SubmitGroupTest extends TestCase
         $dummySubmitGroup = $this->createDummySubmitGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
 
         $input = new SubmitGroupInput(
             $dummySubmitGroup->groupIdentifier,
@@ -219,12 +222,16 @@ class SubmitGroupTest extends TestCase
         $dummySubmitGroup = $this->createDummySubmitGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitGroupInput(
             $dummySubmitGroup->groupIdentifier,
             $principalIdentifier,
         );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -251,244 +258,7 @@ class SubmitGroupTest extends TestCase
     }
 
     /**
-     * 正常系：COLLABORATORがグループを提出できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithCollaborator(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
-
-        $dummySubmitGroup = $this->createDummySubmitGroup(
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySubmitGroup->groupIdentifier)
-            ->andReturn($dummySubmitGroup->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->group)
-            ->andReturn(null);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummySubmitGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $useCase = $this->app->make(SubmitGroupInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
-    }
-
-    /**
-     * 正常系：AGENCY_ACTORがグループを提出できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithAgencyActor(): void
-    {
-        $agencyId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
-
-        $dummySubmitGroup = $this->createDummySubmitGroup(
-            agencyId: $agencyId,
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySubmitGroup->groupIdentifier)
-            ->andReturn($dummySubmitGroup->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->group)
-            ->andReturn(null);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummySubmitGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $useCase = $this->app->make(SubmitGroupInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
-    }
-
-    /**
-     * 正常系：MEMBER_ACTORがグループを提出できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithMemberActor(): void
-    {
-        $groupId = StrTestHelper::generateUuid();
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $memberId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$memberId]);
-
-        $dummySubmitGroup = $this->createDummySubmitGroup(
-            groupId: $groupId,
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySubmitGroup->groupIdentifier)
-            ->andReturn($dummySubmitGroup->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->group)
-            ->andReturn(null);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummySubmitGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $useCase = $this->app->make(SubmitGroupInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
-    }
-
-    /**
-     * 正常系：SENIOR_COLLABORATORがグループを提出できること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws GroupNotFoundException
-     * @throws InvalidStatusException
-     * @throws UnauthorizedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testProcessWithSeniorCollaborator(): void
-    {
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
-
-        $dummySubmitGroup = $this->createDummySubmitGroup(
-            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
-        );
-
-        $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $groupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
-            ->once()
-            ->with($dummySubmitGroup->groupIdentifier)
-            ->andReturn($dummySubmitGroup->group);
-        $groupRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->group)
-            ->andReturn(null);
-
-        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
-        $groupHistoryFactory->shouldReceive('create')
-            ->once()
-            ->andReturn($dummySubmitGroup->history);
-        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
-        $groupHistoryRepository->shouldReceive('save')
-            ->once()
-            ->with($dummySubmitGroup->history)
-            ->andReturn(null);
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
-        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
-        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
-
-        $useCase = $this->app->make(SubmitGroupInterface::class);
-        $result = $useCase->process($input);
-
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
-    }
-
-    /**
-     * 異常系：NONEロールがグループを提出しようとした場合、例外がスローされること.
+     * 異常系：権限がない場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -496,14 +266,18 @@ class SubmitGroupTest extends TestCase
      * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
      */
-    public function testProcessWithNoneRole(): void
+    public function testUnauthorized(): void
     {
         $dummySubmitGroup = $this->createDummySubmitGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new SubmitGroupInput($dummySubmitGroup->groupIdentifier, $principalIdentifier);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')

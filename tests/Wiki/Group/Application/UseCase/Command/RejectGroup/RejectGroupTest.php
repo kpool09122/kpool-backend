@@ -26,7 +26,6 @@ use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -71,7 +70,7 @@ class RejectGroupTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -133,7 +132,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -221,7 +220,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -267,7 +266,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -293,6 +292,8 @@ class RejectGroupTest extends TestCase
         $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $rejectGroup = $this->app->make(RejectGroupInterface::class);
@@ -314,7 +315,7 @@ class RejectGroupTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -341,6 +342,8 @@ class RejectGroupTest extends TestCase
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $rejectGroup = $this->app->make(RejectGroupInterface::class);
         $rejectGroup->process($input);
@@ -360,7 +363,7 @@ class RejectGroupTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             agencyId: $agencyId,
@@ -428,7 +431,6 @@ class RejectGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             null,
             [$anotherGroupId],
             [$memberId],
@@ -459,6 +461,8 @@ class RejectGroupTest extends TestCase
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $rejectGroup = $this->app->make(RejectGroupInterface::class);
         $rejectGroup->process($input);
@@ -482,7 +486,6 @@ class RejectGroupTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             null,
             [$groupId],
             [$memberId],
@@ -548,7 +551,7 @@ class RejectGroupTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyRejectGroup = $this->createDummyRejectGroup(
             operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
@@ -610,7 +613,7 @@ class RejectGroupTest extends TestCase
         $dummyRejectGroup = $this->createDummyRejectGroup();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new RejectGroupInput(
             $dummyRejectGroup->groupIdentifier,
@@ -636,6 +639,8 @@ class RejectGroupTest extends TestCase
         $this->app->instance(DraftGroupRepositoryInterface::class, $groupRepository);
         $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
         $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $rejectGroup = $this->app->make(RejectGroupInterface::class);

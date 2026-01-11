@@ -7,7 +7,9 @@ namespace Tests;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 // Add conditional-db related imports
 use Illuminate\Support\Facades\DB;
+use Mockery;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -69,6 +71,8 @@ abstract class TestCase extends OrchestraTestCase
 
             // Wrap each DB test in a transaction for isolation
             DB::beginTransaction();
+        } else {
+            $this->setPolicyEvaluatorResult(true);
         }
     }
 
@@ -106,5 +110,12 @@ abstract class TestCase extends OrchestraTestCase
     protected function defineDatabaseMigrations(): void
     {
         // Intentionally left blank; migrations are run conditionally in setUp()
+    }
+
+    protected function setPolicyEvaluatorResult(bool $allowed): void
+    {
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->andReturn($allowed);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

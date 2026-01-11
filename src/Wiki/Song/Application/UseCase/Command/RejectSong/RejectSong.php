@@ -12,7 +12,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -55,7 +55,7 @@ readonly class RejectSong implements RejectSongInterface
         if ($principal === null) {
             throw new PrincipalNotFoundException();
         }
-        $resource = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::SONG,
             agencyId: (string) $song->agencyIdentifier(),
             groupIds: [(string) $song->groupIdentifier()],

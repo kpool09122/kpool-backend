@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -77,7 +76,7 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -227,7 +226,7 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -255,6 +254,8 @@ class TranslateSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $translateSong->process($input);
@@ -274,7 +275,7 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -336,7 +337,7 @@ class TranslateSongTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -364,6 +365,8 @@ class TranslateSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $translateSong->process($input);
@@ -384,7 +387,7 @@ class TranslateSongTest extends TestCase
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -447,7 +450,7 @@ class TranslateSongTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -475,6 +478,8 @@ class TranslateSongTest extends TestCase
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $translateSong->process($input);
@@ -496,7 +501,7 @@ class TranslateSongTest extends TestCase
         $talentId = (string)$dummyTranslateSong->talentIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], [$talentId]);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -558,7 +563,7 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -619,7 +624,7 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new TranslateSongInput(
             $dummyTranslateSong->songIdentifier,
@@ -646,6 +651,8 @@ class TranslateSongTest extends TestCase
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $translateSong = $this->app->make(TranslateSongInterface::class);

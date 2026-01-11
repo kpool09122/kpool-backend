@@ -7,13 +7,14 @@ namespace Tests\Identity\Infrastructure\Service;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Domain\Entity\AccountAffiliation;
-use Source\Account\Domain\Entity\OperationDelegation;
-use Source\Account\Domain\Repository\AffiliationRepositoryInterface;
-use Source\Account\Domain\Repository\DelegationRepositoryInterface;
-use Source\Account\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Domain\ValueObject\AffiliationStatus;
-use Source\Account\Domain\ValueObject\DelegationStatus;
+use Source\Account\Affiliation\Domain\Entity\Affiliation;
+use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
+use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
+use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
+use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
+use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
+use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Infrastructure\Service\DelegationValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -280,13 +281,14 @@ class DelegationValidatorTest extends TestCase
         DelegationIdentifier $delegationId,
         AffiliationIdentifier $affiliationId,
         DelegationStatus $status,
-    ): OperationDelegation {
-        return new OperationDelegation(
+    ): Delegation {
+        return new Delegation(
             $delegationId,
             $affiliationId,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             $status,
+            DelegationDirection::FROM_AGENCY,
             new DateTimeImmutable(),
             $status->isApproved() ? new DateTimeImmutable() : null,
             $status->isRevoked() ? new DateTimeImmutable() : null,
@@ -296,10 +298,10 @@ class DelegationValidatorTest extends TestCase
     private function createAffiliation(
         AffiliationIdentifier $affiliationId,
         AffiliationStatus $status,
-    ): AccountAffiliation {
+    ): Affiliation {
         $agencyAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        return new AccountAffiliation(
+        return new Affiliation(
             $affiliationId,
             $agencyAccountId,
             new AccountIdentifier(StrTestHelper::generateUuid()),

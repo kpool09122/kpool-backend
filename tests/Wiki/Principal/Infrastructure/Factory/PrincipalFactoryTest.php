@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -34,7 +33,6 @@ class PrincipalFactoryTest extends TestCase
 
         $this->assertTrue(UuidValidator::isValid((string)$principal->principalIdentifier()));
         $this->assertSame($identityIdentifier, $principal->identityIdentifier());
-        $this->assertSame(Role::NONE, $principal->role());
         $this->assertNull($principal->agencyId());
         $this->assertEmpty($principal->groupIds());
         $this->assertEmpty($principal->talentIds());
@@ -58,7 +56,6 @@ class PrincipalFactoryTest extends TestCase
         $originalPrincipal = new Principal(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::TALENT_ACTOR,
             $agencyId,
             $groupIds,
             $talentIds,
@@ -80,7 +77,6 @@ class PrincipalFactoryTest extends TestCase
             (string)$delegatedPrincipal->principalIdentifier()
         );
         $this->assertSame($delegatedIdentityIdentifier, $delegatedPrincipal->identityIdentifier());
-        $this->assertSame(Role::TALENT_ACTOR, $delegatedPrincipal->role());
         $this->assertSame($agencyId, $delegatedPrincipal->agencyId());
         $this->assertSame($groupIds, $delegatedPrincipal->groupIds());
         $this->assertSame($talentIds, $delegatedPrincipal->talentIds());

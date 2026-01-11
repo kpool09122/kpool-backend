@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class PrincipalRepository implements PrincipalRepositoryInterface
@@ -62,7 +61,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             ['id' => (string) $principal->principalIdentifier()],
             [
                 'identity_id' => (string) $principal->identityIdentifier(),
-                'role' => $principal->role()->value,
                 'agency_id' => $principal->agencyId(),
                 'talent_ids' => $principal->talentIds(),
                 'delegation_identifier' => $principal->delegationIdentifier() !== null
@@ -87,7 +85,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return new Principal(
             new PrincipalIdentifier($eloquent->id),
             new IdentityIdentifier($eloquent->identity_id),
-            Role::from($eloquent->role),
             $eloquent->agency_id,
             $eloquent->groups->pluck('id')->all(),
             $eloquent->talent_ids,

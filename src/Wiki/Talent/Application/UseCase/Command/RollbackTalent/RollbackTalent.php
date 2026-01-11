@@ -13,7 +13,7 @@ use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -66,14 +66,14 @@ readonly class RollbackTalent implements RollbackTalentInterface
             $talent->groupIdentifiers(),
         );
 
-        $resourceIdentifier = new ResourceIdentifier(
+        $resource = new Resource(
             type: ResourceType::TALENT,
             agencyId: $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
             groupIds: $groupIds,
             talentIds: [(string) $talent->talentIdentifier()],
         );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::ROLLBACK, $resourceIdentifier)) {
+        if (! $this->policyEvaluator->evaluate($principal, Action::ROLLBACK, $resource)) {
             throw new DisallowedException();
         }
 

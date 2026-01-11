@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Domain\Service;
 
 use DateTimeImmutable;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
+use Source\Shared\Domain\ValueObject\CountryCode;
 
 interface TaxDocumentPolicyServiceInterface
 {

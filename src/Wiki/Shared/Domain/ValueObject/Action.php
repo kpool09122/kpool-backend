@@ -15,4 +15,5 @@ enum Action: string
     case PUBLISH = 'publish';
     case ROLLBACK = 'rollback';
     case MERGE = 'merge';
+    case AUTOMATIC_CREATE = 'automatic_create';
 }

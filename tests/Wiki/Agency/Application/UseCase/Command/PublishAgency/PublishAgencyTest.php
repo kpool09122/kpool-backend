@@ -36,7 +36,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -90,7 +89,7 @@ class PublishAgencyTest extends TestCase
     public function testProcessWhenAlreadyPublished(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             hasPublishedAgency: true,
@@ -193,7 +192,7 @@ class PublishAgencyTest extends TestCase
     public function testProcessForTheFirstTime(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             hasPublishedAgency: false,
@@ -292,7 +291,7 @@ class PublishAgencyTest extends TestCase
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -406,7 +405,7 @@ class PublishAgencyTest extends TestCase
         $dummyPublishAgency = $this->createDummyPublishAgency(status: ApprovalStatus::Approved);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -463,7 +462,7 @@ class PublishAgencyTest extends TestCase
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -527,7 +526,7 @@ class PublishAgencyTest extends TestCase
         $dummyPublishAgency = $this->createDummyPublishAgency(hasPublishedAgency: true);
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -595,7 +594,7 @@ class PublishAgencyTest extends TestCase
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -635,6 +634,7 @@ class PublishAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
         $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
+        $this->setPolicyEvaluatorResult(false);
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -653,7 +653,7 @@ class PublishAgencyTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             operatorIdentifier: $principalIdentifier,
@@ -748,7 +748,7 @@ class PublishAgencyTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -789,6 +789,8 @@ class PublishAgencyTest extends TestCase
         $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
         $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -808,7 +810,7 @@ class PublishAgencyTest extends TestCase
     {
         $agencyId = StrTestHelper::generateUuid();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             agencyId: $agencyId,
@@ -903,7 +905,7 @@ class PublishAgencyTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, null, [$groupId], [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [$groupId], [$talentId]);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -944,6 +946,8 @@ class PublishAgencyTest extends TestCase
         $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
         $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);
         $publishAgency->process($input);
@@ -962,7 +966,7 @@ class PublishAgencyTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $dummyPublishAgency = $this->createDummyPublishAgency(
             operatorIdentifier: $principalIdentifier,
@@ -1054,7 +1058,7 @@ class PublishAgencyTest extends TestCase
         $dummyPublishAgency = $this->createDummyPublishAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new PublishAgencyInput(
             $dummyPublishAgency->agencyIdentifier,
@@ -1094,6 +1098,8 @@ class PublishAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
         $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $publishAgency = $this->app->make(PublishAgencyInterface::class);

@@ -6,8 +6,8 @@ namespace Application\Providers\Identity;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
-use Source\Account\Domain\Event\DelegationApproved;
-use Source\Account\Domain\Event\DelegationRevoked;
+use Source\Account\Delegation\Domain\Event\DelegationApproved;
+use Source\Account\Delegation\Domain\Event\DelegationRevoked;
 use Source\Identity\Application\EventHandler\DelegationApprovedHandler;
 use Source\Identity\Application\EventHandler\DelegationRevokedHandler;
 

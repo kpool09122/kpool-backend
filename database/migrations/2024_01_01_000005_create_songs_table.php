@@ -24,6 +24,8 @@ return new class extends Migration
             $table->text('overview')->comment('概要')->default('');
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->string('music_video_link', 255)->nullable()->comment('MV リンク');
+            $table->boolean('is_official')->default(false)->comment('Official flag');
+            $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
             $table->softDeletes();

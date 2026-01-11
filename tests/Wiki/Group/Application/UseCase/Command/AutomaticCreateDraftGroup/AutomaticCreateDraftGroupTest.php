@@ -21,7 +21,6 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -42,7 +41,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     {
         $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal(Role::ADMINISTRATOR, $principalIdentifier);
+        $principal = $this->makePrincipal($principalIdentifier);
         $draftGroup = $this->makeDraftGroup();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -84,7 +83,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     {
         $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal(Role::SENIOR_COLLABORATOR, $principalIdentifier);
+        $principal = $this->makePrincipal($principalIdentifier);
         $draftGroup = $this->makeDraftGroup();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -126,7 +125,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
     {
         $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal(Role::AGENCY_ACTOR, $principalIdentifier);
+        $principal = $this->makePrincipal($principalIdentifier);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -142,6 +141,7 @@ class AutomaticCreateDraftGroupTest extends TestCase
         $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
+        $this->setPolicyEvaluatorResult(false);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
 
         $this->expectException(UnauthorizedException::class);
@@ -191,9 +191,9 @@ class AutomaticCreateDraftGroupTest extends TestCase
         );
     }
 
-    private function makePrincipal(Role $role, PrincipalIdentifier $principalIdentifier): Principal
+    private function makePrincipal(PrincipalIdentifier $principalIdentifier): Principal
     {
-        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $role, null, [], []);
+        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
     }
 
     private function makeDraftGroup(): DraftGroup

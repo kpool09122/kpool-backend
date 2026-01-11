@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property ?string $cover_image_path
  * @property ?string $music_video_link
  * @property int $version
+ * @property bool $is_official
+ * @property ?string $owner_account_id
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Group> $groups
  * @property-read Collection<int, Talent> $talents
@@ -51,12 +53,15 @@ class Song extends Model
         'cover_image_path',
         'music_video_link',
         'version',
+        'is_official',
+        'owner_account_id',
     ];
 
     protected $casts = [
         'release_date' => 'date',
         'version' => 'integer',
         'deleted_at' => 'datetime',
+        'is_official' => 'boolean',
     ];
 
     /**

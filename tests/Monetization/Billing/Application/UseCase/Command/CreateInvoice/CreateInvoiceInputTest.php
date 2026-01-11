@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Monetization\Billing\Application\UseCase\Command\CreateInvoice;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInput;
 use Source\Monetization\Billing\Domain\ValueObject\Discount;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\TaxLine;
 use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;

@@ -6,9 +6,9 @@ namespace Source\Monetization\Billing\Domain\Service;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Source\Account\Domain\ValueObject\CountryCode;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocument;
 use Source\Monetization\Billing\Domain\ValueObject\TaxDocumentType;
+use Source\Shared\Domain\ValueObject\CountryCode;
 
 class TaxDocumentPolicyService implements TaxDocumentPolicyServiceInterface
 {

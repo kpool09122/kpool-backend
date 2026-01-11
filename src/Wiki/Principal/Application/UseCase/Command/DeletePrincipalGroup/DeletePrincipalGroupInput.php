@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\Wiki\Principal\Application\UseCase\Command\DeletePrincipalGroup;
+
+use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+
+readonly class DeletePrincipalGroupInput implements DeletePrincipalGroupInputPort
+{
+    public function __construct(
+        private PrincipalGroupIdentifier $principalGroupIdentifier,
+    ) {
+    }
+
+    public function principalGroupIdentifier(): PrincipalGroupIdentifier
+    {
+        return $this->principalGroupIdentifier;
+    }
+}

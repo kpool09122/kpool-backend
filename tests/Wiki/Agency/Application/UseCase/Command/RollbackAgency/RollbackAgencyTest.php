@@ -30,7 +30,6 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -85,7 +84,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -95,11 +93,11 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn($currentAgency);
         $agencyRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
             ->once()
             ->andReturn([$currentAgency]);
         $agencyRepository->shouldReceive('save')
@@ -109,8 +107,8 @@ class RollbackAgencyTest extends TestCase
         $snapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
         $snapshotRepository->shouldReceive('findByTranslationSetIdentifierAndVersion')
             ->with(
-                Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier),
-                Mockery::on(fn ($arg) => $arg->value() === $targetVersion->value())
+                Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier),
+                Mockery::on(static fn ($arg) => $arg->value() === $targetVersion->value())
             )
             ->once()
             ->andReturn([$snapshot]);
@@ -126,7 +124,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -178,7 +176,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -188,11 +185,11 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifierKo))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifierKo))
             ->once()
             ->andReturn($currentAgencyKo);
         $agencyRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
             ->once()
             ->andReturn([$currentAgencyKo, $currentAgencyJa]);
         $agencyRepository->shouldReceive('save')
@@ -202,8 +199,8 @@ class RollbackAgencyTest extends TestCase
         $snapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
         $snapshotRepository->shouldReceive('findByTranslationSetIdentifierAndVersion')
             ->with(
-                Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier),
-                Mockery::on(fn ($arg) => $arg->value() === $targetVersion->value())
+                Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier),
+                Mockery::on(static fn ($arg) => $arg->value() === $targetVersion->value())
             )
             ->once()
             ->andReturn([$snapshotKo, $snapshotJa]);
@@ -226,7 +223,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -269,7 +266,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::SENIOR_COLLABORATOR,
             null,
             [],
             []
@@ -279,7 +275,7 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn($currentAgency);
 
@@ -288,7 +284,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -303,6 +299,7 @@ class RollbackAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
 
         $this->expectException(DisallowedException::class);
+        $this->setPolicyEvaluatorResult(false);
         $rollbackAgency = $this->app->make(RollbackAgencyInterface::class);
         $rollbackAgency->process($input);
     }
@@ -323,7 +320,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::COLLABORATOR,
             null,
             [],
             []
@@ -333,7 +329,7 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn($currentAgency);
 
@@ -342,7 +338,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -357,6 +353,7 @@ class RollbackAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
 
         $this->expectException(DisallowedException::class);
+        $this->setPolicyEvaluatorResult(false);
         $rollbackAgency = $this->app->make(RollbackAgencyInterface::class);
         $rollbackAgency->process($input);
     }
@@ -374,7 +371,7 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn(null);
 
@@ -413,7 +410,7 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn($currentAgency);
 
@@ -422,7 +419,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn(null);
 
@@ -457,7 +454,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -467,19 +463,19 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn($currentAgency);
         $agencyRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
             ->once()
             ->andReturn([$currentAgency]);
 
         $snapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
         $snapshotRepository->shouldReceive('findByTranslationSetIdentifierAndVersion')
             ->with(
-                Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier),
-                Mockery::on(fn ($arg) => $arg->value() === $targetVersion->value())
+                Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier),
+                Mockery::on(static fn ($arg) => $arg->value() === $targetVersion->value())
             )
             ->once()
             ->andReturn([]);
@@ -488,7 +484,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -524,7 +520,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -534,11 +529,11 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifierKo))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifierKo))
             ->once()
             ->andReturn($currentAgencyKo);
         $agencyRepository->shouldReceive('findByTranslationSetIdentifier')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$translationSetIdentifier))
             ->once()
             ->andReturn([$currentAgencyKo, $currentAgencyJa]);
 
@@ -547,7 +542,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 
@@ -582,7 +577,6 @@ class RollbackAgencyTest extends TestCase
         $principal = new Principal(
             $principalIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            Role::ADMINISTRATOR,
             null,
             [],
             []
@@ -592,7 +586,7 @@ class RollbackAgencyTest extends TestCase
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
         $agencyRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$agencyIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$agencyIdentifier))
             ->once()
             ->andReturn($currentAgency);
 
@@ -601,7 +595,7 @@ class RollbackAgencyTest extends TestCase
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
-            ->with(Mockery::on(fn ($arg) => (string)$arg === (string)$principalIdentifier))
+            ->with(Mockery::on(static fn ($arg) => (string)$arg === (string)$principalIdentifier))
             ->once()
             ->andReturn($principal);
 

@@ -14,7 +14,6 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\ValueObject\Role;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
@@ -86,7 +85,7 @@ class ApproveTalentTest extends TestCase
     public function testProcess(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -156,7 +155,7 @@ class ApproveTalentTest extends TestCase
         $approveTalentInfo = $this->createApproveTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -186,6 +185,8 @@ class ApproveTalentTest extends TestCase
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $approveTalent = $this->app->make(ApproveTalentInterface::class);
         $approveTalent->process($input);
@@ -205,7 +206,7 @@ class ApproveTalentTest extends TestCase
     public function testProcessWithAdministrator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -370,7 +371,7 @@ class ApproveTalentTest extends TestCase
         $approveTalentInfo = $this->createApproveTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -439,7 +440,7 @@ class ApproveTalentTest extends TestCase
         $approveTalentInfo = $this->createApproveTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::ADMINISTRATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -495,7 +496,7 @@ class ApproveTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $anotherAgencyId = StrTestHelper::generateUuid();
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $anotherAgencyId, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $anotherAgencyId, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -525,6 +526,8 @@ class ApproveTalentTest extends TestCase
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $approveTalent = $this->app->make(ApproveTalentInterface::class);
         $approveTalent->process($input);
@@ -551,7 +554,7 @@ class ApproveTalentTest extends TestCase
 
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $approveTalentInfo->groupIdentifiers);
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::AGENCY_ACTOR, $agencyId, $groupIds, []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -621,7 +624,7 @@ class ApproveTalentTest extends TestCase
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
         $anotherTalentId = StrTestHelper::generateUuid(); // 別のTalent IDを使用
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, [$anotherGroupId], [$anotherTalentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], [$anotherTalentId]);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -651,6 +654,8 @@ class ApproveTalentTest extends TestCase
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
 
+        $this->setPolicyEvaluatorResult(false);
+
         $this->expectException(UnauthorizedException::class);
         $approveTalent = $this->app->make(ApproveTalentInterface::class);
         $approveTalent->process($input);
@@ -678,7 +683,7 @@ class ApproveTalentTest extends TestCase
         $agencyId = (string) $approveTalentInfo->agencyIdentifier;
         $groupIds = array_map(static fn ($groupId) => (string)$groupId, $approveTalentInfo->groupIdentifiers);
         $talentId = (string) $approveTalentInfo->talentIdentifier;
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::TALENT_ACTOR, $agencyId, $groupIds, [$talentId]);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, [$talentId]);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -744,7 +749,7 @@ class ApproveTalentTest extends TestCase
     public function testProcessWithSeniorCollaborator(): void
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::SENIOR_COLLABORATOR, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $approveTalentInfo = $this->createApproveTalentInfo(
             operatorIdentifier: $principalIdentifier,
@@ -815,7 +820,7 @@ class ApproveTalentTest extends TestCase
         $approveTalentInfo = $this->createApproveTalentInfo();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), Role::NONE, null, [], []);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveTalentInput(
             $approveTalentInfo->talentIdentifier,
@@ -844,6 +849,8 @@ class ApproveTalentTest extends TestCase
         $this->app->instance(TalentServiceInterface::class, $talentService);
         $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
         $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+
+        $this->setPolicyEvaluatorResult(false);
 
         $this->expectException(UnauthorizedException::class);
         $approveTalent = $this->app->make(ApproveTalentInterface::class);
