@@ -21,7 +21,9 @@ class CreateTalent
      *     career?: string,
      *     image_link?: ?string,
      *     relevant_video_links?: array<string>,
-     *     version?: int
+     *     version?: int,
+     *     is_official?: bool,
+     *     owner_account_id?: ?string
      * } $overrides
      * @throws JsonException
      */
@@ -39,6 +41,8 @@ class CreateTalent
             'image_link' => $overrides['image_link'] ?? null,
             'relevant_video_links' => json_encode($overrides['relevant_video_links'] ?? [], JSON_THROW_ON_ERROR),
             'version' => $overrides['version'] ?? 1,
+            'is_official' => $overrides['is_official'] ?? false,
+            'owner_account_id' => $overrides['owner_account_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

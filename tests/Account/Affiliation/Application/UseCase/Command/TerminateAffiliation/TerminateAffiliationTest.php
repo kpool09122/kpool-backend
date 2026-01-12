@@ -13,12 +13,14 @@ use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationInterface;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
+use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -70,8 +72,19 @@ class TerminateAffiliationTest extends TestCase
             ->once()
             ->andReturn(0);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof AffiliationTerminated
+                && (string) $event->affiliationIdentifier() === (string) $testData->affiliationIdentifier
+                && (string) $event->agencyAccountIdentifier() === (string) $testData->agencyAccountIdentifier
+                && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
+            ));
+
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
         $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(TerminateAffiliationInterface::class);
 
@@ -110,8 +123,19 @@ class TerminateAffiliationTest extends TestCase
             ->once()
             ->andReturn(0);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof AffiliationTerminated
+                && (string) $event->affiliationIdentifier() === (string) $testData->affiliationIdentifier
+                && (string) $event->agencyAccountIdentifier() === (string) $testData->agencyAccountIdentifier
+                && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
+            ));
+
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
         $this->app->instance(DelegationTerminationServiceInterface::class, $delegationTerminationService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(TerminateAffiliationInterface::class);
 

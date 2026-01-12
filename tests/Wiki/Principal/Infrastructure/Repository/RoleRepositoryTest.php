@@ -414,4 +414,81 @@ class RoleRepositoryTest extends TestCase
             'policy_id' => $policyId3,
         ]);
     }
+
+    /**
+     * 正常系: 正しく名前に紐づくRoleを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByName(): void
+    {
+        $roleId = StrTestHelper::generateUuid();
+        $roleName = 'AGENCY_ACTOR';
+
+        CreateRole::create(
+            new RoleIdentifier($roleId),
+            [
+                'name' => $roleName,
+                'is_system_role' => true,
+            ]
+        );
+
+        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $result = $repository->findByName($roleName);
+
+        $this->assertNotNull($result);
+        $this->assertSame($roleId, (string) $result->roleIdentifier());
+        $this->assertSame($roleName, $result->name());
+        $this->assertTrue($result->isSystemRole());
+    }
+
+    /**
+     * 正常系: 指定した名前を持つRoleが存在しない場合、NULLが返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByNameWhenNotFound(): void
+    {
+        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $result = $repository->findByName('NON_EXISTENT_ROLE');
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * 正常系: findByNameでアタッチされたPolicyも取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByNameWithPolicies(): void
+    {
+        $roleId = StrTestHelper::generateUuid();
+        $roleName = 'TALENT_ACTOR';
+        $policyId1 = StrTestHelper::generateUuid();
+        $policyId2 = StrTestHelper::generateUuid();
+
+        CreatePolicy::create(new PolicyIdentifier($policyId1));
+        CreatePolicy::create(new PolicyIdentifier($policyId2));
+
+        CreateRole::create(
+            new RoleIdentifier($roleId),
+            [
+                'name' => $roleName,
+                'policies' => [$policyId1, $policyId2],
+            ]
+        );
+
+        $repository = $this->app->make(RoleRepositoryInterface::class);
+        $result = $repository->findByName($roleName);
+
+        $this->assertNotNull($result);
+        $this->assertSame($roleName, $result->name());
+        $this->assertCount(2, $result->policies());
+        $policyIds = array_map(static fn ($p) => (string) $p, $result->policies());
+        $this->assertContains($policyId1, $policyIds);
+        $this->assertContains($policyId2, $policyIds);
+    }
 }

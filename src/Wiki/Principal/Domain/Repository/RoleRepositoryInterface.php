@@ -24,5 +24,7 @@ interface RoleRepositoryInterface
      */
     public function findAll(): array;
 
+    public function findByName(string $name): ?Role;
+
     public function delete(Role $role): void;
 }

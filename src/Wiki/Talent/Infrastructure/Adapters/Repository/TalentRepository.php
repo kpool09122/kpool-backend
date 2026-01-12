@@ -52,6 +52,22 @@ final class TalentRepository implements TalentRepositoryInterface
         return $talentModels->map(fn (TalentModel $model) => $this->toEntity($model))->toArray();
     }
 
+    public function findByOwnerAccountId(AccountIdentifier $accountIdentifier): ?Talent
+    {
+        $talentModel = TalentModel::query()
+            ->with('groups')
+            ->where('owner_account_id', (string) $accountIdentifier)
+            ->where('is_official', true)
+            ->whereNotNull('version')
+            ->first();
+
+        if ($talentModel === null) {
+            return null;
+        }
+
+        return $this->toEntity($talentModel);
+    }
+
     public function save(Talent $talent): void
     {
         $birthday = $talent->birthday();

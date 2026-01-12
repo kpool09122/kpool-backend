@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
 use Application\Models\Wiki\Principal as PrincipalEloquent;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -53,6 +54,19 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         }
 
         return $this->toDomainEntity($eloquent);
+    }
+
+    /**
+     * @return Principal[]
+     */
+    public function findByAccountId(AccountIdentifier $accountIdentifier): array
+    {
+        $eloquents = PrincipalEloquent::query()
+            ->with('groups')
+            ->where('agency_id', (string) $accountIdentifier)
+            ->get();
+
+        return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
     public function save(Principal $principal): void

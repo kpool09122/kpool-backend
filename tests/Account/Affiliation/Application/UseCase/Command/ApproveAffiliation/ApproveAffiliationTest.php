@@ -13,11 +13,13 @@ use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\Ap
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInterface;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
+use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -57,7 +59,18 @@ class ApproveAffiliationTest extends TestCase
             ->once()
             ->with($testData->affiliation);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof AffiliationActivated
+                && (string) $event->affiliationIdentifier() === (string) $testData->affiliationIdentifier
+                && (string) $event->agencyAccountIdentifier() === (string) $testData->agencyAccountIdentifier
+                && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
+            ));
+
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(ApproveAffiliationInterface::class);
 
@@ -86,7 +99,18 @@ class ApproveAffiliationTest extends TestCase
             ->once()
             ->with($testData->affiliation);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof AffiliationActivated
+                && (string) $event->affiliationIdentifier() === (string) $testData->affiliationIdentifier
+                && (string) $event->agencyAccountIdentifier() === (string) $testData->agencyAccountIdentifier
+                && (string) $event->talentAccountIdentifier() === (string) $testData->talentAccountIdentifier
+            ));
+
         $this->app->instance(AffiliationRepositoryInterface::class, $affiliationRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(ApproveAffiliationInterface::class);
 
