@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
@@ -299,5 +300,77 @@ class TalentRepositoryTest extends TestCase
 
         $this->assertIsArray($talents);
         $this->assertEmpty($talents);
+    }
+
+    /**
+     * 正常系：指定したOwnerAccountIdに紐づく公式Talentが取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByOwnerAccountId(): void
+    {
+        $talentId = StrTestHelper::generateUuid();
+        $ownerAccountId = StrTestHelper::generateUuid();
+
+        CreateTalent::create($talentId, [
+            'name' => '公式タレント',
+            'real_name' => '本名',
+            'is_official' => true,
+            'owner_account_id' => $ownerAccountId,
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(TalentRepositoryInterface::class);
+        $talent = $repository->findByOwnerAccountId(new AccountIdentifier($ownerAccountId));
+
+        $this->assertInstanceOf(Talent::class, $talent);
+        $this->assertSame($talentId, (string) $talent->talentIdentifier());
+        $this->assertTrue($talent->isOfficial());
+        $this->assertSame($ownerAccountId, (string) $talent->ownerAccountIdentifier());
+    }
+
+    /**
+     * 正常系：指定したOwnerAccountIdに紐づくTalentが存在しない場合、nullが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByOwnerAccountIdWhenNotFound(): void
+    {
+        $repository = $this->app->make(TalentRepositoryInterface::class);
+        $talent = $repository->findByOwnerAccountId(
+            new AccountIdentifier(StrTestHelper::generateUuid())
+        );
+
+        $this->assertNull($talent);
+    }
+
+    /**
+     * 正常系：指定したOwnerAccountIdに紐づくTalentが非公式の場合、nullが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByOwnerAccountIdWhenNotOfficial(): void
+    {
+        $talentId = StrTestHelper::generateUuid();
+        $ownerAccountId = StrTestHelper::generateUuid();
+
+        CreateTalent::create($talentId, [
+            'name' => '非公式タレント',
+            'real_name' => '本名',
+            'is_official' => false,
+            'owner_account_id' => $ownerAccountId,
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(TalentRepositoryInterface::class);
+        $talent = $repository->findByOwnerAccountId(new AccountIdentifier($ownerAccountId));
+
+        $this->assertNull($talent);
     }
 }

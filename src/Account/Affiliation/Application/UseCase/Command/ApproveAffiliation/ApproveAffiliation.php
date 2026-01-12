@@ -7,12 +7,15 @@ namespace Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliat
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
+use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class ApproveAffiliation implements ApproveAffiliationInterface
 {
     public function __construct(
         private AffiliationRepositoryInterface $affiliationRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -31,6 +34,13 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
         $affiliation->approve();
 
         $this->affiliationRepository->save($affiliation);
+
+        $this->eventDispatcher->dispatch(new AffiliationActivated(
+            $affiliation->affiliationIdentifier(),
+            $affiliation->agencyAccountIdentifier(),
+            $affiliation->talentAccountIdentifier(),
+            $affiliation->activatedAt(),
+        ));
 
         return $affiliation;
     }

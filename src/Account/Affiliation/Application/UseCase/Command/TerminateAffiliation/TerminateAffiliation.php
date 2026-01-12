@@ -7,14 +7,17 @@ namespace Source\Account\Affiliation\Application\UseCase\Command\TerminateAffili
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
+use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class TerminateAffiliation implements TerminateAffiliationInterface
 {
     public function __construct(
         private AffiliationRepositoryInterface $affiliationRepository,
         private DelegationTerminationServiceInterface $delegationTerminationService,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -39,6 +42,13 @@ readonly class TerminateAffiliation implements TerminateAffiliationInterface
         $affiliation->terminate();
 
         $this->affiliationRepository->save($affiliation);
+
+        $this->eventDispatcher->dispatch(new AffiliationTerminated(
+            $affiliation->affiliationIdentifier(),
+            $affiliation->agencyAccountIdentifier(),
+            $affiliation->talentAccountIdentifier(),
+            $affiliation->terminatedAt(),
+        ));
 
         return $affiliation;
     }

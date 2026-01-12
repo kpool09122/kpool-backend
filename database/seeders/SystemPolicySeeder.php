@@ -76,10 +76,11 @@ class SystemPolicySeeder extends Seeder
         $policy = $this->policyFactory->create(
             name: 'AGENCY_MANAGEMENT',
             statements: [
+                // Agency, Group, Song の承認系（TALENT は Affiliation ベースで付与されるため除外）
                 new Statement(
                     effect: Effect::ALLOW,
                     actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
-                    resourceTypes: ResourceType::cases(),
+                    resourceTypes: [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG],
                     condition: new Condition([
                         new ConditionClause(
                             ConditionKey::RESOURCE_AGENCY_ID,
@@ -100,50 +101,12 @@ class SystemPolicySeeder extends Seeder
         $policy = $this->policyFactory->create(
             name: 'TALENT_MANAGEMENT',
             statements: [
-                // Group 承認系（自分の Group）
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
-                    resourceTypes: [ResourceType::GROUP],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_GROUP_ID,
-                            ConditionOperator::IN,
-                            ConditionValue::PRINCIPAL_WIKI_GROUP_IDS,
-                        ),
-                    ]),
-                ),
                 // Talent 承認系（自分のタレント）
+                // ※ Group と Song は Affiliation 成立時に付与されるため、ここでは TALENT のみ
                 new Statement(
                     effect: Effect::ALLOW,
                     actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
                     resourceTypes: [ResourceType::TALENT],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_TALENT_ID,
-                            ConditionOperator::IN,
-                            ConditionValue::PRINCIPAL_TALENT_IDS,
-                        ),
-                    ]),
-                ),
-                // Song 承認系（自分の Group の Song）
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
-                    resourceTypes: [ResourceType::SONG],
-                    condition: new Condition([
-                        new ConditionClause(
-                            ConditionKey::RESOURCE_GROUP_ID,
-                            ConditionOperator::IN,
-                            ConditionValue::PRINCIPAL_WIKI_GROUP_IDS,
-                        ),
-                    ]),
-                ),
-                // Song 承認系（自分の Talent の Song）
-                new Statement(
-                    effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
-                    resourceTypes: [ResourceType::SONG],
                     condition: new Condition([
                         new ConditionClause(
                             ConditionKey::RESOURCE_TALENT_ID,

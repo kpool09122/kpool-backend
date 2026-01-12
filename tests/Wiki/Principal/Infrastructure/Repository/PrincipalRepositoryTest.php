@@ -7,6 +7,7 @@ namespace Tests\Wiki\Principal\Infrastructure\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -259,5 +260,64 @@ class PrincipalRepositoryTest extends TestCase
 
         $repository = $this->app->make(PrincipalRepositoryInterface::class);
         $repository->deleteByDelegation(new DelegationIdentifier(StrTestHelper::generateUuid()));
+    }
+
+    /**
+     * 正常系: 正しくAccount IDに紐づくプリンシパルを取得できること.
+     *
+     * @throws BindingResolutionException
+     * @throws JsonException
+     * @return void
+     */
+    #[Group('useDb')]
+    public function testFindByAccountId(): void
+    {
+        $identityIdentifier1 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier1, [
+            'email' => 'test1@example.com',
+            'username' => 'test-identity-1',
+        ]);
+
+        $identityIdentifier2 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier2, [
+            'email' => 'test2@example.com',
+            'username' => 'test-identity-2',
+        ]);
+
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+
+        $principalIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1, [
+            'agency_id' => (string) $accountIdentifier,
+        ]);
+
+        $principalIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2, [
+            'agency_id' => (string) $accountIdentifier,
+        ]);
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByAccountId($accountIdentifier);
+
+        $this->assertCount(2, $results);
+        $principalIds = array_map(fn ($p) => (string) $p->principalIdentifier(), $results);
+        $this->assertContains((string) $principalIdentifier1, $principalIds);
+        $this->assertContains((string) $principalIdentifier2, $principalIds);
+    }
+
+    /**
+     * 正常系: 指定したAccount IDを持つプリンシパルが存在しない場合、空配列が返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdWhenNotFound(): void
+    {
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByAccountId(new AccountIdentifier(StrTestHelper::generateUuid()));
+
+        $this->assertIsArray($results);
+        $this->assertEmpty($results);
     }
 }

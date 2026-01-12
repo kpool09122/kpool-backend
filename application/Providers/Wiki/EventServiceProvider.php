@@ -6,8 +6,12 @@ namespace Application\Providers\Wiki;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
+use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Identity\Domain\Event\DelegatedIdentityCreated;
 use Source\Identity\Domain\Event\DelegatedIdentityDeleted;
+use Source\Wiki\Principal\Application\EventHandler\AffiliationActivatedHandler;
+use Source\Wiki\Principal\Application\EventHandler\AffiliationTerminatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\DelegatedIdentityCreatedHandler;
 use Source\Wiki\Principal\Application\EventHandler\DelegatedIdentityDeletedHandler;
 
@@ -26,6 +30,16 @@ class EventServiceProvider extends ServiceProvider
         $events->listen(
             DelegatedIdentityDeleted::class,
             [DelegatedIdentityDeletedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            AffiliationActivated::class,
+            [AffiliationActivatedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            AffiliationTerminated::class,
+            [AffiliationTerminatedHandler::class, 'handle'],
         );
     }
 }

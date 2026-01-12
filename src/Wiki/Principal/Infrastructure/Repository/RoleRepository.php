@@ -78,6 +78,20 @@ class RoleRepository implements RoleRepositoryInterface
         return $eloquentModels->map(fn (RoleEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
+    public function findByName(string $name): ?Role
+    {
+        $eloquent = RoleEloquent::query()
+            ->with('policyAttachments')
+            ->where('name', $name)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
     public function delete(Role $role): void
     {
         RoleEloquent::query()
