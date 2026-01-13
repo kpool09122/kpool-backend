@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Contact\Infrastructure\Adapters\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
@@ -49,6 +50,9 @@ class ContactRepositoryTest extends TestCase
         // 保存時は暗号化されていること（平文と一致しない）
         $this->assertNotSame((string)$contact->email(), $record->email);
         $this->assertNotEmpty($record->email);
+        // 復号すると登録したメールアドレスと一致すること
+        $encryptionService = $this->app->make(EncryptionServiceInterface::class);
+        $this->assertSame((string)$contact->email(), $encryptionService->decrypt($record->email));
         $this->assertSame((string)$contact->content(), $record->content);
     }
 }

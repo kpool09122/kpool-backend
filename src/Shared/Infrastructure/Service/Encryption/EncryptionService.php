@@ -13,4 +13,9 @@ final class EncryptionService implements EncryptionServiceInterface
     {
         return Crypt::encryptString($value);
     }
+
+    public function decrypt(string $value): string
+    {
+        return Crypt::decryptString($value);
+    }
 }

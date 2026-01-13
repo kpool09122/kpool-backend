@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Shared\Infrastructure\Service\Encryption;
 
-use Illuminate\Support\Facades\Crypt;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Tests\TestCase;
 
@@ -34,6 +33,6 @@ class EncryptionServiceTest extends TestCase
         $plainText = 'sensitive-secret';
         $encrypted = $service->encrypt($plainText);
 
-        $this->assertSame($plainText, Crypt::decryptString($encrypted));
+        $this->assertSame($plainText, $service->decrypt($encrypted));
     }
 }
