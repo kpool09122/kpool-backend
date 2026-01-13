@@ -9,6 +9,14 @@ use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
+use Source\Account\AccountVerification\Application\Service\DocumentStorageServiceInterface;
+use Source\Account\AccountVerification\Domain\Factory\AccountVerificationFactoryInterface;
+use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
+use Source\Account\AccountVerification\Domain\Service\DocumentRequirementValidator;
+use Source\Account\AccountVerification\Domain\Service\DocumentRequirementValidatorInterface;
+use Source\Account\AccountVerification\Infrastructure\Factory\AccountVerificationFactory;
+use Source\Account\AccountVerification\Infrastructure\Repository\AccountVerificationRepository;
+use Source\Account\AccountVerification\Infrastructure\Service\DocumentStorageService;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationService;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
@@ -31,5 +39,12 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DelegationPermissionFactoryInterface::class, DelegationPermissionFactory::class);
         $this->app->singleton(DelegationPermissionRepositoryInterface::class, DelegationPermissionRepository::class);
         $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);
+
+        // AccountVerification
+        $this->app->singleton(AccountVerificationFactoryInterface::class, AccountVerificationFactory::class);
+        $this->app->singleton(AccountVerificationRepositoryInterface::class, AccountVerificationRepository::class);
+        $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
+        $this->app->singleton(DocumentRequirementValidator::class, DocumentRequirementValidator::class);
+        $this->app->singleton(DocumentRequirementValidatorInterface::class, DocumentRequirementValidator::class);
     }
 }

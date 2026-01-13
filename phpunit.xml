@@ -28,6 +28,6 @@
         <env name="DB_DATABASE" value="kpool"/>
         <env name="DB_USERNAME" value="kpool"/>
         <env name="DB_PASSWORD" value="secret"/>
-        <ini name="memory_limit" value="256M"/>
+        <ini name="memory_limit" value="512M"/>
     </php>
 </phpunit>
