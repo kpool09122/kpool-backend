@@ -39,8 +39,6 @@ interface CreateSongInputPort
 
     public function overview(): Overview;
 
-    public function base64EncodedCoverImage(): ?string;
-
     public function musicVideoLink(): ?ExternalContentLink;
 
     public function principalIdentifier(): PrincipalIdentifier;

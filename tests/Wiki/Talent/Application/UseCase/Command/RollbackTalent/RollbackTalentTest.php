@@ -7,7 +7,6 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\RollbackTalent;
 use DateTimeImmutable;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -519,7 +518,6 @@ class RollbackTalentTest extends TestCase
             [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1999-01-01')),
             new Career('Test career'),
-            new ImagePath('/images/test.jpg'),
             new RelevantVideoLinks([]),
             $version,
         );
@@ -542,7 +540,6 @@ class RollbackTalentTest extends TestCase
             [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1999-01-01')),
             new Career('Snapshot career'),
-            new ImagePath('/images/snapshot.jpg'),
             new RelevantVideoLinks([]),
             $version,
             new DateTimeImmutable(),

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\DraftGroup as DraftGroupModel;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
@@ -49,7 +48,6 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
                 'normalized_name' => $group->normalizedName(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
-                'image_path' => $group->imagePath() ? (string) $group->imagePath() : null,
                 'status' => $group->status()->value,
             ],
         );
@@ -90,7 +88,6 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $model->image_path ? new ImagePath($model->image_path) : null,
             ApprovalStatus::from($model->status),
         );
     }

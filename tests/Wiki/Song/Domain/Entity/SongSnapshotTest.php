@@ -6,7 +6,6 @@ namespace Tests\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -48,7 +47,6 @@ class SongSnapshotTest extends TestCase
         $this->assertSame((string)$data->composer, (string)$snapshot->composer());
         $this->assertSame($data->releaseDate->value(), $snapshot->releaseDate()->value());
         $this->assertSame((string)$data->overView, (string)$snapshot->overView());
-        $this->assertSame((string)$data->coverImagePath, (string)$snapshot->coverImagePath());
         $this->assertSame((string)$data->musicVideoLink, (string)$snapshot->musicVideoLink());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
@@ -86,7 +84,6 @@ class SongSnapshotTest extends TestCase
             null,
             $overView,
             null,
-            null,
             $version,
             $createdAt,
         );
@@ -95,7 +92,6 @@ class SongSnapshotTest extends TestCase
         $this->assertNull($snapshot->groupIdentifier());
         $this->assertNull($snapshot->talentIdentifier());
         $this->assertNull($snapshot->releaseDate());
-        $this->assertNull($snapshot->coverImagePath());
         $this->assertNull($snapshot->musicVideoLink());
     }
 
@@ -118,7 +114,6 @@ class SongSnapshotTest extends TestCase
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('TT is a song by TWICE.');
-        $coverImagePath = new ImagePath('/resources/public/images/tt.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
@@ -136,7 +131,6 @@ class SongSnapshotTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $coverImagePath,
             $musicVideoLink,
             $version,
             $createdAt,
@@ -155,7 +149,6 @@ class SongSnapshotTest extends TestCase
             composer: $composer,
             releaseDate: $releaseDate,
             overView: $overView,
-            coverImagePath: $coverImagePath,
             musicVideoLink: $musicVideoLink,
             version: $version,
             createdAt: $createdAt,
@@ -182,7 +175,6 @@ readonly class SongSnapshotTestData
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,
         public Overview                 $overView,
-        public ImagePath                $coverImagePath,
         public ExternalContentLink      $musicVideoLink,
         public Version                  $version,
         public DateTimeImmutable        $createdAt,

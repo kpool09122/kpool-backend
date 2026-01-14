@@ -51,7 +51,6 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );

@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -81,7 +80,6 @@ class SongRepositoryTest extends TestCase
         $this->assertInstanceOf(DateTimeImmutable::class, $song->releaseDate()->value());
         $this->assertSame('2021-08-23', $song->releaseDate()->format('Y-m-d'));
         $this->assertSame('Stray Kids 2nd full album NOEASY title track.', (string) $song->overView());
-        $this->assertSame('/images/songs/straykids-thunderous.jpg', (string) $song->coverImagePath());
         $this->assertSame('https://www.youtube.com/watch?v=EaswWiwMVs8', (string) $song->musicVideoLink());
         $this->assertSame(2, $song->version()->value());
     }
@@ -152,7 +150,6 @@ class SongRepositoryTest extends TestCase
             new Composer('3RACHA, Versachoi'),
             new ReleaseDate(new DateTimeImmutable('2022-10-07')),
             new Overview('Stray Kids 7th mini album MAXIDENT title track.'),
-            new ImagePath('/images/songs/straykids-case143.jpg'),
             new ExternalContentLink('https://www.youtube.com/watch?v=jk6zLoynzHw'),
             new Version(4),
         );
@@ -170,7 +167,6 @@ class SongRepositoryTest extends TestCase
             'composer' => (string) $song->composer(),
             'release_date' => $song->releaseDate()?->format('Y-m-d'),
             'overview' => (string) $song->overView(),
-            'cover_image_path' => (string) $song->coverImagePath(),
             'music_video_link' => (string) $song->musicVideoLink(),
             'version' => $song->version()->value(),
         ]);

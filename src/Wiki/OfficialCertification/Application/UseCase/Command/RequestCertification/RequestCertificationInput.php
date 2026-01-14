@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification;
 
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Wiki\OfficialCertification\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class RequestCertificationInput implements RequestCertificationInputPort

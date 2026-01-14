@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -27,7 +26,6 @@ class DraftGroup
      * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param ImagePath|null $imagePath
      * @param ApprovalStatus $status
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
@@ -42,7 +40,6 @@ class DraftGroup
         private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
-        private ?ImagePath                        $imagePath,
         private ApprovalStatus                    $status,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
@@ -117,16 +114,6 @@ class DraftGroup
     public function setDescription(Description $description): void
     {
         $this->description = $description;
-    }
-
-    public function imagePath(): ?ImagePath
-    {
-        return $this->imagePath;
-    }
-
-    public function setImagePath(?ImagePath $imagePath): void
-    {
-        $this->imagePath = $imagePath;
     }
 
     public function status(): ApprovalStatus

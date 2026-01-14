@@ -11,7 +11,6 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -90,7 +89,6 @@ class CreateTalentTest extends TestCase
             $createTalentInfo->groupIdentifiers,
             $createTalentInfo->birthday,
             $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
             $createTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -106,10 +104,6 @@ class CreateTalentTest extends TestCase
             ->andReturn($principal);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($createTalentInfo->base64EncodedImage)
-            ->andReturn($createTalentInfo->imageLink);
 
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
@@ -145,7 +139,6 @@ class CreateTalentTest extends TestCase
         $this->assertSame($createTalentInfo->groupIdentifiers, $talent->groupIdentifiers());
         $this->assertSame($createTalentInfo->birthday, $talent->birthday());
         $this->assertSame((string)$createTalentInfo->career, (string)$talent->career());
-        $this->assertSame((string)$createTalentInfo->imageLink, (string)$talent->imageLink());
         $this->assertSame($createTalentInfo->relevantVideoLinks->toStringArray(), $talent->relevantVideoLinks()->toStringArray());
         $this->assertSame($createTalentInfo->status, $talent->status());
     }
@@ -175,7 +168,6 @@ class CreateTalentTest extends TestCase
             $createTalentInfo->groupIdentifiers,
             $createTalentInfo->birthday,
             $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
             $createTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -191,10 +183,6 @@ class CreateTalentTest extends TestCase
             ->andReturn($principal);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($createTalentInfo->base64EncodedImage)
-            ->andReturn($createTalentInfo->imageLink);
 
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
@@ -248,7 +236,6 @@ class CreateTalentTest extends TestCase
             $createTalentInfo->groupIdentifiers,
             $createTalentInfo->birthday,
             $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
             $createTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -300,7 +287,6 @@ class CreateTalentTest extends TestCase
             $createTalentInfo->groupIdentifiers,
             $createTalentInfo->birthday,
             $createTalentInfo->career,
-            $createTalentInfo->base64EncodedImage,
             $createTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -354,8 +340,6 @@ class CreateTalentTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $talent = new DraftTalent(
@@ -370,7 +354,6 @@ class CreateTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $status,
         );
@@ -386,7 +369,6 @@ class CreateTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $version,
         );
@@ -402,12 +384,10 @@ class CreateTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $base64EncodedImage,
             $link1,
             $link2,
             $link3,
             $relevantVideoLinks,
-            $imageLink,
             $talentIdentifier,
             $status,
             $talent,
@@ -436,12 +416,10 @@ readonly class CreateTalentTestData
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,
         public Career                   $career,
-        public string                   $base64EncodedImage,
         public ExternalContentLink      $link1,
         public ExternalContentLink      $link2,
         public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
-        public ImagePath $imageLink,
         public TalentIdentifier $talentIdentifier,
         public ApprovalStatus $status,
         public DraftTalent $draftTalent,

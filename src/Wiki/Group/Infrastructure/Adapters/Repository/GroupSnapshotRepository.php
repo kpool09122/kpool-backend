@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\GroupSnapshot as GroupSnapshotModel;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
@@ -30,7 +29,6 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             'normalized_name' => $snapshot->normalizedName(),
             'agency_id' => $snapshot->agencyIdentifier() ? (string)$snapshot->agencyIdentifier() : null,
             'description' => (string)$snapshot->description(),
-            'image_path' => $snapshot->imagePath() ? (string)$snapshot->imagePath() : null,
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
         ]);
@@ -88,7 +86,6 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version),
             $model->created_at->toDateTimeImmutable(),
         );

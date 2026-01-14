@@ -44,7 +44,6 @@ readonly class GroupFactory implements GroupFactoryInterface
             $normalizedName,
             null,
             new Description(''),
-            null,
             new Version(1),
         );
     }

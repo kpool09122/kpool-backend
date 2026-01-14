@@ -54,7 +54,6 @@ class DraftSongFactoryTest extends TestCase
         $this->assertSame('', (string)$song->lyricist());
         $this->assertSame('', (string)$song->composer());
         $this->assertSame('', (string)$song->overView());
-        $this->assertNull($song->coverImagePath());
         $this->assertNull($song->musicVideoLink());
         $this->assertSame(ApprovalStatus::Pending, $song->status());
     }

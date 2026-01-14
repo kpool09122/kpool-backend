@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
@@ -395,7 +394,6 @@ class MergeGroupTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다.');
-        $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $status = ApprovalStatus::Pending;
 
         $group = new DraftGroup(
@@ -408,7 +406,6 @@ class MergeGroupTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $imagePath,
             $status,
         );
 
@@ -422,7 +419,6 @@ class MergeGroupTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $imagePath,
             $status,
             $group,
         );
@@ -447,7 +443,6 @@ readonly class MergeGroupTestData
         public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
-        public ImagePath                $imagePath,
         public ApprovalStatus           $status,
         public DraftGroup               $group,
     ) {

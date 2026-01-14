@@ -613,7 +613,6 @@ class AffiliationActivatedHandlerTest extends TestCase
             [],
             null,
             new Career('Test Career'),
-            null,
             RelevantVideoLinks::formStringArray([]),
             new Version(1),
             null,

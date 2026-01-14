@@ -6,7 +6,7 @@ namespace Tests\Wiki\OfficialCertification\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\OfficialCertification\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ResourceIdentifierTest extends TestCase

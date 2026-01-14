@@ -20,8 +20,8 @@ use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\Description as GroupDescription;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
-use Source\Wiki\OfficialCertification\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -352,7 +352,6 @@ class OfficialResourceUpdaterTest extends TestCase
             'group',
             null,
             new GroupDescription('Description'),
-            null,
             new Version(1),
         );
     }
@@ -369,7 +368,6 @@ class OfficialResourceUpdaterTest extends TestCase
             [],
             null,
             new Career('Career'),
-            null,
             RelevantVideoLinks::formStringArray([]),
             new Version(1),
         );
@@ -389,7 +387,6 @@ class OfficialResourceUpdaterTest extends TestCase
             new Composer('Composer'),
             null,
             new Overview('Overview'),
-            null,
             null,
             new Version(1),
         );

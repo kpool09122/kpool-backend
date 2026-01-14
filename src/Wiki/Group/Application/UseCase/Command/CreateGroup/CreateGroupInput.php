@@ -19,7 +19,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
      * @param GroupName $name
      * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
-     * @param string|null $base64EncodedImage
      * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
@@ -28,7 +27,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         private GroupName           $name,
         private AgencyIdentifier    $agencyIdentifier,
         private Description         $description,
-        private ?string             $base64EncodedImage,
         private PrincipalIdentifier $principalIdentifier,
     ) {
     }
@@ -56,11 +54,6 @@ readonly class CreateGroupInput implements CreateGroupInputPort
     public function description(): Description
     {
         return $this->description;
-    }
-
-    public function base64EncodedImage(): ?string
-    {
-        return $this->base64EncodedImage;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

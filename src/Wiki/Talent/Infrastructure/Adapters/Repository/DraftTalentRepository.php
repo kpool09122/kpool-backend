@@ -6,7 +6,6 @@ namespace Source\Wiki\Talent\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\DraftTalent as DraftTalentModel;
 use Application\Models\Wiki\Group;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -53,7 +52,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             $groupIdentifiers,
             $draftModel->birthday ? new Birthday($draftModel->birthday->toDateTimeImmutable()) : null,
             new Career($draftModel->career),
-            $draftModel->image_link ? new ImagePath($draftModel->image_link) : null,
             $relevantVideoLinks,
             ApprovalStatus::from($draftModel->status),
         );
@@ -81,7 +79,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
-                'image_link' => $talent->imageLink() ? (string) $talent->imageLink() : null,
                 'relevant_video_links' => $talent->relevantVideoLinks()->toStringArray(),
                 'status' => $talent->status()->value,
             ],
@@ -131,7 +128,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 $groupIdentifiers,
                 $model->birthday ? new Birthday($model->birthday->toDateTimeImmutable()) : null,
                 new Career($model->career),
-                $model->image_link ? new ImagePath($model->image_link) : null,
                 $relevantVideoLinks,
                 ApprovalStatus::from($model->status),
             );

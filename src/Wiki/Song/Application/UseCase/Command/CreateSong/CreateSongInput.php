@@ -30,7 +30,6 @@ readonly class CreateSongInput implements CreateSongInputPort
      * @param Composer $composer
      * @param ?ReleaseDate $releaseDate
      * @param Overview $overview
-     * @param ?string $base64EncodedCoverImage
      * @param ?ExternalContentLink $musicVideoLink
      * @param PrincipalIdentifier $principalIdentifier
      */
@@ -45,7 +44,6 @@ readonly class CreateSongInput implements CreateSongInputPort
         private Composer             $composer,
         private ?ReleaseDate         $releaseDate,
         private Overview             $overview,
-        private ?string              $base64EncodedCoverImage,
         private ?ExternalContentLink $musicVideoLink,
         private PrincipalIdentifier  $principalIdentifier,
     ) {
@@ -99,11 +97,6 @@ readonly class CreateSongInput implements CreateSongInputPort
     public function overview(): Overview
     {
         return $this->overview;
-    }
-
-    public function base64EncodedCoverImage(): ?string
-    {
-        return $this->base64EncodedCoverImage;
     }
 
     public function musicVideoLink(): ?ExternalContentLink

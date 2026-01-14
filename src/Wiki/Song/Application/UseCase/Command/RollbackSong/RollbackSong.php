@@ -127,9 +127,6 @@ readonly class RollbackSong implements RollbackSongInterface
                 $s->setReleaseDate($snapshot->releaseDate());
             }
             $s->setOverView($snapshot->overView());
-            if ($snapshot->coverImagePath() !== null) {
-                $s->setCoverImagePath($snapshot->coverImagePath());
-            }
             if ($snapshot->musicVideoLink() !== null) {
                 $s->setMusicVideoLink($snapshot->musicVideoLink());
             }

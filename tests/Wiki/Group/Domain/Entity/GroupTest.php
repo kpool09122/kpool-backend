@@ -6,7 +6,6 @@ namespace Tests\Wiki\Group\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -40,7 +39,6 @@ class GroupTest extends TestCase
         $this->assertSame($createGroup->normalizedName, $group->normalizedName());
         $this->assertSame((string)$createGroup->agencyIdentifier, (string)$group->agencyIdentifier());
         $this->assertSame((string)$createGroup->description, (string)$group->description());
-        $this->assertSame((string)$createGroup->imagePath, (string)$group->imagePath());
         $this->assertSame($createGroup->version->value(), $group->version()->value());
         $this->assertFalse($group->isOfficial());
         $this->assertSame($createGroup->ownerIdentifier, $group->ownerAccountIdentifier());
@@ -128,25 +126,6 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
     }
 
     /**
-     * 正常系：ImageLinkのsetterが正しく動作すること.
-     *
-     * @return void
-     */
-    public function testSetImageLink(): void
-    {
-        $createGroup = $this->createDummyGroup();
-        $group = $createGroup->group;
-
-        $this->assertSame((string)$createGroup->imagePath, (string)$group->imagePath());
-
-        $newImagePath = new ImagePath('/resources/public/images/after.webp');
-
-        $group->setImagePath($newImagePath);
-        $this->assertNotSame((string)$createGroup->imagePath, (string)$group->imagePath());
-        $this->assertSame((string)$newImagePath, (string)$group->imagePath());
-    }
-
-    /**
      * 正常系：updateVersionが正しく動作すること.
      *
      * @return void
@@ -201,7 +180,6 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             'twice',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Description'),
-            new ImagePath('/resources/public/images/test.webp'),
             new Version(5),
         );
 
@@ -296,7 +274,6 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
 그룹명은 \'좋은 음악으로 한번, 멋진 퍼포먼스로 두 번 감동을 준다\'는 의미를 담고 있습니다. 그 이름처럼 데뷔곡 \'OOH-AHH하게\' 이후, \'CHEER UP\', \'TT\', \'LIKEY\', \'What is Love?\', \'FANCY\' 등 수많은 히트곡을 연달아 발표했습니다. 특히 \'TT\'에서 보여준 우는 표정을 표현한 \'TT 포즈\'는 일본에서도 사회 현상이 될 정도로 큰 인기를 얻었습니다.
 데뷔 초의 밝고 귀여운 콘셉트에서 해마다 성장을 거듭하며, 세련되고 멋진 퍼포먼스까지 다채로운 모습을 보여주고 있습니다. 중독성 있는 멜로디와 따라 하기 쉬운 안무가 특징으로, 폭넓은 세대로부터 지지를 받고 있습니다. 한국이나 일본뿐만 아니라, 세계적인 스타디움 투어를 성공시키는 등 K팝을 대표하는 최정상 그룹으로서 지금도 전 세계 팬들을 계속해서 사로잡고 있습니다. 팬덤명은 \'원스(ONCE)\'입니다.');
-        $imagePath = new ImagePath('/resources/public/images/test.webp');
         $version = new Version(1);
         $isOfficial ??= false;
         $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
@@ -309,7 +286,6 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $imagePath,
             $version,
             null,
             null,
@@ -325,7 +301,6 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             normalizedName: $normalizedName,
             agencyIdentifier: $agencyIdentifier,
             description: $description,
-            imagePath: $imagePath,
             version: $version,
             isOfficial: $isOfficial,
             ownerIdentifier: $ownerIdentifier,
@@ -350,7 +325,6 @@ readonly class GroupTestData
         public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
-        public ImagePath                $imagePath,
         public Version                  $version,
         public bool                     $isOfficial,
         public ?AccountIdentifier        $ownerIdentifier,

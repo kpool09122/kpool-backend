@@ -7,7 +7,6 @@ namespace Tests\Wiki\Group\Infrastructure\Factory;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -50,7 +49,6 @@ class GroupSnapshotFactoryTest extends TestCase
         $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('TWICE is a South Korean girl group.');
-        $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $version = new Version(3);
 
         $group = new Group(
@@ -61,7 +59,6 @@ class GroupSnapshotFactoryTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $imagePath,
             $version,
         );
 
@@ -76,7 +73,6 @@ class GroupSnapshotFactoryTest extends TestCase
         $this->assertSame($normalizedName, $snapshot->normalizedName());
         $this->assertSame((string)$agencyIdentifier, (string)$snapshot->agencyIdentifier());
         $this->assertSame((string)$description, (string)$snapshot->description());
-        $this->assertSame((string)$imagePath, (string)$snapshot->imagePath());
         $this->assertSame($version->value(), $snapshot->version()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
     }
@@ -97,7 +93,6 @@ class GroupSnapshotFactoryTest extends TestCase
             'twice',
             null,
             new Description('TWICE is a South Korean girl group.'),
-            null,
             new Version(1),
         );
 
@@ -105,6 +100,5 @@ class GroupSnapshotFactoryTest extends TestCase
         $snapshot = $factory->create($group);
 
         $this->assertNull($snapshot->agencyIdentifier());
-        $this->assertNull($snapshot->imagePath());
     }
 }

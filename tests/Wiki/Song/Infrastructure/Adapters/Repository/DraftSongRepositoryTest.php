@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -88,7 +87,6 @@ class DraftSongRepositoryTest extends TestCase
         $this->assertInstanceOf(DateTimeImmutable::class, $draft->releaseDate()->value());
         $this->assertSame('2019-09-23', $draft->releaseDate()->format('Y-m-d'));
         $this->assertSame('TWICE 8th mini album title track.', (string) $draft->overView());
-        $this->assertSame('/images/songs/twice-feelspecial.jpg', (string) $draft->coverImagePath());
         $this->assertSame('https://www.youtube.com/watch?v=3ymwOvzhwHs', (string) $draft->musicVideoLink());
         $this->assertSame(ApprovalStatus::Pending, $draft->status());
     }
@@ -161,7 +159,6 @@ class DraftSongRepositoryTest extends TestCase
             new Composer('250'),
             new ReleaseDate(new DateTimeImmutable('2022-07-22')),
             new Overview('NewJeans debut single.'),
-            new ImagePath('/images/songs/newjeans-attention.jpg'),
             new ExternalContentLink('https://www.youtube.com/watch?v=js1CtxSY38I'),
             ApprovalStatus::UnderReview,
         );
@@ -181,7 +178,6 @@ class DraftSongRepositoryTest extends TestCase
             'composer' => (string) $draft->composer(),
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
             'overview' => (string) $draft->overView(),
-            'cover_image_path' => (string) $draft->coverImagePath(),
             'music_video_link' => (string) $draft->musicVideoLink(),
             'status' => $draft->status()->value,
         ]);
@@ -226,7 +222,6 @@ class DraftSongRepositoryTest extends TestCase
             new Composer('Dem Jointz'),
             new ReleaseDate(new DateTimeImmutable('2021-05-17')),
             new Overview('aespa 2nd single.'),
-            null,
             null,
             ApprovalStatus::Pending,
         );

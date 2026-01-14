@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Group\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
@@ -38,7 +37,6 @@ class GroupSnapshotTest extends TestCase
         $this->assertSame($data->normalizedName, $snapshot->normalizedName());
         $this->assertSame((string)$data->agencyIdentifier, (string)$snapshot->agencyIdentifier());
         $this->assertSame((string)$data->description, (string)$snapshot->description());
-        $this->assertSame((string)$data->imagePath, (string)$snapshot->imagePath());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
     }
@@ -69,13 +67,11 @@ class GroupSnapshotTest extends TestCase
             $normalizedName,
             null,
             $description,
-            null,
             $version,
             $createdAt,
         );
 
         $this->assertNull($snapshot->agencyIdentifier());
-        $this->assertNull($snapshot->imagePath());
     }
 
     /**
@@ -93,7 +89,6 @@ class GroupSnapshotTest extends TestCase
         $normalizedName = 'twice';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('TWICE is a South Korean girl group.');
-        $imagePath = new ImagePath('/resources/public/images/twice.webp');
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
@@ -106,7 +101,6 @@ class GroupSnapshotTest extends TestCase
             $normalizedName,
             $agencyIdentifier,
             $description,
-            $imagePath,
             $version,
             $createdAt,
         );
@@ -120,7 +114,6 @@ class GroupSnapshotTest extends TestCase
             normalizedName: $normalizedName,
             agencyIdentifier: $agencyIdentifier,
             description: $description,
-            imagePath: $imagePath,
             version: $version,
             createdAt: $createdAt,
             snapshot: $snapshot,
@@ -142,7 +135,6 @@ readonly class GroupSnapshotTestData
         public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
-        public ImagePath                $imagePath,
         public Version                  $version,
         public DateTimeImmutable        $createdAt,
         public GroupSnapshot            $snapshot,

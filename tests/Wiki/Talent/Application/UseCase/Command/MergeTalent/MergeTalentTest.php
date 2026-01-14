@@ -9,7 +9,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -503,7 +502,6 @@ class MergeTalentTest extends TestCase
         $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
-        $imagePath = new ImagePath('/resources/public/images/test.webp');
 
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
@@ -519,7 +517,6 @@ class MergeTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imagePath,
             $relevantVideoLinks,
             $status,
         );

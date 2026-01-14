@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -60,7 +59,6 @@ class SongSnapshotFactoryTest extends TestCase
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('TT is a song by TWICE.');
-        $coverImagePath = new ImagePath('/resources/public/images/tt.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $version = new Version(3);
 
@@ -76,7 +74,6 @@ class SongSnapshotFactoryTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $coverImagePath,
             $musicVideoLink,
             $version,
         );
@@ -96,7 +93,6 @@ class SongSnapshotFactoryTest extends TestCase
         $this->assertSame((string)$composer, (string)$snapshot->composer());
         $this->assertSame($releaseDate->value(), $snapshot->releaseDate()->value());
         $this->assertSame((string)$overView, (string)$snapshot->overView());
-        $this->assertSame((string)$coverImagePath, (string)$snapshot->coverImagePath());
         $this->assertSame((string)$musicVideoLink, (string)$snapshot->musicVideoLink());
         $this->assertSame($version->value(), $snapshot->version()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
@@ -123,7 +119,6 @@ class SongSnapshotFactoryTest extends TestCase
             null,
             new Overview(''),
             null,
-            null,
             new Version(1),
         );
 
@@ -134,7 +129,6 @@ class SongSnapshotFactoryTest extends TestCase
         $this->assertNull($snapshot->groupIdentifier());
         $this->assertNull($snapshot->talentIdentifier());
         $this->assertNull($snapshot->releaseDate());
-        $this->assertNull($snapshot->coverImagePath());
         $this->assertNull($snapshot->musicVideoLink());
     }
 }
