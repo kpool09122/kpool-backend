@@ -9,6 +9,12 @@ use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccou
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
+use Source\Account\AccountVerification\Application\UseCase\Command\ApproveVerification\ApproveVerification;
+use Source\Account\AccountVerification\Application\UseCase\Command\ApproveVerification\ApproveVerificationInterface;
+use Source\Account\AccountVerification\Application\UseCase\Command\RejectVerification\RejectVerification;
+use Source\Account\AccountVerification\Application\UseCase\Command\RejectVerification\RejectVerificationInterface;
+use Source\Account\AccountVerification\Application\UseCase\Command\RequestVerification\RequestVerification;
+use Source\Account\AccountVerification\Application\UseCase\Command\RequestVerification\RequestVerificationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\RejectAffiliation\RejectAffiliation;
@@ -55,5 +61,10 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(TerminateAffiliationInterface::class, TerminateAffiliation::class);
         $this->app->singleton(RequestAffiliationInterface::class, RequestAffiliation::class);
         $this->app->singleton(RejectAffiliationInterface::class, RejectAffiliation::class);
+
+        // AccountVerification
+        $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);
+        $this->app->singleton(ApproveVerificationInterface::class, ApproveVerification::class);
+        $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
     }
 }

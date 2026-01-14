@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Application\Models\Account;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -13,8 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $role
  * @property bool $is_default
- * @property \Illuminate\Support\Carbon $created_at
- * @property \Illuminate\Support\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property-read Collection<int, IdentityGroupMembership> $members
  */
 class IdentityGroup extends Model
 {
@@ -41,6 +44,9 @@ class IdentityGroup extends Model
         ];
     }
 
+    /**
+     * @return HasMany<IdentityGroupMembership, $this>
+     */
     public function members(): HasMany
     {
         return $this->hasMany(IdentityGroupMembership::class, 'identity_group_id', 'id');
