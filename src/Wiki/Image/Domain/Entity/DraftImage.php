@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -23,6 +24,11 @@ class DraftImage
         private ImagePath $imagePath,
         private ImageUsage $imageUsage,
         private int $displayOrder,
+        private string $sourceUrl,
+        private string $sourceName,
+        private string $altText,
+        private ApprovalStatus $status,
+        private readonly DateTimeImmutable $agreedToTermsAt,
         private readonly DateTimeImmutable $createdAt,
     ) {
     }
@@ -85,5 +91,50 @@ class DraftImage
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function sourceUrl(): string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function setSourceUrl(string $sourceUrl): void
+    {
+        $this->sourceUrl = $sourceUrl;
+    }
+
+    public function sourceName(): string
+    {
+        return $this->sourceName;
+    }
+
+    public function setSourceName(string $sourceName): void
+    {
+        $this->sourceName = $sourceName;
+    }
+
+    public function altText(): string
+    {
+        return $this->altText;
+    }
+
+    public function setAltText(string $altText): void
+    {
+        $this->altText = $altText;
+    }
+
+    public function status(): ApprovalStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(ApprovalStatus $status): void
+    {
+        $this->status = $status;
+    }
+
+    public function agreedToTermsAt(): DateTimeImmutable
+    {
+        return $this->agreedToTermsAt;
     }
 }

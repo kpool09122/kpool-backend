@@ -20,6 +20,9 @@ class Image
         private ImagePath $imagePath,
         private ImageUsage $imageUsage,
         private int $displayOrder,
+        private string $sourceUrl,
+        private string $sourceName,
+        private string $altText,
         private readonly DateTimeImmutable $createdAt,
         private DateTimeImmutable $updatedAt,
     ) {
@@ -78,5 +81,35 @@ class Image
     public function updatedAt(): DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function sourceUrl(): string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function setSourceUrl(string $sourceUrl): void
+    {
+        $this->sourceUrl = $sourceUrl;
+    }
+
+    public function sourceName(): string
+    {
+        return $this->sourceName;
+    }
+
+    public function setSourceName(string $sourceName): void
+    {
+        $this->sourceName = $sourceName;
+    }
+
+    public function altText(): string
+    {
+        return $this->altText;
+    }
+
+    public function setAltText(string $altText): void
+    {
+        $this->altText = $altText;
     }
 }

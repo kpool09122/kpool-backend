@@ -158,6 +158,9 @@ class ImageRepositoryTest extends TestCase
             new ImagePath('/images/talents/new-profile.jpg'),
             ImageUsage::PROFILE,
             1,
+            'https://example.com/source',
+            'Example Source',
+            'Profile image of talent',
             new DateTimeImmutable(),
             new DateTimeImmutable(),
         );
@@ -172,6 +175,9 @@ class ImageRepositoryTest extends TestCase
             'image_path' => (string) $image->imagePath(),
             'image_usage' => $image->imageUsage()->value,
             'display_order' => $image->displayOrder(),
+            'source_url' => $image->sourceUrl(),
+            'source_name' => $image->sourceName(),
+            'alt_text' => $image->altText(),
         ]);
     }
 
@@ -201,6 +207,9 @@ class ImageRepositoryTest extends TestCase
             new ImagePath('/images/talents/updated.jpg'),
             ImageUsage::COVER,
             2,
+            'https://example.com/updated-source',
+            'Updated Source',
+            'Updated alt text',
             new DateTimeImmutable(),
             new DateTimeImmutable(),
         );

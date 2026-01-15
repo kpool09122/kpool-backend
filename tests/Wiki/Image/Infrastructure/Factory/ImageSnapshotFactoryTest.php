@@ -44,6 +44,9 @@ class ImageSnapshotFactoryTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
+        $sourceUrl = 'https://example.com/source';
+        $sourceName = 'Example Source';
+        $altText = 'Profile image of talent';
         $createdAt = new DateTimeImmutable();
         $updatedAt = new DateTimeImmutable();
 
@@ -54,6 +57,9 @@ class ImageSnapshotFactoryTest extends TestCase
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
             $createdAt,
             $updatedAt,
         );
@@ -69,5 +75,8 @@ class ImageSnapshotFactoryTest extends TestCase
         $this->assertSame((string) $imagePath, (string) $snapshot->imagePath());
         $this->assertSame($imageUsage, $snapshot->imageUsage());
         $this->assertSame($displayOrder, $snapshot->displayOrder());
+        $this->assertSame($sourceUrl, $snapshot->sourceUrl());
+        $this->assertSame($sourceName, $snapshot->sourceName());
+        $this->assertSame($altText, $snapshot->altText());
     }
 }

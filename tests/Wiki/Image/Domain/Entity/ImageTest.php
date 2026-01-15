@@ -27,6 +27,9 @@ class ImageTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
+        $sourceUrl = 'https://example.com/source';
+        $sourceName = 'Example Source';
+        $altText = 'Profile image of talent';
         $createdAt = new DateTimeImmutable();
         $updatedAt = new DateTimeImmutable();
 
@@ -37,6 +40,9 @@ class ImageTest extends TestCase
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
             $createdAt,
             $updatedAt,
         );
@@ -47,6 +53,9 @@ class ImageTest extends TestCase
         $this->assertSame((string) $imagePath, (string) $image->imagePath());
         $this->assertSame($imageUsage, $image->imageUsage());
         $this->assertSame($displayOrder, $image->displayOrder());
+        $this->assertSame($sourceUrl, $image->sourceUrl());
+        $this->assertSame($sourceName, $image->sourceName());
+        $this->assertSame($altText, $image->altText());
         $this->assertSame($createdAt, $image->createdAt());
         $this->assertSame($updatedAt, $image->updatedAt());
     }
@@ -88,6 +97,45 @@ class ImageTest extends TestCase
         $this->assertSame(5, $image->displayOrder());
     }
 
+    /**
+     * 正常系: sourceUrlのsetterが正しく動作すること.
+     */
+    public function testSetSourceUrl(): void
+    {
+        $image = $this->createDummyImage();
+        $newSourceUrl = 'https://example.com/new-source';
+
+        $image->setSourceUrl($newSourceUrl);
+
+        $this->assertSame($newSourceUrl, $image->sourceUrl());
+    }
+
+    /**
+     * 正常系: sourceNameのsetterが正しく動作すること.
+     */
+    public function testSetSourceName(): void
+    {
+        $image = $this->createDummyImage();
+        $newSourceName = 'New Source Name';
+
+        $image->setSourceName($newSourceName);
+
+        $this->assertSame($newSourceName, $image->sourceName());
+    }
+
+    /**
+     * 正常系: altTextのsetterが正しく動作すること.
+     */
+    public function testSetAltText(): void
+    {
+        $image = $this->createDummyImage();
+        $newAltText = 'New alt text for image';
+
+        $image->setAltText($newAltText);
+
+        $this->assertSame($newAltText, $image->altText());
+    }
+
     private function createDummyImage(): Image
     {
         return new Image(
@@ -97,6 +145,9 @@ class ImageTest extends TestCase
             new ImagePath('/resources/public/images/test.webp'),
             ImageUsage::PROFILE,
             1,
+            'https://example.com/source',
+            'Example Source',
+            'Profile image of talent',
             new DateTimeImmutable(),
             new DateTimeImmutable(),
         );

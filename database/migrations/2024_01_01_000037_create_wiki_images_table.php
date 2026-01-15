@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
             $table->integer('display_order')->default(0)->comment('表示順');
+            $table->string('source_url', 512)->comment('出典元URL');
+            $table->string('source_name', 255)->comment('出典元サイト名');
+            $table->string('alt_text', 512)->comment('alt属性テキスト');
             $table->timestamps();
 
             $table->index(['resource_type', 'resource_identifier'], 'idx_resource');
@@ -33,6 +36,11 @@ return new class extends Migration
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
             $table->integer('display_order')->default(0)->comment('表示順');
+            $table->string('source_url', 512)->comment('出典元URL');
+            $table->string('source_name', 255)->comment('出典元サイト名');
+            $table->string('alt_text', 512)->comment('alt属性テキスト');
+            $table->string('status', 16)->default('pending')->comment('承認ステータス (pending, under_review, approved, rejected)');
+            $table->timestamp('agreed_to_terms_at')->comment('規約同意日時');
             $table->timestamps();
 
             $table->index(['resource_type', 'draft_resource_identifier'], 'idx_draft_resource');
@@ -45,6 +53,9 @@ return new class extends Migration
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途');
             $table->integer('display_order')->comment('表示順');
+            $table->string('source_url', 512)->comment('出典元URL');
+            $table->string('source_name', 255)->comment('出典元サイト名');
+            $table->string('alt_text', 512)->comment('alt属性テキスト');
             $table->dateTime('created_at')->comment('作成日時');
 
             $table->index('resource_snapshot_identifier', 'idx_resource_snapshot');

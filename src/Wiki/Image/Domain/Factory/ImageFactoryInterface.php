@@ -18,5 +18,8 @@ interface ImageFactoryInterface
         ImagePath $imagePath,
         ImageUsage $imageUsage,
         int $displayOrder,
+        string $sourceUrl,
+        string $sourceName,
+        string $altText,
     ): Image;
 }

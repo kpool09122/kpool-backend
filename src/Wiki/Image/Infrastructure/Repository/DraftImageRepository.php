@@ -10,6 +10,7 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -55,6 +56,11 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
                 'image_path' => (string) $draftImage->imagePath(),
                 'image_usage' => $draftImage->imageUsage()->value,
                 'display_order' => $draftImage->displayOrder(),
+                'source_url' => $draftImage->sourceUrl(),
+                'source_name' => $draftImage->sourceName(),
+                'alt_text' => $draftImage->altText(),
+                'status' => $draftImage->status()->value,
+                'agreed_to_terms_at' => $draftImage->agreedToTermsAt(),
             ],
         );
     }
@@ -85,6 +91,11 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,
+            $model->source_url,
+            $model->source_name,
+            $model->alt_text,
+            ApprovalStatus::from($model->status),
+            $model->agreed_to_terms_at->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
         );
     }

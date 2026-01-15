@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -29,6 +30,11 @@ class DraftImageTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
+        $sourceUrl = 'https://example.com/source';
+        $sourceName = 'Example Source';
+        $altText = 'Profile image of talent';
+        $status = ApprovalStatus::UnderReview;
+        $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
         $createdAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
@@ -40,6 +46,11 @@ class DraftImageTest extends TestCase
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
+            $status,
+            $agreedToTermsAt,
             $createdAt,
         );
 
@@ -51,6 +62,11 @@ class DraftImageTest extends TestCase
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
         $this->assertSame($imageUsage, $draftImage->imageUsage());
         $this->assertSame($displayOrder, $draftImage->displayOrder());
+        $this->assertSame($sourceUrl, $draftImage->sourceUrl());
+        $this->assertSame($sourceName, $draftImage->sourceName());
+        $this->assertSame($altText, $draftImage->altText());
+        $this->assertSame($status, $draftImage->status());
+        $this->assertSame($agreedToTermsAt, $draftImage->agreedToTermsAt());
         $this->assertSame($createdAt, $draftImage->createdAt());
     }
 
@@ -67,6 +83,11 @@ class DraftImageTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
         $imageUsage = ImageUsage::COVER;
         $displayOrder = 0;
+        $sourceUrl = 'https://example.com/source';
+        $sourceName = 'Example Source';
+        $altText = 'Cover image of song';
+        $status = ApprovalStatus::UnderReview;
+        $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
         $createdAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
@@ -78,6 +99,11 @@ class DraftImageTest extends TestCase
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
+            $status,
+            $agreedToTermsAt,
             $createdAt,
         );
 
@@ -121,6 +147,45 @@ class DraftImageTest extends TestCase
         $this->assertSame(3, $draftImage->displayOrder());
     }
 
+    /**
+     * 正常系: sourceUrlのsetterが正しく動作すること.
+     */
+    public function testSetSourceUrl(): void
+    {
+        $draftImage = $this->createDummyDraftImage();
+        $newSourceUrl = 'https://example.com/new-source';
+
+        $draftImage->setSourceUrl($newSourceUrl);
+
+        $this->assertSame($newSourceUrl, $draftImage->sourceUrl());
+    }
+
+    /**
+     * 正常系: sourceNameのsetterが正しく動作すること.
+     */
+    public function testSetSourceName(): void
+    {
+        $draftImage = $this->createDummyDraftImage();
+        $newSourceName = 'New Source Name';
+
+        $draftImage->setSourceName($newSourceName);
+
+        $this->assertSame($newSourceName, $draftImage->sourceName());
+    }
+
+    /**
+     * 正常系: altTextのsetterが正しく動作すること.
+     */
+    public function testSetAltText(): void
+    {
+        $draftImage = $this->createDummyDraftImage();
+        $newAltText = 'New alt text for image';
+
+        $draftImage->setAltText($newAltText);
+
+        $this->assertSame($newAltText, $draftImage->altText());
+    }
+
     private function createDummyDraftImage(): DraftImage
     {
         return new DraftImage(
@@ -132,6 +197,11 @@ class DraftImageTest extends TestCase
             new ImagePath('/resources/public/images/test.webp'),
             ImageUsage::PROFILE,
             1,
+            'https://example.com/source',
+            'Example Source',
+            'Profile image of talent',
+            ApprovalStatus::UnderReview,
+            new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
         );
     }

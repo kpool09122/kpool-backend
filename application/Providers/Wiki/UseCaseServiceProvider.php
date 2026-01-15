@@ -49,6 +49,14 @@ use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroup;
 use Source\Wiki\Group\Application\UseCase\Command\SubmitGroup\SubmitGroupInterface;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroup;
 use Source\Wiki\Group\Application\UseCase\Command\TranslateGroup\TranslateGroupInterface;
+use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImage;
+use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImage;
+use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImage;
+use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
+use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertification;
@@ -184,5 +192,9 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestCertificationInterface::class, RequestCertification::class);
         $this->app->singleton(ApproveCertificationInterface::class, ApproveCertification::class);
         $this->app->singleton(RejectCertificationInterface::class, RejectCertification::class);
+        $this->app->singleton(UploadImageInterface::class, UploadImage::class);
+        $this->app->singleton(ApproveImageInterface::class, ApproveImage::class);
+        $this->app->singleton(RejectImageInterface::class, RejectImage::class);
+        $this->app->singleton(DeleteImageInterface::class, DeleteImage::class);
     }
 }

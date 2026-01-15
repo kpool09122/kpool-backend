@@ -11,6 +11,7 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -30,6 +31,10 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
         ImagePath $imagePath,
         ImageUsage $imageUsage,
         int $displayOrder,
+        string $sourceUrl,
+        string $sourceName,
+        string $altText,
+        DateTimeImmutable $agreedToTermsAt,
     ): DraftImage {
         return new DraftImage(
             new ImageIdentifier($this->uuidGenerator->generate()),
@@ -40,6 +45,11 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
+            ApprovalStatus::UnderReview,
+            $agreedToTermsAt,
             new DateTimeImmutable(),
         );
     }

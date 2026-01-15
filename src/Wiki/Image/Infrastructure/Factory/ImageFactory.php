@@ -27,6 +27,9 @@ readonly class ImageFactory implements ImageFactoryInterface
         ImagePath $imagePath,
         ImageUsage $imageUsage,
         int $displayOrder,
+        string $sourceUrl,
+        string $sourceName,
+        string $altText,
     ): Image {
         $now = new DateTimeImmutable();
 
@@ -37,6 +40,9 @@ readonly class ImageFactory implements ImageFactoryInterface
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
             $now,
             $now,
         );

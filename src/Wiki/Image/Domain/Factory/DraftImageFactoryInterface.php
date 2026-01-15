@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Domain\Factory;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
@@ -22,5 +23,9 @@ interface DraftImageFactoryInterface
         ImagePath $imagePath,
         ImageUsage $imageUsage,
         int $displayOrder,
+        string $sourceUrl,
+        string $sourceName,
+        string $altText,
+        DateTimeImmutable $agreedToTermsAt,
     ): DraftImage;
 }

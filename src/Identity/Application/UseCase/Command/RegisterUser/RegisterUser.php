@@ -11,6 +11,7 @@ use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
@@ -30,6 +31,7 @@ readonly class RegisterUser implements RegisterUserInterface
      * @throws AuthCodeSessionNotFoundException
      * @throws UnauthorizedException
      * @throws AlreadyUserExistsException
+     * @throws InvalidBase64ImageException
      */
     public function process(RegisterUserInputPort $input): Identity
     {
@@ -56,8 +58,8 @@ readonly class RegisterUser implements RegisterUserInterface
         $identity->copyEmailVerifiedAt($session);
 
         if ($input->base64EncodedImage()) {
-            $imagePath = $this->imageService->upload($input->base64EncodedImage());
-            $identity->setProfileImage($imagePath);
+            $uploadResult = $this->imageService->upload($input->base64EncodedImage());
+            $identity->setProfileImage($uploadResult->resized);
         }
 
         $this->identityRepository->save($identity);

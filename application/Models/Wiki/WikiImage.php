@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $image_path
  * @property string $image_usage
  * @property int $display_order
+ * @property string $source_url
+ * @property string $source_name
+ * @property string $alt_text
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -32,6 +35,9 @@ class WikiImage extends Model
         'image_path',
         'image_usage',
         'display_order',
+        'source_url',
+        'source_name',
+        'alt_text',
     ];
 
     protected $casts = [

@@ -30,6 +30,9 @@ readonly class ImageSnapshotFactory implements ImageSnapshotFactoryInterface
             $image->imagePath(),
             $image->imageUsage(),
             $image->displayOrder(),
+            $image->sourceUrl(),
+            $image->sourceName(),
+            $image->altText(),
             new DateTimeImmutable(),
         );
     }

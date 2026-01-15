@@ -12,6 +12,7 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -190,6 +191,11 @@ class DraftImageRepositoryTest extends TestCase
             new ImagePath('/images/talents/new-profile.jpg'),
             ImageUsage::PROFILE,
             1,
+            'https://example.com/source',
+            'Example Source',
+            'Profile image of talent',
+            ApprovalStatus::UnderReview,
+            new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
         );
 
@@ -205,6 +211,10 @@ class DraftImageRepositoryTest extends TestCase
             'image_path' => (string) $draft->imagePath(),
             'image_usage' => $draft->imageUsage()->value,
             'display_order' => $draft->displayOrder(),
+            'source_url' => $draft->sourceUrl(),
+            'source_name' => $draft->sourceName(),
+            'alt_text' => $draft->altText(),
+            'status' => $draft->status()->value,
         ]);
     }
 
@@ -225,6 +235,11 @@ class DraftImageRepositoryTest extends TestCase
             new ImagePath('/images/groups/logo.png'),
             ImageUsage::LOGO,
             1,
+            'https://example.com/source',
+            'Example Source',
+            'Logo image of group',
+            ApprovalStatus::UnderReview,
+            new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
         );
 
@@ -268,6 +283,11 @@ class DraftImageRepositoryTest extends TestCase
             new ImagePath('/images/talents/updated.jpg'),
             ImageUsage::COVER,
             2,
+            'https://example.com/updated-source',
+            'Updated Source',
+            'Updated alt text',
+            ApprovalStatus::UnderReview,
+            new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
         );
 

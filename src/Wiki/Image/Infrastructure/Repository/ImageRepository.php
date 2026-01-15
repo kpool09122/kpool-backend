@@ -52,6 +52,9 @@ final class ImageRepository implements ImageRepositoryInterface
                 'image_path' => (string) $image->imagePath(),
                 'image_usage' => $image->imageUsage()->value,
                 'display_order' => $image->displayOrder(),
+                'source_url' => $image->sourceUrl(),
+                'source_name' => $image->sourceName(),
+                'alt_text' => $image->altText(),
             ],
         );
     }
@@ -72,6 +75,9 @@ final class ImageRepository implements ImageRepositoryInterface
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,
+            $model->source_url,
+            $model->source_name,
+            $model->alt_text,
             $model->created_at->toDateTimeImmutable(),
             $model->updated_at->toDateTimeImmutable(),
         );

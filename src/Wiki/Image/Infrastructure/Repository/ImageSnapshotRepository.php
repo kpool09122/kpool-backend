@@ -50,6 +50,9 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             'image_path' => (string) $imageSnapshot->imagePath(),
             'image_usage' => $imageSnapshot->imageUsage()->value,
             'display_order' => $imageSnapshot->displayOrder(),
+            'source_url' => $imageSnapshot->sourceUrl(),
+            'source_name' => $imageSnapshot->sourceName(),
+            'alt_text' => $imageSnapshot->altText(),
             'created_at' => $imageSnapshot->createdAt(),
         ]);
     }
@@ -63,6 +66,9 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,
+            $model->source_url,
+            $model->source_name,
+            $model->alt_text,
             $model->created_at->toDateTimeImmutable(),
         );
     }

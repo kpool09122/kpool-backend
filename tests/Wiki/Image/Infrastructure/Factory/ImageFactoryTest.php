@@ -40,6 +40,9 @@ class ImageFactoryTest extends TestCase
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
+        $sourceUrl = 'https://example.com/source';
+        $sourceName = 'Example Source';
+        $altText = 'Profile image of talent';
 
         $factory = $this->app->make(ImageFactoryInterface::class);
         $image = $factory->create(
@@ -48,6 +51,9 @@ class ImageFactoryTest extends TestCase
             $imagePath,
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $image->imageIdentifier()));
@@ -56,5 +62,8 @@ class ImageFactoryTest extends TestCase
         $this->assertSame((string) $imagePath, (string) $image->imagePath());
         $this->assertSame($imageUsage, $image->imageUsage());
         $this->assertSame($displayOrder, $image->displayOrder());
+        $this->assertSame($sourceUrl, $image->sourceUrl());
+        $this->assertSame($sourceName, $image->sourceName());
+        $this->assertSame($altText, $image->altText());
     }
 }

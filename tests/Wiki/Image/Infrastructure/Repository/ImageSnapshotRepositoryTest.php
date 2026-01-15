@@ -34,6 +34,9 @@ class ImageSnapshotRepositoryTest extends TestCase
         $imagePath = '/images/talents/profile-snapshot.jpg';
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
+        $sourceUrl = 'https://example.com/source';
+        $sourceName = 'Example Source';
+        $altText = 'Profile image of talent';
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
         $snapshot = new ImageSnapshot(
@@ -43,6 +46,9 @@ class ImageSnapshotRepositoryTest extends TestCase
             new ImagePath($imagePath),
             $imageUsage,
             $displayOrder,
+            $sourceUrl,
+            $sourceName,
+            $altText,
             $createdAt,
         );
 
@@ -56,6 +62,9 @@ class ImageSnapshotRepositoryTest extends TestCase
             'image_path' => $imagePath,
             'image_usage' => $imageUsage->value,
             'display_order' => $displayOrder,
+            'source_url' => $sourceUrl,
+            'source_name' => $sourceName,
+            'alt_text' => $altText,
         ]);
     }
 

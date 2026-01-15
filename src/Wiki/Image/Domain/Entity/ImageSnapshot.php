@@ -20,6 +20,9 @@ class ImageSnapshot
         private readonly ImagePath $imagePath,
         private readonly ImageUsage $imageUsage,
         private readonly int $displayOrder,
+        private readonly string $sourceUrl,
+        private readonly string $sourceName,
+        private readonly string $altText,
         private readonly DateTimeImmutable $createdAt,
     ) {
     }
@@ -57,5 +60,20 @@ class ImageSnapshot
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function sourceUrl(): string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function sourceName(): string
+    {
+        return $this->sourceName;
+    }
+
+    public function altText(): string
+    {
+        return $this->altText;
     }
 }

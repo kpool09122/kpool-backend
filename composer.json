@@ -10,7 +10,8 @@
         "illuminate/contracts": "^12.0",
         "psr/log": "^3.0",
         "ext-mbstring": "*",
-        "stripe/stripe-php": "^19.1"
+        "stripe/stripe-php": "^19.1",
+        "ext-gd": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
