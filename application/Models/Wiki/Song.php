@@ -15,10 +15,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $translation_set_identifier
  * @property string $language
  * @property string $name
+ * @property string $normalized_name
  * @property ?string $agency_id
  * @property array $belong_identifiers
  * @property string $lyricist
+ * @property string $normalized_lyricist
  * @property string $composer
+ * @property string $normalized_composer
  * @property Carbon|null $release_date
  * @property string $overview
  * @property ?string $cover_image_path
@@ -45,9 +48,12 @@ class Song extends Model
         'translation_set_identifier',
         'language',
         'name',
+        'normalized_name',
         'agency_id',
         'lyricist',
+        'normalized_lyricist',
         'composer',
+        'normalized_composer',
         'release_date',
         'overview',
         'cover_image_path',

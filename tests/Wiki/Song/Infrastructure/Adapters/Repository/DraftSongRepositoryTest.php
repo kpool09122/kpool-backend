@@ -57,11 +57,14 @@ class DraftSongRepositoryTest extends TestCase
             'editor_id' => $editorId,
             'language' => Language::JAPANESE->value,
             'name' => 'Feel Special',
+            'normalized_name' => 'feel special',
             'agency_id' => $agencyId,
             'group_id' => $groupId,
             'talent_id' => $talentId,
             'lyricist' => 'J.Y. Park',
+            'normalized_lyricist' => 'j.y. park',
             'composer' => 'J.Y. Park',
+            'normalized_composer' => 'j.y. park',
             'release_date' => '2019-09-23',
             'overview' => 'TWICE 8th mini album title track.',
             'cover_image_path' => '/images/songs/twice-feelspecial.jpg',
@@ -79,11 +82,14 @@ class DraftSongRepositoryTest extends TestCase
         $this->assertSame($editorId, (string) $draft->editorIdentifier());
         $this->assertSame(Language::JAPANESE, $draft->language());
         $this->assertSame('Feel Special', (string) $draft->name());
+        $this->assertSame('feel special', $draft->normalizedName());
         $this->assertSame($agencyId, (string) $draft->agencyIdentifier());
         $this->assertSame($groupId, (string) $draft->groupIdentifier());
         $this->assertSame($talentId, (string) $draft->talentIdentifier());
         $this->assertSame('J.Y. Park', (string) $draft->lyricist());
+        $this->assertSame('j.y. park', $draft->normalizedLyricist());
         $this->assertSame('J.Y. Park', (string) $draft->composer());
+        $this->assertSame('j.y. park', $draft->normalizedComposer());
         $this->assertInstanceOf(ReleaseDate::class, $draft->releaseDate());
         $this->assertInstanceOf(DateTimeImmutable::class, $draft->releaseDate()->value());
         $this->assertSame('2019-09-23', $draft->releaseDate()->format('Y-m-d'));
@@ -154,11 +160,14 @@ class DraftSongRepositoryTest extends TestCase
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Attention'),
+            'attention',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new GroupIdentifier($groupId),
             new TalentIdentifier($talentId),
             new Lyricist('Gigi'),
+            'gigi',
             new Composer('250'),
+            '250',
             new ReleaseDate(new DateTimeImmutable('2022-07-22')),
             new Overview('NewJeans debut single.'),
             new ImagePath('/images/songs/newjeans-attention.jpg'),
@@ -176,9 +185,12 @@ class DraftSongRepositoryTest extends TestCase
             'editor_id' => (string) $draft->editorIdentifier(),
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
+            'normalized_name' => $draft->normalizedName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'lyricist' => (string) $draft->lyricist(),
+            'normalized_lyricist' => $draft->normalizedLyricist(),
             'composer' => (string) $draft->composer(),
+            'normalized_composer' => $draft->normalizedComposer(),
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
             'overview' => (string) $draft->overView(),
             'cover_image_path' => (string) $draft->coverImagePath(),
@@ -219,11 +231,14 @@ class DraftSongRepositoryTest extends TestCase
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Next Level'),
+            'next level',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new GroupIdentifier($groupId),
             new TalentIdentifier($talentId),
             new Lyricist('Kenzie'),
+            'kenzie',
             new Composer('Dem Jointz'),
+            'dem jointz',
             new ReleaseDate(new DateTimeImmutable('2021-05-17')),
             new Overview('aespa 2nd single.'),
             null,
@@ -237,11 +252,14 @@ class DraftSongRepositoryTest extends TestCase
             'editor_id' => (string) $draft->editorIdentifier(),
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
+            'normalized_name' => $draft->normalizedName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'group_id' => $groupId,
             'talent_id' => $talentId,
             'lyricist' => (string) $draft->lyricist(),
+            'normalized_lyricist' => $draft->normalizedLyricist(),
             'composer' => (string) $draft->composer(),
+            'normalized_composer' => $draft->normalizedComposer(),
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
             'overview' => (string) $draft->overView(),
             'status' => $draft->status()->value,

@@ -103,6 +103,7 @@ readonly class PublishTalent implements PublishTalentInterface
             $this->talentSnapshotRepository->save($snapshot);
 
             $publishedTalent->setName($talent->name());
+            $publishedTalent->setNormalizedName($talent->normalizedName());
             $publishedTalent->updateVersion();
         } else {
             $publishedTalent = $this->talentFactory->create(
@@ -112,6 +113,7 @@ readonly class PublishTalent implements PublishTalentInterface
             );
         }
         $publishedTalent->setRealName($talent->realName());
+        $publishedTalent->setNormalizedRealName($talent->normalizedRealName());
         if ($talent->agencyIdentifier()) {
             $publishedTalent->setAgencyIdentifier($talent->agencyIdentifier());
         }

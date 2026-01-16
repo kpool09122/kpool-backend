@@ -20,27 +20,37 @@ class CreateDraftSong
      *     group_id?: ?string,
      *     talent_id?: ?string,
      *     lyricist?: string,
+     *     normalized_lyricist?: string,
      *     composer?: string,
+     *     normalized_composer?: string,
      *     release_date?: ?string,
      *     lyrics?: string,
      *     overview?: string,
      *     cover_image_path?: ?string,
      *     music_video_link?: ?string,
+     *     normalized_name?: string,
      *     status?: string
      * } $overrides
      */
     public static function create(string $draftSongId, array $overrides = []): void
     {
+        $name = $overrides['name'] ?? 'Hype Boy';
+        $lyricist = $overrides['lyricist'] ?? 'Gigi';
+        $composer = $overrides['composer'] ?? '250';
+
         DB::table('draft_songs')->insert([
             'id' => $draftSongId,
             'published_id' => $overrides['published_id'] ?? null,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'editor_id' => $overrides['editor_id'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
-            'name' => $overrides['name'] ?? 'Hype Boy',
+            'name' => $name,
+            'normalized_name' => $overrides['normalized_name'] ?? mb_strtolower($name, 'UTF-8'),
             'agency_id' => $overrides['agency_id'] ?? null,
-            'lyricist' => $overrides['lyricist'] ?? 'Gigi',
-            'composer' => $overrides['composer'] ?? '250',
+            'lyricist' => $lyricist,
+            'normalized_lyricist' => $overrides['normalized_lyricist'] ?? mb_strtolower($lyricist, 'UTF-8'),
+            'composer' => $composer,
+            'normalized_composer' => $overrides['normalized_composer'] ?? mb_strtolower($composer, 'UTF-8'),
             'release_date' => $overrides['release_date'] ?? null,
             'lyrics' => $overrides['lyrics'] ?? '',
             'overview' => $overrides['overview'] ?? 'NewJeans debut single.',

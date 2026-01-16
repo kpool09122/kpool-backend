@@ -53,11 +53,14 @@ class SongSnapshotFactoryTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
+        $normalizedName = 'tt';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
+        $normalizedLyricist = '블랙아이드필승';
         $composer = new Composer('Sam Lewis');
+        $normalizedComposer = 'sam lewis';
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('TT is a song by TWICE.');
         $coverImagePath = new ImagePath('/resources/public/images/tt.webp');
@@ -69,11 +72,14 @@ class SongSnapshotFactoryTest extends TestCase
             $translationSetIdentifier,
             $language,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $groupIdentifier,
             $talentIdentifier,
             $lyricist,
+            $normalizedLyricist,
             $composer,
+            $normalizedComposer,
             $releaseDate,
             $overView,
             $coverImagePath,
@@ -115,11 +121,14 @@ class SongSnapshotFactoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('TT'),
+            'tt',
             null,
             null,
             null,
             new Lyricist(''),
+            '',
             new Composer(''),
+            '',
             null,
             new Overview(''),
             null,

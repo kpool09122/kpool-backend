@@ -7,6 +7,7 @@ namespace Source\Wiki\Song\Infrastructure\Factory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -21,6 +22,7 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
 {
     public function __construct(
         private UuidGeneratorInterface $generator,
+        private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
@@ -30,6 +32,12 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
         SongName                  $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftSong {
+        $normalizedName = $this->normalizationService->normalize((string) $name, $language);
+        $lyricist = new Lyricist('');
+        $normalizedLyricist = $this->normalizationService->normalize((string) $lyricist, $language);
+        $composer = new Composer('');
+        $normalizedComposer = $this->normalizationService->normalize((string) $composer, $language);
+
         return new DraftSong(
             new SongIdentifier($this->generator->generate()),
             null,
@@ -37,11 +45,14 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             null,
             null,
             null,
-            new Lyricist(''),
-            new Composer(''),
+            $lyricist,
+            $normalizedLyricist,
+            $composer,
+            $normalizedComposer,
             null,
             new Overview(''),
             null,

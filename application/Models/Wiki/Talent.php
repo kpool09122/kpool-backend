@@ -15,7 +15,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $translation_set_identifier
  * @property string $language
  * @property string $name
+ * @property string $normalized_name
  * @property string $real_name
+ * @property string $normalized_real_name
  * @property ?string $agency_id
  * @property Carbon|null $birthday
  * @property string $career
@@ -41,7 +43,9 @@ class Talent extends Model
         'translation_set_identifier',
         'language',
         'name',
+        'normalized_name',
         'real_name',
+        'normalized_real_name',
         'agency_id',
         'birthday',
         'career',

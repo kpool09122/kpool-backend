@@ -16,9 +16,12 @@ return new class extends Migration
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('歌名');
+            $table->string('normalized_name', 64)->comment('正規化された歌名');
             $table->uuid('agency_id')->nullable()->comment('所有事務所ID');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
+            $table->string('normalized_lyricist', 32)->comment('正規化された作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
+            $table->string('normalized_composer', 32)->comment('正規化された作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');
             $table->text('lyrics')->default('')->comment('歌詞');
             $table->text('overview')->comment('概要')->default('');
@@ -38,9 +41,12 @@ return new class extends Migration
             $table->uuid('editor_id')->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('楽曲名');
+            $table->string('normalized_name', 64)->comment('正規化された楽曲名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->string('lyricist', 32)->comment('作詞者')->default('');
+            $table->string('normalized_lyricist', 32)->comment('正規化された作詞者')->default('');
             $table->string('composer', 32)->comment('作曲者')->default('');
+            $table->string('normalized_composer', 32)->comment('正規化された作曲者')->default('');
             $table->date('release_date')->nullable()->comment('リリース日');
             $table->text('lyrics')->default('')->comment('歌詞');
             $table->text('overview')->comment('概要')->default('');

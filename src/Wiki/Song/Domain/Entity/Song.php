@@ -47,11 +47,14 @@ class Song
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Language                 $language,
         private SongName                          $name,
+        private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private ?GroupIdentifier                  $groupIdentifier,
         private ?TalentIdentifier                 $talentIdentifier,
         private Lyricist                          $lyricist,
+        private string                            $normalizedLyricist,
         private Composer                          $composer,
+        private string                            $normalizedComposer,
         private ?ReleaseDate                      $releaseDate,
         private Overview                          $overView,
         private ?ImagePath                        $coverImagePath,
@@ -84,9 +87,19 @@ class Song
         return $this->name;
     }
 
+    public function normalizedName(): string
+    {
+        return $this->normalizedName;
+    }
+
     public function setName(SongName $name): void
     {
         $this->name = $name;
+    }
+
+    public function setNormalizedName(string $normalizedName): void
+    {
+        $this->normalizedName = $normalizedName;
     }
 
     public function agencyIdentifier(): ?AgencyIdentifier
@@ -124,9 +137,19 @@ class Song
         return $this->lyricist;
     }
 
+    public function normalizedLyricist(): string
+    {
+        return $this->normalizedLyricist;
+    }
+
     public function setLyricist(Lyricist $lyricist): void
     {
         $this->lyricist = $lyricist;
+    }
+
+    public function setNormalizedLyricist(string $normalizedLyricist): void
+    {
+        $this->normalizedLyricist = $normalizedLyricist;
     }
 
     public function composer(): Composer
@@ -134,9 +157,19 @@ class Song
         return $this->composer;
     }
 
+    public function normalizedComposer(): string
+    {
+        return $this->normalizedComposer;
+    }
+
     public function setComposer(Composer $composer): void
     {
         $this->composer = $composer;
+    }
+
+    public function setNormalizedComposer(string $normalizedComposer): void
+    {
+        $this->normalizedComposer = $normalizedComposer;
     }
 
     public function releaseDate(): ?ReleaseDate

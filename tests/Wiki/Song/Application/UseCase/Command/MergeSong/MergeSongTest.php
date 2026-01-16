@@ -446,11 +446,14 @@ class MergeSongTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
+        $normalizedName = 'tt';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
+        $normalizedLyricist = '블랙아이드필승';
         $composer = new Composer('Sam Lewis');
+        $normalizedComposer = 'sam lewis';
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
         $coverImagePath = new ImagePath('/resources/public/images/tt.webp');
@@ -464,11 +467,14 @@ class MergeSongTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $groupIdentifier,
             $talentIdentifier,
             $lyricist,
+            $normalizedLyricist,
             $composer,
+            $normalizedComposer,
             $releaseDate,
             $overView,
             $coverImagePath,
@@ -483,11 +489,14 @@ class MergeSongTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
+            $normalizedName,
             $agencyIdentifier,
             $groupIdentifier,
             $talentIdentifier,
             $lyricist,
+            $normalizedLyricist,
             $composer,
+            $normalizedComposer,
             $releaseDate,
             $overView,
             $coverImagePath,
@@ -513,11 +522,14 @@ readonly class MergeSongTestData
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public SongName                 $name,
+        public string                   $normalizedName,
         public AgencyIdentifier         $agencyIdentifier,
         public GroupIdentifier          $groupIdentifier,
         public TalentIdentifier         $talentIdentifier,
         public Lyricist                 $lyricist,
+        public string                   $normalizedLyricist,
         public Composer                 $composer,
+        public string                   $normalizedComposer,
         public ReleaseDate              $releaseDate,
         public Overview                 $overView,
         public ImagePath                $coverImagePath,

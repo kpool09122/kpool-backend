@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
@@ -43,11 +44,15 @@ class TalentFactoryTest extends TestCase
         $name = new TalentName('채영');
         $talentFactory = $this->app->make(TalentFactoryInterface::class);
         $talent = $talentFactory->create($translationSetIdentifier, $language, $name);
+        $normalizationService = $this->app->make(NormalizationServiceInterface::class);
+
         $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$talent->translationSetIdentifier());
         $this->assertSame($language->value, $talent->language()->value);
         $this->assertSame((string)$name, (string)$talent->name());
+        $this->assertSame($normalizationService->normalize((string) $name, $language), $talent->normalizedName());
         $this->assertSame('', (string)$talent->realName());
+        $this->assertSame($normalizationService->normalize('', $language), $talent->normalizedRealName());
         $this->assertNull($talent->agencyIdentifier());
         $this->assertSame([], $talent->groupIdentifiers());
         $this->assertNull($talent->birthday());

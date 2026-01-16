@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
@@ -30,6 +31,7 @@ readonly class RollbackTalent implements RollbackTalentInterface
         private TalentRepositoryInterface $talentRepository,
         private TalentSnapshotRepositoryInterface $snapshotRepository,
         private TalentSnapshotFactoryInterface $snapshotFactory,
+        private NormalizationServiceInterface $normalizationService,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
         private TalentHistoryFactoryInterface $talentHistoryFactory,
@@ -119,6 +121,12 @@ readonly class RollbackTalent implements RollbackTalentInterface
             // Talentを復元（バージョンは新規インクリメント）
             $t->setName($snapshot->name());
             $t->setRealName($snapshot->realName());
+            $t->setNormalizedName(
+                $this->normalizationService->normalize((string) $t->name(), $t->language())
+            );
+            $t->setNormalizedRealName(
+                $this->normalizationService->normalize((string) $t->realName(), $t->language())
+            );
             if ($snapshot->agencyIdentifier() !== null) {
                 $t->setAgencyIdentifier($snapshot->agencyIdentifier());
             }

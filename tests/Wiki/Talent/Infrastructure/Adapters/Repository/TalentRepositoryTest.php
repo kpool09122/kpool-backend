@@ -14,6 +14,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -158,12 +159,19 @@ class TalentRepositoryTest extends TestCase
         CreateGroup::create($groupId1);
         CreateGroup::create($groupId2);
 
+        $normalizationService = $this->app->make(NormalizationServiceInterface::class);
+        $language = Language::KOREAN;
+        $name = new TalentName('한');
+        $realName = new RealName('지성');
+
         $talent = new Talent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::KOREAN,
-            new TalentName('한'),
-            new RealName('지성'),
+            $language,
+            $name,
+            $normalizationService->normalize((string) $name, $language),
+            $realName,
+            $normalizationService->normalize((string) $realName, $language),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier($groupId1),
@@ -187,7 +195,9 @@ class TalentRepositoryTest extends TestCase
             'translation_set_identifier' => (string) $talent->translationSetIdentifier(),
             'language' => $talent->language()->value,
             'name' => (string) $talent->name(),
+            'normalized_name' => $talent->normalizedName(),
             'real_name' => (string) $talent->realName(),
+            'normalized_real_name' => $talent->normalizedRealName(),
             'agency_id' => (string) $talent->agencyIdentifier(),
             'birthday' => $talent->birthday()?->format('Y-m-d'),
             'career' => (string) $talent->career(),

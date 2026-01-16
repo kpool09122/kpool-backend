@@ -13,6 +13,7 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -163,14 +164,21 @@ class DraftTalentRepositoryTest extends TestCase
         // 先にグループを作成
         CreateGroup::create($groupId);
 
+        $normalizationService = $this->app->make(NormalizationServiceInterface::class);
+        $language = Language::KOREAN;
+        $name = new TalentName('필릭스');
+        $realName = new RealName('이용복');
+
         $draft = new DraftTalent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::KOREAN,
-            new TalentName('필릭스'),
-            new RealName('이용복'),
+            $language,
+            $name,
+            $normalizationService->normalize((string) $name, $language),
+            $realName,
+            $normalizationService->normalize((string) $realName, $language),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [new GroupIdentifier($groupId)],
             new Birthday(new DateTimeImmutable('2000-09-15')),
@@ -192,7 +200,9 @@ class DraftTalentRepositoryTest extends TestCase
             'editor_id' => (string) $draft->editorIdentifier(),
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
+            'normalized_name' => $draft->normalizedName(),
             'real_name' => (string) $draft->realName(),
+            'normalized_real_name' => $draft->normalizedRealName(),
             'agency_id' => (string) $draft->agencyIdentifier(),
             'birthday' => $draft->birthday()?->format('Y-m-d'),
             'career' => (string) $draft->career(),
@@ -232,14 +242,21 @@ class DraftTalentRepositoryTest extends TestCase
 
         CreateGroup::create($groupId);
 
+        $normalizationService = $this->app->make(NormalizationServiceInterface::class);
+        $language = Language::KOREAN;
+        $name = new TalentName('승민');
+        $realName = new RealName('김승민');
+
         $draft = new DraftTalent(
             new TalentIdentifier($id),
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::KOREAN,
-            new TalentName('승민'),
-            new RealName('김승민'),
+            $language,
+            $name,
+            $normalizationService->normalize((string) $name, $language),
+            $realName,
+            $normalizationService->normalize((string) $realName, $language),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [new GroupIdentifier($groupId)],
             new Birthday(new DateTimeImmutable('2000-09-22')),

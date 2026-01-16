@@ -9,6 +9,7 @@ use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -20,6 +21,7 @@ readonly class EditTalent implements EditTalentInterface
 {
     public function __construct(
         private DraftTalentRepositoryInterface $draftTalentRepository,
+        private NormalizationServiceInterface  $normalizationService,
         private ImageServiceInterface          $imageService,
         private PrincipalRepositoryInterface   $principalRepository,
         private PolicyEvaluatorInterface       $policyEvaluator,
@@ -62,6 +64,12 @@ readonly class EditTalent implements EditTalentInterface
 
         $talent->setName($input->name());
         $talent->setRealName($input->realName());
+        $talent->setNormalizedName(
+            $this->normalizationService->normalize((string) $talent->name(), $talent->language())
+        );
+        $talent->setNormalizedRealName(
+            $this->normalizationService->normalize((string) $talent->realName(), $talent->language())
+        );
         if ($input->agencyIdentifier()) {
             $talent->setAgencyIdentifier($input->agencyIdentifier());
         }

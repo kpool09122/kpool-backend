@@ -16,7 +16,9 @@ return new class extends Migration
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('タレント名');
+            $table->string('normalized_name', 32)->default('')->comment('正規化されたタレント名');
             $table->string('real_name', 32)->comment('本名')->default('');
+            $table->string('normalized_real_name', 32)->default('')->comment('正規化された本名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
@@ -36,7 +38,9 @@ return new class extends Migration
             $table->uuid('editor_id')->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('タレント名');
+            $table->string('normalized_name', 32)->default('')->comment('正規化されたタレント名');
             $table->string('real_name', 32)->comment('本名')->default('');
+            $table->string('normalized_real_name', 32)->default('')->comment('正規化された本名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');

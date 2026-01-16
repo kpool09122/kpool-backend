@@ -16,7 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $editor_id
  * @property string $language
  * @property string $name
+ * @property string $normalized_name
  * @property string $real_name
+ * @property string $normalized_real_name
  * @property ?string $agency_id
  * @property Carbon|null $birthday
  * @property string $career
@@ -40,7 +42,9 @@ class DraftTalent extends Model
         'editor_id',
         'language',
         'name',
+        'normalized_name',
         'real_name',
+        'normalized_real_name',
         'agency_id',
         'birthday',
         'career',

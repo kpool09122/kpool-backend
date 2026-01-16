@@ -27,7 +27,9 @@ class Talent
      * @param TranslationSetIdentifier $translationSetIdentifier
      * @param Language $language
      * @param TalentName $name
+     * @param string $normalizedName
      * @param RealName $realName
+     * @param string $normalizedRealName
      * @param ?AgencyIdentifier $agencyIdentifier
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
@@ -43,7 +45,9 @@ class Talent
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Language                 $language,
         private TalentName                        $name,
+        private string                            $normalizedName,
         private RealName                          $realName,
+        private string                            $normalizedRealName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
@@ -83,6 +87,16 @@ class Talent
         $this->name = $name;
     }
 
+    public function normalizedName(): string
+    {
+        return $this->normalizedName;
+    }
+
+    public function setNormalizedName(string $normalizedName): void
+    {
+        $this->normalizedName = $normalizedName;
+    }
+
     public function realName(): RealName
     {
         return $this->realName;
@@ -91,6 +105,16 @@ class Talent
     public function setRealName(RealName $realName): void
     {
         $this->realName = $realName;
+    }
+
+    public function normalizedRealName(): string
+    {
+        return $this->normalizedRealName;
+    }
+
+    public function setNormalizedRealName(string $normalizedRealName): void
+    {
+        $this->normalizedRealName = $normalizedRealName;
     }
 
     public function agencyIdentifier(): ?AgencyIdentifier

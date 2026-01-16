@@ -17,25 +17,35 @@ class CreateSong
      *     group_id?: ?string,
      *     talent_id?: ?string,
      *     lyricist?: string,
+     *     normalized_lyricist?: string,
      *     composer?: string,
+     *     normalized_composer?: string,
      *     release_date?: ?string,
      *     lyrics?: string,
      *     overview?: string,
      *     cover_image_path?: ?string,
      *     music_video_link?: ?string,
+     *     normalized_name?: string,
      *     version?: int
      * } $overrides
      */
     public static function create(string $songId, array $overrides = []): void
     {
+        $name = $overrides['name'] ?? 'LALALALA';
+        $lyricist = $overrides['lyricist'] ?? 'Bang Chan, Changbin, Han';
+        $composer = $overrides['composer'] ?? 'Bang Chan, Changbin, Han';
+
         DB::table('songs')->insert([
             'id' => $songId,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
-            'name' => $overrides['name'] ?? 'LALALALA',
+            'name' => $name,
+            'normalized_name' => $overrides['normalized_name'] ?? mb_strtolower($name, 'UTF-8'),
             'agency_id' => $overrides['agency_id'] ?? null,
-            'lyricist' => $overrides['lyricist'] ?? 'Bang Chan, Changbin, Han',
-            'composer' => $overrides['composer'] ?? 'Bang Chan, Changbin, Han',
+            'lyricist' => $lyricist,
+            'normalized_lyricist' => $overrides['normalized_lyricist'] ?? mb_strtolower($lyricist, 'UTF-8'),
+            'composer' => $composer,
+            'normalized_composer' => $overrides['normalized_composer'] ?? mb_strtolower($composer, 'UTF-8'),
             'release_date' => $overrides['release_date'] ?? null,
             'lyrics' => $overrides['lyrics'] ?? '',
             'overview' => $overrides['overview'] ?? 'Stray Kids樂-STAR title track.',

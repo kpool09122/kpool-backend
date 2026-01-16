@@ -7,6 +7,7 @@ namespace Source\Wiki\Talent\Infrastructure\Factory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -21,6 +22,7 @@ readonly class TalentFactory implements TalentFactoryInterface
 {
     public function __construct(
         private UuidGeneratorInterface $generator,
+        private NormalizationServiceInterface $normalizationService,
     ) {
     }
 
@@ -36,12 +38,18 @@ readonly class TalentFactory implements TalentFactoryInterface
         Language                 $language,
         TalentName               $name,
     ): Talent {
+        $realName = new RealName('');
+        $normalizedName = $this->normalizationService->normalize((string) $name, $language);
+        $normalizedRealName = $this->normalizationService->normalize((string) $realName, $language);
+
         return new Talent(
             new TalentIdentifier($this->generator->generate()),
             $translationSetIdentifier,
             $language,
             $name,
-            new RealName(''),
+            $normalizedName,
+            $realName,
+            $normalizedRealName,
             null,
             [],
             null,
