@@ -6,7 +6,6 @@ namespace Tests\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -45,7 +44,6 @@ class TalentSnapshotTest extends TestCase
         $this->assertSame($data->groupIdentifiers, $snapshot->groupIdentifiers());
         $this->assertSame($data->birthday->value(), $snapshot->birthday()->value());
         $this->assertSame((string)$data->career, (string)$snapshot->career());
-        $this->assertSame((string)$data->imageLink, (string)$snapshot->imageLink());
         $this->assertSame($data->relevantVideoLinks->toStringArray(), $snapshot->relevantVideoLinks()->toStringArray());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
@@ -81,7 +79,6 @@ class TalentSnapshotTest extends TestCase
             $groupIdentifiers,
             null,
             $career,
-            null,
             $relevantVideoLinks,
             $version,
             $createdAt,
@@ -89,7 +86,6 @@ class TalentSnapshotTest extends TestCase
 
         $this->assertNull($snapshot->agencyIdentifier());
         $this->assertNull($snapshot->birthday());
-        $this->assertNull($snapshot->imageLink());
     }
 
     /**
@@ -112,7 +108,6 @@ class TalentSnapshotTest extends TestCase
         ];
         $birthday = new Birthday(new DateTimeImmutable('1999-04-23'));
         $career = new Career('TWICE member since 2015.');
-        $imageLink = new ImagePath('/resources/public/images/chaeyoung.webp');
         $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=1');
         $link2 = new ExternalContentLink('https://example.youtube.com/watch?v=2');
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2]);
@@ -130,7 +125,6 @@ class TalentSnapshotTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $version,
             $createdAt,
@@ -147,7 +141,6 @@ class TalentSnapshotTest extends TestCase
             groupIdentifiers: $groupIdentifiers,
             birthday: $birthday,
             career: $career,
-            imageLink: $imageLink,
             relevantVideoLinks: $relevantVideoLinks,
             version: $version,
             createdAt: $createdAt,
@@ -176,7 +169,6 @@ readonly class TalentSnapshotTestData
         public array                     $groupIdentifiers,
         public Birthday                  $birthday,
         public Career                    $career,
-        public ImagePath                 $imageLink,
         public RelevantVideoLinks        $relevantVideoLinks,
         public Version                   $version,
         public DateTimeImmutable         $createdAt,

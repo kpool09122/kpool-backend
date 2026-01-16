@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -60,7 +59,6 @@ class TalentSnapshotFactoryTest extends TestCase
         ];
         $birthday = new Birthday(new DateTimeImmutable('1999-04-23'));
         $career = new Career('TWICE member since 2015.');
-        $imageLink = new ImagePath('/resources/public/images/chaeyoung.webp');
         $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=1');
         $link2 = new ExternalContentLink('https://example.youtube.com/watch?v=2');
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2]);
@@ -76,7 +74,6 @@ class TalentSnapshotFactoryTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $version,
         );
@@ -94,7 +91,6 @@ class TalentSnapshotFactoryTest extends TestCase
         $this->assertSame($groupIdentifiers, $snapshot->groupIdentifiers());
         $this->assertSame($birthday->value(), $snapshot->birthday()->value());
         $this->assertSame((string)$career, (string)$snapshot->career());
-        $this->assertSame((string)$imageLink, (string)$snapshot->imageLink());
         $this->assertSame($relevantVideoLinks->toStringArray(), $snapshot->relevantVideoLinks()->toStringArray());
         $this->assertSame($version->value(), $snapshot->version()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
@@ -118,7 +114,6 @@ class TalentSnapshotFactoryTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             new Version(1),
         );
@@ -128,6 +123,5 @@ class TalentSnapshotFactoryTest extends TestCase
 
         $this->assertNull($snapshot->agencyIdentifier());
         $this->assertNull($snapshot->birthday());
-        $this->assertNull($snapshot->imageLink());
     }
 }

@@ -41,7 +41,6 @@ readonly class SongFactory implements SongFactoryInterface
             null,
             new Overview(''),
             null,
-            null,
             new Version(1),
         );
     }

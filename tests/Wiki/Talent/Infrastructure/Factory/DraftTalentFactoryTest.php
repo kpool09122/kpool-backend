@@ -54,7 +54,6 @@ class DraftTalentFactoryTest extends TestCase
         $this->assertSame([], $talent->groupIdentifiers());
         $this->assertNull($talent->birthday());
         $this->assertSame('', (string)$talent->career());
-        $this->assertNull($talent->imageLink());
         $this->assertSame(ApprovalStatus::Pending, $talent->status());
     }
 }

@@ -23,7 +23,5 @@ interface CreateGroupInputPort
 
     public function description(): Description;
 
-    public function base64EncodedImage(): ?string;
-
     public function principalIdentifier(): PrincipalIdentifier;
 }

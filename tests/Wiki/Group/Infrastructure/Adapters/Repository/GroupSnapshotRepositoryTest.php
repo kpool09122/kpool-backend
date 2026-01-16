@@ -7,7 +7,6 @@ namespace Tests\Wiki\Group\Infrastructure\Adapters\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\GroupSnapshot;
@@ -41,7 +40,6 @@ class GroupSnapshotRepositoryTest extends TestCase
         $normalizedName = 'twice';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'TWICE description';
-        $imagePath = '/resources/public/images/twice.webp';
         $version = 1;
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
@@ -54,7 +52,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             $normalizedName,
             new AgencyIdentifier($agencyId),
             new Description($description),
-            new ImagePath($imagePath),
             new Version($version),
             $createdAt,
         );
@@ -71,7 +68,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
-            'image_path' => $imagePath,
             'version' => $version,
         ]);
     }
@@ -97,7 +93,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             'twice',
             null,
             new Description('TWICE is a South Korean girl group.'),
-            null,
             new Version(1),
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );
@@ -109,7 +104,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             'id' => $snapshotId,
             'group_id' => $groupId,
             'agency_id' => null,
-            'image_path' => null,
         ]);
     }
 
@@ -202,7 +196,6 @@ class GroupSnapshotRepositoryTest extends TestCase
         $normalizedName = 'twice';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'TWICE is a South Korean girl group.';
-        $imagePath = '/resources/public/images/twice.webp';
         $version = 3;
 
         CreateGroupSnapshot::create($snapshotId, [
@@ -212,7 +205,6 @@ class GroupSnapshotRepositoryTest extends TestCase
             'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
-            'image_path' => $imagePath,
             'version' => $version,
         ]);
 
@@ -231,7 +223,6 @@ class GroupSnapshotRepositoryTest extends TestCase
         $this->assertSame($normalizedName, $snapshot->normalizedName());
         $this->assertSame($agencyId, (string)$snapshot->agencyIdentifier());
         $this->assertSame($description, (string)$snapshot->description());
-        $this->assertSame($imagePath, (string)$snapshot->imagePath());
         $this->assertSame($version, $snapshot->version()->value());
     }
 

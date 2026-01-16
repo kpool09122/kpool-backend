@@ -109,7 +109,6 @@ readonly class PublishGroup implements PublishGroupInterface
             $publishedGroup->setAgencyIdentifier($group->agencyIdentifier());
         }
         $publishedGroup->setDescription($group->description());
-        $publishedGroup->setImagePath($group->imagePath());
 
         $this->groupRepository->save($publishedGroup);
 

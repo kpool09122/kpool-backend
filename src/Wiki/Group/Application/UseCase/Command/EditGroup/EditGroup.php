@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\EditGroup;
 
-use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
@@ -20,7 +19,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class EditGroup implements EditGroupInterface
 {
     public function __construct(
-        private ImageServiceInterface         $imageService,
         private DraftGroupRepositoryInterface $groupRepository,
         private NormalizationServiceInterface $normalizationService,
         private PrincipalRepositoryInterface  $principalRepository,
@@ -62,10 +60,6 @@ readonly class EditGroup implements EditGroupInterface
         $group->setNormalizedName($normalizedName);
         $group->setAgencyIdentifier($input->agencyIdentifier());
         $group->setDescription($input->description());
-        if ($input->base64EncodedImage()) {
-            $imageLink = $this->imageService->upload($input->base64EncodedImage());
-            $group->setImagePath($imageLink);
-        }
 
         $this->groupRepository->save($group);
 

@@ -6,7 +6,6 @@ namespace Source\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -32,11 +31,12 @@ class Talent
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
-     * @param ImagePath|null $imageLink
      * @param RelevantVideoLinks $relevantVideoLinks
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
+     * @param bool $isOfficial
+     * @param AccountIdentifier|null $ownerAccountIdentifier
      */
     public function __construct(
         private readonly TalentIdentifier         $talentIdentifier,
@@ -48,7 +48,6 @@ class Talent
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
-        private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
@@ -138,16 +137,6 @@ class Talent
     public function setCareer(Career $career): void
     {
         $this->career = $career;
-    }
-
-    public function imageLink(): ?ImagePath
-    {
-        return $this->imageLink;
-    }
-
-    public function setImageLink(?ImagePath $imageLink): void
-    {
-        $this->imageLink = $imageLink;
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -26,7 +25,6 @@ readonly class GroupSnapshot
      * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param ImagePath|null $imagePath
      * @param Version $version
      * @param DateTimeImmutable $createdAt
      */
@@ -39,7 +37,6 @@ readonly class GroupSnapshot
         private string                   $normalizedName,
         private ?AgencyIdentifier        $agencyIdentifier,
         private Description              $description,
-        private ?ImagePath               $imagePath,
         private Version                  $version,
         private DateTimeImmutable        $createdAt,
     ) {
@@ -83,11 +80,6 @@ readonly class GroupSnapshot
     public function description(): Description
     {
         return $this->description;
-    }
-
-    public function imagePath(): ?ImagePath
-    {
-        return $this->imagePath;
     }
 
     public function version(): Version

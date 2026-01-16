@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -33,7 +32,6 @@ class DraftTalent
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
-     * @param ImagePath|null $imageLink
      * @param RelevantVideoLinks $relevantVideoLinks
      * @param ApprovalStatus $status
      * @param PrincipalIdentifier|null $mergerIdentifier
@@ -51,7 +49,6 @@ class DraftTalent
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
-        private ?ImagePath                        $imageLink,
         private RelevantVideoLinks                $relevantVideoLinks,
         private ApprovalStatus                    $status,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
@@ -154,16 +151,6 @@ class DraftTalent
     public function setCareer(Career $career): void
     {
         $this->career = $career;
-    }
-
-    public function imageLink(): ?ImagePath
-    {
-        return $this->imageLink;
-    }
-
-    public function setImageLink(?ImagePath $imageLink): void
-    {
-        $this->imageLink = $imageLink;
     }
 
     /**

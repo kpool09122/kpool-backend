@@ -208,7 +208,6 @@ class AutomaticCreateDraftGroupTest extends TestCase
             'twice',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('auto generated group'),
-            null,
             ApprovalStatus::Pending,
         );
     }

@@ -8,11 +8,16 @@ RUN set -eux; \
         autoconf \
         libzip-dev \
         libpq-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libwebp-dev \
+        libfreetype6-dev \
         zip \
         unzip \
         mecab \
         mecab-ipadic-utf8; \
-    docker-php-ext-install zip pdo pdo_pgsql; \
+    docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype; \
+    docker-php-ext-install zip pdo pdo_pgsql gd; \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # PCOVとRedis拡張のインストール

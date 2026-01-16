@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -52,7 +51,6 @@ class DraftTalentRepositoryTest extends TestCase
         $groupIdentifiers = [StrTestHelper::generateUuid()];
         $birthday = '1999-08-13';
         $career = 'Stray Kids main rapper and producer. Member of 3RACHA.';
-        $imageLink = '/images/talents/changbin.jpg';
         $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8'];
         $status = ApprovalStatus::Pending;
 
@@ -72,7 +70,6 @@ class DraftTalentRepositoryTest extends TestCase
             'group_identifiers' => $groupIdentifiers,
             'birthday' => $birthday,
             'career' => $career,
-            'image_link' => $imageLink,
             'relevant_video_links' => $relevantVideoLinks,
             'status' => $status->value,
         ]);
@@ -97,7 +94,6 @@ class DraftTalentRepositoryTest extends TestCase
         $this->assertInstanceOf(DateTimeImmutable::class, $draft->birthday()->value());
         $this->assertSame($birthday, $draft->birthday()->format('Y-m-d'));
         $this->assertSame($career, (string) $draft->career());
-        $this->assertSame($imageLink, (string) $draft->imageLink());
         $this->assertSame($relevantVideoLinks, $draft->relevantVideoLinks()->toStringArray());
         $this->assertSame($status, $draft->status());
     }
@@ -123,7 +119,6 @@ class DraftTalentRepositoryTest extends TestCase
             'group_identifiers' => [$groupId],
             'birthday' => null,
             'career' => 'Stray Kids main dancer and lead rapper.',
-            'image_link' => '/images/talents/hyunjin.jpg',
         ]);
 
         $repository = $this->app->make(DraftTalentRepositoryInterface::class);
@@ -175,7 +170,6 @@ class DraftTalentRepositoryTest extends TestCase
             [new GroupIdentifier($groupId)],
             new Birthday(new DateTimeImmutable('2000-09-15')),
             new Career('Stray Kids lead dancer and sub-rapper. Known for his deep voice.'),
-            new ImagePath('/images/talents/felix.jpg'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://www.youtube.com/watch?v=EaswWiwMVs8'),
             ]),
@@ -196,7 +190,6 @@ class DraftTalentRepositoryTest extends TestCase
             'agency_id' => (string) $draft->agencyIdentifier(),
             'birthday' => $draft->birthday()?->format('Y-m-d'),
             'career' => (string) $draft->career(),
-            'image_link' => (string) $draft->imageLink(),
             'status' => $draft->status()->value,
         ]);
 
@@ -244,7 +237,6 @@ class DraftTalentRepositoryTest extends TestCase
             [new GroupIdentifier($groupId)],
             new Birthday(new DateTimeImmutable('2000-09-22')),
             new Career('Stray Kids lead vocalist.'),
-            null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );

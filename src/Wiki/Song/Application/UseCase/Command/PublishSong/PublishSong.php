@@ -120,9 +120,6 @@ readonly class PublishSong implements PublishSongInterface
             $publishedSong->setReleaseDate($song->releaseDate());
         }
         $publishedSong->setOverView($song->overView());
-        if ($song->coverImagePath()) {
-            $publishedSong->setCoverImagePath($song->coverImagePath());
-        }
         if ($song->musicVideoLink()) {
             $publishedSong->setMusicVideoLink($song->musicVideoLink());
         }

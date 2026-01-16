@@ -7,7 +7,6 @@ namespace Source\Wiki\Talent\Infrastructure\Adapters\Repository;
 use Application\Models\Wiki\Group;
 use Application\Models\Wiki\Talent as TalentModel;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -85,7 +84,6 @@ final class TalentRepository implements TalentRepositoryInterface
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
-                'image_link' => $talent->imageLink() ? (string) $talent->imageLink() : null,
                 'relevant_video_links' => $talent->relevantVideoLinks()->toStringArray(),
                 'version' => $talent->version()->value(),
                 'is_official' => $talent->isOfficial(),
@@ -118,7 +116,6 @@ final class TalentRepository implements TalentRepositoryInterface
             $groupIdentifiers,
             $talentModel->birthday ? new Birthday($talentModel->birthday->toDateTimeImmutable()) : null,
             new Career($talentModel->career),
-            $talentModel->image_link ? new ImagePath($talentModel->image_link) : null,
             $relevantVideoLinks,
             new Version($talentModel->version),
             null,

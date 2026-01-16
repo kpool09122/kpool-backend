@@ -116,7 +116,6 @@ readonly class RollbackGroup implements RollbackGroupInterface
                 $g->setAgencyIdentifier($snapshot->agencyIdentifier());
             }
             $g->setDescription($snapshot->description());
-            $g->setImagePath($snapshot->imagePath());
             $g->updateVersion();
 
             // 保存

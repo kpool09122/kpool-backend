@@ -17,7 +17,7 @@ use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactor
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
-use Source\Wiki\OfficialCertification\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;

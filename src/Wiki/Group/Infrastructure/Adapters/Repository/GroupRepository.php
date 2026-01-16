@@ -6,7 +6,6 @@ namespace Source\Wiki\Group\Infrastructure\Adapters\Repository;
 
 use Application\Models\Wiki\Group as GroupModel;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -58,7 +57,6 @@ final class GroupRepository implements GroupRepositoryInterface
                'normalized_name' => $group->normalizedName(),
                'agency_id' => $group->agencyIdentifier() ? (string)$group->agencyIdentifier() : null,
                'description' => (string)$group->description(),
-               'image_path' => $group->imagePath() ? (string)$group->imagePath() : null,
                'version' => $group->version()->value(),
                'is_official' => $group->isOfficial(),
                'owner_account_id' => $group->ownerAccountIdentifier() ? (string) $group->ownerAccountIdentifier() : null,
@@ -76,7 +74,6 @@ final class GroupRepository implements GroupRepositoryInterface
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
-            $model->image_path ? new ImagePath($model->image_path) : null,
             new Version($model->version),
             null,
             null,

@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -53,7 +52,6 @@ class SongSnapshotRepositoryTest extends TestCase
         $composer = 'Sam Lewis';
         $releaseDate = new DateTimeImmutable('2016-10-24');
         $overview = 'TT is a song by TWICE.';
-        $coverImagePath = '/resources/public/images/tt.webp';
         $musicVideoLink = 'https://example.youtube.com/watch?v=dQw4w9WgXcQ';
         $version = 1;
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
@@ -74,7 +72,6 @@ class SongSnapshotRepositoryTest extends TestCase
             new Composer($composer),
             new ReleaseDate($releaseDate),
             new Overview($overview),
-            new ImagePath($coverImagePath),
             new ExternalContentLink($musicVideoLink),
             new Version($version),
             $createdAt,
@@ -93,7 +90,6 @@ class SongSnapshotRepositoryTest extends TestCase
             'lyricist' => $lyricist,
             'composer' => $composer,
             'overview' => $overview,
-            'cover_image_path' => $coverImagePath,
             'music_video_link' => $musicVideoLink,
             'version' => $version,
         ]);
@@ -135,7 +131,6 @@ class SongSnapshotRepositoryTest extends TestCase
             null,
             new Overview(''),
             null,
-            null,
             new Version(1),
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );
@@ -148,7 +143,6 @@ class SongSnapshotRepositoryTest extends TestCase
             'song_id' => $songId,
             'agency_id' => null,
             'release_date' => null,
-            'cover_image_path' => null,
             'music_video_link' => null,
         ]);
     }
@@ -241,7 +235,6 @@ class SongSnapshotRepositoryTest extends TestCase
         $composer = 'Sam Lewis';
         $releaseDate = '2016-10-24';
         $overview = 'TT is a song by TWICE.';
-        $coverImagePath = '/resources/public/images/tt.webp';
         $musicVideoLink = 'https://example.youtube.com/watch?v=dQw4w9WgXcQ';
         $version = 3;
 
@@ -254,7 +247,6 @@ class SongSnapshotRepositoryTest extends TestCase
             'composer' => $composer,
             'release_date' => $releaseDate,
             'overview' => $overview,
-            'cover_image_path' => $coverImagePath,
             'music_video_link' => $musicVideoLink,
             'version' => $version,
         ]);
@@ -275,7 +267,6 @@ class SongSnapshotRepositoryTest extends TestCase
         $this->assertSame($lyricist, (string)$snapshot->lyricist());
         $this->assertSame($composer, (string)$snapshot->composer());
         $this->assertSame($overview, (string)$snapshot->overView());
-        $this->assertSame($coverImagePath, (string)$snapshot->coverImagePath());
         $this->assertSame($musicVideoLink, (string)$snapshot->musicVideoLink());
         $this->assertSame($version, $snapshot->version()->value());
     }

@@ -10,7 +10,6 @@ use Mockery;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -83,7 +82,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -95,10 +93,6 @@ class EditTalentTest extends TestCase
             ->andReturn($principal);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($editTalentInfo->base64EncodedImage)
-            ->andReturn($editTalentInfo->imageLink);
 
         $talentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $talentRepository->shouldReceive('save')
@@ -125,7 +119,6 @@ class EditTalentTest extends TestCase
         $this->assertSame($editTalentInfo->groupIdentifiers, $talent->groupIdentifiers());
         $this->assertSame($editTalentInfo->birthday, $talent->birthday());
         $this->assertSame((string)$editTalentInfo->career, (string)$talent->career());
-        $this->assertSame((string)$editTalentInfo->imageLink, (string)$talent->imageLink());
         $this->assertSame($editTalentInfo->relevantVideoLinks->toStringArray(), $talent->relevantVideoLinks()->toStringArray());
         $this->assertSame($editTalentInfo->status, $talent->status());
     }
@@ -154,7 +147,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -201,7 +193,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -254,7 +245,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -276,10 +266,6 @@ class EditTalentTest extends TestCase
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($editTalentInfo->base64EncodedImage)
-            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
@@ -315,7 +301,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -337,10 +322,6 @@ class EditTalentTest extends TestCase
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($editTalentInfo->base64EncodedImage)
-            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
@@ -378,7 +359,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -400,10 +380,6 @@ class EditTalentTest extends TestCase
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($editTalentInfo->base64EncodedImage)
-            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
@@ -438,7 +414,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -460,10 +435,6 @@ class EditTalentTest extends TestCase
             ->andReturn(null);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
-        $imageService->shouldReceive('upload')
-            ->once()
-            ->with($editTalentInfo->base64EncodedImage)
-            ->andReturn($editTalentInfo->imageLink);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(ImageServiceInterface::class, $imageService);
@@ -498,7 +469,6 @@ class EditTalentTest extends TestCase
             $editTalentInfo->groupIdentifiers,
             $editTalentInfo->birthday,
             $editTalentInfo->career,
-            $editTalentInfo->base64EncodedImage,
             $editTalentInfo->relevantVideoLinks,
             $principalIdentifier,
         );
@@ -557,8 +527,6 @@ class EditTalentTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
         $talent = new DraftTalent(
@@ -573,7 +541,6 @@ class EditTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $status,
         );
@@ -589,12 +556,10 @@ class EditTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $base64EncodedImage,
             $link1,
             $link2,
             $link3,
             $relevantVideoLinks,
-            $imageLink,
             $talentIdentifier,
             $status,
             $talent,
@@ -622,12 +587,10 @@ readonly class EditTalentTestData
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,
         public Career                   $career,
-        public string                   $base64EncodedImage,
         public ExternalContentLink      $link1,
         public ExternalContentLink      $link2,
         public ExternalContentLink      $link3,
         public RelevantVideoLinks $relevantVideoLinks,
-        public ImagePath $imageLink,
         public TalentIdentifier $talentIdentifier,
         public ApprovalStatus $status,
         public DraftTalent $draftTalent,

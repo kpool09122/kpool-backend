@@ -6,7 +6,6 @@ namespace Source\Wiki\Group\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -26,7 +25,6 @@ class Group
      * @param string $normalizedName
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
-     * @param ImagePath|null $imagePath
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
@@ -39,7 +37,6 @@ class Group
         private string                            $normalizedName,
         private ?AgencyIdentifier                 $agencyIdentifier,
         private Description                       $description,
-        private ?ImagePath                        $imagePath,
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
@@ -101,16 +98,6 @@ class Group
     public function setDescription(Description $description): void
     {
         $this->description = $description;
-    }
-
-    public function imagePath(): ?ImagePath
-    {
-        return $this->imagePath;
-    }
-
-    public function setImagePath(?ImagePath $imagePath): void
-    {
-        $this->imagePath = $imagePath;
     }
 
     public function version(): Version

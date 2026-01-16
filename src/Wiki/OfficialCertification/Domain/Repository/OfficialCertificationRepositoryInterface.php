@@ -6,7 +6,7 @@ namespace Source\Wiki\OfficialCertification\Domain\Repository;
 
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
-use Source\Wiki\OfficialCertification\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 interface OfficialCertificationRepositoryInterface

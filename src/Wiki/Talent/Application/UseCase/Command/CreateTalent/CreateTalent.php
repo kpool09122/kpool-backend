@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
-use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -24,7 +23,6 @@ readonly class CreateTalent implements CreateTalentInterface
         private DraftTalentFactoryInterface    $talentFactory,
         private TalentRepositoryInterface      $talentRepository,
         private DraftTalentRepositoryInterface $draftTalentRepository,
-        private ImageServiceInterface          $imageService,
         private PrincipalRepositoryInterface   $principalRepository,
         private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
@@ -75,10 +73,6 @@ readonly class CreateTalent implements CreateTalentInterface
         $talent->setGroupIdentifiers($input->groupIdentifiers());
         $talent->setBirthday($input->birthday());
         $talent->setCareer($input->career());
-        if ($input->base64EncodedImage()) {
-            $imageLink = $this->imageService->upload($input->base64EncodedImage());
-            $talent->setImageLink($imageLink);
-        }
         $talent->setRelevantVideoLinks($input->relevantVideoLinks());
 
         $this->draftTalentRepository->save($talent);

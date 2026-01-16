@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
-use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -20,7 +19,6 @@ readonly class EditSong implements EditSongInterface
 {
     public function __construct(
         private DraftSongRepositoryInterface $draftSongRepository,
-        private ImageServiceInterface        $imageService,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
@@ -72,10 +70,6 @@ readonly class EditSong implements EditSongInterface
             $song->setReleaseDate($input->releaseDate());
         }
         $song->setOverView($input->overView());
-        if ($input->base64EncodedCoverImage()) {
-            $coverImageLink = $this->imageService->upload($input->base64EncodedCoverImage());
-            $song->setCoverImagePath($coverImageLink);
-        }
         if ($input->musicVideoLink()) {
             $song->setMusicVideoLink($input->musicVideoLink());
         }

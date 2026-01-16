@@ -9,7 +9,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -122,7 +121,6 @@ class PublishTalentTest extends TestCase
 팀 내에서 지효는 파워풀하고 안정적인 가창력을 자랑하는 메인보컬을 담당하고 있습니다. 풍부한 성량과 넓은 음역대를 바탕으로 트와이스 음악의 중심을 잡아주며, 격렬한 안무 중에도 흔들림 없는 라이브 실력을 선보여 \'믿고 듣는 지효\'라는 평을 받습니다.
 2023년 8월에는 첫 솔로 미니 앨범 \'ZONE\'을 발매하며 성공적인 솔로 아티스트로서의 역량을 입증했습니다. 타이틀곡 \'Killin\' Me Good\'을 통해 자신만의 음악적 색깔과 매력을 선보이며 국내외 팬들로부터 뜨거운 반응을 얻었습니다.
 지효는 무대 위 카리스마 넘치는 모습과 달리, 평소에는 멤버들을 살뜰히 챙기는 다정하고 털털한 성격으로 알려져 있습니다. 긍정적이고 건강한 이미지로 다양한 예능 프로그램에서도 활약하며 대중에게 친근하게 다가가고 있습니다. 오랜 시간 꿈을 향해 달려온 노력의 아이콘이자, 이제는 K팝을 대표하는 아티스트로 굳건히 자리매김한 지효의 앞으로의 활동에 더욱 기대가 모아지고 있습니다.');
-        $exImagePath = new ImagePath('/resources/public/images/after.webp');
         $link4 = new ExternalContentLink('https://example4.youtube.com/watch?v=dQw4w9WgXcQ');
         $link5 = new ExternalContentLink('https://example5.youtube.com/watch?v=dQw4w9WgXcQ');
         $exRelevantVideoLinks = new RelevantVideoLinks([$link4, $link5]);
@@ -137,7 +135,6 @@ class PublishTalentTest extends TestCase
             $exGroupIdentifiers,
             $exBirthday,
             $exCareer,
-            $exImagePath,
             $exRelevantVideoLinks,
             $exVersion,
         );
@@ -216,7 +213,6 @@ class PublishTalentTest extends TestCase
         $this->assertSame($publishTalentInfo->groupIdentifiers, $publishedTalent->groupIdentifiers());
         $this->assertSame($publishTalentInfo->birthday, $publishedTalent->birthday());
         $this->assertSame((string)$publishTalentInfo->career, (string)$publishedTalent->career());
-        $this->assertSame((string)$publishTalentInfo->imagePath, (string)$publishedTalent->imageLink());
         $this->assertSame($publishTalentInfo->relevantVideoLinks->toStringArray(), $publishedTalent->relevantVideoLinks()->toStringArray());
         $this->assertSame($exVersion->value() + 1, $publishedTalent->version()->value());
     }
@@ -254,7 +250,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->imagePath,
             $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
@@ -276,7 +271,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             $version,
         );
@@ -342,7 +336,6 @@ class PublishTalentTest extends TestCase
         $this->assertSame($publishTalentInfo->groupIdentifiers, $publishedTalent->groupIdentifiers());
         $this->assertSame($publishTalentInfo->birthday, $publishedTalent->birthday());
         $this->assertSame((string)$publishTalentInfo->career, (string)$publishedTalent->career());
-        $this->assertSame((string)$publishTalentInfo->imagePath, (string)$publishedTalent->imageLink());
         $this->assertSame($publishTalentInfo->relevantVideoLinks->toStringArray(), $publishedTalent->relevantVideoLinks()->toStringArray());
         $this->assertSame($version->value(), $publishedTalent->version()->value());
     }
@@ -477,7 +470,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->imagePath,
             $publishTalentInfo->relevantVideoLinks,
             $status,
         );
@@ -767,7 +759,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->imagePath,
             $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
@@ -793,7 +784,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             $version,
         );
@@ -943,7 +933,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->imagePath,
             $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
@@ -970,7 +959,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             $version,
         );
@@ -1065,7 +1053,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->imagePath,
             $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
@@ -1087,7 +1074,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             $version,
         );
@@ -1175,7 +1161,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->imagePath,
             $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
@@ -1249,8 +1234,6 @@ class PublishTalentTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::UnderReview;
         $talent = new DraftTalent(
@@ -1265,7 +1248,6 @@ class PublishTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $status,
         );
@@ -1298,7 +1280,6 @@ class PublishTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             new Version(1),
             new \DateTimeImmutable(),
@@ -1315,12 +1296,10 @@ class PublishTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $base64EncodedImage,
             $link1,
             $link2,
             $link3,
             $relevantVideoLinks,
-            $imageLink,
             $talentIdentifier,
             $status,
             $talent,
@@ -1352,12 +1331,10 @@ readonly class PublishTalentTestData
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,
         public Career                   $career,
-        public string                   $base64EncodedImage,
         public ExternalContentLink      $link1,
         public ExternalContentLink      $link2,
         public ExternalContentLink      $link3,
         public RelevantVideoLinks       $relevantVideoLinks,
-        public ImagePath                $imagePath,
         public TalentIdentifier         $talentIdentifier,
         public ApprovalStatus           $status,
         public DraftTalent              $draftTalent,

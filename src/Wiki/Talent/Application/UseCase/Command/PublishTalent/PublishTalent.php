@@ -118,7 +118,6 @@ readonly class PublishTalent implements PublishTalentInterface
         $publishedTalent->setGroupIdentifiers($talent->groupIdentifiers());
         $publishedTalent->setBirthday($talent->birthday());
         $publishedTalent->setCareer($talent->career());
-        $publishedTalent->setImageLink($talent->imageLink());
         $publishedTalent->setRelevantVideoLinks($talent->relevantVideoLinks());
 
         $this->talentRepository->save($publishedTalent);

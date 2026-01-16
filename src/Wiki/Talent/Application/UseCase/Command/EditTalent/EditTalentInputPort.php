@@ -33,8 +33,6 @@ interface EditTalentInputPort
 
     public function career(): ?Career;
 
-    public function base64EncodedImage(): ?string;
-
     public function relevantVideoLinks(): RelevantVideoLinks;
 
     public function principalIdentifier(): PrincipalIdentifier;

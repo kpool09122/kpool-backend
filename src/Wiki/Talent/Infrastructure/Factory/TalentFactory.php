@@ -46,7 +46,6 @@ readonly class TalentFactory implements TalentFactoryInterface
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             new Version(1),
         );

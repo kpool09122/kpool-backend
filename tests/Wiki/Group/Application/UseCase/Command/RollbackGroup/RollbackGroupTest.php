@@ -7,7 +7,6 @@ namespace Tests\Wiki\Group\Application\UseCase\Command\RollbackGroup;
 use DateTimeImmutable;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
@@ -591,7 +590,6 @@ class RollbackGroupTest extends TestCase
             'current name',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Current Description'),
-            new ImagePath('/current/path.webp'),
             $version,
         );
     }
@@ -611,7 +609,6 @@ class RollbackGroupTest extends TestCase
             'snapshot name',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Snapshot Description'),
-            new ImagePath('/snapshot/path.webp'),
             $version,
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );

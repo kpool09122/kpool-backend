@@ -22,6 +22,7 @@ use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\UserName;
+use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -109,12 +110,16 @@ class RegisterUserTest extends TestCase
             ->with($identity)
             ->andReturnNull();
 
-        $imagePath = new ImagePath('/path/to/profile.png');
+        $imagePath = new ImagePath('/path/to/profile.webp');
+        $uploadResult = new ImageUploadResult(
+            new ImagePath('/path/to/profile_original.webp'),
+            $imagePath,
+        );
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
             ->once()
             ->with($base64EncodedImage)
-            ->andReturn($imagePath);
+            ->andReturn($uploadResult);
 
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')

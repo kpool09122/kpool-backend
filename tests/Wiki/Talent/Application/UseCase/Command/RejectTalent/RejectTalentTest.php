@@ -9,7 +9,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -750,8 +749,6 @@ class RejectTalentTest extends TestCase
         $externalContentLinks = [$link1, $link2, $link3];
         $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
-        $imageLink = new ImagePath('/resources/public/images/before.webp');
-
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $talent = new DraftTalent(
             $talentIdentifier,
@@ -765,7 +762,6 @@ class RejectTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $imageLink,
             $relevantVideoLinks,
             $status,
         );
@@ -802,7 +798,6 @@ class RejectTalentTest extends TestCase
             $link2,
             $link3,
             $relevantVideoLinks,
-            $imageLink,
             $talentIdentifier,
             $status,
             $talent,
@@ -837,7 +832,6 @@ readonly class RejectTalentTestData
         public ExternalContentLink      $link2,
         public ExternalContentLink      $link3,
         public RelevantVideoLinks       $relevantVideoLinks,
-        public ImagePath                $imageLink,
         public TalentIdentifier         $talentIdentifier,
         public ApprovalStatus           $status,
         public DraftTalent              $draftTalent,

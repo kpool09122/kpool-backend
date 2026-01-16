@@ -226,7 +226,6 @@ class AutomaticCreateDraftTalentTest extends TestCase
             [],
             null,
             new Career('auto generated'),
-            null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );

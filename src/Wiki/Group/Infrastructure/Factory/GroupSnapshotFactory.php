@@ -29,7 +29,6 @@ readonly class GroupSnapshotFactory implements GroupSnapshotFactoryInterface
             $group->normalizedName(),
             $group->agencyIdentifier(),
             $group->description(),
-            $group->imagePath(),
             $group->version(),
             new DateTimeImmutable('now'),
         );

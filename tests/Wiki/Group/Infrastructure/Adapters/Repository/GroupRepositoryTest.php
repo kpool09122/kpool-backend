@@ -7,7 +7,6 @@ namespace Tests\Wiki\Group\Infrastructure\Adapters\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group as PHPUnitGroup;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -36,7 +35,6 @@ class GroupRepositoryTest extends TestCase
         $normalizedName = 'stray kids';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'K-pop boy group.';
-        $imagePath = '/images/groups/skz.png';
         $version = 3;
 
         DB::table('groups')->upsert([
@@ -47,7 +45,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
-            'image_path' => $imagePath,
             'version' => $version,
         ], 'id');
 
@@ -62,7 +59,6 @@ class GroupRepositoryTest extends TestCase
         $this->assertSame($normalizedName, $group->normalizedName());
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
-        $this->assertSame($imagePath, (string) $group->imagePath());
         $this->assertSame($version, $group->version()->value());
     }
 
@@ -94,7 +90,6 @@ class GroupRepositoryTest extends TestCase
             'twice',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Girl group'),
-            new ImagePath('/images/groups/twice.png'),
             new Version(5),
         );
 
@@ -108,7 +103,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => $group->normalizedName(),
             'agency_id' => (string) $group->agencyIdentifier(),
             'description' => (string) $group->description(),
-            'image_path' => (string) $group->imagePath(),
             'version' => $group->version()->value(),
         ]);
     }
@@ -135,7 +129,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => 'twice ko',
             'agency_id' => StrTestHelper::generateUuid(),
             'description' => 'K-pop girl group.',
-            'image_path' => '/images/groups/twice-ko.png',
             'version' => 3,
         ], 'id');
 
@@ -147,7 +140,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => 'twice ja',
             'agency_id' => StrTestHelper::generateUuid(),
             'description' => 'K-pop girl group.',
-            'image_path' => '/images/groups/twice-ja.png',
             'version' => 3,
         ], 'id');
 
@@ -160,7 +152,6 @@ class GroupRepositoryTest extends TestCase
             'normalized_name' => 'aespa',
             'agency_id' => StrTestHelper::generateUuid(),
             'description' => 'K-pop girl group.',
-            'image_path' => '/images/groups/aespa.png',
             'version' => 1,
         ], 'id');
 

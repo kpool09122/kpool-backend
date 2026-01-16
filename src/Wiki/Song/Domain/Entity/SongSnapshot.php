@@ -6,7 +6,6 @@ namespace Source\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -36,7 +35,6 @@ readonly class SongSnapshot
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
-     * @param ImagePath|null $coverImagePath
      * @param ?ExternalContentLink $musicVideoLink
      * @param Version $version
      * @param DateTimeImmutable $createdAt
@@ -48,13 +46,12 @@ readonly class SongSnapshot
         private Language                 $language,
         private SongName                 $name,
         private ?AgencyIdentifier        $agencyIdentifier,
-        private ?GroupIdentifier                  $groupIdentifier,
-        private ?TalentIdentifier                 $talentIdentifier,
+        private ?GroupIdentifier         $groupIdentifier,
+        private ?TalentIdentifier        $talentIdentifier,
         private Lyricist                 $lyricist,
         private Composer                 $composer,
         private ?ReleaseDate             $releaseDate,
         private Overview                 $overView,
-        private ?ImagePath               $coverImagePath,
         private ?ExternalContentLink     $musicVideoLink,
         private Version                  $version,
         private DateTimeImmutable        $createdAt,
@@ -119,11 +116,6 @@ readonly class SongSnapshot
     public function overView(): Overview
     {
         return $this->overView;
-    }
-
-    public function coverImagePath(): ?ImagePath
-    {
-        return $this->coverImagePath;
     }
 
     public function musicVideoLink(): ?ExternalContentLink

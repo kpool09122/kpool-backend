@@ -33,7 +33,6 @@ readonly class SongSnapshotFactory implements SongSnapshotFactoryInterface
             $song->composer(),
             $song->releaseDate(),
             $song->overView(),
-            $song->coverImagePath(),
             $song->musicVideoLink(),
             $song->version(),
             new DateTimeImmutable('now'),

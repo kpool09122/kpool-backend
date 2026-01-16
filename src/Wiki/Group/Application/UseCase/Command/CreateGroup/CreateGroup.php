@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\CreateGroup;
 
-use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
@@ -20,7 +19,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class CreateGroup implements CreateGroupInterface
 {
     public function __construct(
-        private ImageServiceInterface         $imageService,
         private DraftGroupFactoryInterface    $groupFactory,
         private DraftGroupRepositoryInterface $draftGroupRepository,
         private GroupRepositoryInterface      $groupRepository,
@@ -64,10 +62,6 @@ readonly class CreateGroup implements CreateGroupInterface
         }
         $group->setAgencyIdentifier($input->agencyIdentifier());
         $group->setDescription($input->description());
-        if ($input->base64EncodedImage()) {
-            $imageLink = $this->imageService->upload($input->base64EncodedImage());
-            $group->setImagePath($imageLink);
-        }
 
         $this->draftGroupRepository->save($group);
 

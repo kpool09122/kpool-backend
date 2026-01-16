@@ -9,7 +9,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -453,7 +452,6 @@ class MergeSongTest extends TestCase
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $coverImagePath = new ImagePath('/resources/public/images/tt.webp');
         $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $status = ApprovalStatus::Pending;
 
@@ -471,7 +469,6 @@ class MergeSongTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $coverImagePath,
             $musicVideoLink,
             $status,
         );
@@ -490,7 +487,6 @@ class MergeSongTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $coverImagePath,
             $musicVideoLink,
             $status,
             $song,
@@ -520,7 +516,6 @@ readonly class MergeSongTestData
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,
         public Overview                 $overView,
-        public ImagePath                $coverImagePath,
         public ExternalContentLink      $musicVideoLink,
         public ApprovalStatus           $status,
         public DraftSong                $song,

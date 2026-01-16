@@ -45,7 +45,6 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
             null,
             new Overview(''),
             null,
-            null,
             ApprovalStatus::Pending,
         );
     }

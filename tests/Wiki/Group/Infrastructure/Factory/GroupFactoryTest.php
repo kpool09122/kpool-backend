@@ -48,6 +48,5 @@ class GroupFactoryTest extends TestCase
         $this->assertSame('twice', $group->normalizedName());
         $this->assertNull($group->agencyIdentifier());
         $this->assertSame('', (string)$group->description());
-        $this->assertNull($group->imagePath());
     }
 }

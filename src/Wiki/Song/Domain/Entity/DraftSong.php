@@ -6,7 +6,6 @@ namespace Source\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -37,7 +36,6 @@ class DraftSong
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
-     * @param ImagePath|null $coverImagePath
      * @param ExternalContentLink|null $musicVideoLink
      * @param ApprovalStatus $status
      * @param PrincipalIdentifier|null $mergerIdentifier
@@ -57,7 +55,6 @@ class DraftSong
         private Composer                          $composer,
         private ?ReleaseDate                      $releaseDate,
         private Overview                          $overView,
-        private ?ImagePath                        $coverImagePath,
         private ?ExternalContentLink              $musicVideoLink,
         private ApprovalStatus                    $status,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
@@ -173,16 +170,6 @@ class DraftSong
     public function setOverView(Overview $overView): void
     {
         $this->overView = $overView;
-    }
-
-    public function coverImagePath(): ?ImagePath
-    {
-        return $this->coverImagePath;
-    }
-
-    public function setCoverImagePath(ImagePath $coverImagePath): void
-    {
-        $this->coverImagePath = $coverImagePath;
     }
 
     public function musicVideoLink(): ?ExternalContentLink

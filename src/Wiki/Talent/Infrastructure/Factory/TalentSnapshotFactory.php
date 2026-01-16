@@ -31,7 +31,6 @@ readonly class TalentSnapshotFactory implements TalentSnapshotFactoryInterface
             $talent->groupIdentifiers(),
             $talent->birthday(),
             $talent->career(),
-            $talent->imageLink(),
             $talent->relevantVideoLinks(),
             $talent->version(),
             new DateTimeImmutable('now'),

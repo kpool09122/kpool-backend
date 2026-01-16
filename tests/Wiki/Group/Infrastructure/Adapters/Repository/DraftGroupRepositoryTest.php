@@ -7,7 +7,6 @@ namespace Tests\Wiki\Group\Infrastructure\Adapters\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
@@ -39,7 +38,6 @@ class DraftGroupRepositoryTest extends TestCase
         $normalizedName = 'stray kids en draft';
         $agencyId = StrTestHelper::generateUuid();
         $description = 'English draft';
-        $imagePath = '/images/groups/skz-en.png';
         $status = ApprovalStatus::Pending;
 
         DB::table('draft_groups')->upsert([
@@ -52,7 +50,6 @@ class DraftGroupRepositoryTest extends TestCase
             'normalized_name' => $normalizedName,
             'agency_id' => $agencyId,
             'description' => $description,
-            'image_path' => $imagePath,
             'status' => $status->value,
         ], 'id');
 
@@ -70,7 +67,6 @@ class DraftGroupRepositoryTest extends TestCase
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($status, $group->status());
-        $this->assertSame($imagePath, (string) $group->imagePath());
     }
 
     /**
@@ -103,7 +99,6 @@ class DraftGroupRepositoryTest extends TestCase
             'newjeans',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('New draft'),
-            new ImagePath('/images/groups/nj.png'),
             ApprovalStatus::UnderReview,
         );
 
@@ -142,7 +137,6 @@ class DraftGroupRepositoryTest extends TestCase
             'さくじょたいしょう',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('Delete me'),
-            null,
             ApprovalStatus::Pending,
         );
 

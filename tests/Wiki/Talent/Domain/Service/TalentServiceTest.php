@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -74,7 +73,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('트와이스 멤버'),
-            new ImagePath('/images/chaeyoung.webp'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://example.youtube.com/watch?v=test'),
             ]),
@@ -96,7 +94,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
-            new ImagePath('/images/chaeyoung_ja.webp'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://example.youtube.com/watch?v=test2'),
             ]),
@@ -149,7 +146,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('트와이스 멤버'),
-            new ImagePath('/images/chaeyoung.webp'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://example.youtube.com/watch?v=test'),
             ]),
@@ -171,7 +167,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
-            new ImagePath('/images/chaeyoung_ja.webp'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://example.youtube.com/watch?v=test2'),
             ]),
@@ -223,7 +218,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
-            new ImagePath('/images/chaeyoung_ja.webp'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://example.youtube.com/watch?v=test'),
             ]),
@@ -302,7 +296,6 @@ class TalentServiceTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Approved,
         );
@@ -321,7 +314,6 @@ class TalentServiceTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Approved,
         );
@@ -339,7 +331,6 @@ class TalentServiceTest extends TestCase
             [],
             null,
             new Career(''),
-            null,
             new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );

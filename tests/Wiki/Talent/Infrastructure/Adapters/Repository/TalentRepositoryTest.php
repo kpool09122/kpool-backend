@@ -11,7 +11,6 @@ use JsonException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -50,7 +49,6 @@ class TalentRepositoryTest extends TestCase
         $groupIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $birthday = '1997-10-03';
         $career = 'Stray Kids leader, producer, and rapper. Member of 3RACHA.';
-        $imageLink = '/images/talents/bangchan.jpg';
         $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8', 'https://www.youtube.com/watch?v=dcNRbbQBJUE'];
         $version = 3;
 
@@ -68,7 +66,6 @@ class TalentRepositoryTest extends TestCase
             'group_identifiers' => $groupIdentifiers,
             'birthday' => $birthday,
             'career' => $career,
-            'image_link' => $imageLink,
             'relevant_video_links' => $relevantVideoLinks,
             'version' => $version,
         ]);
@@ -90,7 +87,6 @@ class TalentRepositoryTest extends TestCase
         $this->assertInstanceOf(Birthday::class, $talent->birthday());
         $this->assertSame($birthday, $talent->birthday()->format('Y-m-d'));
         $this->assertSame($career, (string) $talent->career());
-        $this->assertSame($imageLink, (string) $talent->imageLink());
         $this->assertSame($relevantVideoLinks, $talent->relevantVideoLinks()->toStringArray());
         $this->assertSame($version, $talent->version()->value());
     }
@@ -116,7 +112,6 @@ class TalentRepositoryTest extends TestCase
             'group_identifiers' => [$groupId],
             'birthday' => null,
             'career' => 'Stray Kids main dancer and sub-vocalist.',
-            'image_link' => '/images/talents/leeknow.jpg',
         ]);
 
         $repository = $this->app->make(TalentRepositoryInterface::class);
@@ -171,7 +166,6 @@ class TalentRepositoryTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('2000-09-14')),
             new Career('Stray Kids lead vocalist and main rapper. Member of 3RACHA.'),
-            new ImagePath('/images/talents/han.jpg'),
             new RelevantVideoLinks([
                 new ExternalContentLink('https://www.youtube.com/watch?v=EaswWiwMVs8'),
                 new ExternalContentLink('https://www.youtube.com/watch?v=dcNRbbQBJUE'),
@@ -191,7 +185,6 @@ class TalentRepositoryTest extends TestCase
             'agency_id' => (string) $talent->agencyIdentifier(),
             'birthday' => $talent->birthday()?->format('Y-m-d'),
             'career' => (string) $talent->career(),
-            'image_link' => (string) $talent->imageLink(),
             'version' => $talent->version()->value(),
         ]);
 
@@ -242,7 +235,6 @@ class TalentRepositoryTest extends TestCase
             'group_identifiers' => [$groupId],
             'birthday' => '1999-04-23',
             'career' => 'Test career',
-            'image_link' => '/images/test.jpg',
             'version' => 1,
         ]);
 
@@ -256,7 +248,6 @@ class TalentRepositoryTest extends TestCase
             'group_identifiers' => [$groupId],
             'birthday' => '1999-04-23',
             'career' => 'Test career en',
-            'image_link' => '/images/test.jpg',
             'version' => 1,
         ]);
 
