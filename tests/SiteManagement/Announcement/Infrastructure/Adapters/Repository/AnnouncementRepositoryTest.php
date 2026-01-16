@@ -30,8 +30,8 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $translationSetId = StrTestHelper::generateUuid();
         $translation = Language::JAPANESE;
         $title = '公開済みのお知らせ';
         $content = '本文です';
@@ -69,7 +69,7 @@ class AnnouncementRepositoryTest extends TestCase
     public function testFindByIdWhenNotExist(): void
     {
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
-        $announcement = $repository->findById(new AnnouncementIdentifier(StrTestHelper::generateUlid()));
+        $announcement = $repository->findById(new AnnouncementIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($announcement);
     }
@@ -81,11 +81,11 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindByTranslationSetIdentifier(): void
     {
-        $translationSetId = StrTestHelper::generateUlid();
+        $translationSetId = StrTestHelper::generateUuid();
 
         $records = [
             [
-                'id' => StrTestHelper::generateUlid(),
+                'id' => StrTestHelper::generateUuid(),
                 'translation_set_identifier' => $translationSetId,
                 'language' => Language::JAPANESE->value,
                 'category' => Category::NEWS->value,
@@ -94,7 +94,7 @@ class AnnouncementRepositoryTest extends TestCase
                 'published_date' => '2024-01-01 09:00:00',
             ],
             [
-                'id' => StrTestHelper::generateUlid(),
+                'id' => StrTestHelper::generateUuid(),
                 'translation_set_identifier' => $translationSetId,
                 'language' => Language::ENGLISH->value,
                 'category' => Category::UPDATES->value,
@@ -103,8 +103,8 @@ class AnnouncementRepositoryTest extends TestCase
                 'published_date' => '2024-01-01 10:00:00',
             ],
             [
-                'id' => StrTestHelper::generateUlid(),
-                'translation_set_identifier' => StrTestHelper::generateUlid(),
+                'id' => StrTestHelper::generateUuid(),
+                'translation_set_identifier' => StrTestHelper::generateUuid(),
                 'language' => Language::KOREAN->value,
                 'category' => Category::MAINTENANCE->value,
                 'title' => 'Other',
@@ -132,8 +132,8 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindDraftById(): void
     {
-        $id = StrTestHelper::generateUlid();
-        $translationSetId = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
+        $translationSetId = StrTestHelper::generateUuid();
         $translation = Language::KOREAN;
         $title = '드래프트';
         $content = '초안 내용';
@@ -171,7 +171,7 @@ class AnnouncementRepositoryTest extends TestCase
     public function testFindDraftByIdWhenNotExist(): void
     {
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
-        $draft = $repository->findDraftById(new AnnouncementIdentifier(StrTestHelper::generateUlid()));
+        $draft = $repository->findDraftById(new AnnouncementIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($draft);
     }
@@ -183,10 +183,10 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testFindDraftsByTranslationSetIdentifier(): void
     {
-        $translationSetId = new TranslationSetIdentifier(StrTestHelper::generateUlid());
+        $translationSetId = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draft1 = [
-            'id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string)$translationSetId,
             'language' => Language::JAPANESE->value,
             'category' => Category::NEWS->value,
@@ -196,7 +196,7 @@ class AnnouncementRepositoryTest extends TestCase
         ];
 
         $draft2 = [
-            'id' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string)$translationSetId,
             'language' => Language::ENGLISH->value,
             'category' => Category::UPDATES->value,
@@ -206,8 +206,8 @@ class AnnouncementRepositoryTest extends TestCase
         ];
 
         $other = [
-            'id' => StrTestHelper::generateUlid(),
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => Language::KOREAN->value,
             'category' => Category::MAINTENANCE->value,
             'title' => 'Other',
@@ -236,7 +236,7 @@ class AnnouncementRepositoryTest extends TestCase
     {
         $repository = $this->app->make(AnnouncementRepositoryInterface::class);
         $drafts = $repository->findDraftsByTranslationSetIdentifier(
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertIsArray($drafts);
@@ -251,8 +251,8 @@ class AnnouncementRepositoryTest extends TestCase
     public function testSave(): void
     {
         $announcement = new AnnouncementEntity(
-            new AnnouncementIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new AnnouncementIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             Category::UPDATES,
             new Title('Saved Title'),
@@ -282,8 +282,8 @@ class AnnouncementRepositoryTest extends TestCase
     public function testSaveDraft(): void
     {
         $draft = new DraftAnnouncementEntity(
-            new AnnouncementIdentifier(StrTestHelper::generateUlid()),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new AnnouncementIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             Category::NEWS,
             new Title('Draft Title'),
@@ -312,11 +312,11 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testDelete(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
         DB::table('announcements')->insert([
             'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'category' => Category::NEWS->value,
             'title' => 'Delete',
@@ -326,7 +326,7 @@ class AnnouncementRepositoryTest extends TestCase
 
         $announcement = new AnnouncementEntity(
             new AnnouncementIdentifier($id),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             Category::NEWS,
             new Title('irrelevant'),
@@ -347,11 +347,11 @@ class AnnouncementRepositoryTest extends TestCase
     #[PHPUnitGroup('useDb')]
     public function testDeleteDraft(): void
     {
-        $id = StrTestHelper::generateUlid();
+        $id = StrTestHelper::generateUuid();
 
         DB::table('draft_announcements')->insert([
             'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUlid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'language' => Language::ENGLISH->value,
             'category' => Category::NEWS->value,
             'title' => 'Delete draft',
@@ -361,7 +361,7 @@ class AnnouncementRepositoryTest extends TestCase
 
         $draft = new DraftAnnouncementEntity(
             new AnnouncementIdentifier($id),
-            new TranslationSetIdentifier(StrTestHelper::generateUlid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             Category::NEWS,
             new Title('irrelevant'),

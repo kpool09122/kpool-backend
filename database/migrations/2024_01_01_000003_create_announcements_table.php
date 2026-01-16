@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('announcements', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('お知らせID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->uuid('id')->primary()->comment('お知らせID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->unsignedTinyInteger('category')->comment('カテゴリ');
             $table->string('title', 64)->comment('タイトル');
@@ -24,8 +24,8 @@ return new class extends Migration
         });
 
         Schema::create('draft_announcements', static function (Blueprint $table) {
-            $table->string('id', 26)->primary()->comment('お知らせID');
-            $table->string('translation_set_identifier', 26)->comment('翻訳セットID');
+            $table->uuid('id')->primary()->comment('お知らせID');
+            $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->unsignedTinyInteger('category')->comment('カテゴリ');
             $table->string('title', 64)->comment('タイトル');
