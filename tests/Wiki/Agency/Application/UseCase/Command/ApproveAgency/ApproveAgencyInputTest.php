@@ -20,17 +20,14 @@ class ApproveAgencyInputTest extends TestCase
     public function test__construct(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new ApproveAgencyInput(
             $agencyIdentifier,
-            $publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
-        $this->assertSame((string) $publishedAgencyIdentifier, (string) $input->publishedAgencyIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
     }
 }

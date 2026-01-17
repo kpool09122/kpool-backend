@@ -27,6 +27,9 @@
         "calebdw/larastan": "^3.8"
     },
     "autoload": {
+        "files": [
+            "application/helpers.php"
+        ],
         "psr-4": {
             "Source\\": "src/",
             "Application\\": "application/"

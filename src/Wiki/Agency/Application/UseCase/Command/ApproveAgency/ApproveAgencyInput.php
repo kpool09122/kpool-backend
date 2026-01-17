@@ -11,7 +11,6 @@ readonly class ApproveAgencyInput implements ApproveAgencyInputPort
 {
     public function __construct(
         private AgencyIdentifier    $agencyIdentifier,
-        private ?AgencyIdentifier   $publishedAgencyIdentifier,
         private PrincipalIdentifier $principalIdentifier,
     ) {
     }
@@ -19,11 +18,6 @@ readonly class ApproveAgencyInput implements ApproveAgencyInputPort
     public function agencyIdentifier(): AgencyIdentifier
     {
         return $this->agencyIdentifier;
-    }
-
-    public function publishedAgencyIdentifier(): ?AgencyIdentifier
-    {
-        return $this->publishedAgencyIdentifier;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

@@ -11,7 +11,5 @@ interface ApproveAgencyInputPort
 {
     public function agencyIdentifier(): AgencyIdentifier;
 
-    public function publishedAgencyIdentifier(): ?AgencyIdentifier;
-
     public function principalIdentifier(): PrincipalIdentifier;
 }
