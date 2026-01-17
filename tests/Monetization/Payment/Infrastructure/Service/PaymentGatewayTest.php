@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
+use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
@@ -98,7 +99,7 @@ class PaymentGatewayTest extends TestCase
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
         // PaymentGateway を実行
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
         $gateway->authorize($payment);
 
         // DB に stripe_payment_intent_id が保存されていることを確認
@@ -155,7 +156,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 500, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         // Authorize
         $gateway->authorize($payment);
@@ -211,7 +212,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 2000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         // Authorize -> Capture -> Refund
         $gateway->authorize($payment);
@@ -252,7 +253,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Stripe customer not linked to monetization account.');
@@ -285,7 +286,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Stripe payment method not set.');
@@ -312,7 +313,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Monetization account not found.');
@@ -361,7 +362,7 @@ class PaymentGatewayTest extends TestCase
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(StripeApiException::class);
 
@@ -389,7 +390,7 @@ class PaymentGatewayTest extends TestCase
         $paymentId = StrTestHelper::generateUuid();
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Payment record not found in database.');
@@ -443,7 +444,7 @@ class PaymentGatewayTest extends TestCase
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Authorization failed: unexpected status "requires_payment_method"');
@@ -497,7 +498,7 @@ class PaymentGatewayTest extends TestCase
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 10000, Currency::KRW);
 
         // PaymentGateway を実行
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
         $gateway->authorize($payment);
 
         // DB に stripe_payment_intent_id が保存されていることを確認
@@ -558,7 +559,7 @@ class PaymentGatewayTest extends TestCase
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::USD);
 
         // PaymentGateway を実行
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
         $gateway->authorize($payment);
 
         // DB に stripe_payment_intent_id が保存されていることを確認
@@ -599,7 +600,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Stripe Payment Intent not found for this payment.');
@@ -634,7 +635,7 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Stripe Payment Intent not found for this payment.');
@@ -688,7 +689,7 @@ class PaymentGatewayTest extends TestCase
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Capture failed: unexpected status "requires_payment_method"');
@@ -742,7 +743,7 @@ class PaymentGatewayTest extends TestCase
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(PaymentGatewayException::class);
         $this->expectExceptionMessage('Refund failed: status "failed"');
@@ -792,7 +793,7 @@ class PaymentGatewayTest extends TestCase
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(StripeApiException::class);
 
@@ -841,7 +842,7 @@ class PaymentGatewayTest extends TestCase
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
-        $gateway = $this->app->make(PaymentGateway::class);
+        $gateway = $this->app->make(PaymentGatewayInterface::class);
 
         $this->expectException(StripeApiException::class);
 

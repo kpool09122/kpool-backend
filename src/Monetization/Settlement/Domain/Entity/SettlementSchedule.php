@@ -7,6 +7,7 @@ namespace Source\Monetization\Settlement\Domain\Entity;
 use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementInterval;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementScheduleIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
@@ -17,6 +18,7 @@ class SettlementSchedule
 
     public function __construct(
         private SettlementScheduleIdentifier $settlementScheduleIdentifier,
+        private MonetizationAccountIdentifier $monetizationAccountIdentifier,
         DateTimeImmutable $anchorDate,
         private SettlementInterval $interval,
         private int $payoutDelayDays = 0,
@@ -30,6 +32,11 @@ class SettlementSchedule
     public function settlementScheduleIdentifier(): SettlementScheduleIdentifier
     {
         return $this->settlementScheduleIdentifier;
+    }
+
+    public function monetizationAccountIdentifier(): MonetizationAccountIdentifier
+    {
+        return $this->monetizationAccountIdentifier;
     }
 
     public function interval(): SettlementInterval
@@ -80,6 +87,13 @@ class SettlementSchedule
         $this->nextClosingDate = $this->calculateNextClosingDate($this->nextClosingDate);
     }
 
+    /**
+     * 次の締め日を計算する。
+     *
+     * 注意: MONTHLYの場合、PHPの +1 month は月末日（29日、30日、31日）で予期しない結果になる。
+     * 例: 1月31日 + 1 month = 3月2日（2月31日は存在しないため）
+     * そのため、締め日には全ての月に存在する日付（1日〜28日、例: 25日締め、10日締め）を使用すること。
+     */
     private function calculateNextClosingDate(DateTimeImmutable $date): DateTimeImmutable
     {
         return match ($this->interval) {

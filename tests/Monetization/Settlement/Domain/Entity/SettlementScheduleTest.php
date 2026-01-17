@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementInterval;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementScheduleIdentifier;
@@ -25,18 +26,21 @@ class SettlementScheduleTest extends TestCase
     public function test__construct(): void
     {
         $settlementScheduleIdentifier = new SettlementScheduleIdentifier(StrTestHelper::generateUuid());
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $anchorDate = new DateTimeImmutable();
         $interval = SettlementInterval::THRESHOLD;
         $payoutDelayDays = 0;
         $threshold = new Money(100, Currency::KRW);
         $schedule = $this->createSchedule(
-            $settlementScheduleIdentifier,
-            $anchorDate,
-            $interval,
-            $payoutDelayDays,
-            $threshold,
+            scheduleIdentifier: $settlementScheduleIdentifier,
+            monetizationAccountIdentifier: $monetizationAccountIdentifier,
+            anchorDate: $anchorDate,
+            interval: $interval,
+            payoutDelayDays: $payoutDelayDays,
+            threshold: $threshold,
         );
         $this->assertSame($settlementScheduleIdentifier, $schedule->settlementScheduleIdentifier());
+        $this->assertSame($monetizationAccountIdentifier, $schedule->monetizationAccountIdentifier());
         $this->assertEquals($anchorDate, $schedule->nextClosingDate());
         $this->assertSame($interval, $schedule->interval());
         $this->assertSame($payoutDelayDays, $schedule->paymentDelayDays());
@@ -222,6 +226,7 @@ class SettlementScheduleTest extends TestCase
 
     private function createSchedule(
         ?SettlementScheduleIdentifier $scheduleIdentifier = null,
+        ?MonetizationAccountIdentifier $monetizationAccountIdentifier = null,
         ?DateTimeImmutable $anchorDate = null,
         ?SettlementInterval $interval = null,
         ?int $payoutDelayDays = null,
@@ -229,6 +234,7 @@ class SettlementScheduleTest extends TestCase
     ): SettlementSchedule {
         return new SettlementSchedule(
             $scheduleIdentifier ?? new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            $monetizationAccountIdentifier ?? new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $anchorDate ?? new DateTimeImmutable('2024-01-01'),
             $interval ?? SettlementInterval::MONTHLY,
             $payoutDelayDays ?? 0,

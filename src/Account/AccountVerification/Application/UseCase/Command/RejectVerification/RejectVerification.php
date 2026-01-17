@@ -18,6 +18,7 @@ readonly class RejectVerification implements RejectVerificationInterface
     /**
      * @param RejectVerificationInputPort $input
      * @return AccountVerification
+     * @throws AccountVerificationNotFoundException
      */
     public function process(RejectVerificationInputPort $input): AccountVerification
     {

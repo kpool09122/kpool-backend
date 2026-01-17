@@ -10,8 +10,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\Service\SettlementServiceInterface;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementInterval;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementScheduleIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementStatus;
@@ -33,16 +31,16 @@ class SettlementServiceTest extends TestCase
     public function testSettleCreatesBatchAndTransfer(): void
     {
         $service = $this->app->make(SettlementServiceInterface::class);
-        $account = $this->account();
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            $monetizationAccountId,
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
         );
 
         $result = $service->settle(
-            $account,
             $schedule,
             [
                 new Money(5000, Currency::JPY),
@@ -80,8 +78,10 @@ class SettlementServiceTest extends TestCase
     public function testSettleWhenNoAmount(): void
     {
         $service = $this->app->make(SettlementServiceInterface::class);
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            $monetizationAccountId,
             new DateTimeImmutable('2024-02-10'),
             SettlementInterval::MONTHLY,
             5
@@ -90,7 +90,6 @@ class SettlementServiceTest extends TestCase
         $this->expectException(DomainException::class);
 
         $service->settle(
-            $this->account(),
             $schedule,
             [],
             new Percentage(1),
@@ -111,8 +110,10 @@ class SettlementServiceTest extends TestCase
     public function testSettleWhenDifferentCurrency(): void
     {
         $service = $this->app->make(SettlementServiceInterface::class);
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            $monetizationAccountId,
             new DateTimeImmutable('2024-02-10'),
             SettlementInterval::MONTHLY,
             5
@@ -121,7 +122,6 @@ class SettlementServiceTest extends TestCase
         $this->expectException(DomainException::class);
 
         $service->settle(
-            $this->account(),
             $schedule,
             [
                 new Money(5000, Currency::KRW),
@@ -145,8 +145,10 @@ class SettlementServiceTest extends TestCase
     public function testSettleBeforeDueThrows(): void
     {
         $service = $this->app->make(SettlementServiceInterface::class);
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            $monetizationAccountId,
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
@@ -155,7 +157,6 @@ class SettlementServiceTest extends TestCase
         $this->expectException(DomainException::class);
 
         $service->settle(
-            $this->account(),
             $schedule,
             [new Money(1000, Currency::JPY)],
             new Percentage(1),
@@ -164,18 +165,6 @@ class SettlementServiceTest extends TestCase
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-31'),
             new DateTimeImmutable('2024-01-12')
-        );
-    }
-
-    private function account(): SettlementAccount
-    {
-        return new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::JPY,
-            true
         );
     }
 }

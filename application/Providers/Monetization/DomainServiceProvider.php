@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSeller;
+use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerInterface;
 use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
+use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Infrastructure\Factory\MonetizationAccountFactory;
 use Source\Monetization\Account\Infrastructure\Repository\MonetizationAccountRepository;
+use Source\Monetization\Account\Infrastructure\Service\ConnectGateway;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyService;
@@ -21,14 +25,24 @@ use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Infrastructure\Factory\PaymentFactory;
 use Source\Monetization\Payment\Infrastructure\Repository\PaymentRepository;
 use Source\Monetization\Payment\Infrastructure\Service\PaymentGateway;
+use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransfer;
+use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInterface;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
 use Source\Monetization\Settlement\Domain\Factory\TransferFactoryInterface;
+use Source\Monetization\Settlement\Domain\Repository\SettlementBatchRepositoryInterface;
+use Source\Monetization\Settlement\Domain\Repository\SettlementScheduleRepositoryInterface;
+use Source\Monetization\Settlement\Domain\Repository\TransferRepositoryInterface;
 use Source\Monetization\Settlement\Domain\Service\FeeCalculatorService;
 use Source\Monetization\Settlement\Domain\Service\FeeCalculatorServiceInterface;
 use Source\Monetization\Settlement\Domain\Service\SettlementService;
 use Source\Monetization\Settlement\Domain\Service\SettlementServiceInterface;
+use Source\Monetization\Settlement\Domain\Service\TransferGatewayInterface;
 use Source\Monetization\Settlement\Infrastructure\Factory\SettlementBatchFactory;
 use Source\Monetization\Settlement\Infrastructure\Factory\TransferFactory;
+use Source\Monetization\Settlement\Infrastructure\Repository\SettlementBatchRepository;
+use Source\Monetization\Settlement\Infrastructure\Repository\SettlementScheduleRepository;
+use Source\Monetization\Settlement\Infrastructure\Repository\TransferRepository;
+use Source\Monetization\Settlement\Infrastructure\Service\TransferGateway;
 use Source\Monetization\Shared\Service\PaymentMatcherService;
 use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 
@@ -39,18 +53,29 @@ class DomainServiceProvider extends ServiceProvider
         // Account
         $this->app->singleton(MonetizationAccountFactoryInterface::class, MonetizationAccountFactory::class);
         $this->app->singleton(MonetizationAccountRepositoryInterface::class, MonetizationAccountRepository::class);
+        $this->app->singleton(ConnectGatewayInterface::class, ConnectGateway::class);
+        $this->app->singleton(OnboardSellerInterface::class, OnboardSeller::class);
 
         // Payment
         $this->app->singleton(PaymentFactoryInterface::class, PaymentFactory::class);
         $this->app->singleton(PaymentRepositoryInterface::class, PaymentRepository::class);
         $this->app->singleton(PaymentGatewayInterface::class, PaymentGateway::class);
         $this->app->singleton(PaymentMatcherServiceInterface::class, PaymentMatcherService::class);
+
+        // Billing
         $this->app->singleton(TaxDocumentPolicyServiceInterface::class, TaxDocumentPolicyService::class);
         $this->app->singleton(InvoiceFactoryInterface::class, InvoiceFactory::class);
         $this->app->singleton(InvoiceRepositoryInterface::class, InvoiceRepository::class);
+
+        // Settlement
+        $this->app->singleton(SettlementScheduleRepositoryInterface::class, SettlementScheduleRepository::class);
+        $this->app->singleton(SettlementBatchRepositoryInterface::class, SettlementBatchRepository::class);
+        $this->app->singleton(TransferRepositoryInterface::class, TransferRepository::class);
         $this->app->singleton(SettlementBatchFactoryInterface::class, SettlementBatchFactory::class);
         $this->app->singleton(TransferFactoryInterface::class, TransferFactory::class);
         $this->app->singleton(FeeCalculatorServiceInterface::class, FeeCalculatorService::class);
         $this->app->singleton(SettlementServiceInterface::class, SettlementService::class);
+        $this->app->singleton(TransferGatewayInterface::class, TransferGateway::class);
+        $this->app->singleton(ExecuteTransferInterface::class, ExecuteTransfer::class);
     }
 }
