@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
 use Source\Identity\Application\Service\AccountProvisioningServiceInterface;
+use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
@@ -26,6 +27,12 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
     ) {
     }
 
+    /**
+     * @param SocialLoginCallbackInputPort $input
+     * @param SocialLoginCallbackOutputPort $output
+     * @return void
+     * @throws InvalidOAuthStateException
+     */
     public function process(SocialLoginCallbackInputPort $input, SocialLoginCallbackOutputPort $output): void
     {
         $this->oauthStateRepository->consume($input->state());
