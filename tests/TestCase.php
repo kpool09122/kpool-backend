@@ -98,6 +98,15 @@ abstract class TestCase extends OrchestraTestCase
      */
     protected function defineEnvironment($app): void
     {
+        // Encryption (Crypt) requires APP_KEY. This project doesn't ship .env.testing,
+        // so ensure a deterministic key is always present for tests.
+        if (! $app['config']->get('app.key')) {
+            $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('0', 32)));
+        }
+        if (! $app['config']->get('app.cipher')) {
+            $app['config']->set('app.cipher', 'AES-256-CBC');
+        }
+
         // Auth設定: 正しいIdentityモデルを使用
         $app['config']->set('auth.providers.users.model', \Application\Models\Identity\Identity::class);
     }
