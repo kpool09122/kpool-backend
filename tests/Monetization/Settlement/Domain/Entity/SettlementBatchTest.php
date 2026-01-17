@@ -10,13 +10,8 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\SettlementBatch;
-use Source\Monetization\Settlement\Domain\Entity\Transfer;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementStatus;
-use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
-use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
@@ -31,7 +26,8 @@ class SettlementBatchTest extends TestCase
     public function test__construct(): void
     {
         $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $account = $this->createAccount();
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
+        $currency = Currency::JPY;
         $start = new DateTimeImmutable('now');
         $end = new DateTimeImmutable('now');
         $status = SettlementStatus::PROCESSING;
@@ -40,7 +36,8 @@ class SettlementBatchTest extends TestCase
         $processedAt = new DateTimeImmutable('now');
         $batch = $this->createBatch([
             'identifier' => $identifier,
-            'account' => $account,
+            'monetizationAccountIdentifier' => $monetizationAccountIdentifier,
+            'currency' => $currency,
             'start' => $start,
             'end' => $end,
             'status' => $status,
@@ -49,7 +46,8 @@ class SettlementBatchTest extends TestCase
             'processedAt' => $processedAt,
         ]);
         $this->assertSame($identifier, $batch->settlementBatchIdentifier());
-        $this->assertSame($account, $batch->settlementAccount());
+        $this->assertSame($monetizationAccountIdentifier, $batch->monetizationAccountIdentifier());
+        $this->assertSame($currency, $batch->currency());
         $this->assertSame($start, $batch->periodStart());
         $this->assertSame($end, $batch->periodEnd());
         $this->assertSame($status, $batch->status());
@@ -105,21 +103,6 @@ class SettlementBatchTest extends TestCase
     }
 
     /**
-     * 異常系: 処理中ステータス時に送金情報を持っていると例外になること.
-     *
-     * @return void
-     */
-    public function testConstructWhenProcessingWithTransfer(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->createBatch([
-            'status' => SettlementStatus::PROCESSING,
-            'processedAt' => new DateTimeImmutable('now'),
-            'transfer' => $this->createTransfer(),
-        ]);
-    }
-
-    /**
      * 異常系: 支払済ステータス時にprocessedAtなどの必要な情報がないと、例外になること.
      *
      * @return void
@@ -131,8 +114,6 @@ class SettlementBatchTest extends TestCase
             'status' => SettlementStatus::PAID,
             'processedAt' => new DateTimeImmutable('now'),
             'paidAt' => null,
-            'transfer' => $this->createTransfer(),
-
         ]);
     }
 
@@ -148,7 +129,6 @@ class SettlementBatchTest extends TestCase
             'status' => SettlementStatus::PAID,
             'processedAt' => new DateTimeImmutable('now'),
             'paidAt' => new DateTimeImmutable('now'),
-            'transfer' => $this->createTransfer(),
             'failedAt' => new DateTimeImmutable('now'),
         ]);
     }
@@ -184,23 +164,6 @@ class SettlementBatchTest extends TestCase
     }
 
     /**
-     * 異常系: 失敗ステータス時に送金情報があると、例外になること.
-     *
-     * @return void
-     */
-    public function testConstructWhenPaidWithTransfer(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->createBatch([
-            'status' => SettlementStatus::FAILED,
-            'paidAt' => null,
-            'transfer' => $this->createTransfer(),
-            'failedAt' => new DateTimeImmutable('now'),
-            'failureReason' => 'Sending Error',
-        ]);
-    }
-
-    /**
      * 異常系: 期間の開始が終了より遅い場合は例外がスローされること..
      *
      * @return void
@@ -213,22 +176,6 @@ class SettlementBatchTest extends TestCase
         $this->createBatch([
             'start' => $start,
             'end' => $end,
-        ]);
-    }
-
-    /**
-     * 異常系: 支払い済みステータスで転送情報が欠けている場合は生成できないこと.
-     *
-     * @return void
-     */
-    public function testCannotConstructPaidWithoutTransfer(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->createBatch([
-            'status' => SettlementStatus::PAID,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-            'paidAt' => new DateTimeImmutable('2024-01-17'),
-            'grossAmount' => new Money(100, Currency::JPY),
         ]);
     }
 
@@ -247,137 +194,16 @@ class SettlementBatchTest extends TestCase
     }
 
     /**
-     * 異常系: 支払い済みステータスでアカウントが一致しない転送を保持している場合は生成できないこと.
-     *
-     * @return void
-     */
-    public function testCannotConstructPaidWithTransferFromDifferentAccount(): void
-    {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $batchAccount = $this->createAccount();
-        $otherAccount = $this->createAccount();
-        $transfer = $this->createTransferMock(
-            identifier: $identifier,
-            account: $otherAccount,
-            amount: new Money(100, Currency::JPY),
-            status: TransferStatus::SENT,
-            sentAt: new DateTimeImmutable('2024-01-17'),
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->createBatch([
-            'identifier' => $identifier,
-            'account' => $batchAccount,
-            'status' => SettlementStatus::PAID,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-            'paidAt' => new DateTimeImmutable('2024-01-17'),
-            'grossAmount' => new Money(100, Currency::JPY),
-            'transfer' => $transfer,
-        ]);
-    }
-
-    /**
-     * 異常系: 支払い済みステータスで清算額と一致しない転送額の場合は生成できないこと.
-     *
-     * @return void
-     */
-    public function testCannotConstructPaidWithTransferAmountMismatch(): void
-    {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $account = $this->createAccount();
-        $transfer = $this->createTransferMock(
-            identifier: $identifier,
-            account: $account,
-            amount: new Money(50, Currency::JPY),
-            status: TransferStatus::SENT,
-            sentAt: new DateTimeImmutable('2024-01-17'),
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->createBatch([
-            'identifier' => $identifier,
-            'account' => $account,
-            'status' => SettlementStatus::PAID,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-            'paidAt' => new DateTimeImmutable('2024-01-17'),
-            'grossAmount' => new Money(100, Currency::JPY),
-            'transfer' => $transfer,
-        ]);
-    }
-
-    /**
-     * 異常系: 支払い済みステータスで送金済みでない転送を保持している場合は生成できないこと.
-     *
-     * @return void
-     */
-    public function testCannotConstructPaidWithUnsentTransfer(): void
-    {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $account = $this->createAccount();
-        $transfer = $this->createTransferMock(
-            identifier: $identifier,
-            account: $account,
-            amount: new Money(100, Currency::JPY),
-            status: TransferStatus::PENDING,
-            sentAt: null,
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->createBatch([
-            'identifier' => $identifier,
-            'account' => $account,
-            'status' => SettlementStatus::PAID,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-            'paidAt' => new DateTimeImmutable('2024-01-17'),
-            'grossAmount' => new Money(100, Currency::JPY),
-            'transfer' => $transfer,
-        ]);
-    }
-
-    /**
-     * 異常系: 支払い済みステータスで送金時刻が欠けた転送を保持している場合は生成できないこと.
-     *
-     * @return void
-     */
-    public function testCannotConstructPaidWithTransferWithoutSentAt(): void
-    {
-        $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $account = $this->createAccount();
-        $transfer = $this->createTransferMock(
-            identifier: $identifier,
-            account: $account,
-            amount: new Money(100, Currency::JPY),
-            status: TransferStatus::SENT,
-            sentAt: null,
-        );
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->createBatch([
-            'identifier' => $identifier,
-            'account' => $account,
-            'status' => SettlementStatus::PAID,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-            'paidAt' => new DateTimeImmutable('2024-01-17'),
-            'grossAmount' => new Money(100, Currency::JPY),
-            'transfer' => $transfer,
-        ]);
-    }
-
-    /**
      * 正常系: 売上追加から手数料適用、送金完了までの流れを通せること.
      *
      * @return void
      */
     public function testHappyPath(): void
     {
-        $account = $this->createAccount();
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $batch = $this->createBatch([
             'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
+            'monetizationAccountIdentifier' => $monetizationAccountIdentifier,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
         ]);
@@ -388,22 +214,14 @@ class SettlementBatchTest extends TestCase
 
         $batch->markProcessing(new DateTimeImmutable('2024-01-16'));
 
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(6300, Currency::JPY)
-        );
-        $batch->attachTransfer($transfer);
-
-        $transfer->markSent(new DateTimeImmutable('2024-01-17'));
-        $batch->markPaid($transfer);
+        $paidAt = new DateTimeImmutable('2024-01-17');
+        $batch->markPaid($paidAt);
 
         $this->assertSame(7000, $batch->grossAmount()->amount());
         $this->assertSame(700, $batch->feeAmount()->amount());
         $this->assertSame(6300, $batch->netAmount()->amount());
         $this->assertSame(SettlementStatus::PAID, $batch->status());
-        $this->assertEquals(new DateTimeImmutable('2024-01-17'), $batch->paidAt());
-        $this->assertSame($transfer, $batch->transfer());
+        $this->assertEquals($paidAt, $batch->paidAt());
     }
 
     /**
@@ -413,10 +231,10 @@ class SettlementBatchTest extends TestCase
      */
     public function testMarkedProcessingWhenInvalidStatus(): void
     {
-        $account = $this->createAccount();
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $batch = $this->createBatch([
             'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
+            'monetizationAccountIdentifier' => $monetizationAccountIdentifier,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
             'status' => SettlementStatus::PROCESSING,
@@ -427,202 +245,22 @@ class SettlementBatchTest extends TestCase
     }
 
     /**
-     * 異常系: 送金時に清算ステータスが処理中でない場合は、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testAttachTransferWhenInvalidStatus(): void
-    {
-        $account = $this->createAccount();
-        $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
-            'start' => new DateTimeImmutable('2024-01-01'),
-            'end' => new DateTimeImmutable('2024-01-15'),
-        ]);
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(6300, Currency::JPY),
-            TransferStatus::PENDING,
-        );
-        $this->expectException(DomainException::class);
-        $batch->attachTransfer($transfer);
-    }
-
-    /**
-     * 異常系: バッチIDが異なる場合は、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testAttachTransferWhenDifferentBatchIdentifier(): void
-    {
-        $account = $this->createAccount();
-        $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
-            'start' => new DateTimeImmutable('2024-01-01'),
-            'end' => new DateTimeImmutable('2024-01-15'),
-            'status' => SettlementStatus::PROCESSING,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-        ]);
-        $transfer = $this->createTransfer(
-            new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $account,
-            new Money(6300, Currency::JPY),
-            TransferStatus::PENDING,
-        );
-        $this->expectException(DomainException::class);
-        $batch->attachTransfer($transfer);
-    }
-
-    /**
-     * 異常系: アカウントIDが異なる場合は、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testAttachTransferWhenDifferentAccountIdentifier(): void
-    {
-        $account = $this->createAccount();
-        $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
-            'start' => new DateTimeImmutable('2024-01-01'),
-            'end' => new DateTimeImmutable('2024-01-15'),
-            'status' => SettlementStatus::PROCESSING,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-        ]);
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $this->createAccount(),
-            new Money(6300, Currency::JPY),
-        );
-        $this->expectException(DomainException::class);
-        $batch->attachTransfer($transfer);
-    }
-
-    /**
-     * 異常系: 送金額が異なる場合は、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testAttachTransferWhenDifferentCurrency(): void
-    {
-        $account = $this->createAccount();
-        $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
-            'start' => new DateTimeImmutable('2024-01-01'),
-            'end' => new DateTimeImmutable('2024-01-15'),
-            'status' => SettlementStatus::PROCESSING,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-        ]);
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(100, Currency::JPY),
-        );
-        $this->expectException(DomainException::class);
-        $batch->attachTransfer($transfer);
-    }
-
-    /**
      * 異常系: 送金処理中以外のバッチで支払い済みにしようとすると、例外がスローされること.
      *
      * @return void
      */
     public function testMarkedPaidWhenInvalidStatus(): void
     {
-        $account = $this->createAccount();
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $batch = $this->createBatch([
             'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
+            'monetizationAccountIdentifier' => $monetizationAccountIdentifier,
             'start' => new DateTimeImmutable('2024-01-01'),
             'end' => new DateTimeImmutable('2024-01-15'),
             'status' => SettlementStatus::PENDING,
         ]);
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(100, Currency::JPY),
-        );
         $this->expectException(DomainException::class);
-        $batch->markPaid($transfer);
-    }
-
-    /**
-     * 異常系: 送金ステータスが送金済みでない時に支払い済みに更新しようとすると、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testMarkedPaidWhenStillNotSent(): void
-    {
-        $account = $this->createAccount();
-        $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
-            'start' => new DateTimeImmutable('2024-01-01'),
-            'end' => new DateTimeImmutable('2024-01-15'),
-            'status' => SettlementStatus::PROCESSING,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-        ]);
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(100, Currency::JPY),
-            TransferStatus::PENDING
-        );
-        $this->expectException(DomainException::class);
-        $batch->markPaid($transfer);
-    }
-
-    /**
-     * 異常系: 送金時間がない時に支払い済みに更新しようとすると、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testMarkedPaidWhenNoExistSentAt(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->createTransfer(
-            status: TransferStatus::SENT,
-            sentAt: null,
-        );
-    }
-
-    /**
-     * 異常系: バッチに他の送金がアタッチされていた場合、例外がスローされること.
-     *
-     * @return void
-     */
-    public function testMarkedPaidWhenAlreadyAttachedTransfer(): void
-    {
-        $account = $this->createAccount();
-        $batch = $this->createBatch([
-            'identifier' => new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            'account' => $account,
-            'start' => new DateTimeImmutable('2024-01-01'),
-            'end' => new DateTimeImmutable('2024-01-15'),
-            'status' => SettlementStatus::PROCESSING,
-            'processedAt' => new DateTimeImmutable('2024-01-16'),
-        ]);
-        $transfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(100, Currency::JPY),
-            TransferStatus::SENT,
-            new DateTimeImmutable('2024-01-01'),
-        );
-        $anotherTransfer = $this->createTransfer(
-            $batch->settlementBatchIdentifier(),
-            $account,
-            new Money(0, Currency::JPY),
-            TransferStatus::SENT,
-            new DateTimeImmutable('2024-01-01'),
-        );
-        $batch->attachTransfer($anotherTransfer);
-        $this->expectException(DomainException::class);
-        $batch->markPaid($transfer);
+        $batch->markPaid(new DateTimeImmutable('2024-01-17'));
     }
 
     /**
@@ -652,22 +290,15 @@ class SettlementBatchTest extends TestCase
      */
     public function testFailWhenAlreadyPaid(): void
     {
-        $account = $this->createAccount();
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $identifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
         $batch = $this->createBatch([
             'identifier' => $identifier,
-            'account' => $account,
+            'monetizationAccountIdentifier' => $monetizationAccountIdentifier,
             'status' => SettlementStatus::PAID,
             'paidAt' => new DateTimeImmutable('2024-01-17'),
             'processedAt' => new DateTimeImmutable('2024-01-16'),
             'grossAmount' => new Money(100, Currency::JPY),
-            'transfer' => $this->createTransfer(
-                identifier: $identifier,
-                account: $account,
-                amount: new Money(100, Currency::JPY),
-                status: TransferStatus::SENT,
-                sentAt: new DateTimeImmutable('2024-01-17'),
-            ),
         ]);
 
         $this->expectException(DomainException::class);
@@ -701,7 +332,8 @@ class SettlementBatchTest extends TestCase
     {
         $batch = new SettlementBatch(
             new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $this->createAccount(),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
+            Currency::JPY,
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-15')
         );
@@ -720,7 +352,8 @@ class SettlementBatchTest extends TestCase
     {
         $batch = new SettlementBatch(
             new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $this->createAccount(),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
+            Currency::JPY,
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-15')
         );
@@ -740,7 +373,8 @@ class SettlementBatchTest extends TestCase
     ): SettlementBatch {
         return new SettlementBatch(
             $values['identifier'] ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $values['account'] ?? $this->createAccount(),
+            $values['monetizationAccountIdentifier'] ?? new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
+            $values['currency'] ?? Currency::JPY,
             $values['start'] ?? new DateTimeImmutable('2024-01-01'),
             $values['end'] ?? new DateTimeImmutable('2024-01-15'),
             $values['status'] ?? SettlementStatus::PENDING,
@@ -750,53 +384,6 @@ class SettlementBatchTest extends TestCase
             $values['paidAt'] ?? null,
             $values['failedAt'] ?? null,
             $values['failureReason'] ?? null,
-            $values['transfer'] ?? null,
-        );
-    }
-
-    private function createTransfer(
-        ?SettlementBatchIdentifier $identifier = null,
-        ?SettlementAccount $account = null,
-        ?Money $amount = null,
-        ?TransferStatus $status = null,
-        ?DateTimeImmutable $sentAt = null,
-    ): Transfer {
-        return new Transfer(
-            new TransferIdentifier(StrTestHelper::generateUuid()),
-            $identifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $account ?? $this->createAccount(),
-            $amount ?? new Money(1000, Currency::JPY),
-            $status ?? TransferStatus::PENDING,
-            $sentAt ?? null,
-        );
-    }
-
-    private function createTransferMock(
-        SettlementBatchIdentifier $identifier,
-        SettlementAccount $account,
-        Money $amount,
-        TransferStatus $status,
-        ?DateTimeImmutable $sentAt
-    ): Transfer {
-        $mock = $this->createMock(Transfer::class);
-        $mock->method('settlementBatchIdentifier')->willReturn($identifier);
-        $mock->method('settlementAccount')->willReturn($account);
-        $mock->method('amount')->willReturn($amount);
-        $mock->method('status')->willReturn($status);
-        $mock->method('sentAt')->willReturn($sentAt);
-
-        return $mock;
-    }
-
-    private function createAccount(): SettlementAccount
-    {
-        return new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '9876',
-            Currency::JPY,
-            true
         );
     }
 }

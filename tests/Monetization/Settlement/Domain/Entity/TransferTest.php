@@ -10,9 +10,8 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
+use Source\Monetization\Settlement\Domain\ValueObject\StripeTransferId;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Shared\Domain\ValueObject\Currency;
@@ -30,55 +29,71 @@ class TransferTest extends TestCase
     {
         $transferIdentifier = new TransferIdentifier(StrTestHelper::generateUuid());
         $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $settlementAccount = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::JPY,
-            true
-        );
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $amount = new Money(1000, Currency::JPY);
         $status = TransferStatus::SENT;
         $sentAt = new DateTimeImmutable('now');
+        $stripeTransferId = new StripeTransferId('tr_1234567890abcdefghijklmn');
         $transfer = $this->createTransfer(
             $transferIdentifier,
             $settlementBatchIdentifier,
-            $settlementAccount,
+            $monetizationAccountIdentifier,
             $amount,
             $status,
             $sentAt,
+            stripeTransferId: $stripeTransferId,
         );
         $this->assertSame($transferIdentifier, $transfer->transferIdentifier());
-        $this->assertSame($settlementAccount, $transfer->settlementAccount());
+        $this->assertSame($monetizationAccountIdentifier, $transfer->monetizationAccountIdentifier());
         $this->assertSame($amount, $transfer->amount());
         $this->assertSame($status, $transfer->status());
         $this->assertSame($sentAt, $transfer->sentAt());
+        $this->assertSame($stripeTransferId, $transfer->stripeTransferId());
         $this->assertNull($transfer->failedAt());
         $this->assertNull($transfer->failureReason());
     }
 
     /**
-     * 異常系: 送金通貨と清算口座の受取通貨が異なる場合、例外がスローされること.
+     * 正常系: StripeTransferIdがnullでも作成できること.
      *
      * @return void
      */
-    public function testWhenDifferentCurrency(): void
+    public function testConstructWithoutStripeTransferId(): void
     {
-        $settlementAccount = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::KRW,
-            true
+        $transfer = $this->createTransfer();
+        $this->assertNull($transfer->stripeTransferId());
+    }
+
+    /**
+     * 正常系: recordStripeTransferIdでStripeTransferIdを記録できること.
+     *
+     * @return void
+     */
+    public function testRecordStripeTransferId(): void
+    {
+        $transfer = $this->createTransfer();
+        $stripeTransferId = new StripeTransferId('tr_1234567890abcdefghijklmn');
+
+        $transfer->recordStripeTransferId($stripeTransferId);
+
+        $this->assertSame($stripeTransferId, $transfer->stripeTransferId());
+    }
+
+    /**
+     * 異常系: StripeTransferIdが既に設定されている場合、上書きできないこと.
+     *
+     * @return void
+     */
+    public function testCannotOverwriteStripeTransferId(): void
+    {
+        $transfer = $this->createTransfer(
+            stripeTransferId: new StripeTransferId('tr_original12345678901234'),
         );
-        $amount = new Money(1000, Currency::JPY);
+
         $this->expectException(DomainException::class);
-        $this->createTransfer(
-            settlementAccount: $settlementAccount,
-            amount: $amount,
-        );
+        $this->expectExceptionMessage('Stripe transfer ID already recorded.');
+
+        $transfer->recordStripeTransferId(new StripeTransferId('tr_new123456789012345678'));
     }
 
     /**
@@ -261,29 +276,24 @@ class TransferTest extends TestCase
     private function createTransfer(
         ?TransferIdentifier $transferIdentifier = null,
         ?SettlementBatchIdentifier $settlementBatchIdentifier = null,
-        ?SettlementAccount $settlementAccount = null,
+        ?MonetizationAccountIdentifier $monetizationAccountIdentifier = null,
         ?Money $amount = null,
         ?TransferStatus $transferStatus = null,
         ?DateTimeImmutable $sentAt = null,
         ?DateTimeImmutable $failedAt = null,
         ?string $failureReason = null,
+        ?StripeTransferId $stripeTransferId = null,
     ): Transfer {
         return new Transfer(
             $transferIdentifier ?? new TransferIdentifier(StrTestHelper::generateUuid()),
             $settlementBatchIdentifier ?? new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $settlementAccount ?? new SettlementAccount(
-                new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-                new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-                'KBank',
-                '6789',
-                Currency::JPY,
-                true
-            ),
+            $monetizationAccountIdentifier ?? new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $amount ?? new Money(1000, Currency::JPY),
             $transferStatus ?? TransferStatus::PENDING,
             $sentAt ?? null,
             $failedAt ?? null,
             $failureReason ?? null,
+            $stripeTransferId ?? null,
         );
     }
 }

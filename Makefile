@@ -1,5 +1,5 @@
 # PHPUnit and Database Commands
-.PHONY: test test-no-db check db-up db-down db-restart db-logs db-shell wait-for-test-db cs-fix phpstan mail-up mail-down
+.PHONY: test test-no-db check db-up db-down db-restart db-logs db-shell wait-for-test-db cs-fix phpstan mail-up mail-down process-due-transfers
 
 PHPUNIT=./vendor/bin/phpunit
 
@@ -91,6 +91,12 @@ phpstan: ## Run PHPStan static analysis
 # Fix code style
 cs-fix: ## Fix code style using PHP CS Fixer
 	docker-compose run --rm php composer cs-fix
+
+# Process due transfers. Usage: `make process-due-transfers [date=2024-02-10] [dry-run=1]`
+process-due-transfers: ## Execute due transfer batch processing
+	docker-compose up -d testing_db redis
+	$(MAKE) wait-for-test-db
+	docker-compose run --rm php php artisan settlement:process-due-transfers $(if $(date),--date=$(date)) $(if $(dry-run),--dry-run)
 
 help: ## Show this help message
 	@echo 'Usage: make [target] [options]'

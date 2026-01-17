@@ -7,10 +7,10 @@ namespace Source\Monetization\Settlement\Domain\Entity;
 use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementStatus;
-use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
+use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 
 class SettlementBatch
@@ -23,11 +23,11 @@ class SettlementBatch
     private ?DateTimeImmutable $paidAt;
     private ?DateTimeImmutable $failedAt;
     private ?string $failureReason;
-    private ?Transfer $transfer;
 
     public function __construct(
         private readonly SettlementBatchIdentifier $settlementBatchIdentifier,
-        private readonly SettlementAccount $settlementAccount,
+        private readonly MonetizationAccountIdentifier $monetizationAccountIdentifier,
+        private readonly Currency $currency,
         private readonly DateTimeImmutable $periodStart,
         private readonly DateTimeImmutable $periodEnd,
         SettlementStatus $status = SettlementStatus::PENDING,
@@ -37,23 +37,21 @@ class SettlementBatch
         ?DateTimeImmutable $paidAt = null,
         ?DateTimeImmutable $failedAt = null,
         ?string $failureReason = null,
-        ?Transfer $transfer = null,
     ) {
         $this->assertPeriod($periodStart, $periodEnd);
-        $this->grossAmount = $grossAmount ?? new Money(0, $this->settlementAccount->currency());
-        $this->feeAmount = $feeAmount ?? new Money(0, $this->settlementAccount->currency());
+        $this->grossAmount = $grossAmount ?? new Money(0, $this->currency);
+        $this->feeAmount = $feeAmount ?? new Money(0, $this->currency);
         $this->assertCurrency($this->grossAmount);
         $this->assertCurrency($this->feeAmount);
         $this->assertFeeNotOverGross($this->feeAmount, $this->grossAmount);
         $this->netAmount = $this->grossAmount->subtract($this->feeAmount);
-        $this->assertStatusConsistency($status, $processedAt, $paidAt, $failedAt, $failureReason, $transfer);
+        $this->assertStatusConsistency($status, $processedAt, $paidAt, $failedAt, $failureReason);
 
         $this->status = $status;
         $this->processedAt = $processedAt;
         $this->paidAt = $paidAt;
         $this->failedAt = $failedAt;
         $this->failureReason = $failureReason === null ? null : trim($failureReason);
-        $this->transfer = $transfer;
     }
 
     public function settlementBatchIdentifier(): SettlementBatchIdentifier
@@ -61,9 +59,14 @@ class SettlementBatch
         return $this->settlementBatchIdentifier;
     }
 
-    public function settlementAccount(): SettlementAccount
+    public function monetizationAccountIdentifier(): MonetizationAccountIdentifier
     {
-        return $this->settlementAccount;
+        return $this->monetizationAccountIdentifier;
+    }
+
+    public function currency(): Currency
+    {
+        return $this->currency;
     }
 
     public function periodStart(): DateTimeImmutable
@@ -116,11 +119,6 @@ class SettlementBatch
         return $this->failureReason;
     }
 
-    public function transfer(): ?Transfer
-    {
-        return $this->transfer;
-    }
-
     public function recordRevenue(Money $revenue): void
     {
         $this->assertPending();
@@ -147,43 +145,13 @@ class SettlementBatch
         $this->status = SettlementStatus::PROCESSING;
     }
 
-    public function attachTransfer(Transfer $transfer): void
-    {
-        if ($this->status !== SettlementStatus::PROCESSING) {
-            throw new DomainException('Transfer can be attached only after processing.');
-        }
-        if ($transfer->settlementBatchIdentifier() !== $this->settlementBatchIdentifier) {
-            throw new DomainException('Transfer does not belong to this batch.');
-        }
-        if ($transfer->settlementAccount()->settlementAccountIdentifier() !== $this->settlementAccount->settlementAccountIdentifier()) {
-            throw new DomainException('Transfer account does not match settlement account.');
-        }
-        if (! $transfer->amount()->isSameCurrency($this->netAmount) ||
-            $transfer->amount()->amount() !== $this->netAmount->amount()
-        ) {
-            throw new DomainException('Transfer amount must match net settlement amount.');
-        }
-
-        $this->transfer = $transfer;
-    }
-
-    public function markPaid(Transfer $transfer): void
+    public function markPaid(DateTimeImmutable $paidAt): void
     {
         if ($this->status !== SettlementStatus::PROCESSING) {
             throw new DomainException('Batch must be processing before marking as paid.');
         }
-        if ($transfer->status() !== TransferStatus::SENT) {
-            throw new DomainException('Transfer must be sent before marking batch as paid.');
-        }
-        if ($transfer->sentAt() === null) {
-            throw new DomainException('Transfer sent timestamp is required.');
-        }
-        if ($this->transfer !== null && $this->transfer !== $transfer) {
-            throw new DomainException('Different transfer already attached.');
-        }
-        $this->attachTransfer($transfer);
 
-        $this->paidAt = $transfer->sentAt();
+        $this->paidAt = $paidAt;
         $this->status = SettlementStatus::PAID;
     }
 
@@ -191,9 +159,6 @@ class SettlementBatch
     {
         if ($this->status === SettlementStatus::PAID) {
             throw new DomainException('Paid batch cannot be marked as failed.');
-        }
-        if ($this->transfer !== null) {
-            throw new DomainException('Failed batch cannot retain transfer.');
         }
         if (trim($reason) === '') {
             throw new InvalidArgumentException('Failure reason must not be empty.');
@@ -218,7 +183,7 @@ class SettlementBatch
 
     private function assertCurrency(Money $money): void
     {
-        if ($money->currency() !== $this->settlementAccount->currency()) {
+        if ($money->currency() !== $this->currency) {
             throw new DomainException('Currency mismatch for settlement batch.');
         }
     }
@@ -242,14 +207,13 @@ class SettlementBatch
         ?DateTimeImmutable $processedAt,
         ?DateTimeImmutable $paidAt,
         ?DateTimeImmutable $failedAt,
-        ?string $failureReason,
-        ?Transfer $transfer
+        ?string $failureReason
     ): void {
         $normalizedReason = $failureReason === null ? null : trim($failureReason);
 
         if ($status === SettlementStatus::PENDING) {
-            if ($processedAt !== null || $paidAt !== null || $failedAt !== null || $normalizedReason !== null || $transfer !== null) {
-                throw new InvalidArgumentException('Pending batch cannot have timestamps, failure reason, or transfer.');
+            if ($processedAt !== null || $paidAt !== null || $failedAt !== null || $normalizedReason !== null) {
+                throw new InvalidArgumentException('Pending batch cannot have timestamps or failure reason.');
             }
 
             return;
@@ -262,9 +226,6 @@ class SettlementBatch
             if ($paidAt !== null || $failedAt !== null || $normalizedReason !== null) {
                 throw new InvalidArgumentException('Processing batch cannot be paid or failed.');
             }
-            if ($transfer !== null) {
-                $this->assertAttachedTransfer($transfer);
-            }
 
             return;
         }
@@ -276,10 +237,6 @@ class SettlementBatch
             if ($failedAt !== null || $normalizedReason !== null) {
                 throw new InvalidArgumentException('Paid batch cannot have failure details.');
             }
-            if ($transfer === null) {
-                throw new InvalidArgumentException('Paid batch requires transfer.');
-            }
-            $this->assertAttachedTransfer($transfer, true);
 
             return;
         }
@@ -293,28 +250,6 @@ class SettlementBatch
         }
         if ($paidAt !== null) {
             throw new InvalidArgumentException('Failed batch cannot have paidAt timestamp.');
-        }
-        if ($transfer !== null) {
-            throw new InvalidArgumentException('Failed batch cannot have transfer.');
-        }
-    }
-
-    private function assertAttachedTransfer(Transfer $transfer, bool $mustBeSent = false): void
-    {
-        if ($transfer->settlementBatchIdentifier() !== $this->settlementBatchIdentifier) {
-            throw new InvalidArgumentException('Transfer does not belong to this batch.');
-        }
-        if ($transfer->settlementAccount()->settlementAccountIdentifier() !== $this->settlementAccount->settlementAccountIdentifier()) {
-            throw new InvalidArgumentException('Transfer account does not match settlement account.');
-        }
-        if (! $transfer->amount()->isSameCurrency($this->netAmount) || $transfer->amount()->amount() !== $this->netAmount->amount()) {
-            throw new InvalidArgumentException('Transfer amount must match net settlement amount.');
-        }
-        if ($mustBeSent && $transfer->status() !== TransferStatus::SENT) {
-            throw new InvalidArgumentException('Paid batch requires sent transfer.');
-        }
-        if ($mustBeSent && $transfer->sentAt() === null) {
-            throw new InvalidArgumentException('Paid batch requires transfer sent timestamp.');
         }
     }
 }

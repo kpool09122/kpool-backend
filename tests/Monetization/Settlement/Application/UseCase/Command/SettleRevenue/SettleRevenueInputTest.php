@@ -8,8 +8,6 @@ use DateTimeImmutable;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInput;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementInterval;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementScheduleIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
@@ -27,16 +25,9 @@ class SettleRevenueInputTest extends TestCase
      */
     public function test__construct(): void
     {
-        $account = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::JPY,
-            true
-        );
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
@@ -52,7 +43,6 @@ class SettleRevenueInputTest extends TestCase
         $periodEnd = new DateTimeImmutable('2024-01-31');
 
         $input = new SettleRevenueInput(
-            $account,
             $schedule,
             $paidAmounts,
             $gatewayFeeRate,
@@ -62,7 +52,6 @@ class SettleRevenueInputTest extends TestCase
             $periodEnd
         );
 
-        $this->assertSame($account, $input->settlementAccount());
         $this->assertSame($schedule, $input->settlementSchedule());
         $this->assertSame($paidAmounts, $input->paidAmounts());
         $this->assertSame($gatewayFeeRate, $input->gatewayFeeRate());
@@ -79,23 +68,15 @@ class SettleRevenueInputTest extends TestCase
      */
     public function test__constructWithoutFixedFee(): void
     {
-        $account = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::JPY,
-            true
-        );
         $schedule = new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
         );
 
         $input = new SettleRevenueInput(
-            $account,
             $schedule,
             [new Money(1000, Currency::JPY)],
             new Percentage(1),

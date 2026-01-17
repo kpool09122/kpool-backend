@@ -6,7 +6,6 @@ namespace Source\Monetization\Settlement\Application\UseCase\Command\SettleReven
 
 use DateTimeImmutable;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Money;
 
@@ -16,7 +15,6 @@ readonly class SettleRevenueInput implements SettleRevenueInputPort
      * @param Money[] $paidAmounts
      */
     public function __construct(
-        private SettlementAccount $settlementAccount,
         private SettlementSchedule $settlementSchedule,
         private array $paidAmounts,
         private Percentage $gatewayFeeRate,
@@ -25,11 +23,6 @@ readonly class SettleRevenueInput implements SettleRevenueInputPort
         private DateTimeImmutable $periodStart,
         private DateTimeImmutable $periodEnd,
     ) {
-    }
-
-    public function settlementAccount(): SettlementAccount
-    {
-        return $this->settlementAccount;
     }
 
     public function settlementSchedule(): SettlementSchedule

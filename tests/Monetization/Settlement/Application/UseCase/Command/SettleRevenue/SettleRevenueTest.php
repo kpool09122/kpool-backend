@@ -13,10 +13,10 @@ use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\Set
 use Source\Monetization\Settlement\Domain\Entity\SettlementBatch;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
+use Source\Monetization\Settlement\Domain\Repository\SettlementBatchRepositoryInterface;
+use Source\Monetization\Settlement\Domain\Repository\TransferRepositoryInterface;
 use Source\Monetization\Settlement\Domain\Service\SettlementResult;
 use Source\Monetization\Settlement\Domain\Service\SettlementServiceInterface;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementInterval;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementScheduleIdentifier;
@@ -37,8 +37,8 @@ class SettleRevenueTest extends TestCase
      */
     public function testProcessSettlesRevenue(): void
     {
-        $account = $this->createAccount();
-        $schedule = $this->createSchedule();
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
+        $schedule = $this->createSchedule($monetizationAccountId);
         $paidAmounts = [
             new Money(5000, Currency::JPY),
             new Money(3000, Currency::JPY),
@@ -50,7 +50,6 @@ class SettleRevenueTest extends TestCase
         $periodEnd = new DateTimeImmutable('2024-01-31');
 
         $input = new SettleRevenueInput(
-            $account,
             $schedule,
             $paidAmounts,
             $gatewayFeeRate,
@@ -60,15 +59,14 @@ class SettleRevenueTest extends TestCase
             $periodEnd
         );
 
-        $expectedBatch = $this->createBatch($account);
-        $expectedTransfer = $this->createTransfer($expectedBatch, $account);
+        $expectedBatch = $this->createBatch($monetizationAccountId);
+        $expectedTransfer = $this->createTransfer($expectedBatch, $monetizationAccountId);
         $expectedResult = new SettlementResult($expectedBatch, $expectedTransfer);
 
         $settlementService = Mockery::mock(SettlementServiceInterface::class);
         $settlementService->shouldReceive('settle')
             ->once()
             ->withArgs(function (
-                SettlementAccount $acc,
                 SettlementSchedule $sched,
                 array $amounts,
                 Percentage $gwFee,
@@ -77,12 +75,11 @@ class SettleRevenueTest extends TestCase
                 DateTimeImmutable $start,
                 DateTimeImmutable $end,
                 DateTimeImmutable $current
-            ) use ($account, $schedule, $paidAmounts, $gatewayFeeRate, $platformFeeRate, $fixedFee, $periodStart, $periodEnd) {
+            ) use ($schedule, $paidAmounts, $gatewayFeeRate, $platformFeeRate, $fixedFee, $periodStart, $periodEnd) {
                 // $current is verified by type hint (DateTimeImmutable)
                 unset($current);
 
-                return $acc === $account
-                    && $sched === $schedule
+                return $sched === $schedule
                     && $amounts === $paidAmounts
                     && $gwFee === $gatewayFeeRate
                     && $pfFee === $platformFeeRate
@@ -92,7 +89,19 @@ class SettleRevenueTest extends TestCase
             })
             ->andReturn($expectedResult);
 
+        $settlementBatchRepository = Mockery::mock(SettlementBatchRepositoryInterface::class);
+        $settlementBatchRepository->shouldReceive('save')
+            ->once()
+            ->with($expectedBatch);
+
+        $transferRepository = Mockery::mock(TransferRepositoryInterface::class);
+        $transferRepository->shouldReceive('save')
+            ->once()
+            ->with($expectedTransfer);
+
         $this->app->instance(SettlementServiceInterface::class, $settlementService);
+        $this->app->instance(SettlementBatchRepositoryInterface::class, $settlementBatchRepository);
+        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
 
         $useCase = $this->app->make(SettleRevenueInterface::class);
 
@@ -103,44 +112,34 @@ class SettleRevenueTest extends TestCase
         $this->assertSame($expectedTransfer, $result->transfer());
     }
 
-    private function createAccount(): SettlementAccount
-    {
-        return new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::JPY,
-            true
-        );
-    }
-
-    private function createSchedule(): SettlementSchedule
+    private function createSchedule(MonetizationAccountIdentifier $monetizationAccountIdentifier): SettlementSchedule
     {
         return new SettlementSchedule(
             new SettlementScheduleIdentifier(StrTestHelper::generateUuid()),
+            $monetizationAccountIdentifier,
             new DateTimeImmutable('2024-01-10'),
             SettlementInterval::MONTHLY,
             5
         );
     }
 
-    private function createBatch(SettlementAccount $account): SettlementBatch
+    private function createBatch(MonetizationAccountIdentifier $monetizationAccountIdentifier): SettlementBatch
     {
         return new SettlementBatch(
             new SettlementBatchIdentifier(StrTestHelper::generateUuid()),
-            $account,
+            $monetizationAccountIdentifier,
+            Currency::JPY,
             new DateTimeImmutable('2024-01-01'),
             new DateTimeImmutable('2024-01-31'),
         );
     }
 
-    private function createTransfer(SettlementBatch $batch, SettlementAccount $account): Transfer
+    private function createTransfer(SettlementBatch $batch, MonetizationAccountIdentifier $monetizationAccountIdentifier): Transfer
     {
         return new Transfer(
             new TransferIdentifier(StrTestHelper::generateUuid()),
             $batch->settlementBatchIdentifier(),
-            $account,
+            $monetizationAccountIdentifier,
             new Money(7260, Currency::JPY),
         );
     }

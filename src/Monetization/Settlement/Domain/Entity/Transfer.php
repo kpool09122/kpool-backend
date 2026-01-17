@@ -7,8 +7,9 @@ namespace Source\Monetization\Settlement\Domain\Entity;
 use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
+use Source\Monetization\Settlement\Domain\ValueObject\StripeTransferId;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Shared\Domain\ValueObject\Money;
@@ -19,23 +20,25 @@ class Transfer
     private ?DateTimeImmutable $sentAt;
     private ?DateTimeImmutable $failedAt;
     private ?string $failureReason;
+    private ?StripeTransferId $stripeTransferId;
 
     public function __construct(
         private readonly TransferIdentifier $transferIdentifier,
         private readonly SettlementBatchIdentifier $settlementBatchIdentifier,
-        private readonly SettlementAccount $settlementAccount,
+        private readonly MonetizationAccountIdentifier $monetizationAccountIdentifier,
         private readonly Money $amount,
         TransferStatus $status = TransferStatus::PENDING,
         ?DateTimeImmutable $sentAt = null,
         ?DateTimeImmutable $failedAt = null,
-        ?string $failureReason = null
+        ?string $failureReason = null,
+        ?StripeTransferId $stripeTransferId = null
     ) {
-        $this->assertCurrency($amount);
         $this->assertStatusConsistency($status, $sentAt, $failedAt, $failureReason);
         $this->status = $status;
         $this->sentAt = $sentAt;
         $this->failedAt = $failedAt;
         $this->failureReason = $failureReason === null ? null : trim($failureReason);
+        $this->stripeTransferId = $stripeTransferId;
     }
 
     public function transferIdentifier(): TransferIdentifier
@@ -48,9 +51,9 @@ class Transfer
         return $this->settlementBatchIdentifier;
     }
 
-    public function settlementAccount(): SettlementAccount
+    public function monetizationAccountIdentifier(): MonetizationAccountIdentifier
     {
-        return $this->settlementAccount;
+        return $this->monetizationAccountIdentifier;
     }
 
     public function amount(): Money
@@ -78,6 +81,20 @@ class Transfer
         return $this->failureReason;
     }
 
+    public function stripeTransferId(): ?StripeTransferId
+    {
+        return $this->stripeTransferId;
+    }
+
+    public function recordStripeTransferId(StripeTransferId $stripeTransferId): void
+    {
+        if ($this->stripeTransferId !== null) {
+            throw new DomainException('Stripe transfer ID already recorded.');
+        }
+
+        $this->stripeTransferId = $stripeTransferId;
+    }
+
     public function markSent(DateTimeImmutable $sentAt): void
     {
         if ($this->status !== TransferStatus::PENDING) {
@@ -100,13 +117,6 @@ class Transfer
         $this->status = TransferStatus::FAILED;
         $this->failureReason = trim($reason);
         $this->failedAt = $failedAt;
-    }
-
-    private function assertCurrency(Money $amount): void
-    {
-        if ($amount->currency() !== $this->settlementAccount->currency()) {
-            throw new DomainException('Transfer currency must match settlement account.');
-        }
     }
 
     private function assertStatusConsistency(

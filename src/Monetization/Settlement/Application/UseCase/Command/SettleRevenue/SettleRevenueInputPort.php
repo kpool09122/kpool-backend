@@ -6,14 +6,11 @@ namespace Source\Monetization\Settlement\Application\UseCase\Command\SettleReven
 
 use DateTimeImmutable;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\Money;
 
 interface SettleRevenueInputPort
 {
-    public function settlementAccount(): SettlementAccount;
-
     public function settlementSchedule(): SettlementSchedule;
 
     /**

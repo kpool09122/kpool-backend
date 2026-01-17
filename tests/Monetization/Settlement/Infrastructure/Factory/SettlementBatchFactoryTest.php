@@ -8,8 +8,6 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Currency;
 use Tests\Helper\StrTestHelper;
@@ -25,21 +23,16 @@ class SettlementBatchFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $account = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'KBank',
-            '1234',
-            Currency::USD,
-            true
-        );
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
+        $currency = Currency::USD;
         $start = new DateTimeImmutable('now');
         $end = new DateTimeImmutable('now');
 
         $factory = $this->app->make(SettlementBatchFactoryInterface::class);
-        $batch = $factory->create($account, $start, $end);
+        $batch = $factory->create($monetizationAccountId, $currency, $start, $end);
         $this->assertTrue(UuidValidator::isValid((string)$batch->settlementBatchIdentifier()));
-        $this->assertSame($account, $batch->settlementAccount());
+        $this->assertSame((string)$monetizationAccountId, (string)$batch->monetizationAccountIdentifier());
+        $this->assertSame($currency, $batch->currency());
         $this->assertSame($start, $batch->periodStart());
         $this->assertSame($end, $batch->periodEnd());
     }

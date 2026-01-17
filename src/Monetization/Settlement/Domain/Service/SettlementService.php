@@ -9,8 +9,8 @@ use DomainException;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
 use Source\Monetization\Settlement\Domain\Factory\TransferFactoryInterface;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
 use Source\Monetization\Shared\ValueObject\Percentage;
+use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 
 readonly class SettlementService implements SettlementServiceInterface
@@ -31,7 +31,6 @@ readonly class SettlementService implements SettlementServiceInterface
      * @param Money[] $paidAmounts
      */
     public function settle(
-        SettlementAccount $account,
         SettlementSchedule $schedule,
         array $paidAmounts,
         Percentage $gatewayFeeRate,
@@ -45,13 +44,16 @@ readonly class SettlementService implements SettlementServiceInterface
             throw new DomainException('No paid amounts to settle.');
         }
 
-        $gross = $this->sumGross($account, $paidAmounts);
+        $currency = $paidAmounts[0]->currency();
+        $gross = $this->sumGross($currency, $paidAmounts);
 
         if (! $schedule->isDue($currentDate, $gross)) {
             throw new DomainException('Settlement schedule not due.');
         }
 
-        $batch = $this->batchFactory->create($account, $periodStart, $periodEnd);
+        $monetizationAccountIdentifier = $schedule->monetizationAccountIdentifier();
+
+        $batch = $this->batchFactory->create($monetizationAccountIdentifier, $currency, $periodStart, $periodEnd);
         foreach ($paidAmounts as $amount) {
             $batch->recordRevenue($amount);
         }
@@ -62,10 +64,9 @@ readonly class SettlementService implements SettlementServiceInterface
 
         $transfer = $this->transferFactory->create(
             $batch->settlementBatchIdentifier(),
-            $account,
+            $monetizationAccountIdentifier,
             $batch->netAmount()
         );
-        $batch->attachTransfer($transfer);
 
         $schedule->advance();
 
@@ -75,12 +76,12 @@ readonly class SettlementService implements SettlementServiceInterface
     /**
      * @param Money[] $paidAmounts
      */
-    private function sumGross(SettlementAccount $account, array $paidAmounts): Money
+    private function sumGross(Currency $currency, array $paidAmounts): Money
     {
-        $gross = new Money(0, $account->currency());
+        $gross = new Money(0, $currency);
         foreach ($paidAmounts as $amount) {
             if (! $amount->isSameCurrency($gross)) {
-                throw new DomainException('Paid amount currency must match settlement account.');
+                throw new DomainException('Paid amount currency mismatch.');
             }
             $gross = $gross->add($amount);
         }

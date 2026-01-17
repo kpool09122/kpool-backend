@@ -7,8 +7,6 @@ namespace Monetization\Settlement\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Domain\Factory\TransferFactoryInterface;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccount;
-use Source\Monetization\Settlement\Domain\ValueObject\SettlementAccountIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\SettlementBatchIdentifier;
 use Source\Monetization\Settlement\Domain\ValueObject\TransferStatus;
 use Source\Shared\Domain\ValueObject\Currency;
@@ -27,23 +25,16 @@ class TransferFactoryTest extends TestCase
     public function testCreate(): void
     {
         $settlementBatchIdentifier = new SettlementBatchIdentifier(StrTestHelper::generateUuid());
-        $settlementAccount = new SettlementAccount(
-            new SettlementAccountIdentifier(StrTestHelper::generateUuid()),
-            new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            'kBank',
-            '0124',
-            Currency::KRW,
-            true,
-        );
+        $monetizationAccountId = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(0, Currency::KRW);
         $transferFactory = $this->app->make(TransferFactoryInterface::class);
         $transfer = $transferFactory->create(
             $settlementBatchIdentifier,
-            $settlementAccount,
+            $monetizationAccountId,
             $money,
         );
         $this->assertSame($settlementBatchIdentifier, $transfer->settlementBatchIdentifier());
-        $this->assertSame($settlementAccount, $transfer->settlementAccount());
+        $this->assertSame((string)$monetizationAccountId, (string)$transfer->monetizationAccountIdentifier());
         $this->assertSame($money, $transfer->amount());
         $this->assertSame(TransferStatus::PENDING, $transfer->status());
         $this->assertNull($transfer->sentAt());
