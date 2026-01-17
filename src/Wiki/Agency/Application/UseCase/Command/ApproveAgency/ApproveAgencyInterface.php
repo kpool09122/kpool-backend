@@ -6,21 +6,21 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
-use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 interface ApproveAgencyInterface
 {
     /**
      * @param ApproveAgencyInputPort $input
-     * @return DraftAgency
+     * @param ApproveAgencyOutputPort $output
+     * @return void
      * @throws AgencyNotFoundException
      * @throws ExistsApprovedButNotTranslatedAgencyException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(ApproveAgencyInputPort $input): DraftAgency;
+    public function process(ApproveAgencyInputPort $input, ApproveAgencyOutputPort $output): void;
 }

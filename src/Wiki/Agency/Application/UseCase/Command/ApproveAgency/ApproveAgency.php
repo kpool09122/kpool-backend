@@ -6,16 +6,15 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
-use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
@@ -36,14 +35,14 @@ readonly class ApproveAgency implements ApproveAgencyInterface
 
     /**
      * @param ApproveAgencyInputPort $input
-     * @return DraftAgency
+     * @param ApproveAgencyOutputPort $output
+     * @return void
      * @throws AgencyNotFoundException
-     * @throws ExistsApprovedButNotTranslatedAgencyException
+     * @throws DisallowedException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function process(ApproveAgencyInputPort $input): DraftAgency
+    public function process(ApproveAgencyInputPort $input, ApproveAgencyOutputPort $output): void
     {
         $agency = $this->agencyRepository->findById($input->agencyIdentifier());
 
@@ -63,7 +62,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         );
 
         if (! $this->policyEvaluator->evaluate($principal, Action::APPROVE, $resourceIdentifier)) {
-            throw new UnauthorizedException();
+            throw new DisallowedException();
         }
 
         if ($agency->status() !== ApprovalStatus::UnderReview) {
@@ -97,6 +96,6 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         );
         $this->agencyHistoryRepository->save($history);
 
-        return $agency;
+        $output->setDraftAgency($agency);
     }
 }

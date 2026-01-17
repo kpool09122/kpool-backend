@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgenc
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyInterface;
+use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyOutput;
 use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
@@ -29,9 +30,9 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -67,7 +68,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
@@ -81,7 +82,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -123,9 +123,11 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $agency = $approveAgency->process($input);
-        $this->assertNotSame($dummyApproveAgency->status, $agency->status());
-        $this->assertSame(ApprovalStatus::Approved, $agency->status());
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
+        $result = $output->toArray();
+        $this->assertNotSame($dummyApproveAgency->status->value, $result['status']);
+        $this->assertSame(ApprovalStatus::Approved->value, $result['status']);
     }
 
     /**
@@ -134,7 +136,7 @@ class ApproveAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundAgency(): void
@@ -142,11 +144,9 @@ class ApproveAgencyTest extends TestCase
         $dummyApproveAgency = $this->createDummyApproveAgency();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -170,7 +170,8 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->expectException(AgencyNotFoundException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -180,7 +181,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -190,7 +191,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -217,7 +217,8 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->expectException(PrincipalNotFoundException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -226,7 +227,7 @@ class ApproveAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testInvalidStatus(): void
@@ -238,7 +239,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -265,7 +265,8 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $this->expectException(InvalidStatusException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -275,7 +276,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testHasApprovedButNotTranslatedAgency(): void
@@ -287,7 +288,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -319,7 +319,8 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
         $this->expectException(ExistsApprovedButNotTranslatedAgencyException::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -340,7 +341,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -368,9 +368,10 @@ class ApproveAgencyTest extends TestCase
 
         $this->setPolicyEvaluatorResult(false);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -380,7 +381,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
@@ -394,7 +395,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -437,9 +437,11 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $result = $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
+        $this->assertSame(ApprovalStatus::Approved->value, $result['status']);
     }
 
     /**
@@ -461,7 +463,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -489,9 +490,10 @@ class ApproveAgencyTest extends TestCase
 
         $this->setPolicyEvaluatorResult(false);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -501,7 +503,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithAgencyActor(): void
@@ -517,7 +519,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -560,9 +561,11 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $result = $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
+        $this->assertSame(ApprovalStatus::Approved->value, $result['status']);
     }
 
     /**
@@ -585,7 +588,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -613,9 +615,10 @@ class ApproveAgencyTest extends TestCase
 
         $this->setPolicyEvaluatorResult(false);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -625,7 +628,7 @@ class ApproveAgencyTest extends TestCase
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
      * @throws InvalidStatusException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
@@ -639,7 +642,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -682,9 +684,11 @@ class ApproveAgencyTest extends TestCase
         $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
 
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $result = $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame(ApprovalStatus::Approved, $result->status());
+        $this->assertSame(ApprovalStatus::Approved->value, $result['status']);
     }
 
     /**
@@ -705,7 +709,6 @@ class ApproveAgencyTest extends TestCase
 
         $input = new ApproveAgencyInput(
             $dummyApproveAgency->agencyIdentifier,
-            $dummyApproveAgency->publishedAgencyIdentifier,
             $principalIdentifier,
         );
 
@@ -733,9 +736,10 @@ class ApproveAgencyTest extends TestCase
 
         $this->setPolicyEvaluatorResult(false);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $approveAgency = $this->app->make(ApproveAgencyInterface::class);
-        $approveAgency->process($input);
+        $output = new ApproveAgencyOutput();
+        $approveAgency->process($input, $output);
     }
 
     /**
@@ -743,6 +747,7 @@ class ApproveAgencyTest extends TestCase
      *
      * @param string|null $agencyId
      * @param ApprovalStatus $status
+     * @param PrincipalIdentifier|null $operatorIdentifier
      * @return ApproveAgencyTestData
      */
     private function createDummyApproveAgency(

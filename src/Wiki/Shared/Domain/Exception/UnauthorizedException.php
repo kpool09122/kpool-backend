@@ -6,6 +6,9 @@ namespace Source\Wiki\Shared\Domain\Exception;
 
 use Exception;
 
+/**
+ * @deprecated
+ */
 class UnauthorizedException extends Exception
 {
     public function __construct(string $message = 'Unauthorized action.', ?Exception $previous = null)
