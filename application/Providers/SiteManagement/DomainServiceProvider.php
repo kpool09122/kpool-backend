@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Application\Providers\SiteManagement;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Infrastructure\Service\Encryption\EncryptionService;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Repository\AnnouncementRepositoryInterface;
@@ -12,6 +14,8 @@ use Source\SiteManagement\Announcement\Infrastructure\Adapters\Repository\Announ
 use Source\SiteManagement\Announcement\Infrastructure\Factory\AnnouncementFactory;
 use Source\SiteManagement\Announcement\Infrastructure\Factory\DraftAnnouncementFactory;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
+use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
 use Source\SiteManagement\User\Domain\Factory\UserFactoryInterface;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
@@ -28,5 +32,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftAnnouncementFactoryInterface::class, DraftAnnouncementFactory::class);
         $this->app->singleton(UserFactoryInterface::class, UserFactory::class);
         $this->app->singleton(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->singleton(ContactRepositoryInterface::class, ContactRepository::class);
+        $this->app->singleton(EncryptionServiceInterface::class, EncryptionService::class);
     }
 }
