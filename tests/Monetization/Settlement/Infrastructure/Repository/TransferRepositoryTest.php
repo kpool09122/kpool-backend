@@ -18,6 +18,7 @@ use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\CreateMonetizationAccount;
 use Tests\Helper\CreateSettlementBatch;
+use Tests\Helper\CreateSettlementSchedule;
 use Tests\Helper\CreateTransfer;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -470,5 +471,126 @@ class TransferRepositoryTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame(100, $result->amount()->amount());
         $this->assertSame(Currency::USD, $result->amount()->currency());
+    }
+
+    /**
+     * 正常系: 送金日が到来したTransferを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindDueTransfers(): void
+    {
+        $monetizationAccountId = StrTestHelper::generateUuid();
+        CreateMonetizationAccount::create($monetizationAccountId);
+
+        // SettlementSchedule: payout_delay_days = 5
+        $settlementScheduleId = StrTestHelper::generateUuid();
+        CreateSettlementSchedule::create($settlementScheduleId, [
+            'monetization_account_id' => $monetizationAccountId,
+            'payout_delay_days' => 5,
+        ]);
+
+        // SettlementBatch: period_end = 2024-01-31
+        // 送金日 = 2024-01-31 + 5日 = 2024-02-05
+        $settlementBatchId = StrTestHelper::generateUuid();
+        CreateSettlementBatch::create($settlementBatchId, [
+            'monetization_account_id' => $monetizationAccountId,
+            'period_end' => '2024-01-31',
+        ]);
+
+        $transferId = StrTestHelper::generateUuid();
+        CreateTransfer::create($transferId, [
+            'settlement_batch_id' => $settlementBatchId,
+            'monetization_account_id' => $monetizationAccountId,
+            'status' => 'pending',
+        ]);
+
+        $repository = $this->app->make(TransferRepositoryInterface::class);
+
+        // 現在日 = 2024-02-10: 送金日(2024-02-05)を過ぎているので取得される
+        $dueTransfers = $repository->findDueTransfers(new DateTimeImmutable('2024-02-10'));
+
+        $this->assertCount(1, $dueTransfers);
+        $this->assertSame($transferId, (string) $dueTransfers[0]->transferIdentifier());
+    }
+
+    /**
+     * 正常系: 送金日が到来していないTransferは取得されないこと
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindDueTransfersExcludesNotDue(): void
+    {
+        $monetizationAccountId = StrTestHelper::generateUuid();
+        CreateMonetizationAccount::create($monetizationAccountId);
+
+        // SettlementSchedule: payout_delay_days = 15
+        $settlementScheduleId = StrTestHelper::generateUuid();
+        CreateSettlementSchedule::create($settlementScheduleId, [
+            'monetization_account_id' => $monetizationAccountId,
+            'payout_delay_days' => 15,
+        ]);
+
+        // SettlementBatch: period_end = 2024-01-31
+        // 送金日 = 2024-01-31 + 15日 = 2024-02-15
+        $settlementBatchId = StrTestHelper::generateUuid();
+        CreateSettlementBatch::create($settlementBatchId, [
+            'monetization_account_id' => $monetizationAccountId,
+            'period_end' => '2024-01-31',
+        ]);
+
+        $transferId = StrTestHelper::generateUuid();
+        CreateTransfer::create($transferId, [
+            'settlement_batch_id' => $settlementBatchId,
+            'monetization_account_id' => $monetizationAccountId,
+            'status' => 'pending',
+        ]);
+
+        $repository = $this->app->make(TransferRepositoryInterface::class);
+
+        // 現在日 = 2024-02-10: 送金日(2024-02-15)が未到来なので取得されない
+        $dueTransfers = $repository->findDueTransfers(new DateTimeImmutable('2024-02-10'));
+
+        $this->assertCount(0, $dueTransfers);
+    }
+
+    /**
+     * 正常系: SENT状態のTransferは送金日到来済みでも取得されないこと
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindDueTransfersExcludesNonPending(): void
+    {
+        $monetizationAccountId = StrTestHelper::generateUuid();
+        CreateMonetizationAccount::create($monetizationAccountId);
+
+        $settlementScheduleId = StrTestHelper::generateUuid();
+        CreateSettlementSchedule::create($settlementScheduleId, [
+            'monetization_account_id' => $monetizationAccountId,
+            'payout_delay_days' => 5,
+        ]);
+
+        $settlementBatchId = StrTestHelper::generateUuid();
+        CreateSettlementBatch::create($settlementBatchId, [
+            'monetization_account_id' => $monetizationAccountId,
+            'period_end' => '2024-01-31',
+        ]);
+
+        $transferId = StrTestHelper::generateUuid();
+        CreateTransfer::create($transferId, [
+            'settlement_batch_id' => $settlementBatchId,
+            'monetization_account_id' => $monetizationAccountId,
+            'status' => 'sent',
+            'sent_at' => '2024-02-06 10:00:00',
+            'stripe_transfer_id' => 'tr_test123',
+        ]);
+
+        $repository = $this->app->make(TransferRepositoryInterface::class);
+        $dueTransfers = $repository->findDueTransfers(new DateTimeImmutable('2024-02-10'));
+
+        $this->assertCount(0, $dueTransfers);
     }
 }

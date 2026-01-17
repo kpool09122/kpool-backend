@@ -56,6 +56,24 @@ class TransferRepository implements TransferRepositoryInterface
         return $eloquents->map(fn (TransferEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
+    /**
+     * @return array<Transfer>
+     */
+    public function findDueTransfers(DateTimeImmutable $currentDate): array
+    {
+        $eloquents = TransferEloquent::query()
+            ->where('status', TransferStatus::PENDING->value)
+            ->whereHas('settlementBatch.settlementSchedule', function ($query) use ($currentDate) {
+                $query->whereRaw(
+                    'settlement_batches.period_end + (settlement_schedules.payout_delay_days || \' days\')::interval <= ?::date',
+                    [$currentDate->format('Y-m-d')]
+                );
+            })
+            ->get();
+
+        return $eloquents->map(fn (TransferEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
+    }
+
     public function save(Transfer $transfer): void
     {
         TransferEloquent::query()->updateOrCreate(

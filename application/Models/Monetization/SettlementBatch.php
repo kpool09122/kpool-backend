@@ -74,4 +74,9 @@ class SettlementBatch extends Model
     {
         return $this->hasOne(Transfer::class, 'settlement_batch_id');
     }
+
+    public function settlementSchedule(): HasOne
+    {
+        return $this->hasOne(SettlementSchedule::class, 'monetization_account_id', 'monetization_account_id');
+    }
 }
