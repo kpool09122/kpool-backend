@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contacts', static function (Blueprint $table) {
-            $table->uuid('id')->primary()->comment('問い合わせID');
-            $table->unsignedTinyInteger('category')->comment('カテゴリ');
+            $table->string('id', 26)->primary()->comment('問い合わせID');
+            $table->unsignedTinyInteger('category')->comment('カテゴリ（1:要望, 2:バグ報告, 3:コンテンツ修正依頼, 99:その他）');
             $table->string('name', 32)->comment('氏名');
             $table->string('email', 255)->comment('メールアドレス');
             $table->string('content', 512)->comment('問い合わせ内容');
