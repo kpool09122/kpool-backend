@@ -56,6 +56,22 @@ class AccountTest extends TestCase
     }
 
     /**
+     * 正常系: 正しく契約情報を変更できること.
+     */
+    public function testSetContractInfo(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+
+        $this->assertSame($dummyAccount->contractInfo, $dummyAccount->account->contractInfo());
+
+        $newContractInfo = $this->createContractInfo();
+        $dummyAccount->account->setContractInfo($newContractInfo);
+
+        $this->assertSame($newContractInfo, $dummyAccount->account->contractInfo());
+        $this->assertNotSame($dummyAccount->contractInfo, $dummyAccount->account->contractInfo());
+    }
+
+    /**
      * 正常系: 正しくアカウントカテゴリーを変更できること.
      */
     public function testSetAccountCategory(): void
@@ -114,13 +130,8 @@ class AccountTest extends TestCase
         }
     }
 
-    private function createDummyAccountTestData(
-        ?DeletionReadinessChecklist $deletionReadiness = null
-    ): AccountTestData {
-        $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $email = new Email('test@test.com');
-        $accountType = AccountType::CORPORATION;
-        $accountName = new AccountName('Example Inc');
+    private function createContractInfo(): ContractInfo
+    {
         $address = new BillingAddress(
             countryCode: CountryCode::JAPAN,
             postalCode: new PostalCode('100-0001'),
@@ -140,13 +151,24 @@ class AccountTest extends TestCase
             money: new Money(10000, Currency::KRW),
         );
         $taxInfo = new TaxInfo(TaxRegion::JP, TaxCategory::TAXABLE, 'T1234567890123');
-        $contractInfo = new ContractInfo(
+
+        return new ContractInfo(
             billingAddress: $address,
             billingContact: $contact,
             billingMethod: BillingMethod::INVOICE,
             plan: $plan,
             taxInfo: $taxInfo,
         );
+    }
+
+    private function createDummyAccountTestData(
+        ?DeletionReadinessChecklist $deletionReadiness = null
+    ): AccountTestData {
+        $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $email = new Email('test@test.com');
+        $accountType = AccountType::CORPORATION;
+        $accountName = new AccountName('Example Inc');
+        $contractInfo = $this->createContractInfo();
 
         $status = AccountStatus::ACTIVE;
         $accountCategory = AccountCategory::GENERAL;

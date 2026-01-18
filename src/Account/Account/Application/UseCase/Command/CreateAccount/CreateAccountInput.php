@@ -6,8 +6,8 @@ namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class CreateAccountInput implements CreateAccountInputPort
 {
@@ -15,7 +15,7 @@ readonly class CreateAccountInput implements CreateAccountInputPort
         private Email $email,
         private AccountType $accountType,
         private AccountName $accountName,
-        private ContractInfo $contractInfo,
+        private ?IdentityIdentifier $identityIdentifier = null,
     ) {
     }
 
@@ -34,8 +34,8 @@ readonly class CreateAccountInput implements CreateAccountInputPort
         return $this->accountName;
     }
 
-    public function contractInfo(): ContractInfo
+    public function identityIdentifier(): ?IdentityIdentifier
     {
-        return $this->contractInfo;
+        return $this->identityIdentifier;
     }
 }

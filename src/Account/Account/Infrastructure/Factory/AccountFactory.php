@@ -9,7 +9,6 @@ use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
@@ -27,14 +26,13 @@ readonly class AccountFactory implements AccountFactoryInterface
         Email $email,
         AccountType $type,
         AccountName $name,
-        ContractInfo $contractInfo,
     ): Account {
         return new Account(
             new AccountIdentifier($this->generator->generate()),
             $email,
             $type,
             $name,
-            $contractInfo,
+            null,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
