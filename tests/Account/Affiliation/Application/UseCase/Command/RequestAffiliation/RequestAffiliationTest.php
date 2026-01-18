@@ -12,24 +12,7 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Account\Domain\ValueObject\BillingMethod;
-use Source\Account\Account\Domain\ValueObject\City;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
-use Source\Account\Account\Domain\ValueObject\ContractName;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Account\Domain\ValueObject\Phone;
-use Source\Account\Account\Domain\ValueObject\Plan;
-use Source\Account\Account\Domain\ValueObject\PlanDescription;
-use Source\Account\Account\Domain\ValueObject\PlanName;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Account\Domain\ValueObject\StateOrProvince;
-use Source\Account\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Account\Domain\ValueObject\TaxRegion;
 use Source\Account\Affiliation\Application\Exception\AffiliationAlreadyExistsException;
 use Source\Account\Affiliation\Application\Exception\InvalidAccountCategoryException;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInput;
@@ -43,10 +26,7 @@ use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
 use Source\Monetization\Shared\ValueObject\Percentage;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\CountryCode;
-use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -174,7 +154,6 @@ class RequestAffiliationTest extends TestCase
             new Email('agency@test.com'),
             AccountType::CORPORATION,
             new AccountName('Invalid Agency'),
-            $this->createContractInfo(),
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
@@ -213,7 +192,6 @@ class RequestAffiliationTest extends TestCase
             new Email('talent@test.com'),
             AccountType::INDIVIDUAL,
             new AccountName('Invalid Talent'),
-            $this->createContractInfo(),
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
@@ -289,14 +267,11 @@ class RequestAffiliationTest extends TestCase
         $requestedBy = $agencyAccountIdentifier;
         $terms = new AffiliationTerms(new Percentage(30), 'Contract notes');
 
-        $contractInfo = $this->createContractInfo();
-
         $agencyAccount = new Account(
             $agencyAccountIdentifier,
             new Email('agency@test.com'),
             AccountType::CORPORATION,
             new AccountName('Test Agency'),
-            $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::AGENCY,
             DeletionReadinessChecklist::ready(),
@@ -307,7 +282,6 @@ class RequestAffiliationTest extends TestCase
             new Email('talent@test.com'),
             AccountType::INDIVIDUAL,
             new AccountName('Test Talent'),
-            $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::TALENT,
             DeletionReadinessChecklist::ready(),
@@ -342,37 +316,6 @@ class RequestAffiliationTest extends TestCase
             $talentAccount,
             $affiliation,
             $input,
-        );
-    }
-
-    private function createContractInfo(): ContractInfo
-    {
-        $address = new BillingAddress(
-            countryCode: CountryCode::JAPAN,
-            postalCode: new PostalCode('100-0001'),
-            stateOrProvince: new StateOrProvince('Tokyo'),
-            city: new City('Chiyoda'),
-            addressLine1: new AddressLine('1-1-1'),
-        );
-        $contact = new BillingContact(
-            name: new ContractName('Test User'),
-            email: new Email('test@example.com'),
-            phone: new Phone('+81-3-0000-0000'),
-        );
-        $plan = new Plan(
-            planName: new PlanName('Basic Plan'),
-            billingCycle: BillingCycle::MONTHLY,
-            planDescription: new PlanDescription(''),
-            money: new Money(10000, Currency::KRW),
-        );
-        $taxInfo = new TaxInfo(TaxRegion::JP, TaxCategory::TAXABLE, 'T1234567890123');
-
-        return new ContractInfo(
-            billingAddress: $address,
-            billingContact: $contact,
-            billingMethod: BillingMethod::INVOICE,
-            plan: $plan,
-            taxInfo: $taxInfo,
         );
     }
 }

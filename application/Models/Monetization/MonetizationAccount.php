@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $capabilities
  * @property ?string $stripe_customer_id
  * @property ?string $stripe_connected_account_id
+ * @property ?array $billing_address
+ * @property ?array $billing_contact
+ * @property ?string $billing_method
+ * @property ?array $tax_info
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -29,11 +33,18 @@ class MonetizationAccount extends Model
         'capabilities',
         'stripe_customer_id',
         'stripe_connected_account_id',
+        'billing_address',
+        'billing_contact',
+        'billing_method',
+        'tax_info',
     ];
 
     protected function casts(): array
     {
         return [
+            'billing_address' => 'array',
+            'billing_contact' => 'array',
+            'tax_info' => 'array',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

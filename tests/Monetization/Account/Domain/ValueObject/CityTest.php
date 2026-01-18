@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\Domain\ValueObject;
+namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
+use Source\Monetization\Account\Domain\ValueObject\City;
 use Tests\Helper\StrTestHelper;
 
-class PostalCodeTest extends TestCase
+class CityTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること.
@@ -18,9 +18,9 @@ class PostalCodeTest extends TestCase
      */
     public function test__construct(): void
     {
-        $value = '100-0001';
-        $postalCode = new PostalCode($value);
-        $this->assertSame($value, (string)$postalCode);
+        $value = 'Chiyoda';
+        $city = new City($value);
+        $this->assertSame($value, (string)$city);
     }
 
     /**
@@ -31,7 +31,7 @@ class PostalCodeTest extends TestCase
     public function testWhenEmpty(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PostalCode('');
+        new City('');
     }
 
     /**
@@ -42,7 +42,7 @@ class PostalCodeTest extends TestCase
     public function testWhenOnlySpaces(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PostalCode('   ');
+        new City('   ');
     }
 
     /**
@@ -53,6 +53,6 @@ class PostalCodeTest extends TestCase
     public function testExceedMaxChars(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PostalCode(StrTestHelper::generateStr(PostalCode::MAX_LENGTH + 1));
+        new City(StrTestHelper::generateStr(City::MAX_LENGTH + 1));
     }
 }

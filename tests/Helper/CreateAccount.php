@@ -14,7 +14,6 @@ class CreateAccount
      *     type?: string,
      *     name?: string,
      *     status?: string,
-     *     contract_info?: string,
      * } $overrides
      */
     public static function create(string $accountId, array $overrides = []): void
@@ -25,7 +24,6 @@ class CreateAccount
             'type' => $overrides['type'] ?? 'individual',
             'name' => $overrides['name'] ?? 'Test Account',
             'status' => $overrides['status'] ?? 'active',
-            'contract_info' => $overrides['contract_info'] ?? '[]',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

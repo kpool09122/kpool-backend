@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('name', 64)->comment('Account Name');
             $table->string('status', 32)->comment('Account Status (active, pending, suspended)');
             $table->string('category', 32)->default('general')->comment('Account Category (agency, talent, general)');
-            $table->json('contract_info')->comment('Contract Information (JSON)');
             $table->timestamps();
 
             $table->index('email');
@@ -33,6 +32,10 @@ return new class extends Migration
             $table->json('capabilities')->default('[]')->comment('Capabilities (PURCHASE, SELL, RECEIVE_PAYOUT)');
             $table->string('stripe_customer_id', 255)->nullable()->comment('Stripe Customer ID');
             $table->string('stripe_connected_account_id', 255)->nullable()->comment('Stripe Connected Account ID');
+            $table->json('billing_address')->nullable()->comment('Billing Address (JSON)');
+            $table->json('billing_contact')->nullable()->comment('Billing Contact (JSON)');
+            $table->string('billing_method', 32)->nullable()->comment('Billing Method (invoice, credit_card, bank_transfer)');
+            $table->json('tax_info')->nullable()->comment('Tax Information (JSON)');
             $table->timestamps();
 
             $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');

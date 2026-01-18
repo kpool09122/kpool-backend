@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\Domain\ValueObject;
+namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Account\Domain\ValueObject\City;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Account\Domain\ValueObject\StateOrProvince;
+use Source\Monetization\Account\Domain\ValueObject\AddressLine;
+use Source\Monetization\Account\Domain\ValueObject\BillingAddress;
+use Source\Monetization\Account\Domain\ValueObject\City;
+use Source\Monetization\Account\Domain\ValueObject\PostalCode;
+use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
 use Source\Shared\Domain\ValueObject\CountryCode;
 
 class BillingAddressTest extends TestCase
