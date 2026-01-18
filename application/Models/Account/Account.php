@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $name
  * @property string $status
  * @property string $category
- * @property array $contract_info
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -32,13 +31,11 @@ class Account extends Model
         'name',
         'status',
         'category',
-        'contract_info',
     ];
 
     protected function casts(): array
     {
         return [
-            'contract_info' => 'array',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

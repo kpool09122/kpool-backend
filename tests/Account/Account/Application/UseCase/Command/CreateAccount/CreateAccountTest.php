@@ -209,7 +209,6 @@ class CreateAccountTest extends TestCase
             $email,
             $accountType,
             $accountName,
-            null,
             $status,
             $accountCategory,
             DeletionReadinessChecklist::ready(),

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\Domain\ValueObject;
+namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Account\Domain\ValueObject\ContractName;
-use Source\Account\Account\Domain\ValueObject\Phone;
+use Source\Monetization\Account\Domain\ValueObject\BillingContact;
+use Source\Monetization\Account\Domain\ValueObject\ContractName;
+use Source\Monetization\Account\Domain\ValueObject\Phone;
 use Source\Shared\Domain\ValueObject\Email;
 
 class BillingContactTest extends TestCase

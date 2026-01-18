@@ -32,7 +32,6 @@ readonly class AccountFactory implements AccountFactoryInterface
             $email,
             $type,
             $name,
-            null,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),

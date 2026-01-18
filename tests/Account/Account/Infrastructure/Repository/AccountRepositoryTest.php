@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Account\Account\Infrastructure\Repository;
 
-use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Domain\Entity\Account;
@@ -12,30 +11,10 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Account\Domain\ValueObject\BillingMethod;
-use Source\Account\Account\Domain\ValueObject\City;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
-use Source\Account\Account\Domain\ValueObject\ContractName;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Account\Domain\ValueObject\Phone;
-use Source\Account\Account\Domain\ValueObject\Plan;
-use Source\Account\Account\Domain\ValueObject\PlanDescription;
-use Source\Account\Account\Domain\ValueObject\PlanName;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Account\Domain\ValueObject\StateOrProvince;
-use Source\Account\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Account\Domain\ValueObject\TaxRegion;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\CountryCode;
-use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,55 +23,15 @@ class AccountRepositoryTest extends TestCase
     private function createTestAccount(
         ?string $accountId = null,
         ?string $email = null,
-        ?DateTimeImmutable $billingStartDate = new DateTimeImmutable('2024-01-01 00:00:00'),
     ): Account {
         $accountId ??= StrTestHelper::generateUuid();
         $email ??= StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
-
-        $billingAddress = new BillingAddress(
-            CountryCode::JAPAN,
-            new PostalCode('123-4567'),
-            new StateOrProvince('Tokyo'),
-            new City('Shibuya'),
-            new AddressLine('1-2-3 Shibuya'),
-            new AddressLine('Building A'),
-            null,
-        );
-
-        $billingContact = new BillingContact(
-            new ContractName('Test Contact'),
-            new Email($email),
-            new Phone('+819012345678'),
-        );
-
-        $plan = new Plan(
-            new PlanName('Standard Plan'),
-            BillingCycle::MONTHLY,
-            new PlanDescription('Standard monthly plan'),
-            new Money(1000, Currency::JPY),
-        );
-
-        $taxInfo = new TaxInfo(
-            TaxRegion::JP,
-            TaxCategory::TAXABLE,
-            'TAX001',
-        );
-
-        $contractInfo = new ContractInfo(
-            $billingAddress,
-            $billingContact,
-            BillingMethod::CREDIT_CARD,
-            $plan,
-            $taxInfo,
-            $billingStartDate,
-        );
 
         return new Account(
             new AccountIdentifier($accountId),
             new Email($email),
             AccountType::CORPORATION,
             new AccountName('Test Account'),
-            $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),
@@ -219,77 +158,5 @@ class AccountRepositoryTest extends TestCase
         // 削除後の確認
         $this->assertNull($repository->findById(new AccountIdentifier($accountId)));
         $this->assertDatabaseMissing('accounts', ['id' => $accountId]);
-    }
-
-    /**
-     * 正常系: ContractInfoが正しく保存・取得できること
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testContractInfoPersistence(): void
-    {
-        $accountId = StrTestHelper::generateUuid();
-        $account = $this->createTestAccount(accountId: $accountId);
-
-        $repository = $this->app->make(AccountRepositoryInterface::class);
-        $repository->save($account);
-
-        $result = $repository->findById(new AccountIdentifier($accountId));
-
-        $this->assertNotNull($result);
-        $contractInfo = $result->contractInfo();
-
-        // BillingAddress
-        $this->assertSame(CountryCode::JAPAN, $contractInfo->billingAddress()->countryCode());
-        $this->assertSame('123-4567', (string) $contractInfo->billingAddress()->postalCode());
-        $this->assertSame('Tokyo', (string) $contractInfo->billingAddress()->stateOrProvince());
-        $this->assertSame('Shibuya', (string) $contractInfo->billingAddress()->city());
-        $this->assertSame('1-2-3 Shibuya', (string) $contractInfo->billingAddress()->addressLine1());
-        $this->assertSame('Building A', (string) $contractInfo->billingAddress()->addressLine2());
-        $this->assertNull($contractInfo->billingAddress()->addressLine3());
-
-        // BillingContact
-        $this->assertSame('Test Contact', (string) $contractInfo->billingContact()->name());
-        $this->assertSame('+819012345678', (string) $contractInfo->billingContact()->phone());
-
-        // BillingMethod
-        $this->assertSame(BillingMethod::CREDIT_CARD, $contractInfo->billingMethod());
-
-        // Plan
-        $this->assertSame('Standard Plan', (string) $contractInfo->plan()->planName());
-        $this->assertSame(BillingCycle::MONTHLY, $contractInfo->plan()->billingCycle());
-        $this->assertSame('Standard monthly plan', (string) $contractInfo->plan()->planDescription());
-        $this->assertSame(1000, $contractInfo->plan()->money()->amount());
-        $this->assertSame(Currency::JPY, $contractInfo->plan()->money()->currency());
-
-        // TaxInfo
-        $this->assertSame(TaxRegion::JP, $contractInfo->taxInfo()->region());
-        $this->assertSame(TaxCategory::TAXABLE, $contractInfo->taxInfo()->category());
-        $this->assertSame('TAX001', $contractInfo->taxInfo()->taxCode());
-
-        // BillingStartDate
-        $this->assertNotNull($contractInfo->billingStartDate());
-        $this->assertSame('2024-01-01', $contractInfo->billingStartDate()->format('Y-m-d'));
-    }
-
-    /**
-     * 正常系: billingStartDateがnullの場合も正しく保存・取得できること
-     *
-     * @throws BindingResolutionException
-     */
-    #[Group('useDb')]
-    public function testContractInfoPersistenceWithNullBillingStartDate(): void
-    {
-        $accountId = StrTestHelper::generateUuid();
-        $account = $this->createTestAccount(accountId: $accountId, billingStartDate: null);
-
-        $repository = $this->app->make(AccountRepositoryInterface::class);
-        $repository->save($account);
-
-        $result = $repository->findById(new AccountIdentifier($accountId));
-
-        $this->assertNotNull($result);
-        $this->assertNull($result->contractInfo()->billingStartDate());
     }
 }

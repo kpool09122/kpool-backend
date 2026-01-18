@@ -13,24 +13,7 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Account\Domain\ValueObject\BillingMethod;
-use Source\Account\Account\Domain\ValueObject\City;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
-use Source\Account\Account\Domain\ValueObject\ContractName;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Account\Domain\ValueObject\Phone;
-use Source\Account\Account\Domain\ValueObject\Plan;
-use Source\Account\Account\Domain\ValueObject\PlanDescription;
-use Source\Account\Account\Domain\ValueObject\PlanName;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Account\Domain\ValueObject\StateOrProvince;
-use Source\Account\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Account\Domain\ValueObject\TaxRegion;
 use Source\Account\AccountVerification\Application\Exception\AccountVerificationAlreadyRequestedException;
 use Source\Account\AccountVerification\Application\Exception\DocumentStorageFailedException;
 use Source\Account\AccountVerification\Application\Exception\InvalidAccountCategoryForVerificationException;
@@ -52,10 +35,7 @@ use Source\Account\AccountVerification\Domain\ValueObject\VerificationType;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\CountryCode;
-use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Money;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -630,50 +610,11 @@ class RequestVerificationTest extends TestCase
 
     private function createAccount(AccountIdentifier $accountId, AccountCategory $category): Account
     {
-        $billingAddress = new BillingAddress(
-            CountryCode::JAPAN,
-            new PostalCode('123-4567'),
-            new StateOrProvince('Tokyo'),
-            new City('Shibuya'),
-            new AddressLine('1-2-3 Shibuya'),
-            new AddressLine('Building A'),
-            null,
-        );
-
-        $billingContact = new BillingContact(
-            new ContractName('Test Contact'),
-            new Email('test@example.com'),
-            new Phone('+819012345678'),
-        );
-
-        $plan = new Plan(
-            new PlanName('Standard Plan'),
-            BillingCycle::MONTHLY,
-            new PlanDescription('Standard monthly plan'),
-            new Money(1000, Currency::JPY),
-        );
-
-        $taxInfo = new TaxInfo(
-            TaxRegion::JP,
-            TaxCategory::TAXABLE,
-            'TAX001',
-        );
-
-        $contractInfo = new ContractInfo(
-            $billingAddress,
-            $billingContact,
-            BillingMethod::CREDIT_CARD,
-            $plan,
-            $taxInfo,
-            new DateTimeImmutable('2024-01-01'),
-        );
-
         return new Account(
             $accountId,
             new Email('test@example.com'),
             AccountType::INDIVIDUAL,
             new AccountName('Test Account'),
-            $contractInfo,
             AccountStatus::ACTIVE,
             $category,
             DeletionReadinessChecklist::ready(),

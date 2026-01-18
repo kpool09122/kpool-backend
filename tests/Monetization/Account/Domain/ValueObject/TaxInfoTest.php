@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Account\Domain\ValueObject;
+namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Account\Domain\ValueObject\TaxRegion;
+use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
+use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
+use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
 
 class TaxInfoTest extends TestCase
 {

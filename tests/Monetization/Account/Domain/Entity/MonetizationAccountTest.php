@@ -9,11 +9,25 @@ use PHPUnit\Framework\TestCase;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Exception\CapabilityAlreadyGrantedException;
 use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
+use Source\Monetization\Account\Domain\ValueObject\AddressLine;
+use Source\Monetization\Account\Domain\ValueObject\BillingAddress;
+use Source\Monetization\Account\Domain\ValueObject\BillingContact;
+use Source\Monetization\Account\Domain\ValueObject\BillingMethod;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
+use Source\Monetization\Account\Domain\ValueObject\City;
+use Source\Monetization\Account\Domain\ValueObject\ContractName;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\Phone;
+use Source\Monetization\Account\Domain\ValueObject\PostalCode;
+use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
 use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
 use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
+use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
+use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
+use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Shared\Domain\ValueObject\CountryCode;
+use Source\Shared\Domain\ValueObject\Email;
 use Tests\Helper\StrTestHelper;
 
 class MonetizationAccountTest extends TestCase
@@ -332,5 +346,169 @@ class MonetizationAccountTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Stripe Connected Account is not linked.');
         $account->assertCanReceivePayout();
+    }
+
+    /**
+     * 正常系: BillingAddressのsetterが正しく動作すること
+     */
+    public function testSetBillingAddress(): void
+    {
+        $account = $this->createAccount([]);
+
+        $this->assertNull($account->billingAddress());
+
+        $billingAddress = new BillingAddress(
+            CountryCode::JAPAN,
+            new PostalCode('100-0001'),
+            new StateOrProvince('東京都'),
+            new City('千代田区'),
+            new AddressLine('丸の内1-1-1'),
+        );
+        $account->setBillingAddress($billingAddress);
+
+        $this->assertNotNull($account->billingAddress());
+        $this->assertSame(CountryCode::JAPAN, $account->billingAddress()->countryCode());
+        $this->assertSame('100-0001', (string) $account->billingAddress()->postalCode());
+    }
+
+    /**
+     * 正常系: BillingContactのsetterが正しく動作すること
+     */
+    public function testSetBillingContact(): void
+    {
+        $account = $this->createAccount([]);
+
+        $this->assertNull($account->billingContact());
+
+        $billingContact = new BillingContact(
+            new ContractName('山田 太郎'),
+            new Email('billing@example.com'),
+            new Phone('+81312345678'),
+        );
+        $account->setBillingContact($billingContact);
+
+        $this->assertNotNull($account->billingContact());
+        $this->assertSame('山田 太郎', (string) $account->billingContact()->name());
+        $this->assertSame('billing@example.com', (string) $account->billingContact()->email());
+        $this->assertSame('+81312345678', (string) $account->billingContact()->phone());
+    }
+
+    /**
+     * 正常系: BillingMethodのsetterが正しく動作すること
+     */
+    public function testSetBillingMethod(): void
+    {
+        $account = $this->createAccount([]);
+
+        $this->assertNull($account->billingMethod());
+
+        $account->setBillingMethod(BillingMethod::CREDIT_CARD);
+        $this->assertSame(BillingMethod::CREDIT_CARD, $account->billingMethod());
+
+        $account->setBillingMethod(BillingMethod::INVOICE);
+        $this->assertSame(BillingMethod::INVOICE, $account->billingMethod());
+    }
+
+    /**
+     * 正常系: TaxInfoのsetterが正しく動作すること
+     */
+    public function testSetTaxInfo(): void
+    {
+        $account = $this->createAccount([]);
+
+        $this->assertNull($account->taxInfo());
+
+        $taxInfo = new TaxInfo(
+            TaxRegion::JP,
+            TaxCategory::TAXABLE,
+            'T1234567890123',
+        );
+        $account->setTaxInfo($taxInfo);
+
+        $this->assertNotNull($account->taxInfo());
+        $this->assertSame(TaxRegion::JP, $account->taxInfo()->region());
+        $this->assertSame(TaxCategory::TAXABLE, $account->taxInfo()->category());
+        $this->assertSame('T1234567890123', $account->taxInfo()->taxCode());
+    }
+
+    /**
+     * 正常系: setBillingInfoでBilling情報をまとめて設定できること
+     */
+    public function testSetBillingInfo(): void
+    {
+        $account = $this->createAccount([]);
+
+        $this->assertNull($account->billingAddress());
+        $this->assertNull($account->billingContact());
+        $this->assertNull($account->billingMethod());
+        $this->assertNull($account->taxInfo());
+
+        $billingAddress = new BillingAddress(
+            CountryCode::UNITED_STATES,
+            new PostalCode('10001'),
+            new StateOrProvince('New York'),
+            new City('New York'),
+            new AddressLine('123 Main Street'),
+        );
+        $billingContact = new BillingContact(
+            new ContractName('John Doe'),
+            new Email('john@example.com'),
+        );
+        $billingMethod = BillingMethod::BANK_TRANSFER;
+        $taxInfo = new TaxInfo(
+            TaxRegion::US,
+            TaxCategory::EXEMPT,
+        );
+
+        $account->setBillingInfo($billingAddress, $billingContact, $billingMethod, $taxInfo);
+
+        $this->assertNotNull($account->billingAddress());
+        $this->assertSame(CountryCode::UNITED_STATES, $account->billingAddress()->countryCode());
+
+        $this->assertNotNull($account->billingContact());
+        $this->assertSame('John Doe', (string) $account->billingContact()->name());
+
+        $this->assertSame(BillingMethod::BANK_TRANSFER, $account->billingMethod());
+
+        $this->assertNotNull($account->taxInfo());
+        $this->assertSame(TaxRegion::US, $account->taxInfo()->region());
+    }
+
+    /**
+     * 正常系: setBillingInfoでnullを設定してBilling情報をクリアできること
+     */
+    public function testSetBillingInfoWithNull(): void
+    {
+        $account = $this->createAccount([]);
+
+        // まず設定
+        $account->setBillingInfo(
+            new BillingAddress(
+                CountryCode::JAPAN,
+                new PostalCode('100-0001'),
+                new StateOrProvince('東京都'),
+                new City('千代田区'),
+                new AddressLine('丸の内1-1-1'),
+            ),
+            new BillingContact(
+                new ContractName('山田 太郎'),
+                new Email('test@example.com'),
+            ),
+            BillingMethod::CREDIT_CARD,
+            new TaxInfo(TaxRegion::JP, TaxCategory::TAXABLE),
+        );
+
+        $this->assertNotNull($account->billingAddress());
+        $this->assertNotNull($account->billingContact());
+        $this->assertNotNull($account->billingMethod());
+        $this->assertNotNull($account->taxInfo());
+
+        // nullで上書き
+        $account->setBillingInfo(null, null, null, null);
+
+        $this->assertNull($account->billingAddress());
+        $this->assertNull($account->billingContact());
+        $this->assertNull($account->billingMethod());
+        $this->assertNull($account->taxInfo());
     }
 }

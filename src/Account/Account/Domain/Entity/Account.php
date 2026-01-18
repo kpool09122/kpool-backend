@@ -8,7 +8,6 @@ use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -21,7 +20,6 @@ class Account
         private readonly Email $email,
         private AccountType $type,
         private AccountName $name,
-        private ?ContractInfo $contractInfo,
         private AccountStatus $status,
         private AccountCategory $accountCategory,
         private DeletionReadinessChecklist $deletionReadiness,
@@ -46,16 +44,6 @@ class Account
     public function name(): AccountName
     {
         return $this->name;
-    }
-
-    public function contractInfo(): ?ContractInfo
-    {
-        return $this->contractInfo;
-    }
-
-    public function setContractInfo(ContractInfo $contractInfo): void
-    {
-        $this->contractInfo = $contractInfo;
     }
 
     public function status(): AccountStatus

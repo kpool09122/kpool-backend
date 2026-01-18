@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Account\Domain\ValueObject;
+namespace Source\Monetization\Account\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Email;
 

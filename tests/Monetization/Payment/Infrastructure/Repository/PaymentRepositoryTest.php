@@ -12,23 +12,7 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Account\Domain\ValueObject\BillingMethod;
-use Source\Account\Account\Domain\ValueObject\City;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
-use Source\Account\Account\Domain\ValueObject\ContractName;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Account\Domain\ValueObject\Plan;
-use Source\Account\Account\Domain\ValueObject\PlanDescription;
-use Source\Account\Account\Domain\ValueObject\PlanName;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Account\Domain\ValueObject\StateOrProvince;
-use Source\Account\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Account\Domain\ValueObject\TaxRegion;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
@@ -42,7 +26,6 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Money;
@@ -60,50 +43,11 @@ class PaymentRepositoryTest extends TestCase
         $accountId = StrTestHelper::generateUuid();
         $email = StrTestHelper::generateSmallAlphaStr(10) . '@example.com';
 
-        $billingAddress = new BillingAddress(
-            CountryCode::JAPAN,
-            new PostalCode('123-4567'),
-            new StateOrProvince('Tokyo'),
-            new City('Shibuya'),
-            new AddressLine('1-2-3 Shibuya'),
-            null,
-            null,
-        );
-
-        $billingContact = new BillingContact(
-            new ContractName('Test Contact'),
-            new Email($email),
-            null,
-        );
-
-        $plan = new Plan(
-            new PlanName('Standard Plan'),
-            BillingCycle::MONTHLY,
-            new PlanDescription(''),
-            new Money(0, Currency::JPY),
-        );
-
-        $taxInfo = new TaxInfo(
-            TaxRegion::JP,
-            TaxCategory::TAXABLE,
-            null,
-        );
-
-        $contractInfo = new ContractInfo(
-            $billingAddress,
-            $billingContact,
-            BillingMethod::CREDIT_CARD,
-            $plan,
-            $taxInfo,
-            null,
-        );
-
         $account = new Account(
             new AccountIdentifier($accountId),
             new Email($email),
             AccountType::CORPORATION,
             new AccountName('Test Account'),
-            $contractInfo,
             AccountStatus::ACTIVE,
             AccountCategory::GENERAL,
             DeletionReadinessChecklist::ready(),

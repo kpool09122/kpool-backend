@@ -7,10 +7,14 @@ namespace Source\Monetization\Account\Domain\Entity;
 use DomainException;
 use Source\Monetization\Account\Domain\Exception\CapabilityAlreadyGrantedException;
 use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
+use Source\Monetization\Account\Domain\ValueObject\BillingAddress;
+use Source\Monetization\Account\Domain\ValueObject\BillingContact;
+use Source\Monetization\Account\Domain\ValueObject\BillingMethod;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
 use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
+use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class MonetizationAccount
@@ -21,6 +25,10 @@ class MonetizationAccount
      * @param Capability[] $capabilities
      * @param StripeCustomerId|null $stripeCustomerId
      * @param StripeConnectedAccountId|null $stripeConnectedAccountId
+     * @param BillingAddress|null $billingAddress
+     * @param BillingContact|null $billingContact
+     * @param BillingMethod|null $billingMethod
+     * @param TaxInfo|null $taxInfo
      */
     public function __construct(
         private readonly MonetizationAccountIdentifier $monetizationAccountIdentifier,
@@ -28,6 +36,10 @@ class MonetizationAccount
         private array $capabilities,
         private ?StripeCustomerId $stripeCustomerId,
         private ?StripeConnectedAccountId $stripeConnectedAccountId,
+        private ?BillingAddress $billingAddress = null,
+        private ?BillingContact $billingContact = null,
+        private ?BillingMethod $billingMethod = null,
+        private ?TaxInfo $taxInfo = null,
     ) {
     }
 
@@ -178,5 +190,60 @@ class MonetizationAccount
         if ($this->stripeConnectedAccountId === null) {
             throw new DomainException('Stripe Connected Account is not linked.');
         }
+    }
+
+    public function billingAddress(): ?BillingAddress
+    {
+        return $this->billingAddress;
+    }
+
+    public function setBillingAddress(?BillingAddress $billingAddress): void
+    {
+        $this->billingAddress = $billingAddress;
+    }
+
+    public function billingContact(): ?BillingContact
+    {
+        return $this->billingContact;
+    }
+
+    public function setBillingContact(?BillingContact $billingContact): void
+    {
+        $this->billingContact = $billingContact;
+    }
+
+    public function billingMethod(): ?BillingMethod
+    {
+        return $this->billingMethod;
+    }
+
+    public function setBillingMethod(?BillingMethod $billingMethod): void
+    {
+        $this->billingMethod = $billingMethod;
+    }
+
+    public function taxInfo(): ?TaxInfo
+    {
+        return $this->taxInfo;
+    }
+
+    public function setTaxInfo(?TaxInfo $taxInfo): void
+    {
+        $this->taxInfo = $taxInfo;
+    }
+
+    /**
+     * 請求情報をまとめて設定
+     */
+    public function setBillingInfo(
+        ?BillingAddress $billingAddress,
+        ?BillingContact $billingContact,
+        ?BillingMethod $billingMethod,
+        ?TaxInfo $taxInfo,
+    ): void {
+        $this->billingAddress = $billingAddress;
+        $this->billingContact = $billingContact;
+        $this->billingMethod = $billingMethod;
+        $this->taxInfo = $taxInfo;
     }
 }
