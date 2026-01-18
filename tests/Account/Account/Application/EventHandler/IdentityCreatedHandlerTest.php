@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Application\Listeners\Identity;
+namespace Tests\Account\Account\Application\EventHandler;
 
-use Application\Listeners\Identity\CreateAccountOnIdentityCreated;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInputPort;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Domain\Entity\Account;
@@ -22,7 +22,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class CreateAccountOnIdentityCreatedTest extends TestCase
+class IdentityCreatedHandlerTest extends TestCase
 {
     /**
      * 正常系: IdentityCreatedイベントでCreateAccountが呼ばれること.
@@ -67,8 +67,8 @@ class CreateAccountOnIdentityCreatedTest extends TestCase
             ->andReturn($expectedAccount);
 
         $this->app->instance(CreateAccountInterface::class, $createAccount);
-        $listener = $this->app->make(CreateAccountOnIdentityCreated::class);
-        $listener->handle($event);
+        $handler = $this->app->make(IdentityCreatedHandler::class);
+        $handler->handle($event);
     }
 
     /**
@@ -113,7 +113,7 @@ class CreateAccountOnIdentityCreatedTest extends TestCase
             ->andReturn($expectedAccount);
 
         $this->app->instance(CreateAccountInterface::class, $createAccount);
-        $listener = $this->app->make(CreateAccountOnIdentityCreated::class);
-        $listener->handle($event);
+        $handler = $this->app->make(IdentityCreatedHandler::class);
+        $handler->handle($event);
     }
 }

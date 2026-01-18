@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Application\Listeners\Identity;
+namespace Source\Account\Account\Application\EventHandler;
 
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Identity\Domain\Event\IdentityCreated;
 
-readonly class CreateAccountOnIdentityCreated
+readonly class IdentityCreatedHandler
 {
     public function __construct(
         private CreateAccountInterface $createAccount,
