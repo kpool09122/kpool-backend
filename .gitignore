@@ -8,6 +8,8 @@ composer.lock
 /.claude
 *.swp
 *.swo
+_ide_helper.php
+_ide_helper_redis.php
 
 # OS
 .DS_Store
