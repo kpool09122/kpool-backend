@@ -4,26 +4,28 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
-use Source\Identity\Application\Service\AccountProvisioningServiceInterface;
+use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
+use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 
 readonly class SocialLoginCallback implements SocialLoginCallbackInterface
 {
-    private const DEFAULT_REDIRECT_URL = '/auth/callback';
+    private const string DEFAULT_REDIRECT_URL = '/auth/callback';
 
     public function __construct(
-        private OAuthStateRepositoryInterface       $oauthStateRepository,
-        private SocialOAuthServiceInterface         $socialOAuthClient,
-        private IdentityRepositoryInterface         $identityRepository,
-        private IdentityFactoryInterface            $identityFactory,
-        private AccountProvisioningServiceInterface $accountProvisioningService,
-        private AuthServiceInterface                $authService,
+        private OAuthStateRepositoryInterface      $oauthStateRepository,
+        private SocialOAuthServiceInterface        $socialOAuthClient,
+        private IdentityRepositoryInterface        $identityRepository,
+        private IdentityFactoryInterface           $identityFactory,
+        private SignupSessionRepositoryInterface   $signupSessionRepository,
+        private AuthServiceInterface               $authService,
     ) {
     }
 
@@ -42,9 +44,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         $identity = $this->identityRepository->findBySocialConnection($connection->provider(), $connection->providerUserId());
 
         if ($identity !== null) {
-            $this->accountProvisioningService->provision($identity->identityIdentifier());
             $this->authService->login($identity);
-
             $output->setRedirectUrl(self::DEFAULT_REDIRECT_URL);
 
             return;
@@ -57,24 +57,33 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
                 $this->identityRepository->save($existingIdentity);
             }
 
-            $this->accountProvisioningService->provision($existingIdentity->identityIdentifier());
             $this->authService->login($existingIdentity);
-
             $output->setRedirectUrl(self::DEFAULT_REDIRECT_URL);
 
             return;
         }
+
+        $signupSession = $this->signupSessionRepository->find($input->state());
+        $accountType = $signupSession?->accountType() ?? AccountType::INDIVIDUAL;
 
         $newIdentity = $this->identityFactory->createFromSocialProfile($profile);
         if (! $newIdentity->hasSocialConnection($connection)) {
             $newIdentity->addSocialConnection($connection);
         }
         $this->identityRepository->save($newIdentity);
-        $this->accountProvisioningService->provision($newIdentity->identityIdentifier());
+
+        event(new IdentityCreated(
+            identityIdentifier: $newIdentity->identityIdentifier(),
+            email: $profile->email(),
+            accountType: $accountType,
+            name: $profile->name(),
+        ));
+
+        if ($signupSession !== null) {
+            $this->signupSessionRepository->delete($input->state());
+        }
+
         $this->authService->login($newIdentity);
-
         $output->setRedirectUrl(self::DEFAULT_REDIRECT_URL);
-
-        return;
     }
 }

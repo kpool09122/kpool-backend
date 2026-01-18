@@ -21,7 +21,7 @@ class Account
         private readonly Email $email,
         private AccountType $type,
         private AccountName $name,
-        private ContractInfo $contractInfo,
+        private ?ContractInfo $contractInfo,
         private AccountStatus $status,
         private AccountCategory $accountCategory,
         private DeletionReadinessChecklist $deletionReadiness,
@@ -48,9 +48,14 @@ class Account
         return $this->name;
     }
 
-    public function contractInfo(): ContractInfo
+    public function contractInfo(): ?ContractInfo
     {
         return $this->contractInfo;
+    }
+
+    public function setContractInfo(ContractInfo $contractInfo): void
+    {
+        $this->contractInfo = $contractInfo;
     }
 
     public function status(): AccountStatus

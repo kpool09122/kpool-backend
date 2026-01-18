@@ -16,30 +16,16 @@ use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\AddressLine;
-use Source\Account\Account\Domain\ValueObject\BillingAddress;
-use Source\Account\Account\Domain\ValueObject\BillingContact;
-use Source\Account\Account\Domain\ValueObject\BillingCycle;
-use Source\Account\Account\Domain\ValueObject\BillingMethod;
-use Source\Account\Account\Domain\ValueObject\City;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
-use Source\Account\Account\Domain\ValueObject\ContractName;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Account\Domain\ValueObject\Phone;
-use Source\Account\Account\Domain\ValueObject\Plan;
-use Source\Account\Account\Domain\ValueObject\PlanDescription;
-use Source\Account\Account\Domain\ValueObject\PlanName;
-use Source\Account\Account\Domain\ValueObject\PostalCode;
-use Source\Account\Account\Domain\ValueObject\StateOrProvince;
-use Source\Account\Account\Domain\ValueObject\TaxCategory;
-use Source\Account\Account\Domain\ValueObject\TaxInfo;
-use Source\Account\Account\Domain\ValueObject\TaxRegion;
+use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
+use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
+use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
+use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
+use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\CountryCode;
-use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Email;
-use Source\Shared\Domain\ValueObject\Money;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -54,14 +40,18 @@ class CreateAccountTest extends TestCase
     {
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $factory = Mockery::mock(AccountFactoryInterface::class);
+        $identityGroupFactory = Mockery::mock(IdentityGroupFactoryInterface::class);
+        $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
+        $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
         $useCase = $this->app->make(CreateAccountInterface::class);
         $this->assertInstanceOf(CreateAccount::class, $useCase);
     }
 
     /**
-     * 正常系: 正しくアカウントを作成できること.
+     * 正常系: 正しくアカウントを作成できること（identityIdentifierあり）.
      *
      * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
@@ -83,11 +73,25 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with($testData->email, $testData->accountType, $testData->accountName, $testData->contractInfo)
+            ->with($testData->email, $testData->accountType, $testData->accountName)
             ->andReturn($testData->account);
+
+        $identityGroupFactory = Mockery::mock(IdentityGroupFactoryInterface::class);
+        $identityGroupFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identifier, 'Owners', AccountRole::OWNER, true)
+            ->andReturn($testData->identityGroup);
+
+        $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
+        $identityGroupRepository->shouldReceive('save')
+            ->once()
+            ->with($testData->identityGroup)
+            ->andReturnNull();
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
+        $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
@@ -97,7 +101,58 @@ class CreateAccountTest extends TestCase
         $this->assertSame((string) $testData->email, (string) $account->email());
         $this->assertSame($testData->accountType, $account->type());
         $this->assertSame((string) $testData->accountName, (string) $account->name());
-        $this->assertSame($testData->contractInfo, $account->contractInfo());
+        $this->assertTrue($testData->identityGroup->hasMember($testData->identityIdentifier));
+    }
+
+    /**
+     * 正常系: identityIdentifierがnullの場合もアカウントとデフォルトIdentityGroupが作成されること.
+     *
+     * @throws AccountAlreadyExistsException
+     * @throws BindingResolutionException
+     */
+    public function testProcessWithoutIdentityIdentifier(): void
+    {
+        $testData = $this->createDummyAccountTestData(includeIdentityIdentifier: false);
+
+        $repository = Mockery::mock(AccountRepositoryInterface::class);
+        $repository->shouldReceive('findByEmail')
+            ->with($testData->email)
+            ->once()
+            ->andReturnNull();
+        $repository->shouldReceive('save')
+            ->once()
+            ->with($testData->account)
+            ->andReturnNull();
+
+        $factory = Mockery::mock(AccountFactoryInterface::class);
+        $factory->shouldReceive('create')
+            ->once()
+            ->with($testData->email, $testData->accountType, $testData->accountName)
+            ->andReturn($testData->account);
+
+        $identityGroupFactory = Mockery::mock(IdentityGroupFactoryInterface::class);
+        $identityGroupFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identifier, 'Owners', AccountRole::OWNER, true)
+            ->andReturn($testData->identityGroup);
+
+        $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
+        $identityGroupRepository->shouldReceive('save')
+            ->once()
+            ->with($testData->identityGroup)
+            ->andReturnNull();
+
+        $this->app->instance(AccountRepositoryInterface::class, $repository);
+        $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
+        $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
+
+        $useCase = $this->app->make(CreateAccountInterface::class);
+
+        $account = $useCase->process($testData->input);
+
+        $this->assertSame((string) $testData->identifier, (string) $account->accountIdentifier());
+        $this->assertSame(0, $testData->identityGroup->memberCount());
     }
 
     /**
@@ -121,9 +176,16 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldNotReceive('create');
 
+        $identityGroupFactory = Mockery::mock(IdentityGroupFactoryInterface::class);
+        $identityGroupFactory->shouldNotReceive('create');
+
+        $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
+        $identityGroupRepository->shouldNotReceive('save');
+
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
-
+        $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
+        $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
@@ -132,38 +194,12 @@ class CreateAccountTest extends TestCase
         $useCase->process($input);
     }
 
-    private function createDummyAccountTestData(): CreateAccountTestData
+    private function createDummyAccountTestData(bool $includeIdentityIdentifier = true): CreateAccountTestData
     {
         $identifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
-        $address = new BillingAddress(
-            countryCode: CountryCode::JAPAN,
-            postalCode: new PostalCode('100-0001'),
-            stateOrProvince: new StateOrProvince('Tokyo'),
-            city: new City('Chiyoda'),
-            addressLine1: new AddressLine('1-1-1'),
-        );
-        $contact = new BillingContact(
-            name: new ContractName('Taro Example'),
-            email: new Email('taro@example.com'),
-            phone: new Phone('+81-3-0000-0000'),
-        );
-        $plan = new Plan(
-            planName: new PlanName('Basic Plan'),
-            billingCycle: BillingCycle::MONTHLY,
-            planDescription: new PlanDescription(''),
-            money: new Money(10000, Currency::KRW),
-        );
-        $taxInfo = new TaxInfo(TaxRegion::JP, TaxCategory::TAXABLE, 'T1234567890123');
-        $contractInfo = new ContractInfo(
-            billingAddress: $address,
-            billingContact: $contact,
-            billingMethod: BillingMethod::INVOICE,
-            plan: $plan,
-            taxInfo: $taxInfo,
-        );
 
         $status = AccountStatus::ACTIVE;
         $accountCategory = AccountCategory::GENERAL;
@@ -173,23 +209,40 @@ class CreateAccountTest extends TestCase
             $email,
             $accountType,
             $accountName,
-            $contractInfo,
+            null,
             $status,
             $accountCategory,
             DeletionReadinessChecklist::ready(),
         );
 
-        $input = new CreateAccountInput($email, $accountType, $accountName, $contractInfo);
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        $identityGroup = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            $identifier,
+            'Owners',
+            AccountRole::OWNER,
+            true,
+            new \DateTimeImmutable(),
+        );
+
+        $input = new CreateAccountInput(
+            $email,
+            $accountType,
+            $accountName,
+            $includeIdentityIdentifier ? $identityIdentifier : null,
+        );
 
         return new CreateAccountTestData(
             $identifier,
             $email,
             $accountType,
             $accountName,
-            $contractInfo,
             $accountCategory,
             $account,
             $input,
+            $identityIdentifier,
+            $identityGroup,
         );
     }
 }
@@ -201,10 +254,11 @@ readonly class CreateAccountTestData
         public Email $email,
         public AccountType $accountType,
         public AccountName $accountName,
-        public ContractInfo $contractInfo,
         public AccountCategory $accountCategory,
         public Account $account,
         public CreateAccountInput $input,
+        public IdentityIdentifier $identityIdentifier,
+        public IdentityGroup $identityGroup,
     ) {
     }
 }

@@ -7,7 +7,6 @@ namespace Source\Account\Account\Domain\Factory;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\ContractInfo;
 use Source\Shared\Domain\ValueObject\Email;
 
 interface AccountFactoryInterface
@@ -16,6 +15,5 @@ interface AccountFactoryInterface
         Email $email,
         AccountType $type,
         AccountName $name,
-        ContractInfo $contractInfo,
     ): Account;
 }

@@ -8,14 +8,17 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use RuntimeException;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirect;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectOutput;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
+use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\OAuthStateGeneratorInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
+use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Tests\TestCase;
 
@@ -166,5 +169,103 @@ class SocialLoginRedirectTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $useCase->process($input, $output);
+    }
+
+    /**
+     * 正常系: SignupSessionが指定された場合、SignupSessionも保存されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcessWithSignupSession(): void
+    {
+        $provider = SocialProvider::GOOGLE;
+        $signupSession = new SignupSession(AccountType::CORPORATION);
+        $input = new SocialLoginRedirectInput($provider, $signupSession);
+        $output = new SocialLoginRedirectOutput();
+
+        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $redirectUrl = 'https://example.com/google/redirect';
+
+        $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
+        $oauthStateGenerator->shouldReceive('generate')
+            ->once()
+            ->andReturn($state);
+
+        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthStateRepository->shouldReceive('store')
+            ->once()
+            ->with($state)
+            ->andReturnNull();
+
+        $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
+        $signupSessionRepository->shouldReceive('store')
+            ->once()
+            ->with($state, $signupSession)
+            ->andReturnNull();
+
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
+        $socialOAuthClient->shouldReceive('buildRedirectUrl')
+            ->once()
+            ->with($provider, $state)
+            ->andReturn($redirectUrl);
+
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
+        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+
+        $useCase = $this->app->make(SocialLoginRedirectInterface::class);
+
+        $useCase->process($input, $output);
+
+        $this->assertSame($redirectUrl, $output->redirectUrl());
+    }
+
+    /**
+     * 正常系: SignupSessionがnullの場合、SignupSession保存はスキップされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcessWithoutSignupSession(): void
+    {
+        $provider = SocialProvider::GOOGLE;
+        $input = new SocialLoginRedirectInput($provider, null);
+        $output = new SocialLoginRedirectOutput();
+
+        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $redirectUrl = 'https://example.com/google/redirect';
+
+        $oauthStateGenerator = Mockery::mock(OAuthStateGeneratorInterface::class);
+        $oauthStateGenerator->shouldReceive('generate')
+            ->once()
+            ->andReturn($state);
+
+        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthStateRepository->shouldReceive('store')
+            ->once()
+            ->with($state)
+            ->andReturnNull();
+
+        $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
+        $signupSessionRepository->shouldNotReceive('store');
+
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
+        $socialOAuthClient->shouldReceive('buildRedirectUrl')
+            ->once()
+            ->with($provider, $state)
+            ->andReturn($redirectUrl);
+
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app->instance(OAuthStateGeneratorInterface::class, $oauthStateGenerator);
+        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+
+        $useCase = $this->app->make(SocialLoginRedirectInterface::class);
+
+        $useCase->process($input, $output);
+
+        $this->assertSame($redirectUrl, $output->redirectUrl());
     }
 }
