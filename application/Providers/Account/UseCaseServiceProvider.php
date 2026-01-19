@@ -41,6 +41,8 @@ use Source\Account\IdentityGroup\Application\UseCase\Command\DeleteIdentityGroup
 use Source\Account\IdentityGroup\Application\UseCase\Command\DeleteIdentityGroup\DeleteIdentityGroupInterface;
 use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroup;
 use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupInterface;
+use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitation;
+use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -66,5 +68,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestVerificationInterface::class, RequestVerification::class);
         $this->app->singleton(ApproveVerificationInterface::class, ApproveVerification::class);
         $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
+
+        // Invitation
+        $this->app->singleton(CreateInvitationInterface::class, CreateInvitation::class);
     }
 }

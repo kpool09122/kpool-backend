@@ -6,6 +6,7 @@ namespace Source\Identity\Domain\Entity;
 
 use DateTimeImmutable;
 use DomainException;
+use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
@@ -15,7 +16,6 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 
 class Identity
 {
@@ -88,12 +88,12 @@ class Identity
     /**
      * @param AuthCodeSession $session
      * @return void
-     * @throws UnauthorizedException
+     * @throws UnauthorizedEmailException
      */
     public function copyEmailVerifiedAt(AuthCodeSession $session): void
     {
         if ($session->verifiedAt() === null) {
-            throw new UnauthorizedException('認証されていないメールアドレスです');
+            throw new UnauthorizedEmailException('認証されていないメールアドレスです');
         }
         $this->emailVerifiedAt = $session->verifiedAt();
     }

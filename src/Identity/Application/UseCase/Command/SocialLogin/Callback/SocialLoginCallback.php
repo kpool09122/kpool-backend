@@ -6,6 +6,7 @@ namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Event\IdentityCreated;
+use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
@@ -72,12 +73,19 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         }
         $this->identityRepository->save($newIdentity);
 
-        event(new IdentityCreated(
-            identityIdentifier: $newIdentity->identityIdentifier(),
-            email: $profile->email(),
-            accountType: $accountType,
-            name: $profile->name(),
-        ));
+        if ($invitationToken = $signupSession?->invitationToken()) {
+            event(new IdentityCreatedViaInvitation(
+                identityIdentifier: $newIdentity->identityIdentifier(),
+                invitationToken: $invitationToken,
+            ));
+        } else {
+            event(new IdentityCreated(
+                identityIdentifier: $newIdentity->identityIdentifier(),
+                email: $profile->email(),
+                accountType: $accountType,
+                name: $profile->name(),
+            ));
+        }
 
         if ($signupSession !== null) {
             $this->signupSessionRepository->delete($input->state());

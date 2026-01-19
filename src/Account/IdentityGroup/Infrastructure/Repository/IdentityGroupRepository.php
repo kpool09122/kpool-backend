@@ -84,12 +84,47 @@ class IdentityGroupRepository implements IdentityGroupRepositoryInterface
         return $eloquents->map(fn ($e) => $this->toDomainEntity($e))->all();
     }
 
+    /**
+     * @return array<IdentityGroup>
+     */
+    public function findByAccountIdAndIdentityId(
+        AccountIdentifier $accountIdentifier,
+        IdentityIdentifier $identityIdentifier
+    ): array {
+        $eloquents = IdentityGroupEloquent::query()
+            ->with('members')
+            ->where('account_id', (string) $accountIdentifier)
+            ->whereHas('members', function ($query) use ($identityIdentifier) {
+                $query->where('identity_id', (string) $identityIdentifier);
+            })
+            ->get();
+
+        return $eloquents->map(fn ($e) => $this->toDomainEntity($e))->all();
+    }
+
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?IdentityGroup
     {
         $eloquent = IdentityGroupEloquent::query()
             ->with('members')
             ->where('account_id', (string) $accountIdentifier)
             ->where('is_default', true)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByAccountIdAndRole(
+        AccountIdentifier $accountIdentifier,
+        AccountRole $role
+    ): ?IdentityGroup {
+        $eloquent = IdentityGroupEloquent::query()
+            ->with('members')
+            ->where('account_id', (string) $accountIdentifier)
+            ->where('role', $role->value)
             ->first();
 
         if ($eloquent === null) {

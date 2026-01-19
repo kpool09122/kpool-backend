@@ -27,6 +27,13 @@ use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 use Source\Account\IdentityGroup\Infrastructure\Factory\IdentityGroupFactory;
 use Source\Account\IdentityGroup\Infrastructure\Repository\IdentityGroupRepository;
+use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
+use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
+use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
+use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
+use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
+use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -46,5 +53,16 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentStorageServiceInterface::class, DocumentStorageService::class);
         $this->app->singleton(DocumentRequirementValidator::class, DocumentRequirementValidator::class);
         $this->app->singleton(DocumentRequirementValidatorInterface::class, DocumentRequirementValidator::class);
+
+        // Invitation
+        $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);
+        $this->app->singleton(InvitationRepositoryInterface::class, InvitationRepository::class);
+        $this->app->singleton(InvitationMailServiceInterface::class, function ($app) {
+            return new InvitationMailService(
+                $app->make(AccountRepositoryInterface::class),
+                $app->make(IdentityRepositoryInterface::class),
+                config('app.frontend_url', 'http://localhost:3000'),
+            );
+        });
     }
 }

@@ -6,6 +6,7 @@ namespace Source\Identity\Infrastructure\Repository;
 
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
@@ -20,7 +21,13 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
         $ttl = $state->expiresAt()->getTimestamp() - time();
 
         if ($ttl > 0) {
-            Redis::setex($key, $ttl, $session->accountType()->value);
+            $data = [
+                'account_type' => $session->accountType()?->value,
+                'invitation_token' => $session->invitationToken() !== null
+                    ? (string) $session->invitationToken()
+                    : null,
+            ];
+            Redis::setex($key, $ttl, json_encode($data));
         }
     }
 
@@ -33,12 +40,21 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
             return null;
         }
 
-        $accountType = AccountType::tryFrom($value);
-        if ($accountType === null) {
+        $data = json_decode($value, true);
+
+        if (! is_array($data)) {
             return null;
         }
 
-        return new SignupSession($accountType);
+        $accountType = isset($data['account_type'])
+            ? AccountType::tryFrom($data['account_type'])
+            : null;
+
+        $invitationToken = isset($data['invitation_token'])
+            ? new InvitationToken($data['invitation_token'])
+            : null;
+
+        return new SignupSession($accountType, $invitationToken);
     }
 
     public function delete(OAuthState $state): void

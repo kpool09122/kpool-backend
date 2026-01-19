@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
@@ -140,5 +141,72 @@ class SignupSessionRepositoryTest extends TestCase
         $foundSession = $repository->find($state);
 
         $this->assertNull($foundSession);
+    }
+
+    /**
+     * 正常系: invitationTokenのみを持つSignupSessionを保存し、取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testStoreAndFindWithInvitationToken(): void
+    {
+        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $token = bin2hex(random_bytes(32));
+        $session = new SignupSession(null, new InvitationToken($token));
+
+        $repository = $this->app->make(SignupSessionRepositoryInterface::class);
+        $repository->store($state, $session);
+
+        $foundSession = $repository->find($state);
+
+        $this->assertNotNull($foundSession);
+        $this->assertNull($foundSession->accountType());
+        $this->assertNotNull($foundSession->invitationToken());
+        $this->assertSame($token, (string) $foundSession->invitationToken());
+    }
+
+    /**
+     * 正常系: accountTypeとinvitationTokenの両方を持つSignupSessionを保存し、取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testStoreAndFindWithAccountTypeAndInvitationToken(): void
+    {
+        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $token = bin2hex(random_bytes(32));
+        $session = new SignupSession(AccountType::INDIVIDUAL, new InvitationToken($token));
+
+        $repository = $this->app->make(SignupSessionRepositoryInterface::class);
+        $repository->store($state, $session);
+
+        $foundSession = $repository->find($state);
+
+        $this->assertNotNull($foundSession);
+        $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
+        $this->assertNotNull($foundSession->invitationToken());
+        $this->assertSame($token, (string) $foundSession->invitationToken());
+    }
+
+    /**
+     * 正常系: invitationTokenがnullのSignupSessionはhasInvitationTokenがfalseを返すこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testStoreAndFindWithoutInvitationToken(): void
+    {
+        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $session = new SignupSession(AccountType::INDIVIDUAL, null);
+
+        $repository = $this->app->make(SignupSessionRepositoryInterface::class);
+        $repository->store($state, $session);
+
+        $foundSession = $repository->find($state);
+
+        $this->assertNotNull($foundSession);
+        $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
+        $this->assertNull($foundSession->invitationToken());
     }
 }
