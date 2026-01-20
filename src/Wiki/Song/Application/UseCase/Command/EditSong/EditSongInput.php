@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -28,21 +27,19 @@ readonly class EditSongInput implements EditSongInputPort
      * @param Composer $composer
      * @param ?ReleaseDate $releaseDate
      * @param Overview $overview
-     * @param ?ExternalContentLink $musicVideoLink
      * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
-        private SongIdentifier       $songIdentifier,
-        private SongName             $name,
-        private ?AgencyIdentifier    $agencyIdentifier,
-        private ?GroupIdentifier     $groupIdentifier,
-        private ?TalentIdentifier    $talentIdentifier,
-        private Lyricist             $lyricist,
-        private Composer             $composer,
-        private ?ReleaseDate         $releaseDate,
-        private Overview             $overview,
-        private ?ExternalContentLink $musicVideoLink,
-        private PrincipalIdentifier  $principalIdentifier,
+        private SongIdentifier      $songIdentifier,
+        private SongName            $name,
+        private ?AgencyIdentifier   $agencyIdentifier,
+        private ?GroupIdentifier    $groupIdentifier,
+        private ?TalentIdentifier   $talentIdentifier,
+        private Lyricist            $lyricist,
+        private Composer            $composer,
+        private ?ReleaseDate        $releaseDate,
+        private Overview            $overview,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -89,11 +86,6 @@ readonly class EditSongInput implements EditSongInputPort
     public function overview(): Overview
     {
         return $this->overview;
-    }
-
-    public function musicVideoLink(): ?ExternalContentLink
-    {
-        return $this->musicVideoLink;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

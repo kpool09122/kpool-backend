@@ -24,7 +24,6 @@ class GetTalentsOutputTest extends TestCase
             StrTestHelper::generateUuid(),
             'Mirage',
             new DateTimeImmutable('2024-11-6'),
-            'https://example1.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test1.webp',
         );
         $readModel1 = new TalentReadModel(
@@ -41,14 +40,12 @@ class GetTalentsOutputTest extends TestCase
             StrTestHelper::generateUuid(),
             'Killin\' Me Good',
             new DateTimeImmutable('2023-8-18'),
-            'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test2.webp',
         );
         $songReadModel3 = new SongReadModel(
             StrTestHelper::generateUuid(),
             'Stardust love song',
             new DateTimeImmutable('2022-3-6'),
-            'https://example3.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test3.webp',
         );
         $readModel2 = new TalentReadModel(

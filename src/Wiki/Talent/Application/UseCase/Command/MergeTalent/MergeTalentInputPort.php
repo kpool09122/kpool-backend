@@ -12,7 +12,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 interface MergeTalentInputPort
@@ -33,8 +32,6 @@ interface MergeTalentInputPort
     public function birthday(): ?Birthday;
 
     public function career(): Career;
-
-    public function relevantVideoLinks(): RelevantVideoLinks;
 
     public function principalIdentifier(): PrincipalIdentifier;
 

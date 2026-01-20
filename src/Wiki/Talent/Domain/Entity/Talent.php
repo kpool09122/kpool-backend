@@ -16,7 +16,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 class Talent
@@ -31,7 +30,6 @@ class Talent
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
-     * @param RelevantVideoLinks $relevantVideoLinks
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
@@ -48,7 +46,6 @@ class Talent
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
-        private RelevantVideoLinks                $relevantVideoLinks,
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
@@ -137,23 +134,6 @@ class Talent
     public function setCareer(Career $career): void
     {
         $this->career = $career;
-    }
-
-    /**
-     * @return RelevantVideoLinks
-     */
-    public function relevantVideoLinks(): RelevantVideoLinks
-    {
-        return $this->relevantVideoLinks;
-    }
-
-    /**
-     * @param RelevantVideoLinks $relevantVideoLinks
-     * @return void
-     */
-    public function setRelevantVideoLinks(RelevantVideoLinks $relevantVideoLinks): void
-    {
-        $this->relevantVideoLinks = $relevantVideoLinks;
     }
 
     public function version(): Version

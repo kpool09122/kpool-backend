@@ -11,11 +11,9 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 readonly class DraftTalentFactory implements DraftTalentFactoryInterface
@@ -31,7 +29,6 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
      * @param TalentName $name
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftTalent
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
         PrincipalIdentifier       $editorIdentifier,
@@ -51,7 +48,6 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );
     }

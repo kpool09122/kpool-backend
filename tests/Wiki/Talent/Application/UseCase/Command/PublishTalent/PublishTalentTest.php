@@ -7,7 +7,6 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\PublishTalent;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -30,7 +29,6 @@ use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Entity\TalentHistory;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
@@ -44,7 +42,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
@@ -88,8 +85,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWhenAlreadyPublished(): void
@@ -121,9 +117,6 @@ class PublishTalentTest extends TestCase
 팀 내에서 지효는 파워풀하고 안정적인 가창력을 자랑하는 메인보컬을 담당하고 있습니다. 풍부한 성량과 넓은 음역대를 바탕으로 트와이스 음악의 중심을 잡아주며, 격렬한 안무 중에도 흔들림 없는 라이브 실력을 선보여 \'믿고 듣는 지효\'라는 평을 받습니다.
 2023년 8월에는 첫 솔로 미니 앨범 \'ZONE\'을 발매하며 성공적인 솔로 아티스트로서의 역량을 입증했습니다. 타이틀곡 \'Killin\' Me Good\'을 통해 자신만의 음악적 색깔과 매력을 선보이며 국내외 팬들로부터 뜨거운 반응을 얻었습니다.
 지효는 무대 위 카리스마 넘치는 모습과 달리, 평소에는 멤버들을 살뜰히 챙기는 다정하고 털털한 성격으로 알려져 있습니다. 긍정적이고 건강한 이미지로 다양한 예능 프로그램에서도 활약하며 대중에게 친근하게 다가가고 있습니다. 오랜 시간 꿈을 향해 달려온 노력의 아이콘이자, 이제는 K팝을 대표하는 아티스트로 굳건히 자리매김한 지효의 앞으로의 활동에 더욱 기대가 모아지고 있습니다.');
-        $link4 = new ExternalContentLink('https://example4.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link5 = new ExternalContentLink('https://example5.youtube.com/watch?v=dQw4w9WgXcQ');
-        $exRelevantVideoLinks = new RelevantVideoLinks([$link4, $link5]);
         $exVersion = new Version(1);
         $publishedTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
@@ -135,7 +128,6 @@ class PublishTalentTest extends TestCase
             $exGroupIdentifiers,
             $exBirthday,
             $exCareer,
-            $exRelevantVideoLinks,
             $exVersion,
         );
 
@@ -213,7 +205,6 @@ class PublishTalentTest extends TestCase
         $this->assertSame($publishTalentInfo->groupIdentifiers, $publishedTalent->groupIdentifiers());
         $this->assertSame($publishTalentInfo->birthday, $publishedTalent->birthday());
         $this->assertSame((string)$publishTalentInfo->career, (string)$publishedTalent->career());
-        $this->assertSame($publishTalentInfo->relevantVideoLinks->toStringArray(), $publishedTalent->relevantVideoLinks()->toStringArray());
         $this->assertSame($exVersion->value() + 1, $publishedTalent->version()->value());
     }
 
@@ -224,8 +215,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessForTheFirstTime(): void
@@ -250,7 +240,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
 
@@ -271,7 +260,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             $version,
         );
 
@@ -336,7 +324,6 @@ class PublishTalentTest extends TestCase
         $this->assertSame($publishTalentInfo->groupIdentifiers, $publishedTalent->groupIdentifiers());
         $this->assertSame($publishTalentInfo->birthday, $publishedTalent->birthday());
         $this->assertSame((string)$publishTalentInfo->career, (string)$publishedTalent->career());
-        $this->assertSame($publishTalentInfo->relevantVideoLinks->toStringArray(), $publishedTalent->relevantVideoLinks()->toStringArray());
         $this->assertSame($version->value(), $publishedTalent->version()->value());
     }
 
@@ -346,8 +333,7 @@ class PublishTalentTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundSong(): void
@@ -392,8 +378,7 @@ class PublishTalentTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -440,8 +425,7 @@ class PublishTalentTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testInvalidStatus(): void
@@ -470,7 +454,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->relevantVideoLinks,
             $status,
         );
 
@@ -508,8 +491,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testHasApprovedButNotTranslatedTalent(): void
@@ -563,8 +545,7 @@ class PublishTalentTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testWhenNotFoundPublishedAgency(): void
@@ -627,8 +608,7 @@ class PublishTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
+     *      * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedRole(): void
     {
@@ -679,8 +659,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
+     *      * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedAgencyScope(): void
     {
@@ -734,8 +713,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
@@ -759,7 +737,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
 
@@ -784,7 +761,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             $version,
         );
 
@@ -853,8 +829,7 @@ class PublishTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
+     *      * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedTalentScope(): void
     {
@@ -908,8 +883,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws UnauthorizedException
+     *      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
     public function testAuthorizedTalentActor(): void
@@ -933,7 +907,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
 
@@ -959,7 +932,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             $version,
         );
 
@@ -1028,8 +1000,7 @@ class PublishTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
      * @throws UnauthorizedException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
+     *      * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -1053,7 +1024,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
 
@@ -1074,7 +1044,6 @@ class PublishTalentTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             $version,
         );
 
@@ -1142,8 +1111,7 @@ class PublishTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
+     *      * @throws PrincipalNotFoundException
      */
     public function testUnauthorizedNoneRole(): void
     {
@@ -1161,7 +1129,6 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->groupIdentifiers,
             $publishTalentInfo->birthday,
             $publishTalentInfo->career,
-            $publishTalentInfo->relevantVideoLinks,
             $publishTalentInfo->status,
         );
 
@@ -1205,8 +1172,7 @@ class PublishTalentTest extends TestCase
 
     /**
      * @return PublishTalentTestData
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     private function createPublishTalentInfo(
         bool $hasPublishedTalent = true,
         ?PrincipalIdentifier $operatorIdentifier = null,
@@ -1227,12 +1193,6 @@ class PublishTalentTest extends TestCase
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
 2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
 지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
-        $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
-        $externalContentLinks = [$link1, $link2, $link3];
-        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::UnderReview;
@@ -1248,7 +1208,6 @@ class PublishTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $relevantVideoLinks,
             $status,
         );
 
@@ -1280,7 +1239,6 @@ class PublishTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $relevantVideoLinks,
             new Version(1),
             new \DateTimeImmutable(),
         );
@@ -1296,10 +1254,6 @@ class PublishTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $link1,
-            $link2,
-            $link3,
-            $relevantVideoLinks,
             $talentIdentifier,
             $status,
             $talent,
@@ -1331,10 +1285,6 @@ readonly class PublishTalentTestData
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,
         public Career                   $career,
-        public ExternalContentLink      $link1,
-        public ExternalContentLink      $link2,
-        public ExternalContentLink      $link3,
-        public RelevantVideoLinks       $relevantVideoLinks,
         public TalentIdentifier         $talentIdentifier,
         public ApprovalStatus           $status,
         public DraftTalent              $draftTalent,

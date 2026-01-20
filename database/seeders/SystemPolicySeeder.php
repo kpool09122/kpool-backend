@@ -79,7 +79,7 @@ class SystemPolicySeeder extends Seeder
                 // Agency, Group, Song の承認系（TALENT は Affiliation ベースで付与されるため除外）
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
+                    actions: [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS],
                     resourceTypes: [ResourceType::AGENCY, ResourceType::GROUP, ResourceType::SONG],
                     condition: new Condition([
                         new ConditionClause(
@@ -105,7 +105,7 @@ class SystemPolicySeeder extends Seeder
                 // ※ Group と Song は Affiliation 成立時に付与されるため、ここでは TALENT のみ
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE],
+                    actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS],
                     resourceTypes: [ResourceType::TALENT],
                     condition: new Condition([
                         new ConditionClause(

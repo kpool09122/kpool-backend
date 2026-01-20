@@ -51,6 +51,5 @@ class SongFactoryTest extends TestCase
         $this->assertSame('', (string)$song->lyricist());
         $this->assertSame('', (string)$song->composer());
         $this->assertSame('', (string)$song->overView());
-        $this->assertNull($song->musicVideoLink());
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\MergeSong;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -36,8 +35,6 @@ interface MergeSongInputPort
     public function releaseDate(): ?ReleaseDate;
 
     public function overView(): Overview;
-
-    public function musicVideoLink(): ?ExternalContentLink;
 
     public function principalIdentifier(): PrincipalIdentifier;
 

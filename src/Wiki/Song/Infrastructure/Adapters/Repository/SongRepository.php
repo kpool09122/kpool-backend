@@ -8,7 +8,6 @@ use Application\Models\Wiki\Group;
 use Application\Models\Wiki\Song as SongModel;
 use Application\Models\Wiki\Talent;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -73,7 +72,6 @@ final class SongRepository implements SongRepositoryInterface
                 'composer' => (string) $song->composer(),
                 'release_date' => $releaseDateValue,
                 'overview' => (string) $song->overView(),
-                'music_video_link' => $song->musicVideoLink() ? (string) $song->musicVideoLink() : null,
                 'version' => $song->version()->value(),
                 'is_official' => $song->isOfficial(),
                 'owner_account_id' => $song->ownerAccountIdentifier() ? (string) $song->ownerAccountIdentifier() : null,
@@ -113,7 +111,6 @@ final class SongRepository implements SongRepositoryInterface
             new Composer($songModel->composer),
             $releaseDate,
             new Overview($songModel->overview),
-            $songModel->music_video_link ? new ExternalContentLink($songModel->music_video_link) : null,
             new Version($songModel->version),
             null,
             null,

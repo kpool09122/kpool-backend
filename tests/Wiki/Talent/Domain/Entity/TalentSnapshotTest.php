@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -16,7 +15,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -44,7 +42,6 @@ class TalentSnapshotTest extends TestCase
         $this->assertSame($data->groupIdentifiers, $snapshot->groupIdentifiers());
         $this->assertSame($data->birthday->value(), $snapshot->birthday()->value());
         $this->assertSame((string)$data->career, (string)$snapshot->career());
-        $this->assertSame($data->relevantVideoLinks->toStringArray(), $snapshot->relevantVideoLinks()->toStringArray());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
     }
@@ -64,7 +61,6 @@ class TalentSnapshotTest extends TestCase
         $realName = new RealName('손채영');
         $groupIdentifiers = [];
         $career = new Career('');
-        $relevantVideoLinks = new RelevantVideoLinks([]);
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
@@ -79,7 +75,6 @@ class TalentSnapshotTest extends TestCase
             $groupIdentifiers,
             null,
             $career,
-            $relevantVideoLinks,
             $version,
             $createdAt,
         );
@@ -108,9 +103,6 @@ class TalentSnapshotTest extends TestCase
         ];
         $birthday = new Birthday(new DateTimeImmutable('1999-04-23'));
         $career = new Career('TWICE member since 2015.');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=1');
-        $link2 = new ExternalContentLink('https://example.youtube.com/watch?v=2');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2]);
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
@@ -125,7 +117,6 @@ class TalentSnapshotTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $relevantVideoLinks,
             $version,
             $createdAt,
         );
@@ -141,7 +132,6 @@ class TalentSnapshotTest extends TestCase
             groupIdentifiers: $groupIdentifiers,
             birthday: $birthday,
             career: $career,
-            relevantVideoLinks: $relevantVideoLinks,
             version: $version,
             createdAt: $createdAt,
             snapshot: $snapshot,
@@ -169,7 +159,6 @@ readonly class TalentSnapshotTestData
         public array                     $groupIdentifiers,
         public Birthday                  $birthday,
         public Career                    $career,
-        public RelevantVideoLinks        $relevantVideoLinks,
         public Version                   $version,
         public DateTimeImmutable         $createdAt,
         public TalentSnapshot            $snapshot,

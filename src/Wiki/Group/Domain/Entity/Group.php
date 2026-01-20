@@ -28,6 +28,8 @@ class Group
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
+     * @param bool $isOfficial
+     * @param AccountIdentifier|null $ownerAccountIdentifier
      */
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,

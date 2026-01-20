@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\UseCase\Command\MergeSong;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -29,23 +28,21 @@ readonly class MergeSongInput implements MergeSongInputPort
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
-     * @param ExternalContentLink|null $musicVideoLink
      * @param PrincipalIdentifier $principalIdentifier
      * @param DateTimeImmutable $mergedAt
      */
     public function __construct(
-        private SongIdentifier       $songIdentifier,
-        private SongName             $name,
-        private ?AgencyIdentifier    $agencyIdentifier,
-        private ?GroupIdentifier     $groupIdentifier,
-        private ?TalentIdentifier    $talentIdentifier,
-        private Lyricist             $lyricist,
-        private Composer             $composer,
-        private ?ReleaseDate         $releaseDate,
-        private Overview             $overView,
-        private ?ExternalContentLink $musicVideoLink,
-        private PrincipalIdentifier  $principalIdentifier,
-        private DateTimeImmutable    $mergedAt,
+        private SongIdentifier      $songIdentifier,
+        private SongName            $name,
+        private ?AgencyIdentifier   $agencyIdentifier,
+        private ?GroupIdentifier    $groupIdentifier,
+        private ?TalentIdentifier   $talentIdentifier,
+        private Lyricist            $lyricist,
+        private Composer            $composer,
+        private ?ReleaseDate        $releaseDate,
+        private Overview            $overView,
+        private PrincipalIdentifier $principalIdentifier,
+        private DateTimeImmutable   $mergedAt,
     ) {
     }
 
@@ -92,11 +89,6 @@ readonly class MergeSongInput implements MergeSongInputPort
     public function overView(): Overview
     {
         return $this->overView;
-    }
-
-    public function musicVideoLink(): ?ExternalContentLink
-    {
-        return $this->musicVideoLink;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

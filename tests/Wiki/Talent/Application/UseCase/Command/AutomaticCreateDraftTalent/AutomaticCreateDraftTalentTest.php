@@ -20,7 +20,6 @@ use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\AutomaticCreateDraftTalentInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\AutomaticDraftTalentCreationServiceInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -30,7 +29,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -41,7 +39,6 @@ class AutomaticCreateDraftTalentTest extends TestCase
      * 正常系: ActorがAdministratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
@@ -84,7 +81,6 @@ class AutomaticCreateDraftTalentTest extends TestCase
      * 正常系: ActorがSenior Collaboratorの場合、正しく自動作成されること.
      *
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
@@ -210,7 +206,6 @@ class AutomaticCreateDraftTalentTest extends TestCase
 
     /**
      * @return DraftTalent
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     private function makeDraftTalent(): DraftTalent
     {
@@ -226,7 +221,6 @@ class AutomaticCreateDraftTalentTest extends TestCase
             [],
             null,
             new Career('auto generated'),
-            new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );
     }

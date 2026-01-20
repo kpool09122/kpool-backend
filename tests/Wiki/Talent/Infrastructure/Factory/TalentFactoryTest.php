@@ -8,7 +8,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentFactory;
@@ -34,7 +33,6 @@ class TalentFactoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testCreate(): void
     {

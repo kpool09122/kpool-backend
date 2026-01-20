@@ -6,7 +6,6 @@ namespace Source\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -35,10 +34,11 @@ class Song
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
-     * @param ?ExternalContentLink $musicVideoLink
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
+     * @param bool $isOfficial
+     * @param AccountIdentifier|null $ownerAccountIdentifier
      */
     public function __construct(
         private readonly SongIdentifier           $songIdentifier,
@@ -52,7 +52,6 @@ class Song
         private Composer                          $composer,
         private ?ReleaseDate                      $releaseDate,
         private Overview                          $overView,
-        private ?ExternalContentLink              $musicVideoLink,
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
@@ -154,16 +153,6 @@ class Song
     public function setOverView(Overview $overView): void
     {
         $this->overView = $overView;
-    }
-
-    public function musicVideoLink(): ?ExternalContentLink
-    {
-        return $this->musicVideoLink;
-    }
-
-    public function setMusicVideoLink(ExternalContentLink $musicVideoLink): void
-    {
-        $this->musicVideoLink = $musicVideoLink;
     }
 
     public function version(): Version

@@ -66,7 +66,6 @@ readonly class EditTalent implements EditTalentInterface
         $talent->setGroupIdentifiers($input->groupIdentifiers());
         $talent->setBirthday($input->birthday());
         $talent->setCareer($input->career());
-        $talent->setRelevantVideoLinks($input->relevantVideoLinks());
 
         $this->draftTalentRepository->save($talent);
 

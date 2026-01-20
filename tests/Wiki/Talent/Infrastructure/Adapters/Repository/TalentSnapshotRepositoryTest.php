@@ -7,7 +7,6 @@ namespace Tests\Wiki\Talent\Infrastructure\Adapters\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -19,7 +18,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 use Tests\Helper\CreateGroup;
@@ -58,9 +56,6 @@ class TalentSnapshotRepositoryTest extends TestCase
         ];
         $birthday = new DateTimeImmutable('1999-04-23');
         $career = 'TWICE member since 2015.';
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=1');
-        $link2 = new ExternalContentLink('https://example.youtube.com/watch?v=2');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2]);
         $version = 1;
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
 
@@ -75,7 +70,6 @@ class TalentSnapshotRepositoryTest extends TestCase
             $groupIdentifiers,
             new Birthday($birthday),
             new Career($career),
-            $relevantVideoLinks,
             new Version($version),
             $createdAt,
         );
@@ -129,7 +123,6 @@ class TalentSnapshotRepositoryTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             new Version(1),
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );

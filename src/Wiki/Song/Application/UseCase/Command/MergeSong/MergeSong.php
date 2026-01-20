@@ -70,9 +70,6 @@ readonly class MergeSong implements MergeSongInterface
             $song->setReleaseDate($input->releaseDate());
         }
         $song->setOverView($input->overView());
-        if ($input->musicVideoLink()) {
-            $song->setMusicVideoLink($input->musicVideoLink());
-        }
         $song->setMergerIdentifier($input->principalIdentifier());
         $song->setMergedAt($input->mergedAt());
 

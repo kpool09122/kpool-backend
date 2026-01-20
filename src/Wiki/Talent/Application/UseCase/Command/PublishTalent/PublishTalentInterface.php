@@ -10,7 +10,6 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 
 interface PublishTalentInterface
 {
@@ -20,7 +19,6 @@ interface PublishTalentInterface
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedTalentException
-     * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
-use JsonException;
 
 class CreateTalent
 {
@@ -20,12 +19,10 @@ class CreateTalent
      *     birthday?: ?string,
      *     career?: string,
      *     image_link?: ?string,
-     *     relevant_video_links?: array<string>,
      *     version?: int,
      *     is_official?: bool,
      *     owner_account_id?: ?string
      * } $overrides
-     * @throws JsonException
      */
     public static function create(string $talentId, array $overrides = []): void
     {
@@ -39,7 +36,6 @@ class CreateTalent
             'birthday' => $overrides['birthday'] ?? null,
             'career' => $overrides['career'] ?? 'Stray Kids leader, producer, and rapper. Member of 3RACHA.',
             'image_link' => $overrides['image_link'] ?? null,
-            'relevant_video_links' => json_encode($overrides['relevant_video_links'] ?? [], JSON_THROW_ON_ERROR),
             'version' => $overrides['version'] ?? 1,
             'is_official' => $overrides['is_official'] ?? false,
             'owner_account_id' => $overrides['owner_account_id'] ?? null,

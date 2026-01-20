@@ -20,7 +20,6 @@ class CreateTalentSnapshot
      *     birthday?: ?string,
      *     career?: string,
      *     image_link?: ?string,
-     *     relevant_video_links?: array<int, string>,
      *     version?: int,
      *     created_at?: string
      * } $overrides
@@ -38,7 +37,6 @@ class CreateTalentSnapshot
             'birthday' => $overrides['birthday'] ?? '1999-04-23',
             'career' => $overrides['career'] ?? 'TWICE member since 2015.',
             'image_link' => $overrides['image_link'] ?? '/resources/public/images/chaeyoung.webp',
-            'relevant_video_links' => json_encode($overrides['relevant_video_links'] ?? []),
             'version' => $overrides['version'] ?? 1,
             'created_at' => $overrides['created_at'] ?? '2024-01-01 00:00:00',
         ]);

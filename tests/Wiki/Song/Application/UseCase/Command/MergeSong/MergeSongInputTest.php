@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Song\Application\UseCase\Command\MergeSong;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -38,7 +37,6 @@ class MergeSongInputTest extends TestCase
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergedAt = new DateTimeImmutable('2026-01-02 12:00:00');
 
@@ -52,7 +50,6 @@ class MergeSongInputTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $musicVideoLink,
             $principalIdentifier,
             $mergedAt,
         );
@@ -65,7 +62,6 @@ class MergeSongInputTest extends TestCase
         $this->assertSame((string)$composer, (string)$input->composer());
         $this->assertSame($releaseDate->value(), $input->releaseDate()->value());
         $this->assertSame((string)$overView, (string)$input->overView());
-        $this->assertSame($musicVideoLink, $input->musicVideoLink());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($mergedAt, $input->mergedAt());
     }
@@ -95,7 +91,6 @@ class MergeSongInputTest extends TestCase
             $composer,
             null,
             $overView,
-            null,
             $principalIdentifier,
             $mergedAt,
         );
@@ -108,7 +103,6 @@ class MergeSongInputTest extends TestCase
         $this->assertSame((string)$composer, (string)$input->composer());
         $this->assertNull($input->releaseDate());
         $this->assertSame((string)$overView, (string)$input->overView());
-        $this->assertNull($input->musicVideoLink());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($mergedAt, $input->mergedAt());
     }

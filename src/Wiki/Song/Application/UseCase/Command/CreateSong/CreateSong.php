@@ -73,9 +73,6 @@ readonly class CreateSong implements CreateSongInterface
             $song->setReleaseDate($input->releaseDate());
         }
         $song->setOverView($input->overView());
-        if ($input->musicVideoLink()) {
-            $song->setMusicVideoLink($input->musicVideoLink());
-        }
 
         $this->draftSongRepository->save($song);
 

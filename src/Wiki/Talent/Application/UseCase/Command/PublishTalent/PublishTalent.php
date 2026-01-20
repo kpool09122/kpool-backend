@@ -17,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentHistoryFactoryInterface;
 use Source\Wiki\Talent\Domain\Factory\TalentSnapshotFactoryInterface;
@@ -49,7 +48,6 @@ readonly class PublishTalent implements PublishTalentInterface
      * @throws TalentNotFoundException
      * @throws InvalidStatusException
      * @throws ExistsApprovedButNotTranslatedTalentException
-     * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
@@ -118,7 +116,6 @@ readonly class PublishTalent implements PublishTalentInterface
         $publishedTalent->setGroupIdentifiers($talent->groupIdentifiers());
         $publishedTalent->setBirthday($talent->birthday());
         $publishedTalent->setCareer($talent->career());
-        $publishedTalent->setRelevantVideoLinks($talent->relevantVideoLinks());
 
         $this->talentRepository->save($publishedTalent);
 

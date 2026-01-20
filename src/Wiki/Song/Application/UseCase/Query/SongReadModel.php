@@ -16,7 +16,6 @@ readonly class SongReadModel
      * @param string $composer
      * @param DateTimeImmutable $releaseDate
      * @param string $overview
-     * @param string $musicVideoLink
      * @param string $coverImagePath
      */
     public function __construct(
@@ -27,7 +26,6 @@ readonly class SongReadModel
         private string $composer,
         private DateTimeImmutable $releaseDate,
         private string $overview,
-        private string $musicVideoLink,
         private string $coverImagePath,
     ) {
     }
@@ -70,11 +68,6 @@ readonly class SongReadModel
         return $this->overview;
     }
 
-    public function musicVideoLink(): string
-    {
-        return $this->musicVideoLink;
-    }
-
     public function coverImagePath(): string
     {
         return $this->coverImagePath;
@@ -93,7 +86,6 @@ readonly class SongReadModel
             'composer' => $this->composer,
             'release_date' => $this->releaseDate->format('Y-m'),
             'overview' => $this->overview,
-            'music_video_link' => $this->musicVideoLink,
             'cover_image_path' => $this->coverImagePath,
         ];
     }

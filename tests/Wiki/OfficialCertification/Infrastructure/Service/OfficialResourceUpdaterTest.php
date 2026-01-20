@@ -36,7 +36,6 @@ use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -368,7 +367,6 @@ class OfficialResourceUpdaterTest extends TestCase
             [],
             null,
             new Career('Career'),
-            RelevantVideoLinks::formStringArray([]),
             new Version(1),
         );
     }
@@ -387,7 +385,6 @@ class OfficialResourceUpdaterTest extends TestCase
             new Composer('Composer'),
             null,
             new Overview('Overview'),
-            null,
             new Version(1),
         );
     }

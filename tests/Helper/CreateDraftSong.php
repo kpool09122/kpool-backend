@@ -25,7 +25,6 @@ class CreateDraftSong
      *     lyrics?: string,
      *     overview?: string,
      *     cover_image_path?: ?string,
-     *     music_video_link?: ?string,
      *     status?: string
      * } $overrides
      */
@@ -45,7 +44,6 @@ class CreateDraftSong
             'lyrics' => $overrides['lyrics'] ?? '',
             'overview' => $overrides['overview'] ?? 'NewJeans debut single.',
             'cover_image_path' => $overrides['cover_image_path'] ?? null,
-            'music_video_link' => $overrides['music_video_link'] ?? null,
             'status' => $overrides['status'] ?? ApprovalStatus::Pending->value,
             'created_at' => now(),
             'updated_at' => now(),

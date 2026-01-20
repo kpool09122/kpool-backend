@@ -6,7 +6,6 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\RollbackSong;
 
 use DateTimeImmutable;
 use Mockery;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -601,7 +600,6 @@ class RollbackSongTest extends TestCase
             new Composer('Current Composer'),
             new ReleaseDate(new DateTimeImmutable('2024-01-01')),
             new Overview('Current Overview'),
-            new ExternalContentLink('https://example.com/current'),
             $version,
         );
     }
@@ -625,7 +623,6 @@ class RollbackSongTest extends TestCase
             new Composer('Snapshot Composer'),
             new ReleaseDate(new DateTimeImmutable('2023-06-01')),
             new Overview('Snapshot Overview'),
-            new ExternalContentLink('https://example.com/snapshot'),
             $version,
             new DateTimeImmutable('2024-01-01 00:00:00'),
         );

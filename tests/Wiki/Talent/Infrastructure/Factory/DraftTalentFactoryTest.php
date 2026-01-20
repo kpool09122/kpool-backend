@@ -9,7 +9,6 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Infrastructure\Factory\DraftTalentFactory;
@@ -35,7 +34,6 @@ class DraftTalentFactoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testCreate(): void
     {

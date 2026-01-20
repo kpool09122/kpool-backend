@@ -113,6 +113,12 @@ use Source\Wiki\Talent\Infrastructure\Factory\DraftTalentFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentHistoryFactory;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentSnapshotFactory;
+use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinks;
+use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinksInterface;
+use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
+use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
+use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkFactory;
+use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkRepository;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -172,5 +178,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftAgencyRepositoryInterface::class, DraftAgencyRepository::class);
         $this->app->singleton(DraftSongRepositoryInterface::class, DraftSongRepository::class);
         $this->app->singleton(DraftTalentRepositoryInterface::class, DraftTalentRepository::class);
+        $this->app->singleton(VideoLinkFactoryInterface::class, VideoLinkFactory::class);
+        $this->app->singleton(VideoLinkRepositoryInterface::class, VideoLinkRepository::class);
+        $this->app->singleton(SaveVideoLinksInterface::class, SaveVideoLinks::class);
     }
 }

@@ -21,7 +21,6 @@ return new class extends Migration
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
-            $table->json('relevant_video_links')->comment('関連動画リン一覧')->default('[]');
             $table->boolean('is_official')->default(false)->comment('Official flag');
             $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
             $table->unsignedInteger('version')->comment('バージョン');
@@ -41,7 +40,6 @@ return new class extends Migration
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
-            $table->json('relevant_video_links')->comment('関連動画リンク一覧')->default('[]');
             $table->text('status')->comment('公開ステータス');
             $table->timestamps();
         });
@@ -57,7 +55,6 @@ return new class extends Migration
             $table->date('birthday')->nullable()->comment('誕生日');
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
-            $table->json('relevant_video_links')->comment('関連動画リンク一覧')->default('[]');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->dateTime('created_at')->comment('作成日時');
 

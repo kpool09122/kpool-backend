@@ -17,7 +17,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
 
@@ -36,7 +35,6 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             'agency_id' => $snapshot->agencyIdentifier() ? (string)$snapshot->agencyIdentifier() : null,
             'birthday' => $snapshot->birthday()?->value(),
             'career' => (string)$snapshot->career(),
-            'relevant_video_links' => $snapshot->relevantVideoLinks()->toStringArray(),
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
         ]);
@@ -118,7 +116,6 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             $groupIdentifiers,
             $model->birthday ? new Birthday($model->birthday->toDateTimeImmutable()) : null,
             new Career($model->career),
-            RelevantVideoLinks::formStringArray($model->relevant_video_links ?? []),
             new Version($model->version),
             $model->created_at->toDateTimeImmutable(),
         );

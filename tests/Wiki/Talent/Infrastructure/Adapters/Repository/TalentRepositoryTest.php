@@ -6,11 +6,8 @@ namespace Tests\Wiki\Talent\Infrastructure\Adapters\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\DB;
-use JsonException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -22,7 +19,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateTalent;
@@ -49,7 +45,6 @@ class TalentRepositoryTest extends TestCase
         $groupIdentifiers = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
         $birthday = '1997-10-03';
         $career = 'Stray Kids leader, producer, and rapper. Member of 3RACHA.';
-        $relevantVideoLinks = ['https://www.youtube.com/watch?v=EaswWiwMVs8', 'https://www.youtube.com/watch?v=dcNRbbQBJUE'];
         $version = 3;
 
         // 先にグループを作成
@@ -66,7 +61,6 @@ class TalentRepositoryTest extends TestCase
             'group_identifiers' => $groupIdentifiers,
             'birthday' => $birthday,
             'career' => $career,
-            'relevant_video_links' => $relevantVideoLinks,
             'version' => $version,
         ]);
 
@@ -87,7 +81,6 @@ class TalentRepositoryTest extends TestCase
         $this->assertInstanceOf(Birthday::class, $talent->birthday());
         $this->assertSame($birthday, $talent->birthday()->format('Y-m-d'));
         $this->assertSame($career, (string) $talent->career());
-        $this->assertSame($relevantVideoLinks, $talent->relevantVideoLinks()->toStringArray());
         $this->assertSame($version, $talent->version()->value());
     }
 
@@ -141,7 +134,6 @@ class TalentRepositoryTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws JsonException
      */
     #[Group('useDb')]
     public function testSave(): void
@@ -166,10 +158,6 @@ class TalentRepositoryTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('2000-09-14')),
             new Career('Stray Kids lead vocalist and main rapper. Member of 3RACHA.'),
-            new RelevantVideoLinks([
-                new ExternalContentLink('https://www.youtube.com/watch?v=EaswWiwMVs8'),
-                new ExternalContentLink('https://www.youtube.com/watch?v=dcNRbbQBJUE'),
-            ]),
             new Version(4),
         );
 
@@ -198,16 +186,6 @@ class TalentRepositoryTest extends TestCase
             'group_id' => $groupId2,
         ]);
 
-        $rawVideos = DB::table('talents')
-            ->where('id', (string) $talent->talentIdentifier())
-            ->value('relevant_video_links');
-
-        $decodedVideos = json_decode((string) $rawVideos, true, 512, JSON_THROW_ON_ERROR);
-
-        $this->assertSame(
-            $talent->relevantVideoLinks()->toStringArray(),
-            $decodedVideos,
-        );
     }
 
     /**
