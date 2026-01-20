@@ -321,6 +321,117 @@ class IdentityGroupRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系: 正しくAccountIdとIdentityIdに紐づくIdentityGroupを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndIdentityId(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $identityId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateIdentity::create(
+            new IdentityIdentifier($identityId),
+            ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
+        );
+
+        $identityGroup1 = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Owners',
+            AccountRole::OWNER,
+            true,
+            new DateTimeImmutable(),
+        );
+        $identityGroup1->addMember(new IdentityIdentifier($identityId));
+
+        $identityGroup2 = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Admins',
+            AccountRole::ADMIN,
+            false,
+            new DateTimeImmutable(),
+        );
+        $identityGroup2->addMember(new IdentityIdentifier($identityId));
+
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $repository->save($identityGroup1);
+        $repository->save($identityGroup2);
+
+        $result = $repository->findByAccountIdAndIdentityId(
+            new AccountIdentifier($accountId),
+            new IdentityIdentifier($identityId)
+        );
+
+        $this->assertCount(2, $result);
+        $names = array_map(static fn ($g) => $g->name(), $result);
+        $this->assertContains('Owners', $names);
+        $this->assertContains('Admins', $names);
+    }
+
+    /**
+     * 正常系: 指定したAccountIdとIdentityIdに紐づくIdentityGroupが存在しない場合、空配列が返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndIdentityIdWhenNotFound(): void
+    {
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $result = $repository->findByAccountIdAndIdentityId(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid())
+        );
+
+        $this->assertSame([], $result);
+    }
+
+    /**
+     * 正常系: IdentityIdが存在するが別のAccountの場合、空配列が返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndIdentityIdWhenDifferentAccount(): void
+    {
+        $accountId1 = StrTestHelper::generateUuid();
+        $accountId2 = StrTestHelper::generateUuid();
+        $identityId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId1);
+        CreateAccount::create($accountId2);
+        CreateIdentity::create(
+            new IdentityIdentifier($identityId),
+            ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
+        );
+
+        // accountId1にidentityIdを追加
+        $identityGroup = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId1),
+            'Test Group',
+            AccountRole::OWNER,
+            true,
+            new DateTimeImmutable(),
+        );
+        $identityGroup->addMember(new IdentityIdentifier($identityId));
+
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $repository->save($identityGroup);
+
+        // accountId2で検索すると見つからない
+        $result = $repository->findByAccountIdAndIdentityId(
+            new AccountIdentifier($accountId2),
+            new IdentityIdentifier($identityId)
+        );
+
+        $this->assertSame([], $result);
+    }
+
+    /**
      * 正常系: 正しくAccountIdに紐づくデフォルトIdentityGroupを取得できること
      *
      * @throws BindingResolutionException
@@ -406,6 +517,132 @@ class IdentityGroupRepositoryTest extends TestCase
         $this->assertNull($repository->findById(new IdentityGroupIdentifier($identityGroupId)));
         $this->assertDatabaseMissing('identity_groups', ['id' => $identityGroupId]);
         $this->assertDatabaseMissing('identity_group_memberships', ['identity_group_id' => $identityGroupId]);
+    }
+
+    /**
+     * 正常系: AccountIdとRoleでIdentityGroupを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndRole(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+
+        $ownerGroup = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Owners',
+            AccountRole::OWNER,
+            true,
+            new DateTimeImmutable(),
+        );
+
+        $memberGroup = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Members',
+            AccountRole::MEMBER,
+            false,
+            new DateTimeImmutable(),
+        );
+
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $repository->save($ownerGroup);
+        $repository->save($memberGroup);
+
+        $result = $repository->findByAccountIdAndRole(
+            new AccountIdentifier($accountId),
+            AccountRole::MEMBER
+        );
+
+        $this->assertNotNull($result);
+        $this->assertSame('Members', $result->name());
+        $this->assertSame(AccountRole::MEMBER, $result->role());
+    }
+
+    /**
+     * 正常系: AccountIdとRoleに一致するIdentityGroupが存在しない場合、NULLが返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndRoleWhenNotFound(): void
+    {
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $result = $repository->findByAccountIdAndRole(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            AccountRole::MEMBER
+        );
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * 正常系: 異なるRoleでは取得できないこと
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndRoleWithDifferentRole(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId);
+
+        $ownerGroup = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId),
+            'Owners',
+            AccountRole::OWNER,
+            true,
+            new DateTimeImmutable(),
+        );
+
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $repository->save($ownerGroup);
+
+        // MEMBERで検索するとOWNERグループは見つからない
+        $result = $repository->findByAccountIdAndRole(
+            new AccountIdentifier($accountId),
+            AccountRole::MEMBER
+        );
+
+        $this->assertNull($result);
+    }
+
+    /**
+     * 正常系: 異なるAccountでは取得できないこと
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByAccountIdAndRoleWithDifferentAccount(): void
+    {
+        $accountId1 = StrTestHelper::generateUuid();
+        $accountId2 = StrTestHelper::generateUuid();
+        CreateAccount::create($accountId1);
+        CreateAccount::create($accountId2);
+
+        $memberGroup = new IdentityGroup(
+            new IdentityGroupIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier($accountId1),
+            'Members',
+            AccountRole::MEMBER,
+            false,
+            new DateTimeImmutable(),
+        );
+
+        $repository = $this->app->make(IdentityGroupRepositoryInterface::class);
+        $repository->save($memberGroup);
+
+        // 別のAccountIdで検索すると見つからない
+        $result = $repository->findByAccountIdAndRole(
+            new AccountIdentifier($accountId2),
+            AccountRole::MEMBER
+        );
+
+        $this->assertNull($result);
     }
 
     /**

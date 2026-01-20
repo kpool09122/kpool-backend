@@ -2,22 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Source\Identity\Application\UseCase\Command\RegisterUser;
+namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
+use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
-readonly class RegisterUserInput implements RegisterUserInputPort
+readonly class CreateIdentityInput implements CreateIdentityInputPort
 {
     public function __construct(
-        private UserName      $username,
-        private Email         $email,
-        private Language      $language,
-        private PlainPassword $password,
-        private PlainPassword $confirmedPassword,
-        private ?string       $base64EncodedImage,
+        private UserName         $username,
+        private Email            $email,
+        private Language         $language,
+        private PlainPassword    $password,
+        private PlainPassword    $confirmedPassword,
+        private ?string          $base64EncodedImage,
+        private ?InvitationToken $invitationToken = null,
     ) {
     }
 
@@ -49,5 +51,10 @@ readonly class RegisterUserInput implements RegisterUserInputPort
     public function base64EncodedImage(): ?string
     {
         return $this->base64EncodedImage;
+    }
+
+    public function invitationToken(): ?InvitationToken
+    {
+        return $this->invitationToken;
     }
 }

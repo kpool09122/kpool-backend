@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Event;
 use Mockery;
 use RuntimeException;
 use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Event\IdentityCreated;
+use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\OAuthStateRepositoryInterface;
@@ -300,6 +302,98 @@ class SocialLoginCallbackTest extends TestCase
                 && $event->accountType === AccountType::CORPORATION
                 && $event->name === $profile->name();
         });
+    }
+
+    /**
+     * 正常系: 初回ログイン時、SignupSessionにinvitationTokenがあればIdentityCreatedViaInvitationイベントを発行すること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcessWhenUserNotFoundWithInvitationToken(): void
+    {
+        Event::fake();
+
+        $provider = SocialProvider::GOOGLE;
+        $code = new OAuthCode('code');
+        $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
+        $input = new SocialLoginCallbackInput($provider, $code, $state);
+        $output = new SocialLoginCallbackOutput();
+
+        $email = new Email('invited-user@example.com');
+        $profile = new SocialProfile($provider, 'invited-provider-user', $email, 'Invited User');
+        $newUser = $this->createIdentity($email);
+        $invitationToken = new InvitationToken(bin2hex(random_bytes(32)));
+        $signupSession = new SignupSession(null, $invitationToken);
+
+        $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
+        $oauthStateRepository->shouldReceive('consume')
+            ->once()
+            ->with($state)
+            ->andReturnNull();
+
+        $socialOAuthClient = Mockery::mock(SocialOAuthServiceInterface::class);
+        $socialOAuthClient->shouldReceive('fetchProfile')
+            ->once()
+            ->with($provider, $code)
+            ->andReturn($profile);
+
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findBySocialConnection')
+            ->once()
+            ->with($provider, $profile->providerUserId())
+            ->andReturnNull();
+        $identityRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturnNull();
+        $identityRepository->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(static function (Identity $identity) use ($provider, $profile, $newUser): bool {
+                return (string) $identity->identityIdentifier() === (string) $newUser->identityIdentifier()
+                    && $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()));
+            }))
+            ->andReturnNull();
+
+        $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
+        $identityFactory->shouldReceive('createFromSocialProfile')
+            ->once()
+            ->with($profile)
+            ->andReturn($newUser);
+
+        $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
+        $signupSessionRepository->shouldReceive('find')
+            ->once()
+            ->with($state)
+            ->andReturn($signupSession);
+        $signupSessionRepository->shouldReceive('delete')
+            ->once()
+            ->with($state)
+            ->andReturnNull();
+
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldReceive('login')
+            ->once()
+            ->with($newUser)
+            ->andReturn($newUser);
+
+        $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
+        $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
+        $this->app->instance(AuthServiceInterface::class, $authService);
+
+        $useCase = $this->app->make(SocialLoginCallbackInterface::class);
+
+        $useCase->process($input, $output);
+
+        $this->assertSame('/auth/callback', $output->redirectUrl());
+        Event::assertDispatched(IdentityCreatedViaInvitation::class, function (IdentityCreatedViaInvitation $event) use ($newUser, $invitationToken) {
+            return (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+                && (string) $event->invitationToken === (string) $invitationToken;
+        });
+        Event::assertNotDispatched(IdentityCreated::class);
     }
 
     /**

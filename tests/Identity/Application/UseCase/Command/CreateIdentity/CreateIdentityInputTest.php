@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Identity\Application\UseCase\Command\RegisterUser;
+namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 
 use PHPUnit\Framework\TestCase;
-use Source\Identity\Application\UseCase\Command\RegisterUser\RegisterUserInput;
+use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
-class RegisterUserInputTest extends TestCase
+class CreateIdentityInputTest extends TestCase
 {
     public function test__construct(): void
     {
@@ -23,7 +23,7 @@ class RegisterUserInputTest extends TestCase
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
 
-        $input = new RegisterUserInput(
+        $input = new CreateIdentityInput(
             $userName,
             $email,
             $language,

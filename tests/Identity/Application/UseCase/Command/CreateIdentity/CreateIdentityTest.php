@@ -2,19 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Tests\Identity\Application\UseCase\Command\RegisterUser;
+namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use Mockery;
-use Source\Identity\Application\UseCase\Command\RegisterUser\RegisterUser;
-use Source\Identity\Application\UseCase\Command\RegisterUser\RegisterUserInput;
-use Source\Identity\Application\UseCase\Command\RegisterUser\RegisterUserInterface;
+use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
+use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
+use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
 use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\Entity\Identity;
+use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
+use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
@@ -28,11 +32,10 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class RegisterUserTest extends TestCase
+class CreateIdentityTest extends TestCase
 {
     /**
      * 正しくDIが動作していること.
@@ -50,8 +53,8 @@ class RegisterUserTest extends TestCase
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $useCase = $this->app->make(RegisterUserInterface::class);
-        $this->assertInstanceOf(RegisterUser::class, $useCase);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
+        $this->assertInstanceOf(CreateIdentity::class, $useCase);
     }
 
     /**
@@ -60,7 +63,7 @@ class RegisterUserTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AuthCodeSessionNotFoundException
-     * @throws UnauthorizedException
+     * @throws UnauthorizedEmailException
      * @throws AlreadyUserExistsException
      */
     public function testProcess(): void
@@ -71,7 +74,7 @@ class RegisterUserTest extends TestCase
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AAusB9xyxOvUAAAAASUVORK5CYII=';
-        $input = new RegisterUserInput(
+        $input = new CreateIdentityInput(
             $userName,
             $email,
             $language,
@@ -131,7 +134,7 @@ class RegisterUserTest extends TestCase
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $useCase = $this->app->make(RegisterUserInterface::class);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $result = $useCase->process($input);
 
@@ -145,7 +148,7 @@ class RegisterUserTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UnauthorizedException
+     * @throws UnauthorizedEmailException
      * @throws AlreadyUserExistsException
      */
     public function testThrowsAuthCodeSessionNotFoundException(): void
@@ -156,7 +159,7 @@ class RegisterUserTest extends TestCase
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
-        $input = new RegisterUserInput(
+        $input = new CreateIdentityInput(
             $userName,
             $email,
             $language,
@@ -185,7 +188,7 @@ class RegisterUserTest extends TestCase
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $useCase = $this->app->make(RegisterUserInterface::class);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(AuthCodeSessionNotFoundException::class);
 
@@ -198,7 +201,7 @@ class RegisterUserTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AuthCodeSessionNotFoundException
-     * @throws UnauthorizedException
+     * @throws UnauthorizedEmailException
      */
     public function testThrowsAlreadyUserExistsException(): void
     {
@@ -208,7 +211,7 @@ class RegisterUserTest extends TestCase
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
-        $input = new RegisterUserInput(
+        $input = new CreateIdentityInput(
             $userName,
             $email,
             $language,
@@ -253,7 +256,7 @@ class RegisterUserTest extends TestCase
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $useCase = $this->app->make(RegisterUserInterface::class);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(AlreadyUserExistsException::class);
 
@@ -266,7 +269,7 @@ class RegisterUserTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AuthCodeSessionNotFoundException
-     * @throws UnauthorizedException
+     * @throws UnauthorizedEmailException
      * @throws AlreadyUserExistsException
      */
     public function testThrowsInvalidArgumentExceptionWhenPasswordsMatch(): void
@@ -277,7 +280,7 @@ class RegisterUserTest extends TestCase
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass2@');
         $base64EncodedImage = null;
-        $input = new RegisterUserInput(
+        $input = new CreateIdentityInput(
             $userName,
             $email,
             $language,
@@ -295,7 +298,7 @@ class RegisterUserTest extends TestCase
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $useCase = $this->app->make(RegisterUserInterface::class);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -310,7 +313,7 @@ class RegisterUserTest extends TestCase
      * @throws AuthCodeSessionNotFoundException
      * @throws AlreadyUserExistsException
      */
-    public function testThrowsUnauthorizedExceptionWhenSessionIsNotVerified(): void
+    public function testThrowsUnauthorizedEmailExceptionWhenSessionIsNotVerified(): void
     {
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
@@ -318,7 +321,7 @@ class RegisterUserTest extends TestCase
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
-        $input = new RegisterUserInput(
+        $input = new CreateIdentityInput(
             $userName,
             $email,
             $language,
@@ -365,10 +368,176 @@ class RegisterUserTest extends TestCase
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
-        $useCase = $this->app->make(RegisterUserInterface::class);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(UnauthorizedEmailException::class);
 
         $useCase->process($input);
+    }
+
+    /**
+     * 正常系: invitationTokenが指定された場合、IdentityCreatedViaInvitationイベントがディスパッチされること
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AuthCodeSessionNotFoundException
+     * @throws UnauthorizedEmailException
+     * @throws AlreadyUserExistsException
+     */
+    public function testProcessDispatchesIdentityCreatedViaInvitationEvent(): void
+    {
+        Event::fake();
+
+        $userName = new UserName('test-user');
+        $email = new Email('user@example.com');
+        $language = Language::JAPANESE;
+        $password = new PlainPassword('PlainPass1!');
+        $confirmedPassword = new PlainPassword('PlainPass1!');
+        $base64EncodedImage = null;
+        $invitationToken = new InvitationToken(bin2hex(random_bytes(32)));
+
+        $input = new CreateIdentityInput(
+            $userName,
+            $email,
+            $language,
+            $password,
+            $confirmedPassword,
+            $base64EncodedImage,
+            $invitationToken,
+        );
+
+        $verifiedAt = new DateTimeImmutable();
+        $authCode = new AuthCode('123456');
+        $session = new AuthCodeSession($email, $authCode, $verifiedAt, $verifiedAt);
+
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $identity = new Identity(
+            $identityIdentifier,
+            $userName,
+            $email,
+            $language,
+            null,
+            HashedPassword::fromPlain($password),
+            null,
+        );
+
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturn($session);
+
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturnNull();
+        $identityRepository->shouldReceive('save')
+            ->once()
+            ->with($identity);
+
+        $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
+        $identityFactory->shouldReceive('create')
+            ->once()
+            ->with($userName, $email, $language, $password)
+            ->andReturn($identity);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldNotReceive('upload');
+
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
+
+        $result = $useCase->process($input);
+
+        $this->assertSame($identity, $result);
+
+        Event::assertDispatched(IdentityCreatedViaInvitation::class, static function (IdentityCreatedViaInvitation $event) use ($identityIdentifier, $invitationToken) {
+            return (string) $event->identityIdentifier === (string) $identityIdentifier
+                && (string) $event->invitationToken === (string) $invitationToken;
+        });
+    }
+
+    /**
+     * 正常系: invitationTokenがnullの場合、IdentityCreatedViaInvitationイベントがディスパッチされないこと
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AuthCodeSessionNotFoundException
+     * @throws UnauthorizedEmailException
+     * @throws AlreadyUserExistsException
+     */
+    public function testProcessDoesNotDispatchIdentityCreatedViaInvitationEventWhenTokenIsNull(): void
+    {
+        Event::fake();
+
+        $userName = new UserName('test-user');
+        $email = new Email('user@example.com');
+        $language = Language::JAPANESE;
+        $password = new PlainPassword('PlainPass1!');
+        $confirmedPassword = new PlainPassword('PlainPass1!');
+        $base64EncodedImage = null;
+
+        $input = new CreateIdentityInput(
+            $userName,
+            $email,
+            $language,
+            $password,
+            $confirmedPassword,
+            $base64EncodedImage,
+        );
+
+        $verifiedAt = new DateTimeImmutable();
+        $authCode = new AuthCode('123456');
+        $session = new AuthCodeSession($email, $authCode, $verifiedAt, $verifiedAt);
+
+        $identity = new Identity(
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $userName,
+            $email,
+            $language,
+            null,
+            HashedPassword::fromPlain($password),
+            null,
+        );
+
+        $authCodeSessionRepository = Mockery::mock(AuthCodeSessionRepositoryInterface::class);
+        $authCodeSessionRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturn($session);
+
+        $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $identityRepository->shouldReceive('findByEmail')
+            ->once()
+            ->with($email)
+            ->andReturnNull();
+        $identityRepository->shouldReceive('save')
+            ->once()
+            ->with($identity);
+
+        $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
+        $identityFactory->shouldReceive('create')
+            ->once()
+            ->with($userName, $email, $language, $password)
+            ->andReturn($identity);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldNotReceive('upload');
+
+        $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
+        $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $useCase = $this->app->make(CreateIdentityInterface::class);
+
+        $result = $useCase->process($input);
+
+        $this->assertSame($identity, $result);
+
+        Event::assertNotDispatched(IdentityCreatedViaInvitation::class);
     }
 }
