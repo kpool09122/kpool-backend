@@ -119,6 +119,14 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkFactory;
 use Source\Wiki\VideoLink\Infrastructure\Repository\VideoLinkRepository;
+use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinks;
+use Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\CollectVideoLinks\CollectVideoLinksInterface;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
+use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
+use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Factory\VideoLinkCollectionStatusFactory;
+use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Repository\VideoLinkCollectionStatusRepository;
+use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Service\YouTubeSearchService;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -181,5 +189,9 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(VideoLinkFactoryInterface::class, VideoLinkFactory::class);
         $this->app->singleton(VideoLinkRepositoryInterface::class, VideoLinkRepository::class);
         $this->app->singleton(SaveVideoLinksInterface::class, SaveVideoLinks::class);
+        $this->app->singleton(VideoLinkCollectionStatusFactoryInterface::class, VideoLinkCollectionStatusFactory::class);
+        $this->app->singleton(VideoLinkCollectionStatusRepositoryInterface::class, VideoLinkCollectionStatusRepository::class);
+        $this->app->singleton(YouTubeSearchServiceInterface::class, YouTubeSearchService::class);
+        $this->app->singleton(CollectVideoLinksInterface::class, CollectVideoLinks::class);
     }
 }

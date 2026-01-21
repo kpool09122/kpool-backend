@@ -103,4 +103,88 @@ class VideoUsageTest extends TestCase
         $this->assertSame(VideoUsage::SHORT, VideoUsage::from('short'));
         $this->assertSame(VideoUsage::OTHER, VideoUsage::from('other'));
     }
+
+    /**
+     * 正常系: 自動収集用のケースが正しく定義されていること.
+     */
+    public function testAutoCollectedCases(): void
+    {
+        $this->assertSame('youtube_auto_view_count', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT->value);
+        $this->assertSame('youtube_auto_like_count', VideoUsage::YOUTUBE_AUTO_LIKE_COUNT->value);
+        $this->assertSame('youtube_auto_recent_popular', VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR->value);
+    }
+
+    /**
+     * 正常系: 手動追加の用途がisManual()でtrueを返すこと.
+     */
+    public function testIsManualReturnsTrue(): void
+    {
+        $manualUsages = [
+            VideoUsage::MUSIC_VIDEO,
+            VideoUsage::LIVE,
+            VideoUsage::INTERVIEW,
+            VideoUsage::BEHIND_THE_SCENES,
+            VideoUsage::COVER,
+            VideoUsage::COLLABORATION,
+            VideoUsage::SHORT,
+            VideoUsage::OTHER,
+        ];
+
+        foreach ($manualUsages as $usage) {
+            $this->assertTrue($usage->isManual(), "{$usage->value} should be manual");
+        }
+    }
+
+    /**
+     * 正常系: 自動収集の用途がisManual()でfalseを返すこと.
+     */
+    public function testIsManualReturnsFalse(): void
+    {
+        $autoCollectedUsages = [
+            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
+            VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
+            VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR,
+        ];
+
+        foreach ($autoCollectedUsages as $usage) {
+            $this->assertFalse($usage->isManual(), "{$usage->value} should not be manual");
+        }
+    }
+
+    /**
+     * 正常系: 自動収集の用途がisAutoCollected()でtrueを返すこと.
+     */
+    public function testIsAutoCollectedReturnsTrue(): void
+    {
+        $autoCollectedUsages = [
+            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
+            VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
+            VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR,
+        ];
+
+        foreach ($autoCollectedUsages as $usage) {
+            $this->assertTrue($usage->isAutoCollected(), "{$usage->value} should be auto collected");
+        }
+    }
+
+    /**
+     * 正常系: 手動追加の用途がisAutoCollected()でfalseを返すこと.
+     */
+    public function testIsAutoCollectedReturnsFalse(): void
+    {
+        $manualUsages = [
+            VideoUsage::MUSIC_VIDEO,
+            VideoUsage::LIVE,
+            VideoUsage::INTERVIEW,
+            VideoUsage::BEHIND_THE_SCENES,
+            VideoUsage::COVER,
+            VideoUsage::COLLABORATION,
+            VideoUsage::SHORT,
+            VideoUsage::OTHER,
+        ];
+
+        foreach ($manualUsages as $usage) {
+            $this->assertFalse($usage->isAutoCollected(), "{$usage->value} should not be auto collected");
+        }
+    }
 }

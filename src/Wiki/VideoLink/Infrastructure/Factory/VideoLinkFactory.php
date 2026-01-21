@@ -36,6 +36,8 @@ readonly class VideoLinkFactory implements VideoLinkFactoryInterface
             $url,
             $videoUsage,
             $title,
+            null,
+            null,
             $displayOrder,
             new DateTimeImmutable(),
         );

@@ -20,6 +20,8 @@ class VideoLink
         private ExternalContentLink $url,
         private VideoUsage $videoUsage,
         private string $title,
+        private ?string $thumbnailUrl,
+        private ?DateTimeImmutable $publishedAt,
         private int $displayOrder,
         private readonly DateTimeImmutable $createdAt,
     ) {
@@ -68,6 +70,26 @@ class VideoLink
     public function setTitle(string $title): void
     {
         $this->title = $title;
+    }
+
+    public function thumbnailUrl(): ?string
+    {
+        return $this->thumbnailUrl;
+    }
+
+    public function setThumbnailUrl(?string $thumbnailUrl): void
+    {
+        $this->thumbnailUrl = $thumbnailUrl;
+    }
+
+    public function publishedAt(): ?DateTimeImmutable
+    {
+        return $this->publishedAt;
+    }
+
+    public function setPublishedAt(?DateTimeImmutable $publishedAt): void
+    {
+        $this->publishedAt = $publishedAt;
     }
 
     public function displayOrder(): int

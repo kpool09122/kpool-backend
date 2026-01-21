@@ -52,6 +52,8 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
                 'url' => (string) $videoLink->url(),
                 'video_usage' => $videoLink->videoUsage()->value,
                 'title' => $videoLink->title(),
+                'thumbnail_url' => $videoLink->thumbnailUrl(),
+                'published_at' => $videoLink->publishedAt(),
                 'display_order' => $videoLink->displayOrder(),
                 'created_at' => $videoLink->createdAt(),
             ],
@@ -73,6 +75,32 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->delete();
     }
 
+    public function deleteAutoCollectedByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void
+    {
+        $autoCollectedUsages = [
+            VideoUsage::YOUTUBE_AUTO_VIEW_COUNT->value,
+            VideoUsage::YOUTUBE_AUTO_LIKE_COUNT->value,
+            VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR->value,
+        ];
+
+        VideoLinkModel::query()
+            ->where('resource_type', $resourceType->value)
+            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->whereIn('video_usage', $autoCollectedUsages)
+            ->delete();
+    }
+
+    public function findByResourceWithMaxDisplayOrder(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): ?VideoLink
+    {
+        $model = VideoLinkModel::query()
+            ->where('resource_type', $resourceType->value)
+            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->orderByDesc('display_order')
+            ->first();
+
+        return $model !== null ? $this->toEntity($model) : null;
+    }
+
     private function toEntity(VideoLinkModel $model): VideoLink
     {
         return new VideoLink(
@@ -82,6 +110,8 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             new ExternalContentLink($model->url),
             VideoUsage::from($model->video_usage),
             $model->title,
+            $model->thumbnail_url,
+            $model->published_at?->toDateTimeImmutable(),
             $model->display_order,
             $model->created_at->toDateTimeImmutable(),
         );

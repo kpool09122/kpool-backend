@@ -6,6 +6,7 @@ namespace Application\Providers;
 
 use Application\Http\Client\OAuthHttpClient;
 use Application\Http\Client\StripeClient;
+use Application\Http\Client\YouTubeClient;
 use Illuminate\Support\ServiceProvider;
 
 class ClientServiceProvider extends ServiceProvider
@@ -24,6 +25,13 @@ class ClientServiceProvider extends ServiceProvider
             $oauthConfig = config('oauth', []);
 
             return new OAuthHttpClient($oauthConfig);
+        });
+
+        $this->app->singleton(YouTubeClient::class, function () {
+            /** @var string $apiKey */
+            $apiKey = config('youtube.api_key', '');
+
+            return new YouTubeClient($apiKey);
         });
     }
 }
