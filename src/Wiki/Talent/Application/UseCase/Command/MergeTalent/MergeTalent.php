@@ -67,7 +67,6 @@ readonly class MergeTalent implements MergeTalentInterface
         $talent->setGroupIdentifiers($input->groupIdentifiers());
         $talent->setBirthday($input->birthday());
         $talent->setCareer($input->career());
-        $talent->setRelevantVideoLinks($input->relevantVideoLinks());
         $talent->setMergerIdentifier($input->principalIdentifier());
         $talent->setMergedAt($input->mergedAt());
 

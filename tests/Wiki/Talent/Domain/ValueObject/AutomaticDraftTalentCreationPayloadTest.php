@@ -6,8 +6,6 @@ namespace Tests\Wiki\Talent\Domain\ValueObject;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -17,7 +15,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 
@@ -36,10 +33,6 @@ class AutomaticDraftTalentCreationPayloadTest extends TestCase
         ];
         $birthday = new Birthday(new DateTimeImmutable('1995-08-01'));
         $career = new Career('Lead vocalist of Sample Group.');
-        $imagePath = new ImagePath('talents/taro.png');
-        $relevantVideoLinks = new RelevantVideoLinks([
-            new ExternalContentLink('https://example.com/video/1'),
-        ]);
         $source = new AutomaticDraftTalentSource('webhook::talent');
 
         $payload = new AutomaticDraftTalentCreationPayload(

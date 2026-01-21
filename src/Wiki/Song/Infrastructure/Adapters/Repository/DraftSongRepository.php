@@ -7,7 +7,6 @@ namespace Source\Wiki\Song\Infrastructure\Adapters\Repository;
 use Application\Models\Wiki\DraftSong as DraftSongModel;
 use Application\Models\Wiki\Group;
 use Application\Models\Wiki\Talent;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -63,7 +62,6 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             new Composer($draftModel->composer),
             $releaseDate,
             new Overview($draftModel->overview),
-            $draftModel->music_video_link ? new ExternalContentLink($draftModel->music_video_link) : null,
             ApprovalStatus::from($draftModel->status),
         );
     }
@@ -91,7 +89,6 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 'composer' => (string) $song->composer(),
                 'release_date' => $releaseDateValue,
                 'overview' => (string) $song->overView(),
-                'music_video_link' => $song->musicVideoLink() ? (string) $song->musicVideoLink() : null,
                 'status' => $song->status()->value,
             ],
         );
@@ -148,7 +145,6 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 new Composer($model->composer),
                 $releaseDate,
                 new Overview($model->overview),
-                $model->music_video_link ? new ExternalContentLink($model->music_video_link) : null,
                 ApprovalStatus::from($model->status),
             );
         }

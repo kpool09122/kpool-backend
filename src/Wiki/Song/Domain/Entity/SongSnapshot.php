@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -35,7 +34,6 @@ readonly class SongSnapshot
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
-     * @param ?ExternalContentLink $musicVideoLink
      * @param Version $version
      * @param DateTimeImmutable $createdAt
      */
@@ -52,7 +50,6 @@ readonly class SongSnapshot
         private Composer                 $composer,
         private ?ReleaseDate             $releaseDate,
         private Overview                 $overView,
-        private ?ExternalContentLink     $musicVideoLink,
         private Version                  $version,
         private DateTimeImmutable        $createdAt,
     ) {
@@ -116,11 +113,6 @@ readonly class SongSnapshot
     public function overView(): Overview
     {
         return $this->overView;
-    }
-
-    public function musicVideoLink(): ?ExternalContentLink
-    {
-        return $this->musicVideoLink;
     }
 
     public function version(): Version

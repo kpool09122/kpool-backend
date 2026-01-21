@@ -15,7 +15,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 class DraftTalent
@@ -32,7 +31,6 @@ class DraftTalent
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
-     * @param RelevantVideoLinks $relevantVideoLinks
      * @param ApprovalStatus $status
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
@@ -49,7 +47,6 @@ class DraftTalent
         private array                             $groupIdentifiers,
         private ?Birthday                         $birthday,
         private Career                            $career,
-        private RelevantVideoLinks                $relevantVideoLinks,
         private ApprovalStatus                    $status,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
@@ -151,23 +148,6 @@ class DraftTalent
     public function setCareer(Career $career): void
     {
         $this->career = $career;
-    }
-
-    /**
-     * @return RelevantVideoLinks
-     */
-    public function relevantVideoLinks(): RelevantVideoLinks
-    {
-        return $this->relevantVideoLinks;
-    }
-
-    /**
-     * @param RelevantVideoLinks $relevantVideoLinks
-     * @return void
-     */
-    public function setRelevantVideoLinks(RelevantVideoLinks $relevantVideoLinks): void
-    {
-        $this->relevantVideoLinks = $relevantVideoLinks;
     }
 
     public function status(): ApprovalStatus

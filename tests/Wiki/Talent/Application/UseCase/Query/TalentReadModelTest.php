@@ -33,14 +33,12 @@ class TalentReadModelTest extends TestCase
             StrTestHelper::generateUuid(),
             'TT',
             new DateTimeImmutable('2016-10-24'),
-            'https://example.youtube.com/watch?v=dQw4w9WgXcQ',
             'https://example.com/resources/public/images/image.webp',
         );
         $songReadModel2 = new SongReadModel(
             StrTestHelper::generateUuid(),
             'I CAN\'T STOP ME',
             new DateTimeImmutable('2020-10-26'),
-            'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',
             'https://example.com/resources/public/images/image2.webp',
         );
         $songReadModels = [$songReadModel1, $songReadModel2];

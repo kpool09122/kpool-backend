@@ -7,7 +7,6 @@ namespace Source\Wiki\Talent\Domain\Factory;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 interface TalentFactoryInterface
@@ -17,7 +16,6 @@ interface TalentFactoryInterface
      * @param Language $language
      * @param TalentName $name
      * @return Talent
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,

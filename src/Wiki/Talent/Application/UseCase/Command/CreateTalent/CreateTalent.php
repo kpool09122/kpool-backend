@@ -12,7 +12,6 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
@@ -31,7 +30,6 @@ readonly class CreateTalent implements CreateTalentInterface
     /**
      * @param CreateTalentInputPort $input
      * @return DraftTalent
-     * @throws ExceedMaxRelevantVideoLinksException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
@@ -73,7 +71,6 @@ readonly class CreateTalent implements CreateTalentInterface
         $talent->setGroupIdentifiers($input->groupIdentifiers());
         $talent->setBirthday($input->birthday());
         $talent->setCareer($input->career());
-        $talent->setRelevantVideoLinks($input->relevantVideoLinks());
 
         $this->draftTalentRepository->save($talent);
 

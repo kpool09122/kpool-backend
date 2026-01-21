@@ -244,7 +244,6 @@ class AutomaticCreateDraftSongTest extends TestCase
             new Composer('Draft Composer'),
             null,
             new Overview('Auto generated overview.'),
-            null,
             ApprovalStatus::Pending,
         );
     }

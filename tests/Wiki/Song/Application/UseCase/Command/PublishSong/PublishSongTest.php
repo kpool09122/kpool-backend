@@ -7,7 +7,6 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\PublishSong;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -184,7 +183,6 @@ class PublishSongTest extends TestCase
         $this->assertSame((string)$dummyPublishSong->composer, (string)$publishedSong->composer());
         $this->assertSame($dummyPublishSong->releaseDate->value(), $publishedSong->releaseDate()->value());
         $this->assertSame((string)$dummyPublishSong->overView, (string)$publishedSong->overView());
-        $this->assertSame((string)$dummyPublishSong->musicVideoLink, (string)$publishedSong->musicVideoLink());
         $this->assertSame($dummyPublishSong->publishedVersion->value() + 1, $publishedSong->version()->value());
     }
 
@@ -279,7 +277,6 @@ class PublishSongTest extends TestCase
         $this->assertSame((string)$dummyPublishSong->composer, (string)$publishedSong->composer());
         $this->assertSame($dummyPublishSong->releaseDate->value(), $publishedSong->releaseDate()->value());
         $this->assertSame((string)$dummyPublishSong->overView, (string)$publishedSong->overView());
-        $this->assertSame((string)$dummyPublishSong->musicVideoLink, (string)$publishedSong->musicVideoLink());
         $this->assertSame($dummyPublishSong->version->value(), $publishedSong->version()->value());
     }
 
@@ -1049,7 +1046,6 @@ class PublishSongTest extends TestCase
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
-        $musicVideoLink = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
 
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $draftSong = new DraftSong(
@@ -1066,7 +1062,6 @@ class PublishSongTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $musicVideoLink,
             $status,
         );
 
@@ -1079,7 +1074,6 @@ class PublishSongTest extends TestCase
         $publishedComposer = new Composer('Melanie Joy Fontana');
         $publishedReleaseDate = new ReleaseDate(new DateTimeImmutable('2020-10-26'));
         $publishedOverView = new Overview('\'I CAN\'T STOP ME\'는 80년대 신시사이저 사운드가 특징인 업템포의 레트로풍 댄스곡입니다. 가사는 선과 악의 갈림길에서 자기 자신을 제어하기 힘들어지는 갈등과, 멈출 수 없는 위험한 감정에 이끌리는 마음을 표현하고 있습니다. 파워풀한 퍼포먼스와 함께 트와이스의 새로운 매력을 보여준 곡으로 높은 평가를 받고 있습니다.');
-        $publishedMusicVideoLink = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
         $publishedVersion = new Version(1);
 
         $publishedSong = new Song(
@@ -1094,7 +1088,6 @@ class PublishSongTest extends TestCase
             $publishedComposer,
             $publishedReleaseDate,
             $publishedOverView,
-            $publishedMusicVideoLink,
             $publishedVersion,
         );
 
@@ -1112,7 +1105,6 @@ class PublishSongTest extends TestCase
             new Composer(''),
             null,
             new Overview(''),
-            null,
             $version,
         );
 
@@ -1146,7 +1138,6 @@ class PublishSongTest extends TestCase
             $publishedComposer,
             $publishedReleaseDate,
             $publishedOverView,
-            $publishedMusicVideoLink,
             $publishedVersion,
             new DateTimeImmutable(),
         );
@@ -1164,7 +1155,6 @@ class PublishSongTest extends TestCase
             $composer,
             $releaseDate,
             $overView,
-            $musicVideoLink,
             $status,
             $translationSetIdentifier,
             $draftSong,
@@ -1200,7 +1190,6 @@ readonly class PublishSongTestData
         public Composer                 $composer,
         public ReleaseDate              $releaseDate,
         public Overview                 $overView,
-        public ExternalContentLink      $musicVideoLink,
         public ApprovalStatus           $status,
         public TranslationSetIdentifier $translationSetIdentifier,
         public DraftSong                $draftSong,

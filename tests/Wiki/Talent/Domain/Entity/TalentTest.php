@@ -6,20 +6,17 @@ namespace Tests\Wiki\Talent\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -30,7 +27,6 @@ class TalentTest extends TestCase
      * 正常系: インスタンスが生成されること
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function test__construct(): void
     {
@@ -45,7 +41,6 @@ class TalentTest extends TestCase
         $this->assertSame((string)$talentInfo->birthday, (string)$talentInfo->talent->birthday());
         $this->assertSame($talentInfo->groupIdentifiers, $talentInfo->talent->groupIdentifiers());
         $this->assertSame((string)$talentInfo->career, (string)$talentInfo->talent->career());
-        $this->assertSame([(string)$talentInfo->link1, (string)$talentInfo->link2, (string)$talentInfo->link3], $talentInfo->talent->relevantVideoLinks()->toStringArray());
         $this->assertSame($talentInfo->version->value(), $talentInfo->talent->version()->value());
         $this->assertFalse($talentInfo->talent->isOfficial());
         $this->assertSame($talentInfo->ownerIdentifier, $talentInfo->talent->ownerAccountIdentifier());
@@ -59,7 +54,6 @@ class TalentTest extends TestCase
     /**
      * 正常系：TalentNameのsetterが正しく動作すること.
      *
-     * @throws ExceedMaxRelevantVideoLinksException
      * @return void
      */
     public function testSetName(): void
@@ -77,7 +71,6 @@ class TalentTest extends TestCase
     /**
      * 正常系：RealNameのsetterが正しく動作すること.
      *
-     * @throws ExceedMaxRelevantVideoLinksException
      * @return void
      */
     public function testSetRealName(): void
@@ -95,7 +88,6 @@ class TalentTest extends TestCase
     /**
      * 正常系：GroupIdentifierのsetterが正しく動作すること(null許容).
      *
-     * @throws ExceedMaxRelevantVideoLinksException
      * @return void
      */
     public function testSetGroupIdentifier(): void
@@ -119,7 +111,6 @@ class TalentTest extends TestCase
     /**
      * 正常系：Birthdayのsetterが正しく動作すること.
      *
-     * @throws ExceedMaxRelevantVideoLinksException
      * @return void
      */
     public function testSetBirthday(): void
@@ -136,7 +127,6 @@ class TalentTest extends TestCase
     /**
      * 正常系：Careerのsetterが正しく動作すること.
      *
-     * @throws ExceedMaxRelevantVideoLinksException
      * @return void
      */
     public function testSetCareer(): void
@@ -155,30 +145,9 @@ class TalentTest extends TestCase
     }
 
     /**
-     * 正常系：RelevantVideoLinksのsetterが正しく動作すること.
-     *
-     * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
-    public function testRelevantVideoLinks(): void
-    {
-        $talentInfo = $this->createDummyTalent();
-        $this->assertSame($talentInfo->relevantVideoLinks->toStringArray(), $talentInfo->talent->relevantVideoLinks()->toStringArray());
-
-        $link4 = new ExternalContentLink('https://example4.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link5 = new ExternalContentLink('https://example5.youtube.com/watch?v=dQw4w9WgXcQ');
-        $newRelevantVideoLinks = new RelevantVideoLinks([$link4, $link5]);
-
-        $talentInfo->talent->setRelevantVideoLinks($newRelevantVideoLinks);
-        $this->assertNotSame($talentInfo->relevantVideoLinks->toStringArray(), $talentInfo->talent->relevantVideoLinks()->toStringArray());
-        $this->assertSame($newRelevantVideoLinks->toStringArray(), $talentInfo->talent->relevantVideoLinks()->toStringArray());
-    }
-
-    /**
      * 正常系：同じバージョンの場合trueを返すこと.
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testHasSameVersionReturnsTrue(): void
     {
@@ -192,7 +161,6 @@ class TalentTest extends TestCase
      * 正常系：異なるバージョンの場合falseを返すこと.
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testHasSameVersionReturnsFalse(): void
     {
@@ -206,7 +174,6 @@ class TalentTest extends TestCase
      * 正常系：現在のバージョンが引数より大きい場合trueを返すこと.
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testIsVersionGreaterThanReturnsTrue(): void
     {
@@ -222,7 +189,6 @@ class TalentTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             new Version(5),
         );
 
@@ -234,7 +200,6 @@ class TalentTest extends TestCase
      * 正常系：現在のバージョンが引数以下の場合falseを返すこと.
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testIsVersionGreaterThanReturnsFalse(): void
     {
@@ -251,7 +216,6 @@ class TalentTest extends TestCase
      * 正常系：MergerIdentifierのsetterが正しく動作すること.
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testSetMergerIdentifier(): void
     {
@@ -267,7 +231,6 @@ class TalentTest extends TestCase
      * 正常系：MergedAtのsetterが正しく動作すること.
      *
      * @return void
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testSetMergedAt(): void
     {
@@ -305,9 +268,6 @@ class TalentTest extends TestCase
         $this->assertNotSame($accountIdentifier, $talent->ownerAccountIdentifier());
     }
 
-    /**
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
     private function createDummyTalent(
         ?bool $isOfficial = null,
     ): TalentTestData {
@@ -326,10 +286,6 @@ class TalentTest extends TestCase
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
 2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
 지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
-        $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2, $link3]);
         $version = new Version(1);
         $isOfficial ??= false;
         $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
@@ -343,7 +299,6 @@ class TalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $relevantVideoLinks,
             $version,
             null,
             null,
@@ -361,10 +316,6 @@ class TalentTest extends TestCase
             groupIdentifiers: $groupIdentifiers,
             birthday: $birthday,
             career: $career,
-            link1: $link1,
-            link2: $link2,
-            link3: $link3,
-            relevantVideoLinks: $relevantVideoLinks,
             version: $version,
             isOfficial: $isOfficial,
             ownerIdentifier: $ownerIdentifier,
@@ -392,10 +343,6 @@ readonly class TalentTestData
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,
         public Career                   $career,
-        public ExternalContentLink      $link1,
-        public ExternalContentLink      $link2,
-        public ExternalContentLink      $link3,
-        public RelevantVideoLinks       $relevantVideoLinks,
         public Version                  $version,
         public bool                     $isOfficial,
         public ?AccountIdentifier        $ownerIdentifier,

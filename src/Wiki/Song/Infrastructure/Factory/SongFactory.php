@@ -40,7 +40,6 @@ readonly class SongFactory implements SongFactoryInterface
             new Composer(''),
             null,
             new Overview(''),
-            null,
             new Version(1),
         );
     }

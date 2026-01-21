@@ -22,7 +22,6 @@ class CreateSong
      *     lyrics?: string,
      *     overview?: string,
      *     cover_image_path?: ?string,
-     *     music_video_link?: ?string,
      *     version?: int
      * } $overrides
      */
@@ -40,7 +39,6 @@ class CreateSong
             'lyrics' => $overrides['lyrics'] ?? '',
             'overview' => $overrides['overview'] ?? 'Stray Kids樂-STAR title track.',
             'cover_image_path' => $overrides['cover_image_path'] ?? null,
-            'music_video_link' => $overrides['music_video_link'] ?? null,
             'version' => $overrides['version'] ?? 1,
             'created_at' => now(),
             'updated_at' => now(),

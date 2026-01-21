@@ -37,7 +37,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
@@ -518,7 +517,6 @@ class RollbackTalentTest extends TestCase
             [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1999-01-01')),
             new Career('Test career'),
-            new RelevantVideoLinks([]),
             $version,
         );
     }
@@ -540,7 +538,6 @@ class RollbackTalentTest extends TestCase
             [new GroupIdentifier(StrTestHelper::generateUuid())],
             new Birthday(new DateTimeImmutable('1999-01-01')),
             new Career('Snapshot career'),
-            new RelevantVideoLinks([]),
             $version,
             new DateTimeImmutable(),
         );

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Domain\Entity;
 
 use DateTimeImmutable;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -36,7 +35,6 @@ class DraftSong
      * @param Composer $composer
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
-     * @param ExternalContentLink|null $musicVideoLink
      * @param ApprovalStatus $status
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
@@ -55,7 +53,6 @@ class DraftSong
         private Composer                          $composer,
         private ?ReleaseDate                      $releaseDate,
         private Overview                          $overView,
-        private ?ExternalContentLink              $musicVideoLink,
         private ApprovalStatus                    $status,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
@@ -170,16 +167,6 @@ class DraftSong
     public function setOverView(Overview $overView): void
     {
         $this->overView = $overView;
-    }
-
-    public function musicVideoLink(): ?ExternalContentLink
-    {
-        return $this->musicVideoLink;
-    }
-
-    public function setMusicVideoLink(ExternalContentLink $musicVideoLink): void
-    {
-        $this->musicVideoLink = $musicVideoLink;
     }
 
     public function status(): ApprovalStatus

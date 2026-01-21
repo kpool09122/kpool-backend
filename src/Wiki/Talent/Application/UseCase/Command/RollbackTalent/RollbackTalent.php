@@ -125,7 +125,6 @@ readonly class RollbackTalent implements RollbackTalentInterface
             $t->setGroupIdentifiers($snapshot->groupIdentifiers());
             $t->setBirthday($snapshot->birthday());
             $t->setCareer($snapshot->career());
-            $t->setRelevantVideoLinks($snapshot->relevantVideoLinks());
             $t->updateVersion();
 
             // 保存

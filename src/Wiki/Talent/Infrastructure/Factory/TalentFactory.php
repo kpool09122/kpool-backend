@@ -10,11 +10,9 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 readonly class TalentFactory implements TalentFactoryInterface
@@ -29,7 +27,6 @@ readonly class TalentFactory implements TalentFactoryInterface
      * @param Language $language
      * @param TalentName $name
      * @return Talent
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
@@ -46,7 +43,6 @@ readonly class TalentFactory implements TalentFactoryInterface
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             new Version(1),
         );
     }

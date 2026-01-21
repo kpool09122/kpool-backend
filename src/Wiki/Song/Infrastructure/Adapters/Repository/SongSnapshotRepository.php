@@ -7,7 +7,6 @@ namespace Source\Wiki\Song\Infrastructure\Adapters\Repository;
 use Application\Models\Wiki\Group;
 use Application\Models\Wiki\SongSnapshot as SongSnapshotModel;
 use Application\Models\Wiki\Talent;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
@@ -40,7 +39,6 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
             'composer' => (string)$snapshot->composer(),
             'release_date' => $snapshot->releaseDate()?->value(),
             'overview' => (string)$snapshot->overView(),
-            'music_video_link' => $snapshot->musicVideoLink() ? (string)$snapshot->musicVideoLink() : null,
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
         ]);
@@ -119,7 +117,6 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
             new Composer($model->composer),
             $model->release_date ? new ReleaseDate($model->release_date->toDateTimeImmutable()) : null,
             new Overview($model->overview),
-            $model->music_video_link ? new ExternalContentLink($model->music_video_link) : null,
             new Version($model->version),
             $model->created_at->toDateTimeImmutable(),
         );

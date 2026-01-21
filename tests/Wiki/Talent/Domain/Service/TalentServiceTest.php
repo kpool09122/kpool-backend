@@ -7,14 +7,12 @@ namespace Tests\Wiki\Talent\Domain\Service;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentService;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
@@ -23,7 +21,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -49,7 +46,6 @@ class TalentServiceTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testExistsApprovedButNotTranslatedTalentWhenApprovedExists(): void
     {
@@ -73,9 +69,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('트와이스 멤버'),
-            new RelevantVideoLinks([
-                new ExternalContentLink('https://example.youtube.com/watch?v=test'),
-            ]),
             ApprovalStatus::Approved,
         );
 
@@ -94,9 +87,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
-            new RelevantVideoLinks([
-                new ExternalContentLink('https://example.youtube.com/watch?v=test2'),
-            ]),
             ApprovalStatus::Pending,
         );
 
@@ -122,7 +112,6 @@ class TalentServiceTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testExistsApprovedButNotTranslatedTalentWhenNoApproved(): void
     {
@@ -146,9 +135,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('트와이스 멤버'),
-            new RelevantVideoLinks([
-                new ExternalContentLink('https://example.youtube.com/watch?v=test'),
-            ]),
             ApprovalStatus::Pending,
         );
 
@@ -167,9 +153,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
-            new RelevantVideoLinks([
-                new ExternalContentLink('https://example.youtube.com/watch?v=test2'),
-            ]),
             ApprovalStatus::Pending,
         );
 
@@ -195,7 +178,6 @@ class TalentServiceTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testExistsApprovedButNotTranslatedTalentWhenOnlySelfIsApproved(): void
     {
@@ -218,9 +200,6 @@ class TalentServiceTest extends TestCase
             ],
             new Birthday(new DateTimeImmutable('1999-04-23')),
             new Career('TWICEメンバー'),
-            new RelevantVideoLinks([
-                new ExternalContentLink('https://example.youtube.com/watch?v=test'),
-            ]),
             ApprovalStatus::Approved,
         );
 
@@ -274,7 +253,6 @@ class TalentServiceTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ExceedMaxRelevantVideoLinksException
      */
     public function testExistsApprovedButNotTranslatedTalentWhenMultipleApprovedExists(): void
     {
@@ -296,7 +274,6 @@ class TalentServiceTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             ApprovalStatus::Approved,
         );
 
@@ -314,7 +291,6 @@ class TalentServiceTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             ApprovalStatus::Approved,
         );
 
@@ -331,7 +307,6 @@ class TalentServiceTest extends TestCase
             [],
             null,
             new Career(''),
-            new RelevantVideoLinks([]),
             ApprovalStatus::Pending,
         );
 

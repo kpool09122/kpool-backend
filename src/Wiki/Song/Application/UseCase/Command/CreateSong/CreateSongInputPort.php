@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -38,8 +37,6 @@ interface CreateSongInputPort
     public function releaseDate(): ?ReleaseDate;
 
     public function overview(): Overview;
-
-    public function musicVideoLink(): ?ExternalContentLink;
 
     public function principalIdentifier(): PrincipalIdentifier;
 }

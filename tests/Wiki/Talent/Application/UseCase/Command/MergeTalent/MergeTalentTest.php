@@ -7,7 +7,6 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\MergeTalent;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -23,14 +22,12 @@ use Source\Wiki\Talent\Application\UseCase\Command\MergeTalent\MergeTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\MergeTalent\MergeTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\MergeTalent\MergeTalentInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
-use Source\Wiki\Talent\Domain\Exception\ExceedMaxRelevantVideoLinksException;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -58,8 +55,7 @@ class MergeTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
-     * @throws ExceedMaxRelevantVideoLinksException
-     * @throws PrincipalNotFoundException
+     *      * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
     {
@@ -77,7 +73,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -122,8 +117,7 @@ class MergeTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testWhenNotFoundTalent(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -139,7 +133,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -167,8 +160,7 @@ class MergeTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testWhenNotFoundPrincipal(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -184,7 +176,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -216,8 +207,7 @@ class MergeTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testProcessWithAgencyActor(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -235,7 +225,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -271,8 +260,7 @@ class MergeTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testProcessWithTalentActor(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -291,7 +279,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -326,8 +313,7 @@ class MergeTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testProcessWithCollaborator(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -344,7 +330,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -378,8 +363,7 @@ class MergeTalentTest extends TestCase
      * @throws BindingResolutionException
      * @throws TalentNotFoundException
      * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testProcessWithNoneRole(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -396,7 +380,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -431,8 +414,7 @@ class MergeTalentTest extends TestCase
      * @throws TalentNotFoundException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     public function testProcessWithSeniorCollaborator(): void
     {
         $dummyTalent = $this->createDummyMergeTalent();
@@ -449,7 +431,6 @@ class MergeTalentTest extends TestCase
             $dummyTalent->groupIdentifiers,
             $dummyTalent->birthday,
             $dummyTalent->career,
-            $dummyTalent->relevantVideoLinks,
             $principalIdentifier,
             $mergedAt,
         );
@@ -479,8 +460,7 @@ class MergeTalentTest extends TestCase
 
     /**
      * @return MergeTalentTestData
-     * @throws ExceedMaxRelevantVideoLinksException
-     */
+     *      */
     private function createDummyMergeTalent(): MergeTalentTestData
     {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
@@ -497,11 +477,6 @@ class MergeTalentTest extends TestCase
         $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
         $career = new Career('### **경력 소개 예시**
 대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다.');
-        $link1 = new ExternalContentLink('https://example.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link2 = new ExternalContentLink('https://example2.youtube.com/watch?v=dQw4w9WgXcQ');
-        $link3 = new ExternalContentLink('https://example3.youtube.com/watch?v=dQw4w9WgXcQ');
-        $externalContentLinks = [$link1, $link2, $link3];
-        $relevantVideoLinks = new RelevantVideoLinks($externalContentLinks);
 
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $status = ApprovalStatus::Pending;
@@ -517,7 +492,6 @@ class MergeTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $relevantVideoLinks,
             $status,
         );
 
@@ -532,7 +506,6 @@ class MergeTalentTest extends TestCase
             $groupIdentifiers,
             $birthday,
             $career,
-            $relevantVideoLinks,
             $talentIdentifier,
             $status,
             $talent,
@@ -560,7 +533,6 @@ readonly class MergeTalentTestData
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,
         public Career                   $career,
-        public RelevantVideoLinks       $relevantVideoLinks,
         public TalentIdentifier         $talentIdentifier,
         public ApprovalStatus           $status,
         public DraftTalent              $talent,

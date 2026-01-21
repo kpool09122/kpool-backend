@@ -18,7 +18,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 final class DraftTalentRepository implements DraftTalentRepositoryInterface
@@ -38,8 +37,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             ->map(fn (Group $group) => new GroupIdentifier($group->id))
             ->toArray();
 
-        $relevantVideoLinks = RelevantVideoLinks::formStringArray($draftModel->relevant_video_links ?? []);
-
         return new DraftTalent(
             new TalentIdentifier($draftModel->id),
             $draftModel->published_id ? new TalentIdentifier($draftModel->published_id) : null,
@@ -52,7 +49,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             $groupIdentifiers,
             $draftModel->birthday ? new Birthday($draftModel->birthday->toDateTimeImmutable()) : null,
             new Career($draftModel->career),
-            $relevantVideoLinks,
             ApprovalStatus::from($draftModel->status),
         );
     }
@@ -79,7 +75,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
-                'relevant_video_links' => $talent->relevantVideoLinks()->toStringArray(),
                 'status' => $talent->status()->value,
             ],
         );
@@ -114,8 +109,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 ->map(fn (Group $group) => new GroupIdentifier($group->id))
                 ->toArray();
 
-            $relevantVideoLinks = RelevantVideoLinks::formStringArray($model->relevant_video_links ?? []);
-
             $drafts[] = new DraftTalent(
                 new TalentIdentifier($model->id),
                 $model->published_id ? new TalentIdentifier($model->published_id) : null,
@@ -128,7 +121,6 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 $groupIdentifiers,
                 $model->birthday ? new Birthday($model->birthday->toDateTimeImmutable()) : null,
                 new Career($model->career),
-                $relevantVideoLinks,
                 ApprovalStatus::from($model->status),
             );
         }

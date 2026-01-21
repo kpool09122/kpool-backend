@@ -12,7 +12,6 @@ readonly class SongReadModel
         private string $songId,
         private string $name,
         private DateTimeImmutable $releaseDate,
-        private string $musicVideoLink,
         private string $coverImagePath,
     ) {
     }
@@ -32,11 +31,6 @@ readonly class SongReadModel
         return $this->releaseDate;
     }
 
-    public function musicVideoLink(): string
-    {
-        return $this->musicVideoLink;
-    }
-
     public function coverImagePath(): string
     {
         return $this->coverImagePath;
@@ -51,7 +45,6 @@ readonly class SongReadModel
             'song_id' => $this->songId,
             'name' => $this->name,
             'release_date' => $this->releaseDate->format('Y-m'),
-            'music_video_link' => $this->musicVideoLink,
             'cover_image_path' => $this->coverImagePath,
         ];
     }

@@ -18,7 +18,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 final class TalentRepository implements TalentRepositoryInterface
@@ -84,7 +83,6 @@ final class TalentRepository implements TalentRepositoryInterface
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
-                'relevant_video_links' => $talent->relevantVideoLinks()->toStringArray(),
                 'version' => $talent->version()->value(),
                 'is_official' => $talent->isOfficial(),
                 'owner_account_id' => $talent->ownerAccountIdentifier() ? (string) $talent->ownerAccountIdentifier() : null,
@@ -104,8 +102,6 @@ final class TalentRepository implements TalentRepositoryInterface
             ->map(fn (Group $group) => new GroupIdentifier($group->id))
             ->toArray();
 
-        $relevantVideoLinks = RelevantVideoLinks::formStringArray($talentModel->relevant_video_links ?? []);
-
         return new Talent(
             new TalentIdentifier($talentModel->id),
             new TranslationSetIdentifier($talentModel->translation_set_identifier),
@@ -116,7 +112,6 @@ final class TalentRepository implements TalentRepositoryInterface
             $groupIdentifiers,
             $talentModel->birthday ? new Birthday($talentModel->birthday->toDateTimeImmutable()) : null,
             new Career($talentModel->career),
-            $relevantVideoLinks,
             new Version($talentModel->version),
             null,
             null,

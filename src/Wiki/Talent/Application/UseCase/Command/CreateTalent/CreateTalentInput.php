@@ -12,7 +12,6 @@ use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\RelevantVideoLinks;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 readonly class CreateTalentInput implements CreateTalentInputPort
@@ -26,7 +25,6 @@ readonly class CreateTalentInput implements CreateTalentInputPort
      * @param GroupIdentifier[] $groupIdentifiers
      * @param Birthday|null $birthday
      * @param Career $career
-     * @param RelevantVideoLinks $relevantVideoLinks
      * @param PrincipalIdentifier $principalIdentifier
      */
     public function __construct(
@@ -38,7 +36,6 @@ readonly class CreateTalentInput implements CreateTalentInputPort
         private array               $groupIdentifiers,
         private ?Birthday           $birthday,
         private Career              $career,
-        private RelevantVideoLinks  $relevantVideoLinks,
         private PrincipalIdentifier $principalIdentifier,
     ) {
     }
@@ -84,11 +81,6 @@ readonly class CreateTalentInput implements CreateTalentInputPort
     public function career(): Career
     {
         return $this->career;
-    }
-
-    public function relevantVideoLinks(): RelevantVideoLinks
-    {
-        return $this->relevantVideoLinks;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

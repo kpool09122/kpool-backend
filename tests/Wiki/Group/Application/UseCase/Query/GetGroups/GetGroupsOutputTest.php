@@ -24,14 +24,12 @@ class GetGroupsOutputTest extends TestCase
             StrTestHelper::generateUuid(),
             'TT',
             new DateTimeImmutable('2016-10-24'),
-            'https://example1.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test1.webp',
         );
         $songReadModel2 = new SongReadModel(
             StrTestHelper::generateUuid(),
             'I CAN\'T STOP ME',
             new DateTimeImmutable('2020-10-26'),
-            'https://example2.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test2.webp',
         );
         $readModel1 = new GroupReadModel(
@@ -49,14 +47,12 @@ class GetGroupsOutputTest extends TestCase
             StrTestHelper::generateUuid(),
             'Supernova',
             new DateTimeImmutable('2024-5-13'),
-            'https://example3.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test3.webp',
         );
         $songReadModel4 = new SongReadModel(
             StrTestHelper::generateUuid(),
             'Armageddon',
             new DateTimeImmutable('2024-5-27'),
-            'https://example4.youtube.com/watch?v=dQw4w9WgXcQ',
             '/resources/public/images/test4.webp',
         );
         $readModel2 = new GroupReadModel(

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\EditSong;
 
-use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
@@ -35,8 +34,6 @@ interface EditSongInputPort
     public function releaseDate(): ?ReleaseDate;
 
     public function overview(): Overview;
-
-    public function musicVideoLink(): ?ExternalContentLink;
 
     public function principalIdentifier(): PrincipalIdentifier;
 }
