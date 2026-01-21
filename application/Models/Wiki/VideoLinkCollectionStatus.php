@@ -11,21 +11,16 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $resource_type
  * @property string $resource_identifier
- * @property string $url
- * @property string $video_usage
- * @property string $title
- * @property string|null $thumbnail_url
- * @property Carbon|null $published_at
- * @property int $display_order
+ * @property Carbon|null $last_collected_at
  * @property Carbon $created_at
  */
-class VideoLink extends Model
+class VideoLinkCollectionStatus extends Model
 {
     public $incrementing = false;
 
     public $timestamps = false;
 
-    protected $table = 'video_links';
+    protected $table = 'video_link_collection_statuses';
 
     protected $keyType = 'string';
 
@@ -33,18 +28,12 @@ class VideoLink extends Model
         'id',
         'resource_type',
         'resource_identifier',
-        'url',
-        'video_usage',
-        'title',
-        'thumbnail_url',
-        'published_at',
-        'display_order',
+        'last_collected_at',
         'created_at',
     ];
 
     protected $casts = [
-        'display_order' => 'integer',
-        'published_at' => 'datetime',
+        'last_collected_at' => 'datetime',
         'created_at' => 'datetime',
     ];
 }

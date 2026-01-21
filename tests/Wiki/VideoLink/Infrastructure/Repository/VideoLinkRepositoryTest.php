@@ -162,6 +162,8 @@ class VideoLinkRepositoryTest extends TestCase
             new ExternalContentLink('https://www.youtube.com/watch?v=newvideo'),
             VideoUsage::MUSIC_VIDEO,
             'New Music Video',
+            null,
+            null,
             1,
             new DateTimeImmutable(),
         );
@@ -207,6 +209,8 @@ class VideoLinkRepositoryTest extends TestCase
             new ExternalContentLink('https://www.youtube.com/watch?v=updated'),
             VideoUsage::LIVE,
             'Updated Title',
+            null,
+            null,
             2,
             new DateTimeImmutable(),
         );
@@ -288,5 +292,168 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertDatabaseMissing('video_links', ['id' => $videoLinkId1]);
         $this->assertDatabaseMissing('video_links', ['id' => $videoLinkId2]);
         $this->assertDatabaseHas('video_links', ['id' => $otherVideoLinkId]);
+    }
+
+    /**
+     * 正常系：指定したリソースに紐づく自動収集済みの動画リンクのみを削除できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testDeleteAutoCollectedByResource(): void
+    {
+        $resourceId = StrTestHelper::generateUuid();
+
+        $manualVideoLinkId = StrTestHelper::generateUuid();
+        $autoViewCountId = StrTestHelper::generateUuid();
+        $autoLikeCountId = StrTestHelper::generateUuid();
+        $autoRecentId = StrTestHelper::generateUuid();
+
+        CreateVideoLink::create($manualVideoLinkId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+        ]);
+
+        CreateVideoLink::create($autoViewCountId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'video_usage' => VideoUsage::YOUTUBE_AUTO_VIEW_COUNT->value,
+        ]);
+
+        CreateVideoLink::create($autoLikeCountId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'video_usage' => VideoUsage::YOUTUBE_AUTO_LIKE_COUNT->value,
+        ]);
+
+        CreateVideoLink::create($autoRecentId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'video_usage' => VideoUsage::YOUTUBE_AUTO_RECENT_POPULAR->value,
+        ]);
+
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $repository->deleteAutoCollectedByResource(
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+        );
+
+        $this->assertDatabaseHas('video_links', ['id' => $manualVideoLinkId]);
+        $this->assertDatabaseMissing('video_links', ['id' => $autoViewCountId]);
+        $this->assertDatabaseMissing('video_links', ['id' => $autoLikeCountId]);
+        $this->assertDatabaseMissing('video_links', ['id' => $autoRecentId]);
+    }
+
+    /**
+     * 正常系：指定したリソースに紐づくdisplay_orderが最大の動画リンクが取得できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByResourceWithMaxDisplayOrder(): void
+    {
+        $resourceId = StrTestHelper::generateUuid();
+
+        $videoLinkId1 = StrTestHelper::generateUuid();
+        $videoLinkId2 = StrTestHelper::generateUuid();
+        $videoLinkId3 = StrTestHelper::generateUuid();
+
+        CreateVideoLink::create($videoLinkId1, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'url' => 'https://www.youtube.com/watch?v=video1',
+            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+            'title' => 'Video 1',
+            'display_order' => 1,
+        ]);
+
+        CreateVideoLink::create($videoLinkId2, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'url' => 'https://www.youtube.com/watch?v=video2',
+            'video_usage' => VideoUsage::LIVE->value,
+            'title' => 'Video 2',
+            'display_order' => 5,
+        ]);
+
+        CreateVideoLink::create($videoLinkId3, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'url' => 'https://www.youtube.com/watch?v=video3',
+            'video_usage' => VideoUsage::INTERVIEW->value,
+            'title' => 'Video 3',
+            'display_order' => 3,
+        ]);
+
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $videoLink = $repository->findByResourceWithMaxDisplayOrder(
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+        );
+
+        $this->assertInstanceOf(VideoLink::class, $videoLink);
+        $this->assertSame($videoLinkId2, (string) $videoLink->videoLinkIdentifier());
+        $this->assertSame(5, $videoLink->displayOrder());
+    }
+
+    /**
+     * 正常系：指定したリソースに紐づく動画リンクが存在しない場合、nullが返ること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByResourceWithMaxDisplayOrderWhenNotExist(): void
+    {
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $videoLink = $repository->findByResourceWithMaxDisplayOrder(
+            ResourceType::TALENT,
+            new ResourceIdentifier(StrTestHelper::generateUuid()),
+        );
+
+        $this->assertNull($videoLink);
+    }
+
+    /**
+     * 正常系：異なるリソースの動画リンクは取得されないこと.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByResourceWithMaxDisplayOrderDoesNotReturnOtherResources(): void
+    {
+        $targetResourceId = StrTestHelper::generateUuid();
+        $otherResourceId = StrTestHelper::generateUuid();
+
+        $targetVideoLinkId = StrTestHelper::generateUuid();
+        $otherVideoLinkId = StrTestHelper::generateUuid();
+
+        CreateVideoLink::create($targetVideoLinkId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $targetResourceId,
+            'url' => 'https://www.youtube.com/watch?v=target',
+            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+            'title' => 'Target Video',
+            'display_order' => 2,
+        ]);
+
+        CreateVideoLink::create($otherVideoLinkId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $otherResourceId,
+            'url' => 'https://www.youtube.com/watch?v=other',
+            'video_usage' => VideoUsage::LIVE->value,
+            'title' => 'Other Video',
+            'display_order' => 10,
+        ]);
+
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $videoLink = $repository->findByResourceWithMaxDisplayOrder(
+            ResourceType::TALENT,
+            new ResourceIdentifier($targetResourceId),
+        );
+
+        $this->assertInstanceOf(VideoLink::class, $videoLink);
+        $this->assertSame($targetVideoLinkId, (string) $videoLink->videoLinkIdentifier());
+        $this->assertSame(2, $videoLink->displayOrder());
     }
 }

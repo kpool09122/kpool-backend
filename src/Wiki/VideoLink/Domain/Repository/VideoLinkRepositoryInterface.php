@@ -23,4 +23,8 @@ interface VideoLinkRepositoryInterface
     public function delete(VideoLinkIdentifier $identifier): void;
 
     public function deleteByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void;
+
+    public function deleteAutoCollectedByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void;
+
+    public function findByResourceWithMaxDisplayOrder(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): ?VideoLink;
 }

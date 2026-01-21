@@ -17,6 +17,8 @@ class CreateVideoLink
      *     url?: string,
      *     video_usage?: string,
      *     title?: string,
+     *     thumbnail_url?: string|null,
+     *     published_at?: string|null,
      *     display_order?: int,
      * } $overrides
      */
@@ -32,6 +34,8 @@ class CreateVideoLink
             ),
             'video_usage' => $overrides['video_usage'] ?? VideoUsage::MUSIC_VIDEO->value,
             'title' => $overrides['title'] ?? 'Test Video',
+            'thumbnail_url' => $overrides['thumbnail_url'] ?? null,
+            'published_at' => $overrides['published_at'] ?? null,
             'display_order' => $overrides['display_order'] ?? 1,
             'created_at' => now(),
         ]);

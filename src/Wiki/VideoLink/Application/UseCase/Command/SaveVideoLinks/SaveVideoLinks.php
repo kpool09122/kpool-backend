@@ -33,6 +33,8 @@ readonly class SaveVideoLinks implements SaveVideoLinksInterface
                 $videoLinkData->title,
                 $videoLinkData->displayOrder,
             );
+            $videoLink->setThumbnailUrl($videoLinkData->thumbnailUrl);
+            $videoLink->setPublishedAt($videoLinkData->publishedAt);
 
             $this->videoLinkRepository->save($videoLink);
         }

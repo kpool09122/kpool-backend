@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('url', 512)->comment('動画URL');
             $table->string('video_usage', 32)->comment('動画用途');
             $table->string('title', 255)->comment('タイトル');
+            $table->string('thumbnail_url', 512)->nullable()->comment('サムネイルURL');
+            $table->timestamp('published_at')->nullable()->comment('動画公開日');
             $table->integer('display_order')->default(0)->comment('表示順');
             $table->timestamp('created_at')->comment('作成日時');
 

@@ -14,4 +14,21 @@ enum VideoUsage: string
     case COLLABORATION = 'collaboration';
     case SHORT = 'short';
     case OTHER = 'other';
+    case YOUTUBE_AUTO_VIEW_COUNT = 'youtube_auto_view_count';
+    case YOUTUBE_AUTO_LIKE_COUNT = 'youtube_auto_like_count';
+    case YOUTUBE_AUTO_RECENT_POPULAR = 'youtube_auto_recent_popular';
+
+    public function isManual(): bool
+    {
+        return ! $this->isAutoCollected();
+    }
+
+    public function isAutoCollected(): bool
+    {
+        return in_array($this, [
+            self::YOUTUBE_AUTO_VIEW_COUNT,
+            self::YOUTUBE_AUTO_LIKE_COUNT,
+            self::YOUTUBE_AUTO_RECENT_POPULAR,
+        ], true);
+    }
 }

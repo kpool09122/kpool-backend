@@ -80,6 +80,8 @@ class SaveVideoLinksTest extends TestCase
             $videoLinkData1->url,
             $videoLinkData1->videoUsage,
             $videoLinkData1->title,
+            null,
+            null,
             $videoLinkData1->displayOrder,
             new DateTimeImmutable(),
         );
@@ -91,6 +93,8 @@ class SaveVideoLinksTest extends TestCase
             $videoLinkData2->url,
             $videoLinkData2->videoUsage,
             $videoLinkData2->title,
+            null,
+            null,
             $videoLinkData2->displayOrder,
             new DateTimeImmutable(),
         );

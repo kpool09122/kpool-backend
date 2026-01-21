@@ -27,6 +27,8 @@ class VideoLinkTest extends TestCase
         $url = new ExternalContentLink('https://www.youtube.com/watch?v=test123');
         $videoUsage = VideoUsage::MUSIC_VIDEO;
         $title = 'Test Music Video';
+        $thumbnailUrl = 'https://i.ytimg.com/vi/test123/hqdefault.jpg';
+        $publishedAt = new DateTimeImmutable('2024-01-15T10:30:00Z');
         $displayOrder = 1;
         $createdAt = new DateTimeImmutable();
 
@@ -37,6 +39,8 @@ class VideoLinkTest extends TestCase
             $url,
             $videoUsage,
             $title,
+            $thumbnailUrl,
+            $publishedAt,
             $displayOrder,
             $createdAt,
         );
@@ -47,6 +51,8 @@ class VideoLinkTest extends TestCase
         $this->assertSame((string) $url, (string) $videoLink->url());
         $this->assertSame($videoUsage, $videoLink->videoUsage());
         $this->assertSame($title, $videoLink->title());
+        $this->assertSame($thumbnailUrl, $videoLink->thumbnailUrl());
+        $this->assertSame($publishedAt, $videoLink->publishedAt());
         $this->assertSame($displayOrder, $videoLink->displayOrder());
         $this->assertSame($createdAt, $videoLink->createdAt());
     }
@@ -110,6 +116,8 @@ class VideoLinkTest extends TestCase
             new ExternalContentLink('https://www.youtube.com/watch?v=test123'),
             VideoUsage::MUSIC_VIDEO,
             'Test Music Video',
+            null,
+            null,
             1,
             new DateTimeImmutable(),
         );
