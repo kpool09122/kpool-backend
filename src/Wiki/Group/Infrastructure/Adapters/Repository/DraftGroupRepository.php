@@ -42,13 +42,14 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
                     ? (string) $group->publishedGroupIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $group->translationSetIdentifier(),
-                'editor_id' => (string) $group->editorIdentifier(),
+                'editor_id' => $group->editorIdentifier() ? (string) $group->editorIdentifier() : null,
                 'translation' => $group->language()->value,
                 'name' => (string) $group->name(),
                 'normalized_name' => $group->normalizedName(),
                 'agency_id' => $group->agencyIdentifier() ? (string) $group->agencyIdentifier() : null,
                 'description' => (string) $group->description(),
                 'status' => $group->status()->value,
+                'approver_id' => $group->approverIdentifier() ? (string) $group->approverIdentifier() : null,
             ],
         );
     }
@@ -82,13 +83,14 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
             new GroupIdentifier($model->id),
             $model->published_id ? new GroupIdentifier($model->published_id) : null,
             new TranslationSetIdentifier($model->translation_set_identifier),
-            new PrincipalIdentifier($model->editor_id),
+            $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
             Language::from($model->translation),
             new GroupName($model->name),
             $model->normalized_name,
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
             ApprovalStatus::from($model->status),
+            $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
         );
     }
 }

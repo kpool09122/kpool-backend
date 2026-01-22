@@ -89,6 +89,21 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    /**
+     * @return array<PrincipalGroup>
+     */
+    public function findByRole(RoleIdentifier $roleIdentifier): array
+    {
+        $eloquentModels = PrincipalGroupEloquent::query()
+            ->with(['memberships', 'roleAttachments'])
+            ->whereHas('roleAttachments', function ($query) use ($roleIdentifier) {
+                $query->where('role_id', (string) $roleIdentifier);
+            })
+            ->get();
+
+        return $eloquentModels->map(fn (PrincipalGroupEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
+    }
+
     public function delete(PrincipalGroup $principalGroup): void
     {
         PrincipalGroupEloquent::query()

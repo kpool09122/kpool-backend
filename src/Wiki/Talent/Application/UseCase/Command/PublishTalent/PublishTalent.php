@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\PublishTalent;
 
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -29,16 +30,17 @@ use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 readonly class PublishTalent implements PublishTalentInterface
 {
     public function __construct(
-        private TalentRepositoryInterface         $talentRepository,
-        private DraftTalentRepositoryInterface    $draftTalentRepository,
-        private TalentServiceInterface            $talentService,
-        private TalentFactoryInterface            $talentFactory,
-        private TalentHistoryRepositoryInterface  $talentHistoryRepository,
-        private TalentHistoryFactoryInterface     $talentHistoryFactory,
-        private TalentSnapshotFactoryInterface    $talentSnapshotFactory,
-        private TalentSnapshotRepositoryInterface $talentSnapshotRepository,
-        private PrincipalRepositoryInterface      $principalRepository,
-        private PolicyEvaluatorInterface          $policyEvaluator,
+        private TalentRepositoryInterface            $talentRepository,
+        private DraftTalentRepositoryInterface       $draftTalentRepository,
+        private TalentServiceInterface               $talentService,
+        private TalentFactoryInterface               $talentFactory,
+        private TalentHistoryRepositoryInterface     $talentHistoryRepository,
+        private TalentHistoryFactoryInterface        $talentHistoryFactory,
+        private TalentSnapshotFactoryInterface       $talentSnapshotFactory,
+        private TalentSnapshotRepositoryInterface    $talentSnapshotRepository,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private ContributionPointServiceInterface    $contributionPointService,
     ) {
     }
 
@@ -132,6 +134,19 @@ readonly class PublishTalent implements PublishTalentInterface
             subjectName: $talent->name(),
         );
         $this->talentHistoryRepository->save($history);
+
+        // Grant contribution points
+        $isNewCreation = $talent->publishedTalentIdentifier() === null;
+        if ($talent->approverIdentifier() !== null) {
+            $this->contributionPointService->grantPoints(
+                editorIdentifier: $talent->editorIdentifier(),
+                approverIdentifier: $talent->approverIdentifier(),
+                mergerIdentifier: $talent->mergerIdentifier(),
+                resourceType: ResourceType::TALENT,
+                resourceId: (string) $publishedTalent->talentIdentifier(),
+                isNewCreation: $isNewCreation,
+            );
+        }
 
         $this->draftTalentRepository->delete($talent);
 

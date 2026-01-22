@@ -85,6 +85,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
 
         $previousStatus = $talent->status();
         $talent->setStatus(ApprovalStatus::Approved);
+        $talent->setApproverIdentifier($input->principalIdentifier());
 
         $this->draftTalentRepository->save($talent);
 

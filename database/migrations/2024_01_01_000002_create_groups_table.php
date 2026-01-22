@@ -38,6 +38,7 @@ return new class extends Migration
             $table->text('description')->comment('概要')->default('');
             $table->string('image_path', 255)->nullable()->comment('画像パス');
             $table->text('status')->comment('公開ステータス');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->timestamps();
         });
 

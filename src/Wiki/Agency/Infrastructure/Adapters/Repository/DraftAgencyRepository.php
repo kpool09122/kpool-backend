@@ -33,7 +33,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             new AgencyIdentifier($agencyModel->id),
             $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
             $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
-            new PrincipalIdentifier($agencyModel->editor_id),
+            $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
             Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
             $agencyModel->normalized_name,
@@ -42,6 +42,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
             new Description($agencyModel->description),
             ApprovalStatus::from($agencyModel->status),
+            $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
         );
     }
 
@@ -51,10 +52,10 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             [
                 'id' => (string)$agency->agencyIdentifier(),
                 'language' => $agency->language()->value,
-                'editor_id' => (string)$agency->editorIdentifier(),
             ],
             [
-                'published_id' => (string)$agency->publishedAgencyIdentifier(),
+                'editor_id' => $agency->editorIdentifier() ? (string)$agency->editorIdentifier() : null,
+                'published_id' => $agency->publishedAgencyIdentifier() ? (string)$agency->publishedAgencyIdentifier() : null,
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
                 'name' => (string)$agency->name(),
                 'normalized_name' => $agency->normalizedName(),
@@ -63,6 +64,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 'founded_in' => $agency->foundedIn(),
                 'description' => (string)$agency->description(),
                 'status' => $agency->status()->value,
+                'approver_id' => $agency->approverIdentifier() ? (string)$agency->approverIdentifier() : null,
             ]
         );
     }
@@ -90,7 +92,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 new AgencyIdentifier($agencyModel->id),
                 $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
                 $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
-                new PrincipalIdentifier($agencyModel->editor_id),
+                $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
                 Language::from($agencyModel->language),
                 new AgencyName($agencyModel->name),
                 $agencyModel->normalized_name,
@@ -99,6 +101,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
                 new Description($agencyModel->description),
                 ApprovalStatus::from($agencyModel->status),
+                $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
             );
         })->toArray();
     }

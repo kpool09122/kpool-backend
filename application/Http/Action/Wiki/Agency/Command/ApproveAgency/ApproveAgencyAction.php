@@ -61,26 +61,32 @@ readonly class ApproveAgencyAction
                 DB::commit();
             } catch (AgencyNotFoundException $e) {
                 DB::rollBack();
+                $this->logger->error((string)$e);
 
                 throw new NotFoundHttpException(detail: error_message('agency_not_found', $language), previous: $e);
             } catch (DisallowedException $e) {
                 DB::rollBack();
+                $this->logger->error((string)$e);
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
             } catch (InvalidStatusException $e) {
                 DB::rollBack();
+                $this->logger->error((string)$e);
 
                 throw new ConflictHttpException(detail: error_message('allow_only_under_review_status', $language), previous: $e);
             } catch (ExistsApprovedButNotTranslatedAgencyException $e) {
                 DB::rollBack();
+                $this->logger->error((string)$e);
 
                 throw new ConflictHttpException(detail: error_message('exists_approved_but_not_translated_agency', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
+                $this->logger->error((string)$e);
 
                 throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
+                $this->logger->error((string)$e);
 
                 throw $e;
             }

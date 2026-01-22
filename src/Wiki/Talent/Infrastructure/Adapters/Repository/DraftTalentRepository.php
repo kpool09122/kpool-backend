@@ -41,7 +41,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             new TalentIdentifier($draftModel->id),
             $draftModel->published_id ? new TalentIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
-            new PrincipalIdentifier($draftModel->editor_id),
+            $draftModel->editor_id ? new PrincipalIdentifier($draftModel->editor_id) : null,
             Language::from($draftModel->language),
             new TalentName($draftModel->name),
             new RealName($draftModel->real_name),
@@ -50,6 +50,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             $draftModel->birthday ? new Birthday($draftModel->birthday->toDateTimeImmutable()) : null,
             new Career($draftModel->career),
             ApprovalStatus::from($draftModel->status),
+            $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
         );
     }
 
@@ -68,7 +69,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                     ? (string) $talent->publishedTalentIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $talent->translationSetIdentifier(),
-                'editor_id' => (string) $talent->editorIdentifier(),
+                'editor_id' => $talent->editorIdentifier() ? (string) $talent->editorIdentifier() : null,
                 'language' => $talent->language()->value,
                 'name' => (string) $talent->name(),
                 'real_name' => (string) $talent->realName(),
@@ -76,6 +77,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
                 'status' => $talent->status()->value,
+                'approver_id' => $talent->approverIdentifier() ? (string) $talent->approverIdentifier() : null,
             ],
         );
 
@@ -113,7 +115,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 new TalentIdentifier($model->id),
                 $model->published_id ? new TalentIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
-                new PrincipalIdentifier($model->editor_id),
+                $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
                 Language::from($model->language),
                 new TalentName($model->name),
                 new RealName($model->real_name),
@@ -122,6 +124,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 $model->birthday ? new Birthday($model->birthday->toDateTimeImmutable()) : null,
                 new Career($model->career),
                 ApprovalStatus::from($model->status),
+                $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
             );
         }
 

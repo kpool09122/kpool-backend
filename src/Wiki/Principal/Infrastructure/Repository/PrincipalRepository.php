@@ -28,6 +28,29 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    /**
+     * @param PrincipalIdentifier[] $principalIdentifiers
+     * @return Principal[]
+     */
+    public function findByIds(array $principalIdentifiers): array
+    {
+        if (empty($principalIdentifiers)) {
+            return [];
+        }
+
+        $ids = array_map(
+            static fn (PrincipalIdentifier $id) => (string) $id,
+            $principalIdentifiers
+        );
+
+        $eloquents = PrincipalEloquent::query()
+            ->with('groups')
+            ->whereIn('id', $ids)
+            ->get();
+
+        return $eloquents->map(fn (PrincipalEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
+    }
+
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()

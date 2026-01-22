@@ -31,6 +31,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupHistoryIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -40,6 +41,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -1045,6 +1047,234 @@ class PublishGroupTest extends TestCase
     }
 
     /**
+     * 正常系：approverIdentifierがnullでない場合、grantPointsが呼ばれること（新規作成時）.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnNewCreation(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            hasPublishedGroup: false,
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishGroupInput(
+            $dummyPublishGroup->groupIdentifier,
+            $dummyPublishGroup->publishedGroupIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishGroup->draftGroup)
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->createdGroup)
+            ->andReturn(null);
+
+        $groupFactory = Mockery::mock(GroupFactoryInterface::class);
+        $groupFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->language, $dummyPublishGroup->name)
+            ->andReturn($dummyPublishGroup->createdGroup);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
+            ->once()
+            ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
+            ->andReturn(false);
+
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
+        $groupSnapshotFactory = Mockery::mock(GroupSnapshotFactoryInterface::class);
+        $groupSnapshotFactory->shouldNotReceive('create');
+
+        $groupSnapshotRepository = Mockery::mock(GroupSnapshotRepositoryInterface::class);
+        $groupSnapshotRepository->shouldNotReceive('save');
+
+        // ContributionPointServiceのモック - grantPointsが正しいパラメータで呼ばれることを検証
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $dummyPublishGroup->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::GROUP,
+                (string) $dummyPublishGroup->createdGroup->groupIdentifier(),
+                true, // isNewCreation = true for first time publish
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupFactoryInterface::class, $groupFactory);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
+        $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $result = $publishGroup->process($input);
+
+        $this->assertSame((string) $dummyPublishGroup->publishedGroupIdentifier, (string) $result->groupIdentifier());
+    }
+
+    /**
+     * 正常系：approverIdentifierがnullでない場合、grantPointsが呼ばれること（更新時）.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws GroupNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnUpdate(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $dummyPublishGroup = $this->createDummyPublishGroup(
+            hasPublishedGroup: true,
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishGroupInput(
+            $dummyPublishGroup->groupIdentifier,
+            $dummyPublishGroup->publishedGroupIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->groupIdentifier)
+            ->andReturn($dummyPublishGroup->draftGroup);
+        $draftGroupRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishGroup->draftGroup)
+            ->andReturn(null);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishGroup->publishedGroupIdentifier)
+            ->andReturn($dummyPublishGroup->publishedGroup);
+        $groupRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->publishedGroup)
+            ->andReturn(null);
+
+        $groupService = Mockery::mock(GroupServiceInterface::class);
+        $groupService->shouldReceive('existsApprovedButNotTranslatedGroup')
+            ->once()
+            ->with($dummyPublishGroup->translationSetIdentifier, $dummyPublishGroup->groupIdentifier)
+            ->andReturn(false);
+
+        $groupHistoryFactory = Mockery::mock(GroupHistoryFactoryInterface::class);
+        $groupHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishGroup->history);
+
+        $groupHistoryRepository = Mockery::mock(GroupHistoryRepositoryInterface::class);
+        $groupHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->history)
+            ->andReturn(null);
+
+        // スナップショット関連のモック（既存の公開済みGroupがある場合はスナップショットを保存）
+        $groupSnapshotFactory = Mockery::mock(GroupSnapshotFactoryInterface::class);
+        $groupSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishGroup->publishedGroup)
+            ->andReturn($dummyPublishGroup->snapshot);
+
+        $groupSnapshotRepository = Mockery::mock(GroupSnapshotRepositoryInterface::class);
+        $groupSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishGroup->snapshot)
+            ->andReturn(null);
+
+        // ContributionPointServiceのモック - grantPointsが正しいパラメータで呼ばれることを検証
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $dummyPublishGroup->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::GROUP,
+                (string) $dummyPublishGroup->publishedGroup->groupIdentifier(),
+                false, // isNewCreation = false for update
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(GroupServiceInterface::class, $groupService);
+        $this->app->instance(GroupHistoryRepositoryInterface::class, $groupHistoryRepository);
+        $this->app->instance(GroupHistoryFactoryInterface::class, $groupHistoryFactory);
+        $this->app->instance(GroupSnapshotFactoryInterface::class, $groupSnapshotFactory);
+        $this->app->instance(GroupSnapshotRepositoryInterface::class, $groupSnapshotRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishGroup = $this->app->make(PublishGroupInterface::class);
+        $result = $publishGroup->process($input);
+
+        $this->assertSame((string) $dummyPublishGroup->publishedGroupIdentifier, (string) $result->groupIdentifier());
+    }
+
+    /**
      * 異常系：NONEロールがグループを公開しようとした場合、例外がスローされること.
      *
      * @return void
@@ -1105,6 +1335,8 @@ class PublishGroupTest extends TestCase
      * @param ApprovalStatus $status
      * @param bool $hasPublishedGroup
      * @param PrincipalIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $approverIdentifier
+     * @param PrincipalIdentifier|null $mergerIdentifier
      * @return PublishGroupTestData
      */
     private function createDummyPublishGroup(
@@ -1113,6 +1345,8 @@ class PublishGroupTest extends TestCase
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         bool $hasPublishedGroup = false,
         ?PrincipalIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $approverIdentifier = null,
+        ?PrincipalIdentifier $mergerIdentifier = null,
     ): PublishGroupTestData {
         $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
@@ -1138,6 +1372,8 @@ class PublishGroupTest extends TestCase
             $agencyIdentifier,
             $description,
             $status,
+            $approverIdentifier,
+            $mergerIdentifier,
         );
 
         // 公開済みのGroupエンティティ（既存データを想定）

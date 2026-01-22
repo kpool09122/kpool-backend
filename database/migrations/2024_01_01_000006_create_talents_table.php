@@ -41,6 +41,7 @@ return new class extends Migration
             $table->text('career')->comment('経歴')->default('');
             $table->string('image_link', 255)->nullable()->comment('画像パス');
             $table->text('status')->comment('公開ステータス');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->timestamps();
         });
 

@@ -34,6 +34,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -42,6 +43,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -1045,6 +1047,234 @@ class PublishAgencyTest extends TestCase
     }
 
     /**
+     * 正常系：approverIdentifierがnullでない場合、grantPointsが呼ばれること（新規作成時）.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnNewCreation(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $dummyPublishAgency = $this->createDummyPublishAgency(
+            hasPublishedAgency: false,
+            operatorIdentifier: $principalIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishAgencyInput(
+            $dummyPublishAgency->agencyIdentifier,
+            $dummyPublishAgency->publishedAgencyIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishAgency->agencyIdentifier)
+            ->andReturn($dummyPublishAgency->agency);
+        $draftAgencyRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishAgency->agency)
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishAgency->createdAgency)
+            ->andReturn(null);
+
+        $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
+        $agencyFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->language, $dummyPublishAgency->name)
+            ->andReturn($dummyPublishAgency->createdAgency);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
+            ->once()
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->agencyIdentifier)
+            ->andReturn(false);
+
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $agencyHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishAgency->history);
+
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishAgency->history)
+            ->andReturn(null);
+
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldNotReceive('create');
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldNotReceive('save');
+
+        // ContributionPointServiceのモック - grantPointsが正しいパラメータで呼ばれることを検証
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $dummyPublishAgency->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::AGENCY,
+                (string) $dummyPublishAgency->createdAgency->agencyIdentifier(),
+                true, // isNewCreation = true for first time publish
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyFactoryInterface::class, $agencyFactory);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishAgency = $this->app->make(PublishAgencyInterface::class);
+        $result = $publishAgency->process($input);
+
+        $this->assertSame((string) $dummyPublishAgency->publishedAgencyIdentifier, (string) $result->agencyIdentifier());
+    }
+
+    /**
+     * 正常系：approverIdentifierがnullでない場合、grantPointsが呼ばれること（更新時）.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws AgencyNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnUpdate(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $dummyPublishAgency = $this->createDummyPublishAgency(
+            hasPublishedAgency: true,
+            operatorIdentifier: $principalIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishAgencyInput(
+            $dummyPublishAgency->agencyIdentifier,
+            $dummyPublishAgency->publishedAgencyIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $draftAgencyRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishAgency->agencyIdentifier)
+            ->andReturn($dummyPublishAgency->agency);
+        $draftAgencyRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishAgency->agency)
+            ->andReturn(null);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishAgency->publishedAgencyIdentifier)
+            ->andReturn($dummyPublishAgency->publishedAgency);
+        $agencyRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishAgency->publishedAgency)
+            ->andReturn(null);
+
+        $agencyService = Mockery::mock(AgencyServiceInterface::class);
+        $agencyService->shouldReceive('existsApprovedButNotTranslatedAgency')
+            ->once()
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->agencyIdentifier)
+            ->andReturn(false);
+
+        $agencyHistoryFactory = Mockery::mock(AgencyHistoryFactoryInterface::class);
+        $agencyHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishAgency->history);
+
+        $agencyHistoryRepository = Mockery::mock(AgencyHistoryRepositoryInterface::class);
+        $agencyHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishAgency->history)
+            ->andReturn(null);
+
+        // スナップショット関連のモック（既存の公開済みAgencyがある場合はスナップショットを保存）
+        $agencySnapshotFactory = Mockery::mock(AgencySnapshotFactoryInterface::class);
+        $agencySnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishAgency->publishedAgency)
+            ->andReturn($dummyPublishAgency->snapshot);
+
+        $agencySnapshotRepository = Mockery::mock(AgencySnapshotRepositoryInterface::class);
+        $agencySnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishAgency->snapshot)
+            ->andReturn(null);
+
+        // ContributionPointServiceのモック - grantPointsが正しいパラメータで呼ばれることを検証
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $dummyPublishAgency->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::AGENCY,
+                (string) $dummyPublishAgency->publishedAgency->agencyIdentifier(),
+                false, // isNewCreation = false for update
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(AgencyServiceInterface::class, $agencyService);
+        $this->app->instance(AgencyHistoryRepositoryInterface::class, $agencyHistoryRepository);
+        $this->app->instance(AgencyHistoryFactoryInterface::class, $agencyHistoryFactory);
+        $this->app->instance(AgencySnapshotFactoryInterface::class, $agencySnapshotFactory);
+        $this->app->instance(AgencySnapshotRepositoryInterface::class, $agencySnapshotRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishAgency = $this->app->make(PublishAgencyInterface::class);
+        $result = $publishAgency->process($input);
+
+        $this->assertSame((string) $dummyPublishAgency->publishedAgencyIdentifier, (string) $result->agencyIdentifier());
+    }
+
+    /**
      * 異常系：NONEロールが事務所を公開しようとした場合、例外がスローされること.
      *
      * @return void
@@ -1113,6 +1343,8 @@ class PublishAgencyTest extends TestCase
      * @param ApprovalStatus $status
      * @param bool $hasPublishedAgency
      * @param PrincipalIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $approverIdentifier
+     * @param PrincipalIdentifier|null $mergerIdentifier
      * @return PublishAgencyTestData
      */
     private function createDummyPublishAgency(
@@ -1120,6 +1352,8 @@ class PublishAgencyTest extends TestCase
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         bool $hasPublishedAgency = false,
         ?PrincipalIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $approverIdentifier = null,
+        ?PrincipalIdentifier $mergerIdentifier = null,
     ): PublishAgencyTestData {
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -1160,6 +1394,8 @@ DESC);
             $foundedIn,
             $description,
             $status,
+            $approverIdentifier,
+            $mergerIdentifier,
         );
 
         // 既存の公開済み事務所（更新時用）

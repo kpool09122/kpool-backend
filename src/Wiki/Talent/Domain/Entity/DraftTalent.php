@@ -23,7 +23,7 @@ class DraftTalent
      * @param TalentIdentifier $talentIdentifier
      * @param TalentIdentifier|null $publishedTalentIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
-     * @param PrincipalIdentifier $editorIdentifier
+     * @param PrincipalIdentifier|null $editorIdentifier
      * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
@@ -39,7 +39,7 @@ class DraftTalent
         private readonly TalentIdentifier         $talentIdentifier,
         private ?TalentIdentifier                 $publishedTalentIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly PrincipalIdentifier      $editorIdentifier,
+        private readonly ?PrincipalIdentifier     $editorIdentifier,
         private readonly Language                 $language,
         private TalentName                        $name,
         private RealName                          $realName,
@@ -48,6 +48,7 @@ class DraftTalent
         private ?Birthday                         $birthday,
         private Career                            $career,
         private ApprovalStatus                    $status,
+        private ?PrincipalIdentifier              $approverIdentifier = null,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
     ) {
@@ -73,7 +74,7 @@ class DraftTalent
         return $this->translationSetIdentifier;
     }
 
-    public function editorIdentifier(): PrincipalIdentifier
+    public function editorIdentifier(): ?PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }
@@ -158,6 +159,16 @@ class DraftTalent
     public function setStatus(ApprovalStatus $status): void
     {
         $this->status = $status;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function setApproverIdentifier(?PrincipalIdentifier $approverIdentifier): void
+    {
+        $this->approverIdentifier = $approverIdentifier;
     }
 
     public function mergerIdentifier(): ?PrincipalIdentifier

@@ -10,6 +10,12 @@ use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Event\DelegationRevoked;
 use Source\Identity\Application\EventHandler\DelegationApprovedHandler;
 use Source\Identity\Application\EventHandler\DelegationRevokedHandler;
+use Source\Identity\Application\EventHandler\DemotionWarningsBatchIssuedHandler;
+use Source\Identity\Application\EventHandler\PrincipalsBatchDemotedHandler;
+use Source\Identity\Application\EventHandler\PrincipalsBatchPromotedHandler;
+use Source\Wiki\Principal\Domain\Event\DemotionWarningsBatchIssued;
+use Source\Wiki\Principal\Domain\Event\PrincipalsBatchDemoted;
+use Source\Wiki\Principal\Domain\Event\PrincipalsBatchPromoted;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -26,6 +32,21 @@ class EventServiceProvider extends ServiceProvider
         $events->listen(
             DelegationRevoked::class,
             [DelegationRevokedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            PrincipalsBatchPromoted::class,
+            [PrincipalsBatchPromotedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            PrincipalsBatchDemoted::class,
+            [PrincipalsBatchDemotedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            DemotionWarningsBatchIssued::class,
+            [DemotionWarningsBatchIssuedHandler::class, 'handle'],
         );
     }
 }

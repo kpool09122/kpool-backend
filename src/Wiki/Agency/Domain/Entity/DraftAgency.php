@@ -21,7 +21,7 @@ class DraftAgency
         private readonly AgencyIdentifier         $agencyIdentifier,
         private ?AgencyIdentifier                 $publishedAgencyIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
-        private readonly PrincipalIdentifier      $editorIdentifier,
+        private readonly ?PrincipalIdentifier     $editorIdentifier,
         private readonly Language                 $language,
         private AgencyName                        $name,
         private string                            $normalizedName,
@@ -30,6 +30,7 @@ class DraftAgency
         private ?FoundedIn                        $foundedIn,
         private Description                       $description,
         private ApprovalStatus                    $status,
+        private ?PrincipalIdentifier              $approverIdentifier = null,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
     ) {
@@ -55,7 +56,7 @@ class DraftAgency
         return $this->translationSetIdentifier;
     }
 
-    public function editorIdentifier(): PrincipalIdentifier
+    public function editorIdentifier(): ?PrincipalIdentifier
     {
         return $this->editorIdentifier;
     }
@@ -133,6 +134,16 @@ class DraftAgency
     public function setStatus(ApprovalStatus $status): void
     {
         $this->status = $status;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function setApproverIdentifier(?PrincipalIdentifier $approverIdentifier): void
+    {
+        $this->approverIdentifier = $approverIdentifier;
     }
 
     public function mergerIdentifier(): ?PrincipalIdentifier

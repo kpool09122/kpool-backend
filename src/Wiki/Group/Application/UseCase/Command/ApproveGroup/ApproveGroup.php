@@ -79,6 +79,7 @@ readonly class ApproveGroup implements ApproveGroupInterface
 
         $previousStatus = $group->status();
         $group->setStatus(ApprovalStatus::Approved);
+        $group->setApproverIdentifier($input->principalIdentifier());
 
         $this->groupRepository->save($group);
 

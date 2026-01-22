@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -18,6 +19,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -1176,6 +1178,8 @@ class PublishTalentTest extends TestCase
     private function createPublishTalentInfo(
         bool $hasPublishedTalent = true,
         ?PrincipalIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $approverIdentifier = null,
+        ?PrincipalIdentifier $mergerIdentifier = null,
     ): PublishTalentTestData {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
@@ -1209,6 +1213,8 @@ class PublishTalentTest extends TestCase
             $birthday,
             $career,
             $status,
+            $approverIdentifier,
+            $mergerIdentifier,
         );
 
         $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
@@ -1260,7 +1266,257 @@ class PublishTalentTest extends TestCase
             $historyIdentifier,
             $history,
             $snapshot,
+            $approverIdentifier,
+            $mergerIdentifier,
         );
+    }
+
+    /**
+     * 正常系：新規作成時に貢献ポイントが付与されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnNewCreation(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $publishTalentInfo = $this->createPublishTalentInfo(
+            hasPublishedTalent: false,
+            operatorIdentifier: $principalIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishTalentInput(
+            $publishTalentInfo->talentIdentifier,
+            $publishTalentInfo->publishedTalentIdentifier,
+            $principalIdentifier,
+        );
+
+        $version = new Version(1);
+        $createdTalent = new Talent(
+            $publishTalentInfo->publishedTalentIdentifier,
+            $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->language,
+            $publishTalentInfo->name,
+            new RealName(''),
+            null,
+            [],
+            null,
+            new Career(''),
+            $version,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
+            ->once()
+            ->with($publishTalentInfo->talentIdentifier)
+            ->andReturn($publishTalentInfo->draftTalent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($publishTalentInfo->draftTalent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('save')
+            ->once()
+            ->with($createdTalent)
+            ->andReturn(null);
+
+        $talentFactory = Mockery::mock(TalentFactoryInterface::class);
+        $talentFactory->shouldReceive('create')
+            ->once()
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
+            ->andReturn($createdTalent);
+
+        $talentService = Mockery::mock(TalentServiceInterface::class);
+        $talentService->shouldReceive('existsApprovedButNotTranslatedTalent')
+            ->once()
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->talentIdentifier)
+            ->andReturn(false);
+
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($publishTalentInfo->history);
+
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($publishTalentInfo->history)
+            ->andReturn(null);
+
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $publishTalentInfo->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::TALENT,
+                (string) $createdTalent->talentIdentifier(),
+                true, // isNewCreation
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentFactoryInterface::class, $talentFactory);
+        $this->app->instance(TalentServiceInterface::class, $talentService);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishTalent = $this->app->make(PublishTalentInterface::class);
+        $publishedTalent = $publishTalent->process($input);
+
+        $this->assertSame((string) $publishTalentInfo->publishedTalentIdentifier, (string) $publishedTalent->talentIdentifier());
+    }
+
+    /**
+     * 正常系：更新時に貢献ポイントが付与されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TalentNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnUpdate(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $publishTalentInfo = $this->createPublishTalentInfo(
+            hasPublishedTalent: true,
+            operatorIdentifier: $principalIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishTalentInput(
+            $publishTalentInfo->talentIdentifier,
+            $publishTalentInfo->publishedTalentIdentifier,
+            $principalIdentifier,
+        );
+
+        $exVersion = new Version(1);
+        $publishedTalent = new Talent(
+            $publishTalentInfo->publishedTalentIdentifier,
+            $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->language,
+            new TalentName('지효'),
+            new RealName('박지수'),
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            [new GroupIdentifier(StrTestHelper::generateUuid())],
+            new Birthday(new DateTimeImmutable('1995-01-01')),
+            new Career('Previous career'),
+            $exVersion,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+        $draftTalentRepository->shouldReceive('findById')
+            ->once()
+            ->with($publishTalentInfo->talentIdentifier)
+            ->andReturn($publishTalentInfo->draftTalent);
+        $draftTalentRepository->shouldReceive('delete')
+            ->once()
+            ->with($publishTalentInfo->draftTalent)
+            ->andReturn(null);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findById')
+            ->once()
+            ->with($publishTalentInfo->publishedTalentIdentifier)
+            ->andReturn($publishedTalent);
+        $talentRepository->shouldReceive('save')
+            ->once()
+            ->with($publishedTalent)
+            ->andReturn(null);
+
+        $talentService = Mockery::mock(TalentServiceInterface::class);
+        $talentService->shouldReceive('existsApprovedButNotTranslatedTalent')
+            ->once()
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->talentIdentifier)
+            ->andReturn(false);
+
+        $talentHistoryFactory = Mockery::mock(TalentHistoryFactoryInterface::class);
+        $talentHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($publishTalentInfo->history);
+
+        $talentHistoryRepository = Mockery::mock(TalentHistoryRepositoryInterface::class);
+        $talentHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($publishTalentInfo->history)
+            ->andReturn(null);
+
+        $snapshot = $publishTalentInfo->snapshot;
+        $talentSnapshotFactory = Mockery::mock(TalentSnapshotFactoryInterface::class);
+        $talentSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($publishedTalent)
+            ->andReturn($snapshot);
+
+        $talentSnapshotRepository = Mockery::mock(TalentSnapshotRepositoryInterface::class);
+        $talentSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($snapshot)
+            ->andReturn(null);
+
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $publishTalentInfo->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::TALENT,
+                (string) $publishedTalent->talentIdentifier(),
+                false, // isNewCreation
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(TalentServiceInterface::class, $talentService);
+        $this->app->instance(TalentHistoryRepositoryInterface::class, $talentHistoryRepository);
+        $this->app->instance(TalentHistoryFactoryInterface::class, $talentHistoryFactory);
+        $this->app->instance(TalentSnapshotFactoryInterface::class, $talentSnapshotFactory);
+        $this->app->instance(TalentSnapshotRepositoryInterface::class, $talentSnapshotRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishTalent = $this->app->make(PublishTalentInterface::class);
+        $result = $publishTalent->process($input);
+
+        $this->assertSame((string) $publishTalentInfo->publishedTalentIdentifier, (string) $result->talentIdentifier());
     }
 }
 
@@ -1291,6 +1547,8 @@ readonly class PublishTalentTestData
         public TalentHistoryIdentifier  $historyIdentifier,
         public TalentHistory            $history,
         public TalentSnapshot           $snapshot,
+        public ?PrincipalIdentifier     $approverIdentifier = null,
+        public ?PrincipalIdentifier     $mergerIdentifier = null,
     ) {
     }
 }

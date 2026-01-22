@@ -10,6 +10,7 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -19,6 +20,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
@@ -968,6 +970,234 @@ class PublishSongTest extends TestCase
     }
 
     /**
+     * 正常系：approverIdentifierがnullでない場合、grantPointsが呼ばれること（新規作成時）.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnNewCreation(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $dummyPublishSong = $this->createDummyPublishSong(
+            hasPublishedSong: false,
+            operatorIdentifier: $principalIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishSongInput(
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishSong->createdSong)
+            ->andReturn(null);
+
+        $songFactory = Mockery::mock(SongFactoryInterface::class);
+        $songFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->language, $dummyPublishSong->name)
+            ->andReturn($dummyPublishSong->createdSong);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
+            ->once()
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
+            ->andReturn(false);
+
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishSong->history);
+
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishSong->history)
+            ->andReturn(null);
+
+        $songSnapshotFactory = Mockery::mock(SongSnapshotFactoryInterface::class);
+        $songSnapshotFactory->shouldNotReceive('create');
+
+        $songSnapshotRepository = Mockery::mock(SongSnapshotRepositoryInterface::class);
+        $songSnapshotRepository->shouldNotReceive('save');
+
+        // ContributionPointServiceのモック - grantPointsが正しいパラメータで呼ばれることを検証
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $dummyPublishSong->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::SONG,
+                (string) $dummyPublishSong->createdSong->songIdentifier(),
+                true, // isNewCreation = true for first time publish
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongFactoryInterface::class, $songFactory);
+        $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
+        $this->app->instance(SongSnapshotFactoryInterface::class, $songSnapshotFactory);
+        $this->app->instance(SongSnapshotRepositoryInterface::class, $songSnapshotRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishSong = $this->app->make(PublishSongInterface::class);
+        $result = $publishSong->process($input);
+
+        $this->assertSame((string) $dummyPublishSong->publishedSongIdentifier, (string) $result->songIdentifier());
+    }
+
+    /**
+     * 正常系：approverIdentifierがnullでない場合、grantPointsが呼ばれること（更新時）.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws SongNotFoundException
+     * @throws InvalidStatusException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessGrantsContributionPointsOnUpdate(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $dummyPublishSong = $this->createDummyPublishSong(
+            hasPublishedSong: true,
+            operatorIdentifier: $principalIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+        );
+
+        $input = new PublishSongInput(
+            $dummyPublishSong->songIdentifier,
+            $dummyPublishSong->publishedSongIdentifier,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishSong->songIdentifier)
+            ->andReturn($dummyPublishSong->draftSong);
+        $draftSongRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishSong->draftSong)
+            ->andReturn(null);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishSong->publishedSongIdentifier)
+            ->andReturn($dummyPublishSong->publishedSong);
+        $songRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishSong->publishedSong)
+            ->andReturn(null);
+
+        $songService = Mockery::mock(SongServiceInterface::class);
+        $songService->shouldReceive('existsApprovedButNotTranslatedSong')
+            ->once()
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->songIdentifier)
+            ->andReturn(false);
+
+        $songHistoryFactory = Mockery::mock(SongHistoryFactoryInterface::class);
+        $songHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishSong->history);
+
+        $songHistoryRepository = Mockery::mock(SongHistoryRepositoryInterface::class);
+        $songHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishSong->history)
+            ->andReturn(null);
+
+        // スナップショット関連のモック（既存の公開済みSongがある場合はスナップショットを保存）
+        $songSnapshotFactory = Mockery::mock(SongSnapshotFactoryInterface::class);
+        $songSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishSong->publishedSong)
+            ->andReturn($dummyPublishSong->snapshot);
+
+        $songSnapshotRepository = Mockery::mock(SongSnapshotRepositoryInterface::class);
+        $songSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishSong->snapshot)
+            ->andReturn(null);
+
+        // ContributionPointServiceのモック - grantPointsが正しいパラメータで呼ばれることを検証
+        $contributionPointService = Mockery::mock(ContributionPointServiceInterface::class);
+        $contributionPointService->shouldReceive('grantPoints')
+            ->once()
+            ->with(
+                $dummyPublishSong->editorIdentifier,
+                $approverIdentifier,
+                $mergerIdentifier,
+                ResourceType::SONG,
+                (string) $dummyPublishSong->publishedSong->songIdentifier(),
+                false, // isNewCreation = false for update
+            )
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(SongServiceInterface::class, $songService);
+        $this->app->instance(SongHistoryRepositoryInterface::class, $songHistoryRepository);
+        $this->app->instance(SongHistoryFactoryInterface::class, $songHistoryFactory);
+        $this->app->instance(SongSnapshotFactoryInterface::class, $songSnapshotFactory);
+        $this->app->instance(SongSnapshotRepositoryInterface::class, $songSnapshotRepository);
+        $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
+
+        $publishSong = $this->app->make(PublishSongInterface::class);
+        $result = $publishSong->process($input);
+
+        $this->assertSame((string) $dummyPublishSong->publishedSongIdentifier, (string) $result->songIdentifier());
+    }
+
+    /**
      * 異常系：NONEロールが曲を公開しようとした場合、例外がスローされること.
      *
      * @return void
@@ -1027,12 +1257,16 @@ class PublishSongTest extends TestCase
      * @param ApprovalStatus $status
      * @param bool $hasPublishedSong
      * @param PrincipalIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $approverIdentifier
+     * @param PrincipalIdentifier|null $mergerIdentifier
      * @return PublishSongTestData
      */
     private function createDummyPublishSong(
         ApprovalStatus $status = ApprovalStatus::UnderReview,
         bool $hasPublishedSong = false,
         ?PrincipalIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $approverIdentifier = null,
+        ?PrincipalIdentifier $mergerIdentifier = null,
     ): PublishSongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
@@ -1063,6 +1297,8 @@ class PublishSongTest extends TestCase
             $releaseDate,
             $overView,
             $status,
+            $approverIdentifier,
+            $mergerIdentifier,
         );
 
         // 公開済みのSongエンティティ（既存データを想定）

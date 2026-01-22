@@ -14,6 +14,12 @@ interface PrincipalRepositoryInterface
 {
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal;
 
+    /**
+     * @param PrincipalIdentifier[] $principalIdentifiers
+     * @return Principal[]
+     */
+    public function findByIds(array $principalIdentifiers): array;
+
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal;
 
     public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Principal;
