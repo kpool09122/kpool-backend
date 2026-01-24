@@ -14,9 +14,13 @@ use Source\SiteManagement\Announcement\Infrastructure\Adapters\Repository\Announ
 use Source\SiteManagement\Announcement\Infrastructure\Factory\AnnouncementFactory;
 use Source\SiteManagement\Announcement\Infrastructure\Factory\DraftAnnouncementFactory;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
+use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ContactRepository;
+use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ReplyContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
+use Source\SiteManagement\Contact\Infrastructure\Factory\ReplyContactFactory;
 use Source\SiteManagement\User\Domain\Factory\UserFactoryInterface;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Source\SiteManagement\User\Infrastructure\Factory\UserFactory;
@@ -29,10 +33,12 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AnnouncementFactoryInterface::class, AnnouncementFactory::class);
         $this->app->singleton(AnnouncementRepositoryInterface::class, AnnouncementRepository::class);
         $this->app->singleton(ContactFactoryInterface::class, ContactFactory::class);
+        $this->app->singleton(ReplyContactFactoryInterface::class, ReplyContactFactory::class);
         $this->app->singleton(DraftAnnouncementFactoryInterface::class, DraftAnnouncementFactory::class);
         $this->app->singleton(UserFactoryInterface::class, UserFactory::class);
         $this->app->singleton(UserRepositoryInterface::class, UserRepository::class);
         $this->app->singleton(ContactRepositoryInterface::class, ContactRepository::class);
+        $this->app->singleton(ReplyContactRepositoryInterface::class, ReplyContactRepository::class);
         $this->app->singleton(EncryptionServiceInterface::class, EncryptionService::class);
     }
 }
