@@ -31,6 +31,7 @@ readonly class SubmitContact implements SubmitContactInterface
             $input->name(),
             $input->email(),
             $input->content(),
+            $input->identityIdentifier(),
         );
 
         $this->contactRepository->save($contact);

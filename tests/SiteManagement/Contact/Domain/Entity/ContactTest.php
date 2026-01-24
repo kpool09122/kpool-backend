@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\SiteManagement\Contact\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
@@ -23,6 +24,7 @@ class ContactTest extends TestCase
     public function test__construct(): void
     {
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
@@ -36,12 +38,14 @@ class ContactTest extends TestCase
 これからも応援しています。');
         $contact = new Contact(
             $contactIdentifier,
+            $identityIdentifier,
             $category,
             $name,
             $email,
             $content,
         );
         $this->assertSame((string)$contactIdentifier, (string)$contact->contactIdentifier());
+        $this->assertSame((string)$identityIdentifier, (string)$contact->identityIdentifier());
         $this->assertSame($category->value, $contact->category()->value);
         $this->assertSame((string)$name, (string)$contact->name());
         $this->assertSame((string)$email, (string)$contact->email());

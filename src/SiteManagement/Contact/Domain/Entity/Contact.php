@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -14,6 +15,7 @@ readonly class Contact
 {
     public function __construct(
         private ContactIdentifier $contactIdentifier,
+        private ?IdentityIdentifier $identityIdentifier,
         private Category $category,
         private ContactName $name,
         private Email $email,
@@ -24,6 +26,11 @@ readonly class Contact
     public function contactIdentifier(): ContactIdentifier
     {
         return $this->contactIdentifier;
+    }
+
+    public function identityIdentifier(): ?IdentityIdentifier
+    {
+        return $this->identityIdentifier;
     }
 
     public function category(): Category
