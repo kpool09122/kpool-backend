@@ -6,8 +6,13 @@ namespace Source\SiteManagement\Contact\Infrastructure\Adapters\Repository;
 
 use Application\Models\SiteManagement\Contact as ContactModel;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 
 final class ContactRepository implements ContactRepositoryInterface
 {
@@ -29,6 +34,24 @@ final class ContactRepository implements ContactRepositoryInterface
                 'email' => $this->encryptionService->encrypt((string)$contact->email()),
                 'content' => (string)$contact->content(),
             ]
+        );
+    }
+
+    public function findById(ContactIdentifier $contactIdentifier): ?Contact
+    {
+        $model = ContactModel::query()
+            ->whereKey((string) $contactIdentifier)
+            ->first();
+        if ($model === null) {
+            return null;
+        }
+
+        return new Contact(
+            new ContactIdentifier((string)$model->id),
+            Category::from((int)$model->category),
+            new ContactName((string)$model->name),
+            new Email($this->encryptionService->decrypt((string)$model->email)),
+            new Content((string)$model->content),
         );
     }
 }
