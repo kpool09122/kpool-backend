@@ -17,7 +17,7 @@ use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Principal\Domain\Event\DemotionWarningsBatchIssued;
+use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

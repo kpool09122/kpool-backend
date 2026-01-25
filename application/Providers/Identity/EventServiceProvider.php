@@ -13,7 +13,7 @@ use Source\Identity\Application\EventHandler\DelegationRevokedHandler;
 use Source\Identity\Application\EventHandler\DemotionWarningsBatchIssuedHandler;
 use Source\Identity\Application\EventHandler\PrincipalsBatchDemotedHandler;
 use Source\Identity\Application\EventHandler\PrincipalsBatchPromotedHandler;
-use Source\Wiki\Principal\Domain\Event\DemotionWarningsBatchIssued;
+use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
 use Source\Wiki\Principal\Domain\Event\PrincipalsBatchDemoted;
 use Source\Wiki\Principal\Domain\Event\PrincipalsBatchPromoted;
 

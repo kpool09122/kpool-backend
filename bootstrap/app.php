@@ -7,7 +7,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Source\Wiki\Principal\Domain\ValueObject\YearMonth;
+use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
