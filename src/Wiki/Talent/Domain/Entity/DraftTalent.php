@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -23,6 +24,7 @@ class DraftTalent
      * @param TalentIdentifier $talentIdentifier
      * @param TalentIdentifier|null $publishedTalentIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param PrincipalIdentifier|null $editorIdentifier
      * @param Language $language
      * @param TalentName $name
@@ -39,6 +41,7 @@ class DraftTalent
         private readonly TalentIdentifier         $talentIdentifier,
         private ?TalentIdentifier                 $publishedTalentIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
+        private readonly Slug                     $slug,
         private readonly ?PrincipalIdentifier     $editorIdentifier,
         private readonly Language                 $language,
         private TalentName                        $name,
@@ -72,6 +75,11 @@ class DraftTalent
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function editorIdentifier(): ?PrincipalIdentifier

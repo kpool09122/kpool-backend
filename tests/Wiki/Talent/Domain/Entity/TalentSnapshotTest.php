@@ -7,6 +7,7 @@ namespace Tests\Wiki\Talent\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
@@ -56,6 +57,7 @@ class TalentSnapshotTest extends TestCase
         $snapshotIdentifier = new TalentSnapshotIdentifier(StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -68,6 +70,7 @@ class TalentSnapshotTest extends TestCase
             $snapshotIdentifier,
             $talentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $realName,
@@ -93,6 +96,7 @@ class TalentSnapshotTest extends TestCase
         $snapshotIdentifier = new TalentSnapshotIdentifier(StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -110,6 +114,7 @@ class TalentSnapshotTest extends TestCase
             $snapshotIdentifier,
             $talentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $realName,
@@ -125,6 +130,7 @@ class TalentSnapshotTest extends TestCase
             snapshotIdentifier: $snapshotIdentifier,
             talentIdentifier: $talentIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             language: $language,
             name: $name,
             realName: $realName,
@@ -152,6 +158,7 @@ readonly class TalentSnapshotTestData
         public TalentSnapshotIdentifier  $snapshotIdentifier,
         public TalentIdentifier          $talentIdentifier,
         public TranslationSetIdentifier  $translationSetIdentifier,
+        public Slug                      $slug,
         public Language                  $language,
         public TalentName                $name,
         public RealName                  $realName,

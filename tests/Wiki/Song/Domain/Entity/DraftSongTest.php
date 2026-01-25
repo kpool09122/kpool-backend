@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -261,6 +262,7 @@ class DraftSongTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-draft-song-tt');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
@@ -277,6 +279,7 @@ class DraftSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -294,6 +297,7 @@ class DraftSongTest extends TestCase
             songIdentifier: $songIdentifier,
             publishedSongIdentifier: $publishedSongIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             editorIdentifier: $editorIdentifier,
             language: $language,
             name: $name,
@@ -319,6 +323,7 @@ readonly class DraftSongTestData
         public SongIdentifier           $songIdentifier,
         public SongIdentifier           $publishedSongIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public SongName                 $name,

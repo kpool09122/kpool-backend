@@ -21,6 +21,7 @@ use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
@@ -239,7 +240,7 @@ class PublishSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->language, $dummyPublishSong->name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->slug, $dummyPublishSong->language, $dummyPublishSong->name)
             ->andReturn($dummyPublishSong->createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -271,6 +272,7 @@ class PublishSongTest extends TestCase
         $this->assertSame((string)$dummyPublishSong->publishedSongIdentifier, (string)$publishedSong->songIdentifier());
         $this->assertSame($dummyPublishSong->language->value, $publishedSong->language()->value);
         $this->assertSame((string)$dummyPublishSong->translationSetIdentifier, (string)$publishedSong->translationSetIdentifier());
+        $this->assertSame((string)$dummyPublishSong->slug, (string)$publishedSong->slug());
         $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
         $this->assertSame((string)$dummyPublishSong->agencyIdentifier, (string)$publishedSong->agencyIdentifier());
         $this->assertSame((string)$dummyPublishSong->groupIdentifier, (string)$publishedSong->groupIdentifier());
@@ -710,7 +712,7 @@ class PublishSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->language, $dummyPublishSong->name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->slug, $dummyPublishSong->language, $dummyPublishSong->name)
             ->andReturn($dummyPublishSong->createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -852,7 +854,7 @@ class PublishSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->language, $dummyPublishSong->name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->slug, $dummyPublishSong->language, $dummyPublishSong->name)
             ->andReturn($dummyPublishSong->createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -935,7 +937,7 @@ class PublishSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->language, $dummyPublishSong->name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->slug, $dummyPublishSong->language, $dummyPublishSong->name)
             ->andReturn($dummyPublishSong->createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -1024,7 +1026,7 @@ class PublishSongTest extends TestCase
         $songFactory = Mockery::mock(SongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->language, $dummyPublishSong->name)
+            ->with($dummyPublishSong->translationSetIdentifier, $dummyPublishSong->slug, $dummyPublishSong->language, $dummyPublishSong->name)
             ->andReturn($dummyPublishSong->createdSong);
 
         $songService = Mockery::mock(SongServiceInterface::class);
@@ -1270,6 +1272,7 @@ class PublishSongTest extends TestCase
     ): PublishSongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('slug');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
@@ -1286,6 +1289,7 @@ class PublishSongTest extends TestCase
             $songIdentifier,
             $hasPublishedSong ? $publishedSongIdentifier : null,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -1315,6 +1319,7 @@ class PublishSongTest extends TestCase
         $publishedSong = new Song(
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $publishedName,
             $publishedAgencyIdentifier,
@@ -1332,6 +1337,7 @@ class PublishSongTest extends TestCase
         $createdSong = new Song(
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             null,
@@ -1365,6 +1371,7 @@ class PublishSongTest extends TestCase
             new SongSnapshotIdentifier(StrTestHelper::generateUuid()),
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $publishedName,
             $publishedAgencyIdentifier,
@@ -1381,6 +1388,7 @@ class PublishSongTest extends TestCase
         return new PublishSongTestData(
             $songIdentifier,
             $publishedSongIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -1416,7 +1424,8 @@ readonly class PublishSongTestData
     public function __construct(
         public SongIdentifier           $songIdentifier,
         public SongIdentifier           $publishedSongIdentifier,
-        public PrincipalIdentifier       $editorIdentifier,
+        public Slug                     $slug,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,

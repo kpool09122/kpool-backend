@@ -14,6 +14,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -67,6 +68,7 @@ class AgencySnapshotTest extends TestCase
             $snapshotIdentifier,
             $agencyIdentifier,
             $translationSetIdentifier,
+            new Slug('sm-entertainment'),
             $language,
             $name,
             $normalizedName,
@@ -91,6 +93,7 @@ class AgencySnapshotTest extends TestCase
         $snapshotIdentifier = new AgencySnapshotIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('jyp-entertainment');
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -105,6 +108,7 @@ class AgencySnapshotTest extends TestCase
             $snapshotIdentifier,
             $agencyIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,
@@ -120,6 +124,7 @@ class AgencySnapshotTest extends TestCase
             snapshotIdentifier: $snapshotIdentifier,
             agencyIdentifier: $agencyIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             language: $language,
             name: $name,
             normalizedName: $normalizedName,
@@ -143,6 +148,7 @@ readonly class AgencySnapshotTestData
         public AgencySnapshotIdentifier  $snapshotIdentifier,
         public AgencyIdentifier          $agencyIdentifier,
         public TranslationSetIdentifier  $translationSetIdentifier,
+        public Slug                      $slug,
         public Language                  $language,
         public AgencyName                $name,
         public string                    $normalizedName,

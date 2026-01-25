@@ -9,6 +9,7 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Infrastructure\Factory\DraftTalentFactory;
@@ -38,12 +39,14 @@ class DraftTalentFactoryTest extends TestCase
     public function testCreate(): void
     {
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $talentFactory = $this->app->make(DraftTalentFactoryInterface::class);
-        $talent = $talentFactory->create($editorIdentifier, $language, $name);
+        $talent = $talentFactory->create($editorIdentifier, $slug, $language, $name);
         $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertNull($talent->publishedTalentIdentifier());
+        $this->assertSame((string)$slug, (string)$talent->slug());
         $this->assertSame((string)$editorIdentifier, (string)$talent->editorIdentifier());
         $this->assertSame($language->value, $talent->language()->value);
         $this->assertSame((string)$name, (string)$talent->name());

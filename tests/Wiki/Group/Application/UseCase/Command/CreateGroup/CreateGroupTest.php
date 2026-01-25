@@ -24,11 +24,13 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -70,6 +72,7 @@ class CreateGroupTest extends TestCase
             $createDummyCreateGroup->publishedGroupIdentifier,
             $createDummyCreateGroup->language,
             $createDummyCreateGroup->name,
+            $createDummyCreateGroup->slug,
             $createDummyCreateGroup->agencyIdentifier,
             $createDummyCreateGroup->description,
             $principalIdentifier,
@@ -89,10 +92,14 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $createDummyCreateGroup->language, $createDummyCreateGroup->name)
+            ->with($principalIdentifier, $createDummyCreateGroup->language, $createDummyCreateGroup->name, $createDummyCreateGroup->slug)
             ->andReturn($createDummyCreateGroup->group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->with($createDummyCreateGroup->slug)
+            ->andReturn(false);
         $groupRepository->shouldReceive('findById')
             ->once()
             ->with($createDummyCreateGroup->publishedGroupIdentifier)
@@ -141,6 +148,7 @@ class CreateGroupTest extends TestCase
             $createDummyCreateGroup->publishedGroupIdentifier,
             $createDummyCreateGroup->language,
             $createDummyCreateGroup->name,
+            $createDummyCreateGroup->slug,
             $createDummyCreateGroup->agencyIdentifier,
             $createDummyCreateGroup->description,
             $principalIdentifier,
@@ -160,10 +168,14 @@ class CreateGroupTest extends TestCase
         $groupFactory = Mockery::mock(DraftGroupFactoryInterface::class);
         $groupFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $createDummyCreateGroup->language, $createDummyCreateGroup->name)
+            ->with($principalIdentifier, $createDummyCreateGroup->language, $createDummyCreateGroup->name, $createDummyCreateGroup->slug)
             ->andReturn($createDummyCreateGroup->group);
 
         $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->with($createDummyCreateGroup->slug)
+            ->andReturn(false);
         $groupRepository->shouldReceive('findById')
             ->once()
             ->with($createDummyCreateGroup->publishedGroupIdentifier)
@@ -203,6 +215,7 @@ class CreateGroupTest extends TestCase
             $createDummyCreateGroup->publishedGroupIdentifier,
             $createDummyCreateGroup->language,
             $createDummyCreateGroup->name,
+            $createDummyCreateGroup->slug,
             $createDummyCreateGroup->agencyIdentifier,
             $createDummyCreateGroup->description,
             $principalIdentifier,
@@ -250,6 +263,7 @@ class CreateGroupTest extends TestCase
             $createDummyCreateGroup->publishedGroupIdentifier,
             $createDummyCreateGroup->language,
             $createDummyCreateGroup->name,
+            $createDummyCreateGroup->slug,
             $createDummyCreateGroup->agencyIdentifier,
             $createDummyCreateGroup->description,
             $principalIdentifier,
@@ -275,6 +289,61 @@ class CreateGroupTest extends TestCase
     }
 
     /**
+     * 異常系：指定したSlugが既に存在する場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testWhenDuplicateSlug(): void
+    {
+        $createDummyCreateGroup = $this->createDummyCreateGroup();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $input = new CreateGroupInput(
+            $createDummyCreateGroup->publishedGroupIdentifier,
+            $createDummyCreateGroup->language,
+            $createDummyCreateGroup->name,
+            $createDummyCreateGroup->slug,
+            $createDummyCreateGroup->agencyIdentifier,
+            $createDummyCreateGroup->description,
+            $principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->once()
+            ->andReturn(true);
+
+        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
+        $groupRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->with($createDummyCreateGroup->slug)
+            ->andReturn(true);
+
+        $draftGroupRepository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $draftGroupRepository->shouldNotReceive('save');
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $draftGroupRepository);
+
+        $this->expectException(DuplicateSlugException::class);
+        $useCase = $this->app->make(CreateGroupInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * ダミーデータを作成するヘルパーメソッド
      *
      * @return CreateGroupTestData
@@ -285,6 +354,7 @@ class CreateGroupTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
+        $slug = new Slug('twice');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
@@ -299,6 +369,7 @@ class CreateGroupTest extends TestCase
             $groupIdentifier,
             $publishedGroupIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -312,6 +383,7 @@ class CreateGroupTest extends TestCase
         $publishedGroup = new Group(
             $publishedGroupIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,
@@ -325,6 +397,7 @@ class CreateGroupTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
+            $slug,
             $agencyIdentifier,
             $description,
             $groupIdentifier,
@@ -351,6 +424,7 @@ readonly class CreateGroupTestData
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public GroupName                $name,
+        public Slug                     $slug,
         public AgencyIdentifier         $agencyIdentifier,
         public Description              $description,
         public GroupIdentifier          $groupIdentifier,

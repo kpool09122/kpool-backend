@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
@@ -42,6 +43,8 @@ class DraftSongRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $translationSetIdentifier = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
@@ -64,6 +67,8 @@ class DraftSongRepositoryTest extends TestCase
             'overview' => 'TWICE 8th mini album title track.',
             'cover_image_path' => '/images/songs/twice-feelspecial.jpg',
             'status' => ApprovalStatus::Pending->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $repository = $this->app->make(DraftSongRepositoryInterface::class);
@@ -86,6 +91,8 @@ class DraftSongRepositoryTest extends TestCase
         $this->assertSame('2019-09-23', $draft->releaseDate()->format('Y-m-d'));
         $this->assertSame('TWICE 8th mini album title track.', (string) $draft->overView());
         $this->assertSame(ApprovalStatus::Pending, $draft->status());
+        $this->assertSame($approverId, (string) $draft->approverIdentifier());
+        $this->assertSame($mergerId, (string) $draft->mergerIdentifier());
     }
 
     /**
@@ -138,6 +145,8 @@ class DraftSongRepositoryTest extends TestCase
     {
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
 
         CreateGroup::create($groupId);
         CreateTalent::create($talentId);
@@ -146,6 +155,7 @@ class DraftSongRepositoryTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUuid()),
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('attention-newjeans'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Attention'),
@@ -157,6 +167,8 @@ class DraftSongRepositoryTest extends TestCase
             new ReleaseDate(new DateTimeImmutable('2022-07-22')),
             new Overview('NewJeans debut single.'),
             ApprovalStatus::UnderReview,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
 
         $repository = $this->app->make(DraftSongRepositoryInterface::class);
@@ -166,6 +178,7 @@ class DraftSongRepositoryTest extends TestCase
             'id' => (string) $draft->songIdentifier(),
             'published_id' => (string) $draft->publishedSongIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
+            'slug' => (string) $draft->slug(),
             'editor_id' => (string) $draft->editorIdentifier(),
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
@@ -175,6 +188,8 @@ class DraftSongRepositoryTest extends TestCase
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
             'overview' => (string) $draft->overView(),
             'status' => $draft->status()->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $this->assertDatabaseHas('draft_song_group', [
@@ -207,6 +222,7 @@ class DraftSongRepositoryTest extends TestCase
             new SongIdentifier($id),
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('next-level-aespa'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Next Level'),

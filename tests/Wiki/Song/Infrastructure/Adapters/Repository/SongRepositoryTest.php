@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -138,6 +139,7 @@ class SongRepositoryTest extends TestCase
         $song = new Song(
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('case-143-stray-kids'),
             Language::KOREAN,
             new SongName('CASE 143'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
@@ -156,6 +158,7 @@ class SongRepositoryTest extends TestCase
         $this->assertDatabaseHas('songs', [
             'id' => (string) $song->songIdentifier(),
             'translation_set_identifier' => (string) $song->translationSetIdentifier(),
+            'slug' => (string) $song->slug(),
             'language' => $song->language()->value,
             'name' => (string) $song->name(),
             'agency_id' => (string) $song->agencyIdentifier(),
@@ -258,5 +261,46 @@ class SongRepositoryTest extends TestCase
 
         $this->assertIsArray($songs);
         $this->assertEmpty($songs);
+    }
+
+    /**
+     * 正常系：指定したSlugの歌が存在する場合、trueが返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlugWhenExists(): void
+    {
+        $songId = StrTestHelper::generateUuid();
+        $slug = 'thunderous-stray-kids';
+
+        CreateSong::create($songId, [
+            'slug' => $slug,
+            'language' => Language::KOREAN->value,
+            'name' => '소리꾼',
+            'lyricist' => 'Bang Chan, Changbin, Han',
+            'composer' => 'Bang Chan, Changbin, Han',
+            'overview' => 'Stray Kids 2nd full album NOEASY title track.',
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(SongRepositoryInterface::class);
+        $exists = $repository->existsBySlug(new Slug($slug));
+
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * 正常系：指定したSlugの歌が存在しない場合、falseが返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlugWhenNotExists(): void
+    {
+        $repository = $this->app->make(SongRepositoryInterface::class);
+        $exists = $repository->existsBySlug(new Slug('non-existent-song-slug'));
+
+        $this->assertFalse($exists);
     }
 }

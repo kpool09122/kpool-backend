@@ -14,6 +14,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class AgencyFactory implements AgencyFactoryInterface
@@ -26,6 +27,7 @@ readonly class AgencyFactory implements AgencyFactoryInterface
 
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
+        Slug                     $slug,
         Language                 $language,
         AgencyName               $agencyName,
     ): Agency {
@@ -34,6 +36,7 @@ readonly class AgencyFactory implements AgencyFactoryInterface
         return new Agency(
             new AgencyIdentifier($this->generator->generate()),
             $translationSetIdentifier,
+            $slug,
             $language,
             $agencyName,
             $normalizedName,

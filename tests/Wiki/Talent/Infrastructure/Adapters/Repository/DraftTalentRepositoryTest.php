@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
@@ -41,6 +42,8 @@ class DraftTalentRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $translation = Language::KOREAN;
         $name = '창빈';
         $realName = '서창빈';
@@ -67,6 +70,8 @@ class DraftTalentRepositoryTest extends TestCase
             'birthday' => $birthday,
             'career' => $career,
             'status' => $status->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $repository = $this->app->make(DraftTalentRepositoryInterface::class);
@@ -90,6 +95,8 @@ class DraftTalentRepositoryTest extends TestCase
         $this->assertSame($birthday, $draft->birthday()->format('Y-m-d'));
         $this->assertSame($career, (string) $draft->career());
         $this->assertSame($status, $draft->status());
+        $this->assertSame($approverId, (string) $draft->approverIdentifier());
+        $this->assertSame($mergerId, (string) $draft->mergerIdentifier());
     }
 
     /**
@@ -148,6 +155,8 @@ class DraftTalentRepositoryTest extends TestCase
     public function testSave(): void
     {
         $groupId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
 
         // 先にグループを作成
         CreateGroup::create($groupId);
@@ -156,6 +165,7 @@ class DraftTalentRepositoryTest extends TestCase
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('felix'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('필릭스'),
@@ -165,6 +175,8 @@ class DraftTalentRepositoryTest extends TestCase
             new Birthday(new DateTimeImmutable('2000-09-15')),
             new Career('Stray Kids lead dancer and sub-rapper. Known for his deep voice.'),
             ApprovalStatus::UnderReview,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
 
         $repository = $this->app->make(DraftTalentRepositoryInterface::class);
@@ -182,6 +194,8 @@ class DraftTalentRepositoryTest extends TestCase
             'birthday' => $draft->birthday()?->format('Y-m-d'),
             'career' => (string) $draft->career(),
             'status' => $draft->status()->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         // 中間テーブルの確認
@@ -209,6 +223,7 @@ class DraftTalentRepositoryTest extends TestCase
             new TalentIdentifier($id),
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('seungmin'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new TalentName('승민'),

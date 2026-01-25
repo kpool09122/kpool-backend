@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -47,6 +48,7 @@ class TalentSnapshotFactoryTest extends TestCase
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -62,6 +64,7 @@ class TalentSnapshotFactoryTest extends TestCase
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $realName,
@@ -100,6 +103,7 @@ class TalentSnapshotFactoryTest extends TestCase
         $talent = new Talent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('chaeyoung'),
             Language::KOREAN,
             new TalentName('채영'),
             new RealName(''),

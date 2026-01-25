@@ -107,6 +107,7 @@ readonly class PublishTalent implements PublishTalentInterface
         } else {
             $publishedTalent = $this->talentFactory->create(
                 $talent->translationSetIdentifier(),
+                $talent->slug(),
                 $talent->language(),
                 $talent->name(),
             );

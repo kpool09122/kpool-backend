@@ -12,6 +12,7 @@ class CreateTalentSnapshot
      * @param array{
      *     talent_id?: string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     language?: string,
      *     name?: string,
      *     real_name?: string,
@@ -30,6 +31,7 @@ class CreateTalentSnapshot
             'id' => $snapshotId,
             'talent_id' => $overrides['talent_id'] ?? StrTestHelper::generateUuid(),
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'chaeyoung',
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? '채영',
             'real_name' => $overrides['real_name'] ?? '손채영',

@@ -13,6 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 class DraftGroup
 {
@@ -20,6 +21,7 @@ class DraftGroup
      * @param GroupIdentifier $groupIdentifier
      * @param GroupIdentifier|null $publishedGroupIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param PrincipalIdentifier|null $editorIdentifier
      * @param Language $language
      * @param GroupName $name
@@ -34,6 +36,7 @@ class DraftGroup
         private readonly GroupIdentifier          $groupIdentifier,
         private ?GroupIdentifier                  $publishedGroupIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
+        private readonly Slug                     $slug,
         private readonly ?PrincipalIdentifier     $editorIdentifier,
         private readonly Language                 $language,
         private GroupName                         $name,
@@ -65,6 +68,11 @@ class DraftGroup
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function editorIdentifier(): ?PrincipalIdentifier

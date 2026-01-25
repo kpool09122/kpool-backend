@@ -17,6 +17,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -667,6 +668,7 @@ class TranslateSongTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('ttt');
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -681,6 +683,7 @@ class TranslateSongTest extends TestCase
         $song = new Song(
             $songIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $agencyIdentifier,
@@ -709,6 +712,7 @@ class TranslateSongTest extends TestCase
             $jaSongIdentifier,
             $songIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $japanese,
             $jaName,
@@ -738,6 +742,7 @@ class TranslateSongTest extends TestCase
             $enSongIdentifier,
             $songIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $english,
             $enName,

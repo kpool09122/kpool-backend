@@ -53,6 +53,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifier,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'jyp-entertainment',
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -73,6 +74,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'hybe',
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -127,6 +129,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'jyp-entertainment',
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -147,6 +150,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'hybe',
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -200,6 +204,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'jyp-entertainment',
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -220,6 +225,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'hybe',
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -273,6 +279,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'jyp-entertainment',
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -293,6 +300,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'hybe',
             'language' => $language->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,
@@ -358,6 +366,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'jyp-entertainment',
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -379,6 +388,7 @@ class GetAgenciesTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string)$agencyIdentifer2,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'hybe',
             'language' => $language2->value,
             'name' => $name2,
             'normalized_name' => $normalizedName2,

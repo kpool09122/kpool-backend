@@ -7,6 +7,7 @@ namespace Source\Wiki\Song\Infrastructure\Factory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
@@ -25,12 +26,14 @@ readonly class SongFactory implements SongFactoryInterface
 
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
+        Slug                     $slug,
         Language                 $language,
         SongName                 $name,
     ): Song {
         return new Song(
             new SongIdentifier($this->generator->generate()),
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             null,

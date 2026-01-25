@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -510,6 +511,7 @@ class RollbackTalentTest extends TestCase
         return new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
+            new Slug('test-talent'),
             $language,
             new TalentName('테스트'),
             new RealName('테스트 실명'),
@@ -531,6 +533,7 @@ class RollbackTalentTest extends TestCase
             new TalentSnapshotIdentifier(StrTestHelper::generateUuid()),
             $talentIdentifier,
             $translationSetIdentifier,
+            new Slug('snapshot-talent'),
             $language,
             new TalentName('스냅샷'),
             new RealName('스냅샷 실명'),

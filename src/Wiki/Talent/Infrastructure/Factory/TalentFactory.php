@@ -7,6 +7,7 @@ namespace Source\Wiki\Talent\Infrastructure\Factory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -24,18 +25,21 @@ readonly class TalentFactory implements TalentFactoryInterface
 
     /**
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param TalentName $name
      * @return Talent
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
+        Slug                     $slug,
         Language                 $language,
         TalentName               $name,
     ): Talent {
         return new Talent(
             new TalentIdentifier($this->generator->generate()),
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             new RealName(''),

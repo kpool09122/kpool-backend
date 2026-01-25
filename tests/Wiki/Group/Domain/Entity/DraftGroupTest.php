@@ -14,6 +14,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -197,6 +198,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('twice');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
@@ -212,6 +214,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             $groupIdentifier,
             $publishedGroupIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -225,6 +228,7 @@ TWICE（트와이스）是在2015年透過韓國生存實境節目《SIXTEEN》�
             groupIdentifier: $groupIdentifier,
             publishedGroupIdentifier: $publishedGroupIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             editorIdentifier: $editorIdentifier,
             language: $language,
             name: $name,
@@ -249,6 +253,7 @@ readonly class DraftGroupTestData
         public GroupIdentifier          $groupIdentifier,
         public GroupIdentifier          $publishedGroupIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public GroupName                $name,

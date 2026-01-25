@@ -7,6 +7,7 @@ namespace Tests\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalentInput;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -28,6 +29,7 @@ class CreateTalentInputTest extends TestCase
     public function test__construct(): void
     {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -45,6 +47,7 @@ class CreateTalentInputTest extends TestCase
 
         $input = new CreateTalentInput(
             $publishedTalentIdentifier,
+            $slug,
             $language,
             $name,
             $realName,
@@ -55,6 +58,7 @@ class CreateTalentInputTest extends TestCase
             $principalIdentifier,
         );
         $this->assertSame((string)$publishedTalentIdentifier, (string)$input->publishedTalentIdentifier());
+        $this->assertSame((string)$slug, (string)$input->slug());
         $this->assertSame($language->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$realName, (string)$input->realName());

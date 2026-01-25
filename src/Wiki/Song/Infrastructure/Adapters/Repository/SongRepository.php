@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -39,6 +40,13 @@ final class SongRepository implements SongRepositoryInterface
         return $this->toEntity($songModel);
     }
 
+    public function existsBySlug(Slug $slug): bool
+    {
+        return SongModel::query()
+            ->where('slug', (string) $slug)
+            ->exists();
+    }
+
     /**
      * @return Song[]
      */
@@ -65,6 +73,7 @@ final class SongRepository implements SongRepositoryInterface
             ],
             [
                 'translation_set_identifier' => (string) $song->translationSetIdentifier(),
+                'slug' => (string) $song->slug(),
                 'language' => $song->language()->value,
                 'name' => (string) $song->name(),
                 'agency_id' => $song->agencyIdentifier() ? (string) $song->agencyIdentifier() : null,
@@ -102,6 +111,7 @@ final class SongRepository implements SongRepositoryInterface
         return new Song(
             new SongIdentifier($songModel->id),
             new TranslationSetIdentifier($songModel->translation_set_identifier),
+            new Slug($songModel->slug),
             Language::from($songModel->language),
             new SongName($songModel->name),
             $songModel->agency_id ? new AgencyIdentifier($songModel->agency_id) : null,

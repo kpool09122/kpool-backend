@@ -15,6 +15,7 @@ use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 readonly class DraftGroupFactory implements DraftGroupFactoryInterface
 {
@@ -28,6 +29,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
      * @param PrincipalIdentifier $editorIdentifier
      * @param Language $language
      * @param GroupName $name
+     * @param Slug $slug
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
      * @return DraftGroup
      */
@@ -35,6 +37,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
         PrincipalIdentifier       $editorIdentifier,
         Language                  $language,
         GroupName                 $name,
+        Slug                      $slug,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftGroup {
         $normalizedName = $this->normalizationService->normalize((string)$name, $language);
@@ -43,6 +46,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
             new GroupIdentifier($this->generator->generate()),
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
+            $slug,
             $editorIdentifier,
             $language,
             $name,

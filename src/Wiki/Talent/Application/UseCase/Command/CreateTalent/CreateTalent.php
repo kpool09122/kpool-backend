@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -32,6 +33,7 @@ readonly class CreateTalent implements CreateTalentInterface
      * @return DraftTalent
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function process(CreateTalentInputPort $input): DraftTalent
     {
@@ -53,8 +55,13 @@ readonly class CreateTalent implements CreateTalentInterface
             throw new UnauthorizedException();
         }
 
+        if ($this->talentRepository->existsBySlug($input->slug())) {
+            throw new DuplicateSlugException();
+        }
+
         $talent = $this->talentFactory->create(
             $input->principalIdentifier(),
+            $input->slug(),
             $input->language(),
             $input->name(),
         );

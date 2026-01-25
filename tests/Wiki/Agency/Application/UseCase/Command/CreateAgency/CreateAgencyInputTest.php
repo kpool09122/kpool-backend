@@ -12,6 +12,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -26,6 +27,7 @@ class CreateAgencyInputTest extends TestCase
     {
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $name = new AgencyName('JYP엔터테인먼트');
+        $slug = new Slug('jyp-entertainment');
         $language = Language::KOREAN;
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
@@ -49,6 +51,7 @@ class CreateAgencyInputTest extends TestCase
             $publishedAgencyIdentifier,
             $language,
             $name,
+            $slug,
             $CEO,
             $foundedIn,
             $description,

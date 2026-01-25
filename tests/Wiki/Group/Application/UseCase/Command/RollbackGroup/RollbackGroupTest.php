@@ -36,6 +36,7 @@ use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -585,6 +586,7 @@ class RollbackGroupTest extends TestCase
         return new Group(
             $groupIdentifier,
             $translationSetIdentifier,
+            new Slug('current-name'),
             $language,
             new GroupName('Current Name'),
             'current name',
@@ -604,6 +606,7 @@ class RollbackGroupTest extends TestCase
             new GroupSnapshotIdentifier(StrTestHelper::generateUuid()),
             $groupIdentifier,
             $translationSetIdentifier,
+            new Slug('snapshot-name'),
             $language,
             new GroupName('Snapshot Name'),
             'snapshot name',

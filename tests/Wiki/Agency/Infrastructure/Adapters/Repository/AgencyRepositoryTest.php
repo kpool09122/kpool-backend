@@ -6,7 +6,6 @@ namespace Tests\Wiki\Agency\Infrastructure\Adapters\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -17,7 +16,9 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Tests\Helper\CreateAgency;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -33,12 +34,13 @@ class AgencyRepositoryTest extends TestCase
     public function testFindById(): void
     {
         $id = StrTestHelper::generateUuid();
-        $translation = Language::KOREAN;
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
         $normalizedCEO = 'j.y. park';
-        $founded_in = new DateTimeImmutable('1997-04-25');
+        $foundedIn = '1997-04-25';
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
 **\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
@@ -53,27 +55,29 @@ class AgencyRepositoryTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         $version = 1;
-        DB::table('agencies')->upsert([
-            'id' => $id,
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'language' => $translation,
+
+        CreateAgency::create($id, [
+            'translation_set_identifier' => $translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
+            'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
             'CEO' => $CEO,
             'normalized_CEO' => $normalizedCEO,
-            'founded_in' => $founded_in,
+            'founded_in' => $foundedIn,
             'description' => $description,
             'version' => $version,
-        ], 'id');
+        ]);
+
         $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
         $agency = $agencyRepository->findById(
             new AgencyIdentifier($id),
         );
         $this->assertSame($id, (string)$agency->agencyIdentifier());
-        $this->assertSame($translation, $agency->language());
+        $this->assertSame($language, $agency->language());
         $this->assertSame($name, (string)$agency->name());
         $this->assertSame($CEO, (string)$agency->CEO());
-        $this->assertSame($founded_in->format('Y-m-d'), $agency->foundedIn()->value()->format('Y-m-d'));
+        $this->assertSame($foundedIn, $agency->foundedIn()->value()->format('Y-m-d'));
         $this->assertSame($description, (string)$agency->description());
         $this->assertSame($version, $agency->version()->value());
     }
@@ -125,6 +129,7 @@ class AgencyRepositoryTest extends TestCase
         $agency = new Agency(
             new AgencyIdentifier($id),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('jyp-entertainment'),
             $language,
             new AgencyName($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
@@ -164,47 +169,46 @@ class AgencyRepositoryTest extends TestCase
         $idJa = StrTestHelper::generateUuid();
 
         // 韓国語版Agency
-        DB::table('agencies')->upsert([
-            'id' => $idKo,
+        CreateAgency::create($idKo, [
             'translation_set_identifier' => $translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
             'language' => Language::KOREAN->value,
             'name' => 'JYP엔터테인먼트',
             'normalized_name' => 'jypㅇㅌㅌㅇㅁㅌ',
             'CEO' => 'J.Y. Park',
             'normalized_CEO' => 'j.y. park',
-            'founded_in' => new DateTimeImmutable('1997-04-25'),
+            'founded_in' => '1997-04-25',
             'description' => 'Korean description',
             'version' => 3,
-        ], 'id');
+        ]);
 
         // 日本語版Agency
-        DB::table('agencies')->upsert([
-            'id' => $idJa,
+        CreateAgency::create($idJa, [
             'translation_set_identifier' => $translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
             'language' => Language::JAPANESE->value,
             'name' => 'JYPエンターテインメント',
             'normalized_name' => 'jypえんたーていんめんと',
             'CEO' => 'J.Y. パク',
             'normalized_CEO' => 'j.y. ぱく',
-            'founded_in' => new DateTimeImmutable('1997-04-25'),
+            'founded_in' => '1997-04-25',
             'description' => 'Japanese description',
             'version' => 3,
-        ], 'id');
+        ]);
 
         // 別の翻訳セットのAgency（取得されないはず）
         $otherId = StrTestHelper::generateUuid();
-        DB::table('agencies')->upsert([
-            'id' => $otherId,
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
+        CreateAgency::create($otherId, [
+            'slug' => 'sm-entertainment',
             'language' => Language::KOREAN->value,
             'name' => 'SM엔터테인먼트',
             'normalized_name' => 'smㅇㅌㅌㅇㅁㅌ',
             'CEO' => 'Lee Sung-su',
             'normalized_CEO' => 'lee sung-su',
-            'founded_in' => new DateTimeImmutable('1995-02-14'),
+            'founded_in' => '1995-02-14',
             'description' => 'SM description',
             'version' => 1,
-        ], 'id');
+        ]);
 
         $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
         $agencies = $agencyRepository->findByTranslationSetIdentifier(
@@ -235,5 +239,42 @@ class AgencyRepositoryTest extends TestCase
 
         $this->assertIsArray($agencies);
         $this->assertEmpty($agencies);
+    }
+
+    /**
+     * 正常系：指定したSlugのAgencyが存在する場合、trueが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlug(): void
+    {
+        $slug = 'jyp-entertainment';
+        $id = StrTestHelper::generateUuid();
+
+        CreateAgency::create($id, [
+            'slug' => $slug,
+        ]);
+
+        $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
+        $exists = $agencyRepository->existsBySlug(new Slug($slug));
+
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * 正常系：指定したSlugのAgencyが存在しない場合、falseが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlugWhenNoAgency(): void
+    {
+        $agencyRepository = $this->app->make(AgencyRepositoryInterface::class);
+        $exists = $agencyRepository->existsBySlug(new Slug('non-existent-slug'));
+
+        $this->assertFalse($exists);
     }
 }

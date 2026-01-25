@@ -16,6 +16,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\CreateGroupSnapshot;
 use Tests\Helper\StrTestHelper;
@@ -47,6 +48,7 @@ class GroupSnapshotRepositoryTest extends TestCase
             new GroupSnapshotIdentifier($snapshotId),
             new GroupIdentifier($groupId),
             new TranslationSetIdentifier($translationSetIdentifier),
+            new Slug('twice'),
             $language,
             new GroupName($name),
             $normalizedName,
@@ -63,6 +65,7 @@ class GroupSnapshotRepositoryTest extends TestCase
             'id' => $snapshotId,
             'group_id' => $groupId,
             'translation_set_identifier' => $translationSetIdentifier,
+            'slug' => 'twice',
             'translation' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
@@ -88,6 +91,7 @@ class GroupSnapshotRepositoryTest extends TestCase
             new GroupSnapshotIdentifier($snapshotId),
             new GroupIdentifier($groupId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('twice'),
             Language::KOREAN,
             new GroupName('TWICE'),
             'twice',

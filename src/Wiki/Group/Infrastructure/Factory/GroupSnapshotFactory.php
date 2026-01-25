@@ -24,6 +24,7 @@ readonly class GroupSnapshotFactory implements GroupSnapshotFactoryInterface
             new GroupSnapshotIdentifier($this->generator->generate()),
             $group->groupIdentifier(),
             $group->translationSetIdentifier(),
+            $group->slug(),
             $group->language(),
             $group->name(),
             $group->normalizedName(),

@@ -14,6 +14,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
@@ -24,6 +25,7 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             'id' => (string)$snapshot->snapshotIdentifier(),
             'group_id' => (string)$snapshot->groupIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
+            'slug' => (string)$snapshot->slug(),
             'translation' => $snapshot->language()->value,
             'name' => (string)$snapshot->name(),
             'normalized_name' => $snapshot->normalizedName(),
@@ -81,6 +83,7 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             new GroupSnapshotIdentifier($model->id),
             new GroupIdentifier($model->group_id),
             new TranslationSetIdentifier($model->translation_set_identifier),
+            new Slug($model->slug),
             Language::from($model->translation),
             new GroupName($model->name),
             $model->normalized_name,

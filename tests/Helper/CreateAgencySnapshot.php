@@ -12,6 +12,7 @@ class CreateAgencySnapshot
      * @param array{
      *     agency_id?: string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     language?: string,
      *     name?: string,
      *     normalized_name?: string,
@@ -29,6 +30,7 @@ class CreateAgencySnapshot
             'id' => $snapshotId,
             'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'jyp-entertainment',
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'JYP엔터테인먼트',
             'normalized_name' => $overrides['normalized_name'] ?? 'jypㅇㅌㅌㅇㅁㅌ',

@@ -16,6 +16,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
 {
@@ -29,6 +30,7 @@ readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
         PrincipalIdentifier       $editorIdentifier,
         Language                  $language,
         AgencyName                $agencyName,
+        Slug                      $slug,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftAgency {
         $normalizedName = $this->normalizationService->normalize((string)$agencyName, $language);
@@ -37,6 +39,7 @@ readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
             new AgencyIdentifier($this->generator->generate()),
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
+            $slug,
             $editorIdentifier,
             $language,
             $agencyName,

@@ -10,6 +10,7 @@ use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
@@ -34,6 +35,7 @@ readonly class CreateAgency implements CreateAgencyInterface
      * @return DraftAgency
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function process(CreateAgencyInputPort $input): DraftAgency
     {
@@ -53,10 +55,15 @@ readonly class CreateAgency implements CreateAgencyInterface
             throw new UnauthorizedException();
         }
 
+        if ($this->agencyRepository->existsBySlug($input->slug())) {
+            throw new DuplicateSlugException();
+        }
+
         $agency = $this->agencyFactory->create(
             $input->principalIdentifier(),
             $input->language(),
             $input->name(),
+            $input->slug(),
         );
         if ($input->publishedAgencyIdentifier()) {
             $publishedAgency = $this->agencyRepository->findById($input->publishedAgencyIdentifier());

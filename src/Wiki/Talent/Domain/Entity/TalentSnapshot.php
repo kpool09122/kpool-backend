@@ -7,6 +7,7 @@ namespace Source\Wiki\Talent\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -23,6 +24,7 @@ readonly class TalentSnapshot
      * @param TalentSnapshotIdentifier $snapshotIdentifier
      * @param TalentIdentifier $talentIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
@@ -37,6 +39,7 @@ readonly class TalentSnapshot
         private TalentSnapshotIdentifier  $snapshotIdentifier,
         private TalentIdentifier          $talentIdentifier,
         private TranslationSetIdentifier  $translationSetIdentifier,
+        private Slug                      $slug,
         private Language                  $language,
         private TalentName                $name,
         private RealName                  $realName,
@@ -62,6 +65,11 @@ readonly class TalentSnapshot
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

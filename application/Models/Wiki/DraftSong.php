@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $id
  * @property ?string $published_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $editor_id
  * @property string $language
  * @property string $name
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?string $music_video_link
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  * @property-read Collection<int, Group> $groups
  * @property-read Collection<int, Talent> $talents
  */
@@ -40,6 +42,7 @@ class DraftSong extends Model
         'id',
         'published_id',
         'translation_set_identifier',
+        'slug',
         'editor_id',
         'language',
         'name',
@@ -52,6 +55,7 @@ class DraftSong extends Model
         'music_video_link',
         'status',
         'approver_id',
+        'merger_id',
     ];
 
     protected $casts = [

@@ -36,6 +36,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -785,6 +786,7 @@ DESC);
             $agencyIdentifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $editorIdentifier,
             $language,
             $name,

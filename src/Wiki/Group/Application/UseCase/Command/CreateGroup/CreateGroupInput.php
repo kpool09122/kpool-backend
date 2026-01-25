@@ -10,6 +10,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 readonly class CreateGroupInput implements CreateGroupInputPort
 {
@@ -17,6 +18,7 @@ readonly class CreateGroupInput implements CreateGroupInputPort
      * @param GroupIdentifier|null $publishedGroupIdentifier
      * @param Language $language
      * @param GroupName $name
+     * @param Slug $slug
      * @param AgencyIdentifier $agencyIdentifier
      * @param Description $description
      * @param PrincipalIdentifier $principalIdentifier
@@ -25,6 +27,7 @@ readonly class CreateGroupInput implements CreateGroupInputPort
         private ?GroupIdentifier    $publishedGroupIdentifier,
         private Language            $language,
         private GroupName           $name,
+        private Slug                $slug,
         private AgencyIdentifier    $agencyIdentifier,
         private Description         $description,
         private PrincipalIdentifier $principalIdentifier,
@@ -44,6 +47,11 @@ readonly class CreateGroupInput implements CreateGroupInputPort
     public function name(): GroupName
     {
         return $this->name;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function agencyIdentifier(): AgencyIdentifier

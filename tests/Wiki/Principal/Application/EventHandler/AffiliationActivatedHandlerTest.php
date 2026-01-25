@@ -34,6 +34,7 @@ use Source\Wiki\Principal\Domain\ValueObject\PolicyIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -605,9 +606,10 @@ class AffiliationActivatedHandlerTest extends TestCase
         return new Talent(
             $talentIdentifier,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::JAPANESE,
-            new TalentName('Test Talent'),
-            new RealName('Test Real Name'),
+            new Slug('chaeyoung'),
+            Language::KOREAN,
+            new TalentName('채영'),
+            new RealName('손채영'),
             null,
             [],
             null,

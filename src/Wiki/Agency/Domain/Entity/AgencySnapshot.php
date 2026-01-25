@@ -13,6 +13,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class AgencySnapshot
@@ -21,6 +22,7 @@ readonly class AgencySnapshot
         private AgencySnapshotIdentifier  $snapshotIdentifier,
         private AgencyIdentifier          $agencyIdentifier,
         private TranslationSetIdentifier  $translationSetIdentifier,
+        private Slug                      $slug,
         private Language                  $language,
         private AgencyName                $name,
         private string                    $normalizedName,
@@ -46,6 +48,11 @@ readonly class AgencySnapshot
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

@@ -8,11 +8,13 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 interface AgencyFactoryInterface
 {
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
+        Slug                     $slug,
         Language                 $language,
         AgencyName               $agencyName,
     ): Agency;

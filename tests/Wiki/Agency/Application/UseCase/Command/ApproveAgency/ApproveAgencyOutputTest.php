@@ -16,6 +16,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -34,6 +35,7 @@ class ApproveAgencyOutputTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテイメント'),
@@ -90,6 +92,7 @@ class ApproveAgencyOutputTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('HYBE'),

@@ -16,6 +16,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\UseCase\Command\MergeTalent\MergeTalent;
@@ -484,6 +485,7 @@ class MergeTalentTest extends TestCase
             $talentIdentifier,
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             $language,
             $name,

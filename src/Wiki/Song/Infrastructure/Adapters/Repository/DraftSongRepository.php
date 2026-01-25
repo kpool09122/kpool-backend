@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
@@ -52,6 +53,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             new SongIdentifier($draftModel->id),
             $draftModel->published_id ? new SongIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
+            new Slug($draftModel->slug),
             $draftModel->editor_id ? new PrincipalIdentifier($draftModel->editor_id) : null,
             Language::from($draftModel->language),
             new SongName($draftModel->name),
@@ -64,6 +66,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             new Overview($draftModel->overview),
             ApprovalStatus::from($draftModel->status),
             $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
+            $draftModel->merger_id ? new PrincipalIdentifier($draftModel->merger_id) : null,
         );
     }
 
@@ -82,6 +85,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                     ? (string) $song->publishedSongIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $song->translationSetIdentifier(),
+                'slug' => (string) $song->slug(),
                 'editor_id' => $song->editorIdentifier() ? (string) $song->editorIdentifier() : null,
                 'language' => $song->language()->value,
                 'name' => (string) $song->name(),
@@ -92,6 +96,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 'overview' => (string) $song->overView(),
                 'status' => $song->status()->value,
                 'approver_id' => $song->approverIdentifier() ? (string) $song->approverIdentifier() : null,
+                'merger_id' => $song->mergerIdentifier() ? (string) $song->mergerIdentifier() : null,
             ],
         );
 
@@ -137,6 +142,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 new SongIdentifier($model->id),
                 $model->published_id ? new SongIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
+                new Slug($model->slug),
                 $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
                 Language::from($model->language),
                 new SongName($model->name),
@@ -149,6 +155,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 new Overview($model->overview),
                 ApprovalStatus::from($model->status),
                 $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+                $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
             );
         }
 

@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
@@ -42,6 +43,7 @@ class SongSnapshotRepositoryTest extends TestCase
         $snapshotId = StrTestHelper::generateUuid();
         $songId = StrTestHelper::generateUuid();
         $translationSetIdentifier = StrTestHelper::generateUuid();
+        $slug = 'ttt';
         $language = Language::KOREAN;
         $name = 'TT';
         $agencyId = StrTestHelper::generateUuid();
@@ -61,6 +63,7 @@ class SongSnapshotRepositoryTest extends TestCase
             new SongSnapshotIdentifier($snapshotId),
             new SongIdentifier($songId),
             new TranslationSetIdentifier($translationSetIdentifier),
+            new Slug($slug),
             $language,
             new SongName($name),
             new AgencyIdentifier($agencyId),
@@ -117,6 +120,7 @@ class SongSnapshotRepositoryTest extends TestCase
             new SongSnapshotIdentifier($snapshotId),
             new SongIdentifier($songId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('ttt'),
             Language::KOREAN,
             new SongName('TT'),
             null,

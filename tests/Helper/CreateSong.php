@@ -11,6 +11,7 @@ class CreateSong
     /**
      * @param array{
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     language?: string,
      *     name?: string,
      *     agency_id?: ?string,
@@ -30,6 +31,7 @@ class CreateSong
         DB::table('songs')->insert([
             'id' => $songId,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'test-song-' . $songId,
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'LALALALA',
             'agency_id' => $overrides['agency_id'] ?? null,

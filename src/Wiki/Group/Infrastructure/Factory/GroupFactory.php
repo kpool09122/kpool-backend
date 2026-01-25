@@ -13,6 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupFactory implements GroupFactoryInterface
@@ -25,12 +26,14 @@ readonly class GroupFactory implements GroupFactoryInterface
 
     /**
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param GroupName $name
      * @return Group
      */
     public function create(
         TranslationSetIdentifier $translationSetIdentifier,
+        Slug                     $slug,
         Language                 $language,
         GroupName                $name,
     ): Group {
@@ -39,6 +42,7 @@ readonly class GroupFactory implements GroupFactoryInterface
         return new Group(
             new GroupIdentifier($this->generator->generate()),
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,

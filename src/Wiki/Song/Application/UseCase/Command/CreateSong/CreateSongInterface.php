@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
@@ -15,6 +16,7 @@ interface CreateSongInterface
      * @return DraftSong
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function process(CreateSongInputPort $input): DraftSong;
 }

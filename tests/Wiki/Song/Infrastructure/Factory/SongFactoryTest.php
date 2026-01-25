@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Song\Infrastructure\Factory\SongFactory;
@@ -37,12 +38,14 @@ class SongFactoryTest extends TestCase
     public function testCreate(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-song-tt');
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $songFactory = $this->app->make(SongFactoryInterface::class);
-        $song = $songFactory->create($translationSetIdentifier, $language, $name);
+        $song = $songFactory->create($translationSetIdentifier, $slug, $language, $name);
         $this->assertTrue(UuidValidator::isValid((string)$song->songIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$song->translationSetIdentifier());
+        $this->assertSame((string)$slug, (string)$song->slug());
         $this->assertSame($language->value, $song->language()->value);
         $this->assertSame((string)$name, (string)$song->name());
         $this->assertNull($song->agencyIdentifier());

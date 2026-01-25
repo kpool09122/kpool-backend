@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property ?string $published_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $editor_id
  * @property string $language
  * @property string $name
@@ -21,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  */
 class DraftAgency extends Model
 {
@@ -34,6 +36,7 @@ class DraftAgency extends Model
         'id',
         'published_id',
         'translation_set_identifier',
+        'slug',
         'editor_id',
         'language',
         'name',
@@ -44,6 +47,7 @@ class DraftAgency extends Model
         'description',
         'status',
         'approver_id',
+        'merger_id',
     ];
 
     protected $casts = [

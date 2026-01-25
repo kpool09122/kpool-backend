@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class AgencySnapshotRepository implements AgencySnapshotRepositoryInterface
@@ -25,6 +26,7 @@ class AgencySnapshotRepository implements AgencySnapshotRepositoryInterface
             'id' => (string)$snapshot->snapshotIdentifier(),
             'agency_id' => (string)$snapshot->agencyIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
+            'slug' => (string)$snapshot->slug(),
             'language' => $snapshot->language()->value,
             'name' => (string)$snapshot->name(),
             'normalized_name' => $snapshot->normalizedName(),
@@ -84,6 +86,7 @@ class AgencySnapshotRepository implements AgencySnapshotRepositoryInterface
             new AgencySnapshotIdentifier($model->id),
             new AgencyIdentifier($model->agency_id),
             new TranslationSetIdentifier($model->translation_set_identifier),
+            new Slug($model->slug),
             Language::from($model->language),
             new AgencyName($model->name),
             $model->normalized_name,

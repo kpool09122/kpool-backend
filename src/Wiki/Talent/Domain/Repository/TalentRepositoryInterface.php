@@ -6,12 +6,15 @@ namespace Source\Wiki\Talent\Domain\Repository;
 
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 
 interface TalentRepositoryInterface
 {
     public function findById(TalentIdentifier $identifier): ?Talent;
+
+    public function existsBySlug(Slug $slug): bool;
 
     /**
      * @return Talent[]

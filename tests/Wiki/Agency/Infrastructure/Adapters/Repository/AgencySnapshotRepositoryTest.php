@@ -17,6 +17,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\CreateAgencySnapshot;
 use Tests\Helper\StrTestHelper;
@@ -50,6 +51,7 @@ class AgencySnapshotRepositoryTest extends TestCase
             new AgencySnapshotIdentifier($snapshotId),
             new AgencyIdentifier($agencyId),
             new TranslationSetIdentifier($translationSetIdentifier),
+            new Slug('jyp-entertainment'),
             $language,
             new AgencyName($name),
             $normalizedName,
@@ -95,6 +97,7 @@ class AgencySnapshotRepositoryTest extends TestCase
             new AgencySnapshotIdentifier($snapshotId),
             new AgencyIdentifier($agencyId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('sm-entertainment'),
             Language::KOREAN,
             new AgencyName('SM엔터테인먼트'),
             'smㅇㅌㅌㅇㅁㅌ',

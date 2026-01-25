@@ -13,6 +13,7 @@ class CreateDraftTalent
      * @param array{
      *     published_id?: ?string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     editor_id?: string,
      *     language?: string,
      *     name?: string,
@@ -22,7 +23,9 @@ class CreateDraftTalent
      *     birthday?: ?string,
      *     career?: string,
      *     image_link?: ?string,
-     *     status?: string
+     *     status?: string,
+     *     approver_id?: ?string,
+     *     merger_id?: ?string
      * } $overrides
      */
     public static function create(string $draftTalentId, array $overrides = []): void
@@ -31,6 +34,7 @@ class CreateDraftTalent
             'id' => $draftTalentId,
             'published_id' => $overrides['published_id'] ?? null,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'hyunjin',
             'editor_id' => $overrides['editor_id'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? '현진',
@@ -40,6 +44,8 @@ class CreateDraftTalent
             'career' => $overrides['career'] ?? 'Stray Kids main dancer and lead rapper.',
             'image_link' => $overrides['image_link'] ?? null,
             'status' => $overrides['status'] ?? ApprovalStatus::Pending->value,
+            'approver_id' => $overrides['approver_id'] ?? null,
+            'merger_id' => $overrides['merger_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

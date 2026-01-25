@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -219,6 +220,7 @@ class DraftTalentTest extends TestCase
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
@@ -238,6 +240,7 @@ class DraftTalentTest extends TestCase
             $talentIdentifier,
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -253,6 +256,7 @@ class DraftTalentTest extends TestCase
             talentIdentifier: $talentIdentifier,
             publishedTalentIdentifier: $publishedTalentIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             editorIdentifier: $editorIdentifier,
             language: $language,
             name: $name,
@@ -280,6 +284,7 @@ readonly class DraftTalentTestData
         public TalentIdentifier         $talentIdentifier,
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public PrincipalIdentifier        $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,

@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyFactory;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -37,10 +38,11 @@ class AgencyFactoryTest extends TestCase
     public function testCreate(): void
     {
         $name = new AgencyName('JYP엔터테인먼트');
+        $slug = new Slug('jyp-entertainment');
         $translation = Language::KOREAN;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $agencyFactory = $this->app->make(AgencyFactoryInterface::class);
-        $agency = $agencyFactory->create($translationSetIdentifier, $translation, $name);
+        $agency = $agencyFactory->create($translationSetIdentifier, $slug, $translation, $name);
         $this->assertTrue(UuidValidator::isValid((string)$agency->agencyIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$agency->translationSetIdentifier());
         $this->assertSame($translation->value, $agency->language()->value);

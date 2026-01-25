@@ -9,6 +9,7 @@ use Application\Models\Wiki\Talent as TalentModel;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -34,6 +35,14 @@ final class TalentRepository implements TalentRepositoryInterface
         }
 
         return $this->toEntity($talentModel);
+    }
+
+    public function existsBySlug(Slug $slug): bool
+    {
+        return TalentModel::query()
+            ->where('slug', (string) $slug)
+            ->whereNotNull('version')
+            ->exists();
     }
 
     /**
@@ -77,6 +86,7 @@ final class TalentRepository implements TalentRepositoryInterface
             ],
             [
                 'translation_set_identifier' => (string) $talent->translationSetIdentifier(),
+                'slug' => (string) $talent->slug(),
                 'language' => $talent->language()->value,
                 'name' => (string) $talent->name(),
                 'real_name' => (string) $talent->realName(),
@@ -105,6 +115,7 @@ final class TalentRepository implements TalentRepositoryInterface
         return new Talent(
             new TalentIdentifier($talentModel->id),
             new TranslationSetIdentifier($talentModel->translation_set_identifier),
+            new Slug($talentModel->slug),
             Language::from($talentModel->language),
             new TalentName($talentModel->name),
             new RealName($talentModel->real_name),

@@ -11,6 +11,7 @@ class CreateTalent
     /**
      * @param array{
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     language?: string,
      *     name?: string,
      *     real_name?: string,
@@ -29,6 +30,7 @@ class CreateTalent
         DB::table('talents')->insert([
             'id' => $talentId,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'bang-chan',
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? '방찬',
             'real_name' => $overrides['real_name'] ?? '크리스토퍼 방',

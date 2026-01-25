@@ -12,6 +12,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 readonly class GroupSnapshot
@@ -20,6 +21,7 @@ readonly class GroupSnapshot
      * @param GroupSnapshotIdentifier $snapshotIdentifier
      * @param GroupIdentifier $groupIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param GroupName $name
      * @param string $normalizedName
@@ -32,6 +34,7 @@ readonly class GroupSnapshot
         private GroupSnapshotIdentifier  $snapshotIdentifier,
         private GroupIdentifier          $groupIdentifier,
         private TranslationSetIdentifier $translationSetIdentifier,
+        private Slug                     $slug,
         private Language                 $language,
         private GroupName                $name,
         private string                   $normalizedName,
@@ -55,6 +58,11 @@ readonly class GroupSnapshot
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

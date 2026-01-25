@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
@@ -41,6 +42,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             new TalentIdentifier($draftModel->id),
             $draftModel->published_id ? new TalentIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
+            new Slug($draftModel->slug),
             $draftModel->editor_id ? new PrincipalIdentifier($draftModel->editor_id) : null,
             Language::from($draftModel->language),
             new TalentName($draftModel->name),
@@ -51,6 +53,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             new Career($draftModel->career),
             ApprovalStatus::from($draftModel->status),
             $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
+            $draftModel->merger_id ? new PrincipalIdentifier($draftModel->merger_id) : null,
         );
     }
 
@@ -69,6 +72,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                     ? (string) $talent->publishedTalentIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $talent->translationSetIdentifier(),
+                'slug' => (string) $talent->slug(),
                 'editor_id' => $talent->editorIdentifier() ? (string) $talent->editorIdentifier() : null,
                 'language' => $talent->language()->value,
                 'name' => (string) $talent->name(),
@@ -78,6 +82,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 'career' => (string) $talent->career(),
                 'status' => $talent->status()->value,
                 'approver_id' => $talent->approverIdentifier() ? (string) $talent->approverIdentifier() : null,
+                'merger_id' => $talent->mergerIdentifier() ? (string) $talent->mergerIdentifier() : null,
             ],
         );
 
@@ -115,6 +120,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 new TalentIdentifier($model->id),
                 $model->published_id ? new TalentIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
+                new Slug($model->slug),
                 $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
                 Language::from($model->language),
                 new TalentName($model->name),
@@ -125,6 +131,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 new Career($model->career),
                 ApprovalStatus::from($model->status),
                 $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+                $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
             );
         }
 

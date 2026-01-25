@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 interface DraftAgencyFactoryInterface
 {
@@ -16,6 +17,7 @@ interface DraftAgencyFactoryInterface
         PrincipalIdentifier       $editorIdentifier,
         Language                  $language,
         AgencyName                $agencyName,
+        Slug                      $slug,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftAgency;
 }

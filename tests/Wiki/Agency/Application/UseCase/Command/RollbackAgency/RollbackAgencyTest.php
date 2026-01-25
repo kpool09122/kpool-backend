@@ -37,6 +37,7 @@ use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -623,6 +624,7 @@ class RollbackAgencyTest extends TestCase
         return new Agency(
             $identifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $language,
             new AgencyName('Test Agency'),
             'test agency',
@@ -644,6 +646,7 @@ class RollbackAgencyTest extends TestCase
             new AgencySnapshotIdentifier(StrTestHelper::generateUuid()),
             $identifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $language,
             new AgencyName('Snapshot Agency Name'),
             'snapshot agency name',

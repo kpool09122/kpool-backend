@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property ?string $published_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $editor_id
  * @property string $translation
  * @property string $name
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $image_path
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  */
 class DraftGroup extends Model
 {
@@ -32,6 +34,7 @@ class DraftGroup extends Model
         'id',
         'published_id',
         'translation_set_identifier',
+        'slug',
         'editor_id',
         'translation',
         'name',
@@ -41,5 +44,6 @@ class DraftGroup extends Model
         'image_path',
         'status',
         'approver_id',
+        'merger_id',
     ];
 }

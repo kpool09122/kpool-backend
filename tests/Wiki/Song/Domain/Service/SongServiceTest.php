@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Song\Domain\Service;
 
-use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\Language;
@@ -12,6 +11,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
@@ -52,25 +52,9 @@ class SongServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        // Approved状態のDraftSongを作成（テストデータ）
-        $approvedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $approvedSong = new DraftSong(
-            $approvedSongIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            Language::KOREAN,
-            new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new TalentIdentifier(StrTestHelper::generateUuid()),
-            new Lyricist('블랙아이드필승'),
-            new Composer('Sam Lewis'),
-            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
-            new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.'),
-            ApprovalStatus::Approved,
+        $approvedSong = $this->createDraftSong(
+            translationSetIdentifier: $translationSetIdentifier,
+            approvalStatus: ApprovalStatus::Approved,
         );
 
         $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
@@ -99,25 +83,9 @@ class SongServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        // Pending状態のDraftSongを作成
-        $pendingSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $pendingSong = new DraftSong(
-            $pendingSongIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            Language::JAPANESE,
-            new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new TalentIdentifier(StrTestHelper::generateUuid()),
-            new Lyricist('Black Eyed Pilseung'),
-            new Composer('Sam Lewis'),
-            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
-            new Overview('「TT」は初めて恋に落ちた少女の仕方がない心を歌った曲です。好きだという気持ちを伝えたいのですが、どうしたらいいのかわからず、涙が出るようで、クールなふりをしています。そんなまだ不器用な愛の心を、両手の親指を下に向けた泣く絵文字「(T_T)」を模した「TTポーズ」で気持ちよく表現しています。ハロウィンをテーマにしたミュージックビデオも特徴であり、メンバーたちが様々なキャラクターに扮し、切ないながらもかわいい世界観を描いています。'),
-            ApprovalStatus::Pending,
+        $pendingSong = $this->createDraftSong(
+            translationSetIdentifier: $translationSetIdentifier,
+            approvalStatus: ApprovalStatus::Pending,
         );
 
         $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
@@ -146,24 +114,10 @@ class SongServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        // 自分自身がApproved
-        $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $selfSong = new DraftSong(
-            $songIdentifier,
-            $publishedSongIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            Language::ENGLISH,
-            new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new TalentIdentifier(StrTestHelper::generateUuid()),
-            new Lyricist('Black Eyed Pilseung'),
-            new Composer('Sam Lewis'),
-            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
-            new Overview('"TT" is a song about the helpless feelings of a girl who\'s fallen in love for the first time. She wants to express her feelings, but doesn\'t know how, so she feels close to tears or tries to act cool. This awkwardness in love is cleverly expressed with the "TT pose," modeled after the crying emoticon "(T_T)," with both thumbs pointing down. The Halloween-themed music video is also a standout, with the members dressed up as various characters, creating a world that\'s both poignant and cute.'),
-            ApprovalStatus::Approved,
+        $selfSong = $this->createDraftSong(
+            songIdentifier: $songIdentifier,
+            translationSetIdentifier: $translationSetIdentifier,
+            approvalStatus: ApprovalStatus::Approved,
         );
 
         $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
@@ -218,45 +172,14 @@ class SongServiceTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $excludeSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
 
-        // 複数のApproved状態のDraftSongを作成
-        $approvedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUuid());
-        $publishedSongIdentifier1 = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $approvedSong1 = new DraftSong(
-            $approvedSongIdentifier1,
-            $publishedSongIdentifier1,
-            $translationSetIdentifier,
-            $editorIdentifier1,
-            Language::KOREAN,
-            new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new TalentIdentifier(StrTestHelper::generateUuid()),
-            new Lyricist('블랙아이드필승'),
-            new Composer('Sam Lewis'),
-            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
-            new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.'),
-            ApprovalStatus::Approved,
+        $approvedSong1 = $this->createDraftSong(
+            translationSetIdentifier: $translationSetIdentifier,
+            approvalStatus: ApprovalStatus::Approved,
         );
 
-        $approvedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUuid());
-        $publishedSongIdentifier2 = new SongIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $approvedSong2 = new DraftSong(
-            $approvedSongIdentifier2,
-            $publishedSongIdentifier2,
-            $translationSetIdentifier,
-            $editorIdentifier2,
-            Language::ENGLISH,
-            new SongName('TT'),
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new TalentIdentifier(StrTestHelper::generateUuid()),
-            new Lyricist('Black Eyed Pilseung'),
-            new Composer('Sam Lewis'),
-            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
-            new Overview('"TT" is a song about the helpless feelings of a girl who\'s fallen in love for the first time. She wants to express her feelings, but doesn\'t know how, so she feels close to tears or tries to act cool. This awkwardness in love is cleverly expressed with the "TT pose," modeled after the crying emoticon "(T_T)," with both thumbs pointing down. The Halloween-themed music video is also a standout, with the members dressed up as various characters, creating a world that\'s both poignant and cute.'),
-            ApprovalStatus::Approved,
+        $approvedSong2 = $this->createDraftSong(
+            translationSetIdentifier: $translationSetIdentifier,
+            approvalStatus: ApprovalStatus::Approved,
         );
 
         $songRepository = Mockery::mock(DraftSongRepositoryInterface::class);
@@ -274,5 +197,41 @@ class SongServiceTest extends TestCase
         );
 
         $this->assertTrue($result);
+    }
+
+    private function createDraftSong(
+        ?SongIdentifier $songIdentifier = null,
+        ?SongIdentifier $publishedSongIdentifier = null,
+        ?TranslationSetIdentifier $translationSetIdentifier = null,
+        ?Slug $slug = null,
+        ?PrincipalIdentifier $editorIdentifier = null,
+        Language $language = Language::JAPANESE,
+        ?SongName $songName = null,
+        ?AgencyIdentifier $agencyIdentifier = null,
+        ?GroupIdentifier $groupIdentifier = null,
+        ?TalentIdentifier $talentIdentifier = null,
+        ?Lyricist $lyricist = null,
+        ?Composer $composer = null,
+        ?ReleaseDate $releaseDate = null,
+        ?Overview $overview = null,
+        ApprovalStatus $approvalStatus = ApprovalStatus::Pending,
+    ): DraftSong {
+        return new DraftSong(
+            $songIdentifier ?? new SongIdentifier(StrTestHelper::generateUuid()),
+            $publishedSongIdentifier,
+            $translationSetIdentifier ?? new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            $slug ?? new Slug('test-song'),
+            $editorIdentifier,
+            $language,
+            $songName ?? new SongName('Test Song'),
+            $agencyIdentifier,
+            $groupIdentifier,
+            $talentIdentifier,
+            $lyricist ?? new Lyricist('Test Lyricist'),
+            $composer ?? new Composer('Test Composer'),
+            $releaseDate,
+            $overview ?? new Overview('Test overview'),
+            $approvalStatus,
+        );
     }
 }

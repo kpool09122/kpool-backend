@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('songs', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('歌ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->string('slug', 80)->unique()->comment('スラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('歌名');
             $table->uuid('agency_id')->nullable()->comment('所有事務所ID');
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('歌ID');
             $table->uuid('published_id')->nullable()->comment('公開済み歌ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->string('slug', 80)->comment('スラッグ');
             $table->uuid('editor_id')->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('楽曲名');
@@ -46,6 +48,7 @@ return new class extends Migration
             $table->string('cover_image_path', 255)->nullable()->comment('カバー画像パス');
             $table->text('status')->comment('公開ステータス');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
+            $table->uuid('merger_id')->nullable()->comment('マージ者ID');
             $table->timestamps();
         });
 
@@ -53,6 +56,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('スナップショットID');
             $table->uuid('song_id')->index()->comment('公開済み歌ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->string('slug', 80)->comment('スラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 64)->comment('歌名');
             $table->uuid('agency_id')->nullable()->comment('所属事務所ID');

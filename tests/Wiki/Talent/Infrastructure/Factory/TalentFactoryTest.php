@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Talent\Domain\Factory\TalentFactoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Infrastructure\Factory\TalentFactory;
@@ -37,12 +38,14 @@ class TalentFactoryTest extends TestCase
     public function testCreate(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $talentFactory = $this->app->make(TalentFactoryInterface::class);
-        $talent = $talentFactory->create($translationSetIdentifier, $language, $name);
+        $talent = $talentFactory->create($translationSetIdentifier, $slug, $language, $name);
         $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$talent->translationSetIdentifier());
+        $this->assertSame((string)$slug, (string)$talent->slug());
         $this->assertSame($language->value, $talent->language()->value);
         $this->assertSame((string)$name, (string)$talent->name());
         $this->assertSame('', (string)$talent->realName());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\OfficialCertification\Infrastructure\Service;
 
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -23,6 +24,7 @@ use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdate
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -30,6 +32,7 @@ use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
 use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
+use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -267,6 +270,9 @@ class OfficialResourceUpdaterTest extends TestCase
 
     /**
      * 正常系: タレントが存在しない場合は何もしないこと.
+     *
+     * @throws BindingResolutionException
+     * @return void
      */
     public function testMarkOfficialTalentWhenNotFoundDoesNothing(): void
     {
@@ -278,7 +284,7 @@ class OfficialResourceUpdaterTest extends TestCase
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $talentRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn (TalentIdentifier $id): bool => (string) $id === $talentId))
+            ->with(Mockery::on(static fn (TalentIdentifier $id): bool => (string) $id === $talentId))
             ->andReturnNull();
         $talentRepository->shouldReceive('save')->never();
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
@@ -295,6 +301,9 @@ class OfficialResourceUpdaterTest extends TestCase
 
     /**
      * 正常系: 歌が既に公式化済みの場合は更新されないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
      */
     public function testMarkOfficialSongWhenAlreadyOfficialDoesNothing(): void
     {
@@ -309,7 +318,7 @@ class OfficialResourceUpdaterTest extends TestCase
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
         $songRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(fn (SongIdentifier $id): bool => (string) $id === $songId))
+            ->with(Mockery::on(static fn (SongIdentifier $id): bool => (string) $id === $songId))
             ->andReturn($song);
         $songRepository->shouldReceive('save')->never();
 
@@ -330,6 +339,7 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Agency(
             new AgencyIdentifier($agencyId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('test-agency'),
             Language::ENGLISH,
             new AgencyName('Agency'),
             'agency',
@@ -346,9 +356,10 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Group(
             new GroupIdentifier($groupId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('twice'),
             Language::ENGLISH,
-            new GroupName('Group'),
-            'group',
+            new GroupName('TWICE'),
+            'twice',
             null,
             new GroupDescription('Description'),
             new Version(1),
@@ -360,9 +371,10 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Talent(
             new TalentIdentifier($talentId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::ENGLISH,
-            new TalentName('Talent'),
-            new RealName('Real Name'),
+            new Slug('chaeyoung'),
+            Language::KOREAN,
+            new TalentName('채영'),
+            new RealName('손채영'),
             null,
             [],
             null,
@@ -376,15 +388,16 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Song(
             new SongIdentifier($songId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('ttt'),
             Language::ENGLISH,
-            new SongName('Song'),
+            new SongName('TT'),
             null,
             null,
             null,
-            new Lyricist('Lyricist'),
-            new Composer('Composer'),
-            null,
-            new Overview('Overview'),
+            new Lyricist('블랙아이드필승'),
+            new Composer('Sam Lewis'),
+            new ReleaseDate(new DateTimeImmutable('2016-10-24')),
+            new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.'),
             new Version(1),
         );
     }

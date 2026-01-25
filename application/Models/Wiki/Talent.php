@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property string $id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $language
  * @property string $name
  * @property string $real_name
@@ -39,6 +40,7 @@ class Talent extends Model
     protected $fillable = [
         'id',
         'translation_set_identifier',
+        'slug',
         'language',
         'name',
         'real_name',

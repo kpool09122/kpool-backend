@@ -10,6 +10,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 interface CreateGroupInputPort
 {
@@ -18,6 +19,8 @@ interface CreateGroupInputPort
     public function language(): Language;
 
     public function name(): GroupName;
+
+    public function slug(): Slug;
 
     public function agencyIdentifier(): AgencyIdentifier;
 

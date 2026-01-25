@@ -24,6 +24,7 @@ readonly class AgencySnapshotFactory implements AgencySnapshotFactoryInterface
             new AgencySnapshotIdentifier($this->generator->generate()),
             $agency->agencyIdentifier(),
             $agency->translationSetIdentifier(),
+            $agency->slug(),
             $agency->language(),
             $agency->name(),
             $agency->normalizedName(),

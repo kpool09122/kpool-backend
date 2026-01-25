@@ -13,6 +13,7 @@ class CreateDraftSong
      * @param array{
      *     published_id?: ?string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     editor_id?: string,
      *     language?: string,
      *     name?: string,
@@ -25,7 +26,9 @@ class CreateDraftSong
      *     lyrics?: string,
      *     overview?: string,
      *     cover_image_path?: ?string,
-     *     status?: string
+     *     status?: string,
+     *     approver_id?: ?string,
+     *     merger_id?: ?string
      * } $overrides
      */
     public static function create(string $draftSongId, array $overrides = []): void
@@ -34,6 +37,7 @@ class CreateDraftSong
             'id' => $draftSongId,
             'published_id' => $overrides['published_id'] ?? null,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'test-draft-song-' . substr($draftSongId, 0, 8),
             'editor_id' => $overrides['editor_id'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'Hype Boy',
@@ -45,6 +49,8 @@ class CreateDraftSong
             'overview' => $overrides['overview'] ?? 'NewJeans debut single.',
             'cover_image_path' => $overrides['cover_image_path'] ?? null,
             'status' => $overrides['status'] ?? ApprovalStatus::Pending->value,
+            'approver_id' => $overrides['approver_id'] ?? null,
+            'merger_id' => $overrides['merger_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

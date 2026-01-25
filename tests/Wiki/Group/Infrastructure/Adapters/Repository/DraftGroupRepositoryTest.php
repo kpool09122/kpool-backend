@@ -17,6 +17,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -33,6 +34,8 @@ class DraftGroupRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $translation = Language::ENGLISH;
         $name = 'Stray Kids EN Draft';
         $normalizedName = 'stray kids en draft';
@@ -44,6 +47,7 @@ class DraftGroupRepositoryTest extends TestCase
             'id' => $id,
             'published_id' => $publishedId,
             'translation_set_identifier' => $translationSetId,
+            'slug' => 'stray-kids-en-draft',
             'editor_id' => $editorId,
             'translation' => $translation->value,
             'name' => $name,
@@ -51,6 +55,8 @@ class DraftGroupRepositoryTest extends TestCase
             'agency_id' => $agencyId,
             'description' => $description,
             'status' => $status->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ], 'id');
 
         $repository = $this->app->make(DraftGroupRepositoryInterface::class);
@@ -61,12 +67,15 @@ class DraftGroupRepositoryTest extends TestCase
         $this->assertSame($publishedId, (string) $group->publishedGroupIdentifier());
         $this->assertSame($editorId, (string) $group->editorIdentifier());
         $this->assertSame($translationSetId, (string) $group->translationSetIdentifier());
+        $this->assertSame('stray-kids-en-draft', (string) $group->slug());
         $this->assertSame($translation, $group->language());
         $this->assertSame($name, (string) $group->name());
         $this->assertSame($normalizedName, $group->normalizedName());
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($status, $group->status());
+        $this->assertSame($approverId, (string) $group->approverIdentifier());
+        $this->assertSame($mergerId, (string) $group->mergerIdentifier());
     }
 
     /**
@@ -89,10 +98,14 @@ class DraftGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
+
         $draft = new DraftGroup(
             new GroupIdentifier(StrTestHelper::generateUuid()),
             new GroupIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('newjeans'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new GroupName('NEWJEANS'),
@@ -100,6 +113,8 @@ class DraftGroupRepositoryTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('New draft'),
             ApprovalStatus::UnderReview,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
 
         $repository = $this->app->make(DraftGroupRepositoryInterface::class);
@@ -109,6 +124,7 @@ class DraftGroupRepositoryTest extends TestCase
             'id' => (string) $draft->groupIdentifier(),
             'published_id' => (string) $draft->publishedGroupIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
+            'slug' => (string) $draft->slug(),
             'editor_id' => (string) $draft->editorIdentifier(),
             'translation' => $draft->language()->value,
             'name' => (string) $draft->name(),
@@ -116,6 +132,8 @@ class DraftGroupRepositoryTest extends TestCase
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
             'status' => $draft->status()->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
     }
 
@@ -131,6 +149,7 @@ class DraftGroupRepositoryTest extends TestCase
             new GroupIdentifier($id),
             new GroupIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('sakujo-taishou'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new GroupName('削除対象'),
@@ -144,6 +163,7 @@ class DraftGroupRepositoryTest extends TestCase
             'id' => $id,
             'published_id' => (string) $draft->publishedGroupIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
+            'slug' => (string) $draft->slug(),
             'editor_id' => (string) $draft->editorIdentifier(),
             'translation' => $draft->language()->value,
             'name' => (string) $draft->name(),
@@ -174,6 +194,7 @@ class DraftGroupRepositoryTest extends TestCase
             'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
+            'slug' => 'draft1',
             'editor_id' => StrTestHelper::generateUuid(),
             'translation' => Language::KOREAN->value,
             'name' => '드래프트1',
@@ -187,6 +208,7 @@ class DraftGroupRepositoryTest extends TestCase
             'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => (string) $translationSetIdentifier,
+            'slug' => 'draft2',
             'editor_id' => StrTestHelper::generateUuid(),
             'translation' => Language::JAPANESE->value,
             'name' => 'ドラフト2',
@@ -200,6 +222,7 @@ class DraftGroupRepositoryTest extends TestCase
             'id' => StrTestHelper::generateUuid(),
             'published_id' => StrTestHelper::generateUuid(),
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'other-draft',
             'editor_id' => StrTestHelper::generateUuid(),
             'translation' => Language::ENGLISH->value,
             'name' => 'Other',

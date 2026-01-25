@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -338,6 +339,7 @@ class SongTest extends TestCase
     ): SongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-song-tt');
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -354,6 +356,7 @@ class SongTest extends TestCase
         $song = new Song(
             $songIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $agencyIdentifier,
@@ -373,6 +376,7 @@ class SongTest extends TestCase
         return new SongTestData(
             songIdentifier: $songIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             language: $language,
             name: $name,
             agencyIdentifier: $agencyIdentifier,
@@ -398,6 +402,7 @@ readonly class SongTestData
     public function __construct(
         public SongIdentifier           $songIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,

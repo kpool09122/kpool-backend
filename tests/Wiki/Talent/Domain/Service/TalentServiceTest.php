@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
@@ -59,6 +60,7 @@ class TalentServiceTest extends TestCase
             $approvedTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::KOREAN,
             new TalentName('채영'),
@@ -77,6 +79,7 @@ class TalentServiceTest extends TestCase
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::JAPANESE,
             new TalentName('チェヨン'),
@@ -125,6 +128,7 @@ class TalentServiceTest extends TestCase
             $pendingTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::KOREAN,
             new TalentName('채영'),
@@ -143,6 +147,7 @@ class TalentServiceTest extends TestCase
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::JAPANESE,
             new TalentName('チェヨン'),
@@ -190,6 +195,7 @@ class TalentServiceTest extends TestCase
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::JAPANESE,
             new TalentName('チェヨン'),
@@ -266,6 +272,7 @@ class TalentServiceTest extends TestCase
             $koreanTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::KOREAN,
             new TalentName('채영'),
@@ -283,6 +290,7 @@ class TalentServiceTest extends TestCase
             $englishTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::ENGLISH,
             new TalentName('Chaeyoung'),
@@ -299,6 +307,7 @@ class TalentServiceTest extends TestCase
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             Language::JAPANESE,
             new TalentName('チェヨン'),

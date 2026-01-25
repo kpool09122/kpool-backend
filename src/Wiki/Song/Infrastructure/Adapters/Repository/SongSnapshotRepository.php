@@ -10,6 +10,7 @@ use Application\Models\Wiki\Talent;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
@@ -32,6 +33,7 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
             'id' => (string)$snapshot->snapshotIdentifier(),
             'song_id' => (string)$snapshot->songIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
+            'slug' => (string)$snapshot->slug(),
             'language' => $snapshot->language()->value,
             'name' => (string)$snapshot->name(),
             'agency_id' => $snapshot->agencyIdentifier() ? (string)$snapshot->agencyIdentifier() : null,
@@ -108,6 +110,7 @@ class SongSnapshotRepository implements SongSnapshotRepositoryInterface
             new SongSnapshotIdentifier($model->id),
             new SongIdentifier($model->song_id),
             new TranslationSetIdentifier($model->translation_set_identifier),
+            new Slug($model->slug),
             Language::from($model->language),
             new SongName($model->name),
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,

@@ -18,6 +18,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -375,6 +376,7 @@ class ApproveTalentTest extends TestCase
             $approveTalentInfo->talentIdentifier,
             $approveTalentInfo->publishedTalentIdentifier,
             $approveTalentInfo->translationSetIdentifier,
+            new Slug('chaeyoung'),
             $approveTalentInfo->editorIdentifier,
             $approveTalentInfo->translation,
             $approveTalentInfo->name,
@@ -870,6 +872,7 @@ class ApproveTalentTest extends TestCase
             $talentIdentifier,
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             $translation,
             $name,
@@ -885,6 +888,7 @@ class ApproveTalentTest extends TestCase
         $publishedTalent = new Talent(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $translation,
             $name,
             $realName,

@@ -17,6 +17,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -104,7 +105,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+        $talent = $this->createDummyTalent($resourceId, '채영');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -141,7 +142,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with('テストタレント')
+            ->with('채영')
             ->andReturn($videos);
 
         $existingVideoLink = $this->createDummyVideoLink($resourceId, 5);
@@ -268,7 +269,8 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $group = $this->createDummyGroup($resourceId, 'テストグループ');
+        $groupName = 'TWICE';
+        $group = $this->createDummyGroup($resourceId, $groupName, 'twice');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -297,7 +299,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with('テストグループ')
+            ->with($groupName)
             ->andReturn($videos);
 
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
@@ -539,7 +541,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+        $talent = $this->createDummyTalent($resourceId, '채영');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -623,7 +625,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+        $talent = $this->createDummyTalent($resourceId, '채영');
 
         $existingUrl = 'https://www.youtube.com/watch?v=existing';
         $newUrl = 'https://www.youtube.com/watch?v=new';
@@ -729,9 +731,10 @@ class CollectVideoLinksTest extends TestCase
         return new Talent(
             new TalentIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::JAPANESE,
+            new Slug('chaeyoung'),
+            Language::KOREAN,
             new TalentName($name),
-            new RealName(''),
+            new RealName('손채영'),
             null,
             [],
             null,
@@ -740,11 +743,12 @@ class CollectVideoLinksTest extends TestCase
         );
     }
 
-    private function createDummyGroup(string $resourceId, string $name): Group
+    private function createDummyGroup(string $resourceId, string $name, string $slug): Group
     {
         return new Group(
             new GroupIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug($slug),
             Language::JAPANESE,
             new GroupName($name),
             $name,
@@ -759,15 +763,16 @@ class CollectVideoLinksTest extends TestCase
         return new Song(
             new SongIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::JAPANESE,
+            new Slug('ttt'),
+            Language::KOREAN,
             new SongName($name),
             null,
             null,
             null,
-            new Lyricist(''),
-            new Composer(''),
+            new Lyricist('블랙아이드필승'),
+            new Composer('Sam Lewis'),
             null,
-            new Overview(''),
+            new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.'),
             new Version(1),
         );
     }

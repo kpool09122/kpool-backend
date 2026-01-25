@@ -6,6 +6,7 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\CreateTalent;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Birthday;
@@ -18,6 +19,7 @@ readonly class CreateTalentInput implements CreateTalentInputPort
 {
     /**
      * @param TalentIdentifier|null $publishedTalentIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param TalentName $name
      * @param RealName $realName
@@ -29,6 +31,7 @@ readonly class CreateTalentInput implements CreateTalentInputPort
      */
     public function __construct(
         private ?TalentIdentifier  $publishedTalentIdentifier,
+        private Slug                $slug,
         private Language            $language,
         private TalentName          $name,
         private RealName            $realName,
@@ -43,6 +46,11 @@ readonly class CreateTalentInput implements CreateTalentInputPort
     public function publishedTalentIdentifier(): ?TalentIdentifier
     {
         return $this->publishedTalentIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

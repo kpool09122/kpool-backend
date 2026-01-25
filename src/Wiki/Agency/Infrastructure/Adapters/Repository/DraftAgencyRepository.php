@@ -16,6 +16,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 class DraftAgencyRepository implements DraftAgencyRepositoryInterface
 {
@@ -33,6 +34,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             new AgencyIdentifier($agencyModel->id),
             $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
             $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
+            new Slug($agencyModel->slug),
             $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
             Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
@@ -43,6 +45,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             new Description($agencyModel->description),
             ApprovalStatus::from($agencyModel->status),
             $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
+            $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
         );
     }
 
@@ -57,6 +60,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 'editor_id' => $agency->editorIdentifier() ? (string)$agency->editorIdentifier() : null,
                 'published_id' => $agency->publishedAgencyIdentifier() ? (string)$agency->publishedAgencyIdentifier() : null,
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
+                'slug' => (string)$agency->slug(),
                 'name' => (string)$agency->name(),
                 'normalized_name' => $agency->normalizedName(),
                 'CEO' => (string)$agency->CEO(),
@@ -65,6 +69,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 'description' => (string)$agency->description(),
                 'status' => $agency->status()->value,
                 'approver_id' => $agency->approverIdentifier() ? (string)$agency->approverIdentifier() : null,
+                'merger_id' => $agency->mergerIdentifier() ? (string)$agency->mergerIdentifier() : null,
             ]
         );
     }
@@ -87,11 +92,12 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             ->where('translation_set_identifier', (string)$translationSetIdentifier)
             ->get();
 
-        return $agencyModels->map(function (DraftAgencyModel $agencyModel) {
+        return $agencyModels->map(static function (DraftAgencyModel $agencyModel) {
             return new DraftAgency(
                 new AgencyIdentifier($agencyModel->id),
                 $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
                 $agencyModel->translation_set_identifier ? new TranslationSetIdentifier($agencyModel->translation_set_identifier) : null,
+                new Slug($agencyModel->slug),
                 $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
                 Language::from($agencyModel->language),
                 new AgencyName($agencyModel->name),
@@ -102,6 +108,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 new Description($agencyModel->description),
                 ApprovalStatus::from($agencyModel->status),
                 $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
+                $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
             );
         })->toArray();
     }
