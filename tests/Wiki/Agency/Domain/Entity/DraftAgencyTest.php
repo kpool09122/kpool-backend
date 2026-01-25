@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -246,6 +247,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('jyp-entertainment');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
@@ -272,6 +274,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
             $agencyIdentifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -287,6 +290,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
             agencyIdentifier: $agencyIdentifier,
             publishedAgencyIdentifier: $publishedAgencyIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             editorIdentifier: $editorIdentifier,
             language: $language,
             name: $name,
@@ -313,6 +317,7 @@ readonly class DraftAgencyTestData
         public AgencyIdentifier          $agencyIdentifier,
         public AgencyIdentifier          $publishedAgencyIdentifier,
         public TranslationSetIdentifier  $translationSetIdentifier,
+        public Slug                      $slug,
         public PrincipalIdentifier       $editorIdentifier,
         public Language                  $language,
         public AgencyName                $name,

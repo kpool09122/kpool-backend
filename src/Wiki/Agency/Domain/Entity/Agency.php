@@ -14,6 +14,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Agency
@@ -21,6 +22,7 @@ class Agency
     public function __construct(
         private readonly AgencyIdentifier         $agencyIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
+        private readonly Slug                     $slug,
         private readonly Language                 $language,
         private AgencyName                        $name,
         private string                            $normalizedName,
@@ -44,6 +46,11 @@ class Agency
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

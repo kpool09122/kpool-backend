@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -217,6 +218,7 @@ DESCRIPTION
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
+            new Slug('jyp-entertainment'),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
             'jypㅇㅌㅌㅇㅁㅌ',
@@ -322,6 +324,7 @@ DESCRIPTION
     ): AgencyTestData {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('jyp-entertainment');
         $translation = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -352,6 +355,7 @@ DESCRIPTION
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
+            $slug,
             $translation,
             $name,
             $normalizedName,

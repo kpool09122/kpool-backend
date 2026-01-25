@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class AgencyRepository implements AgencyRepositoryInterface
@@ -32,6 +33,7 @@ class AgencyRepository implements AgencyRepositoryInterface
         return new Agency(
             new AgencyIdentifier($agencyModel->id),
             new TranslationSetIdentifier($agencyModel->translation_set_identifier),
+            new Slug($agencyModel->slug),
             Language::from($agencyModel->language),
             new AgencyName($agencyModel->name),
             $agencyModel->normalized_name,
@@ -47,6 +49,13 @@ class AgencyRepository implements AgencyRepositoryInterface
         );
     }
 
+    public function existsBySlug(Slug $slug): bool
+    {
+        return AgencyModel::query()
+            ->where('slug', (string) $slug)
+            ->exists();
+    }
+
     /**
      * @return Agency[]
      */
@@ -60,6 +69,7 @@ class AgencyRepository implements AgencyRepositoryInterface
             return new Agency(
                 new AgencyIdentifier($agencyModel->id),
                 new TranslationSetIdentifier($agencyModel->translation_set_identifier),
+                new Slug($agencyModel->slug),
                 Language::from($agencyModel->language),
                 new AgencyName($agencyModel->name),
                 $agencyModel->normalized_name,
@@ -85,6 +95,7 @@ class AgencyRepository implements AgencyRepositoryInterface
             ],
             [
                 'translation_set_identifier' => (string)$agency->translationSetIdentifier(),
+                'slug' => (string)$agency->slug(),
                 'name' => (string)$agency->name(),
                 'normalized_name' => $agency->normalizedName(),
                 'CEO' => (string)$agency->CEO(),

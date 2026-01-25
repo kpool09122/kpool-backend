@@ -27,10 +27,12 @@ use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -70,6 +72,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->publishedAgencyIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
+            new Slug('test-slug'),
             $dummyCreateAgency->CEO,
             $dummyCreateAgency->foundedIn,
             $dummyCreateAgency->description,
@@ -128,6 +131,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->publishedAgencyIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
+            new Slug('test-slug'),
             $dummyCreateAgency->CEO,
             $dummyCreateAgency->foundedIn,
             $dummyCreateAgency->description,
@@ -168,6 +172,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->publishedAgencyIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
+            new Slug('test-slug'),
             $dummyCreateAgency->CEO,
             $dummyCreateAgency->foundedIn,
             $dummyCreateAgency->description,
@@ -213,6 +218,7 @@ class CreateAgencyTest extends TestCase
             $dummyCreateAgency->publishedAgencyIdentifier,
             $dummyCreateAgency->language,
             $dummyCreateAgency->name,
+            new Slug('test-slug'),
             $dummyCreateAgency->CEO,
             $dummyCreateAgency->foundedIn,
             $dummyCreateAgency->description,
@@ -241,6 +247,55 @@ class CreateAgencyTest extends TestCase
     }
 
     /**
+     * 異常系：既に同じslugが存在する場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testDuplicateSlug(): void
+    {
+        $dummyCreateAgency = $this->createDummyCreateAgencyData();
+
+        $input = new CreateAgencyInput(
+            $dummyCreateAgency->publishedAgencyIdentifier,
+            $dummyCreateAgency->language,
+            $dummyCreateAgency->name,
+            new Slug('existing-slug'),
+            $dummyCreateAgency->CEO,
+            $dummyCreateAgency->foundedIn,
+            $dummyCreateAgency->description,
+            $dummyCreateAgency->principalIdentifier,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($dummyCreateAgency->principalIdentifier)
+            ->once()
+            ->andReturn($dummyCreateAgency->principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->andReturn(true);
+
+        $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+
+        $this->expectException(DuplicateSlugException::class);
+        $createAgency = $this->app->make(CreateAgencyInterface::class);
+        $createAgency->process($input);
+    }
+
+    /**
      * @param CreateAgencyTestData $dummy
      * @param Agency|null $existingAgency
      * @return array<int, Mockery\MockInterface>
@@ -250,7 +305,6 @@ class CreateAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummy->principalIdentifier, $dummy->language, $dummy->name)
             ->andReturn($dummy->draftAgency);
 
         $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
@@ -258,6 +312,9 @@ class CreateAgencyTest extends TestCase
             ->once()
             ->with($dummy->publishedAgencyIdentifier)
             ->andReturn($existingAgency);
+        $agencyRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->andReturn(false);
 
         $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $draftAgencyRepository->shouldReceive('save')
@@ -303,6 +360,7 @@ DESC);
             $agencyIdentifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $principalIdentifier,
             $language,
             $name,
@@ -318,6 +376,7 @@ DESC);
         $publishedAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $language,
             $name,
             $normalizedName,

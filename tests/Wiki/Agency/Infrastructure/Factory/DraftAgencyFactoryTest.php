@@ -13,6 +13,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Infrastructure\Factory\DraftAgencyFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,10 +41,11 @@ class DraftAgencyFactoryTest extends TestCase
     {
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $name = new AgencyName('JYP엔터테인먼트');
+        $slug = new Slug('jyp-entertainment');
         $translation = Language::KOREAN;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $agencyFactory = $this->app->make(DraftAgencyFactoryInterface::class);
-        $agency = $agencyFactory->create($editorIdentifier, $translation, $name, $translationSetIdentifier);
+        $agency = $agencyFactory->create($editorIdentifier, $translation, $name, $slug, $translationSetIdentifier);
         $this->assertTrue(UuidValidator::isValid((string)$agency->agencyIdentifier()));
         $this->assertNull($agency->publishedAgencyIdentifier());
         $this->assertSame((string)$translationSetIdentifier, (string)$agency->translationSetIdentifier());

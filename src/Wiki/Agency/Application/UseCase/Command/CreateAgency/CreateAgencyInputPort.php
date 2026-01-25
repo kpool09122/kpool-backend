@@ -11,6 +11,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 interface CreateAgencyInputPort
 {
@@ -19,6 +20,8 @@ interface CreateAgencyInputPort
     public function language(): Language;
 
     public function name(): AgencyName;
+
+    public function slug(): Slug;
 
     public function CEO(): CEO;
 

@@ -66,6 +66,7 @@ class GetAgencyTest extends TestCase
         DB::table('agencies')->upsert([
             'id' => (string) $agencyIdentifer,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'jyp-entertainment',
             'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,

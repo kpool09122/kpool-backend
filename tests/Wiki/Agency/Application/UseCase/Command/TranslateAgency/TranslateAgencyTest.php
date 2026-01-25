@@ -30,6 +30,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -609,6 +610,7 @@ DESC);
         $agency = new Agency(
             $agencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $language,
             $name,
             $normalizedName,
@@ -623,6 +625,7 @@ DESC);
             $agencyIdentifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $editorIdentifier,
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
@@ -638,6 +641,7 @@ DESC);
             $agencyIdentifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             $editorIdentifier,
             Language::ENGLISH,
             new AgencyName('JYP Entertainment'),

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('agencies', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('事務所ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->string('slug', 80)->comment('URLスラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('normalized_name', 32)->comment('正規化された事務所名');
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('事務所ID');
             $table->uuid('published_id')->nullable()->comment('公開済み事務所ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->string('slug', 80)->comment('URLスラッグ');
             $table->uuid('editor_id')->comment('編集者ID');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
@@ -48,6 +50,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('スナップショットID');
             $table->uuid('agency_id')->index()->comment('公開済み事務所ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
+            $table->string('slug', 80)->comment('URLスラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('name', 32)->comment('事務所名');
             $table->string('normalized_name', 32)->comment('正規化された事務所名');

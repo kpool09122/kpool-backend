@@ -103,6 +103,7 @@ readonly class PublishAgency implements PublishAgencyInterface
         } else {
             $publishedAgency = $this->agencyFactory->create(
                 $agency->translationSetIdentifier(),
+                $agency->slug(),
                 $agency->language(),
                 $agency->name(),
             );

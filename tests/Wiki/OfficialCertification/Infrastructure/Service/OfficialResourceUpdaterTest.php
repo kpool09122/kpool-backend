@@ -23,6 +23,7 @@ use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdate
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -330,6 +331,7 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Agency(
             new AgencyIdentifier($agencyId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('test-agency'),
             Language::ENGLISH,
             new AgencyName('Agency'),
             'agency',

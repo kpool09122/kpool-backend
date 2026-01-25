@@ -19,6 +19,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,6 +44,7 @@ class AgencyServiceTest extends TestCase
             $approvedAgencyIdentifier,
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
@@ -82,6 +84,7 @@ class AgencyServiceTest extends TestCase
             $pendingAgencyIdentifier,
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
@@ -120,6 +123,7 @@ class AgencyServiceTest extends TestCase
             $agencyIdentifier,
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
             new AgencyName('JYP Entertainment'),
@@ -182,6 +186,7 @@ class AgencyServiceTest extends TestCase
             $approvedAgency1Identifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
@@ -199,6 +204,7 @@ class AgencyServiceTest extends TestCase
             $approvedAgency2Identifier,
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),

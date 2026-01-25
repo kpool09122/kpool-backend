@@ -28,6 +28,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -206,6 +207,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             null,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),

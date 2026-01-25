@@ -14,6 +14,7 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 class DraftAgency
 {
@@ -21,6 +22,7 @@ class DraftAgency
         private readonly AgencyIdentifier         $agencyIdentifier,
         private ?AgencyIdentifier                 $publishedAgencyIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
+        private readonly Slug                     $slug,
         private readonly ?PrincipalIdentifier     $editorIdentifier,
         private readonly Language                 $language,
         private AgencyName                        $name,
@@ -54,6 +56,11 @@ class DraftAgency
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function editorIdentifier(): ?PrincipalIdentifier

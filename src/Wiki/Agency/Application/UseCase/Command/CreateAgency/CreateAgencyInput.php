@@ -11,6 +11,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 readonly class CreateAgencyInput implements CreateAgencyInputPort
 {
@@ -18,6 +19,7 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
      * @param ?AgencyIdentifier $publishedAgencyIdentifier
      * @param Language $language
      * @param AgencyName $name
+     * @param Slug $slug
      * @param CEO $CEO
      * @param ?FoundedIn $foundedIn
      * @param Description $description
@@ -27,6 +29,7 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
         private ?AgencyIdentifier   $publishedAgencyIdentifier,
         private Language            $language,
         private AgencyName          $name,
+        private Slug                $slug,
         private CEO                 $CEO,
         private ?FoundedIn          $foundedIn,
         private Description         $description,
@@ -47,6 +50,11 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
     public function name(): AgencyName
     {
         return $this->name;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function CEO(): CEO

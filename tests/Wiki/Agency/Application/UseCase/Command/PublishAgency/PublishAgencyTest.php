@@ -44,6 +44,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -232,7 +233,7 @@ class PublishAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->language, $dummyPublishAgency->name)
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->slug, $dummyPublishAgency->language, $dummyPublishAgency->name)
             ->andReturn($dummyPublishAgency->createdAgency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
@@ -692,7 +693,7 @@ class PublishAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->language, $dummyPublishAgency->name)
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->slug, $dummyPublishAgency->language, $dummyPublishAgency->name)
             ->andReturn($dummyPublishAgency->createdAgency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
@@ -850,7 +851,7 @@ class PublishAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->language, $dummyPublishAgency->name)
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->slug, $dummyPublishAgency->language, $dummyPublishAgency->name)
             ->andReturn($dummyPublishAgency->createdAgency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
@@ -1005,7 +1006,7 @@ class PublishAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->language, $dummyPublishAgency->name)
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->slug, $dummyPublishAgency->language, $dummyPublishAgency->name)
             ->andReturn($dummyPublishAgency->createdAgency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
@@ -1101,7 +1102,7 @@ class PublishAgencyTest extends TestCase
         $agencyFactory = Mockery::mock(AgencyFactoryInterface::class);
         $agencyFactory->shouldReceive('create')
             ->once()
-            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->language, $dummyPublishAgency->name)
+            ->with($dummyPublishAgency->translationSetIdentifier, $dummyPublishAgency->slug, $dummyPublishAgency->language, $dummyPublishAgency->name)
             ->andReturn($dummyPublishAgency->createdAgency);
 
         $agencyService = Mockery::mock(AgencyServiceInterface::class);
@@ -1359,6 +1360,7 @@ class PublishAgencyTest extends TestCase
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-slug');
         $language = Language::KOREAN;
         $name = new AgencyName('JYP엔터테인먼트');
         $normalizedName = 'JYPㅇㅌㅌㅇㅁㅌ';
@@ -1385,6 +1387,7 @@ DESC);
             $agencyIdentifier,
             $hasPublishedAgency ? $publishedAgencyIdentifier : null,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -1407,6 +1410,7 @@ DESC);
         $publishedAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $exName,
             'ㅎㅇㅂㅇ',
@@ -1422,6 +1426,7 @@ DESC);
         $createdAgency = new Agency(
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,
@@ -1453,6 +1458,7 @@ DESC);
             new AgencySnapshotIdentifier(StrTestHelper::generateUuid()),
             $publishedAgency->agencyIdentifier(),
             $publishedAgency->translationSetIdentifier(),
+            $slug,
             $publishedAgency->language(),
             $publishedAgency->name(),
             $publishedAgency->normalizedName(),
@@ -1469,6 +1475,7 @@ DESC);
             $publishedAgencyIdentifier,
             $translationSetIdentifier,
             $editorIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,
@@ -1499,6 +1506,7 @@ readonly class PublishAgencyTestData
         public AgencyIdentifier $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public PrincipalIdentifier $editorIdentifier,
+        public Slug $slug,
         public Language $language,
         public AgencyName $name,
         public string $normalizedName,

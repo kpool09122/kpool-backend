@@ -6,7 +6,6 @@ namespace Tests\Wiki\Agency\Infrastructure\Adapters\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -19,6 +18,8 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Tests\Helper\CreateDraftAgency;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,12 +37,13 @@ class DraftAgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUuid();
         $publishedId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
-        $translation = Language::KOREAN;
+        $translationSetIdentifier = StrTestHelper::generateUuid();
+        $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
         $normalizedCEO = 'j.y. park';
-        $founded_in = new DateTimeImmutable('1997-04-25');
+        $foundedIn = '1997-04-25';
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
 **\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
@@ -56,30 +58,32 @@ class DraftAgencyRepositoryTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         $status = ApprovalStatus::Pending;
-        DB::table('draft_agencies')->upsert([
-            'id' => $id,
+
+        CreateDraftAgency::create($id, [
             'published_id' => $publishedId,
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
             'editor_id' => $editorId,
-            'language' => $translation,
+            'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
             'CEO' => $CEO,
             'normalized_CEO' => $normalizedCEO,
-            'founded_in' => $founded_in,
+            'founded_in' => $foundedIn,
             'description' => $description,
             'status' => $status->value,
-        ], 'id');
+        ]);
+
         $agencyRepository = $this->app->make(DraftAgencyRepositoryInterface::class);
         $agency = $agencyRepository->findById(
             new AgencyIdentifier($id),
         );
         $this->assertSame($id, (string)$agency->agencyIdentifier());
         $this->assertSame($publishedId, (string)$agency->publishedAgencyIdentifier());
-        $this->assertSame($translation, $agency->language());
+        $this->assertSame($language, $agency->language());
         $this->assertSame($name, (string)$agency->name());
         $this->assertSame($CEO, (string)$agency->CEO());
-        $this->assertSame($founded_in->format('Y-m-d'), $agency->foundedIn()->value()->format('Y-m-d'));
+        $this->assertSame($foundedIn, $agency->foundedIn()->value()->format('Y-m-d'));
         $this->assertSame($description, (string)$agency->description());
         $this->assertSame($status, ApprovalStatus::Pending);
     }
@@ -134,6 +138,7 @@ class DraftAgencyRepositoryTest extends TestCase
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('test-slug'),
             new PrincipalIdentifier($editorId),
             $language,
             new AgencyName($name),
@@ -174,12 +179,13 @@ class DraftAgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUuid();
         $publishedId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $translationSetIdentifier = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = 'J.Y. Park';
         $normalizedCEO = 'j.y. park';
-        $founded_in = new DateTimeImmutable('1997-04-25');
+        $foundedIn = '1997-04-25';
         $description = '### JYP엔터테인먼트 (JYP Entertainment)
 가수 겸 음악 프로듀서인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다. HYBE, SM, YG엔터테인먼트와 함께 한국 연예계를 이끄는 **\'BIG4\'** 중 하나로 꼽힙니다.
 **\'진실, 성실, 겸손\'**이라는 가치관을 매우 중시하며, 소속 아티스트의 노래나 댄스 실력뿐만 아니라 인성을 존중하는 육성 방침으로 알려져 있습니다. 이러한 철학은 박진영이 오디션 프로그램 등에서 보여주는 모습을 통해서도 널리 알려져 있습니다.
@@ -194,20 +200,21 @@ class DraftAgencyRepositoryTest extends TestCase
 * **엔믹스 (NMIXX)**
 등 세계적인 인기를 자랑하는 그룹이 다수 소속되어 있으며, K팝의 글로벌한 발전에서 중심적인 역할을 계속해서 맡고 있습니다. 음악 사업 외에 배우 매니지먼트나 공연 사업도 하고 있습니다.';
         $status = ApprovalStatus::Pending;
-        DB::table('draft_agencies')->upsert([
-            'id' => $id,
+
+        CreateDraftAgency::create($id, [
             'published_id' => $publishedId,
-            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => $translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
             'editor_id' => $editorId,
-            'language' => $language,
+            'language' => $language->value,
             'name' => $name,
             'normalized_name' => $normalizedName,
             'CEO' => $CEO,
             'normalized_CEO' => $normalizedCEO,
-            'founded_in' => $founded_in,
+            'founded_in' => $foundedIn,
             'description' => $description,
             'status' => $status->value,
-        ], 'id');
+        ]);
 
         $this->assertDatabaseHas('draft_agencies', [
             'id' => $id,
@@ -216,7 +223,7 @@ class DraftAgencyRepositoryTest extends TestCase
             'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
-            'founded_in' => $founded_in,
+            'founded_in' => $foundedIn,
             'description' => $description,
             'status' => $status->value,
         ]);
@@ -224,14 +231,15 @@ class DraftAgencyRepositoryTest extends TestCase
         $agency = new DraftAgency(
             new AgencyIdentifier($id),
             new AgencyIdentifier($publishedId),
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier($translationSetIdentifier),
+            new Slug('test-slug'),
             new PrincipalIdentifier($editorId),
             $language,
             new AgencyName($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
             'j.y. park',
-            new FoundedIn($founded_in),
+            new FoundedIn(new DateTimeImmutable($foundedIn)),
             new Description($description),
             $status
         );
@@ -247,7 +255,7 @@ class DraftAgencyRepositoryTest extends TestCase
             'language' => $language,
             'name' => $name,
             'CEO' => $CEO,
-            'founded_in' => $founded_in,
+            'founded_in' => $foundedIn,
             'description' => $description,
             'status' => $status->value,
         ]);
@@ -268,79 +276,62 @@ class DraftAgencyRepositoryTest extends TestCase
         $id1 = StrTestHelper::generateUuid();
         $publishedId1 = StrTestHelper::generateUuid();
         $editorId1 = StrTestHelper::generateUuid();
-        $language1 = Language::KOREAN;
-        $name1 = 'JYP엔터테인먼트';
-        $normalizedName1 = 'jypㅇㅌㅌㅇㅁㅌ';
-        $CEO1 = 'J.Y. Park';
-        $normalizedCEO1 = 'j.y. park';
-        $founded_in1 = new DateTimeImmutable('1997-04-25');
-        $description1 = 'JYP엔터테인먼트에 대한 설명입니다.';
-        $status1 = ApprovalStatus::Pending;
 
-        DB::table('draft_agencies')->upsert([
-            'id' => $id1,
+        CreateDraftAgency::create($id1, [
             'published_id' => $publishedId1,
             'translation_set_identifier' => (string)$translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
             'editor_id' => $editorId1,
-            'language' => $language1,
-            'name' => $name1,
-            'normalized_name' => $normalizedName1,
-            'CEO' => $CEO1,
-            'normalized_CEO' => $normalizedCEO1,
-            'founded_in' => $founded_in1,
-            'description' => $description1,
-            'status' => $status1->value,
-        ], 'id');
+            'language' => Language::KOREAN->value,
+            'name' => 'JYP엔터테인먼트',
+            'normalized_name' => 'jypㅇㅌㅌㅇㅁㅌ',
+            'CEO' => 'J.Y. Park',
+            'normalized_CEO' => 'j.y. park',
+            'founded_in' => '1997-04-25',
+            'description' => 'JYP엔터테인먼트에 대한 설명입니다.',
+            'status' => ApprovalStatus::Pending->value,
+        ]);
 
         // 同じ翻訳セットの日本語版
         $id2 = StrTestHelper::generateUuid();
         $publishedId2 = StrTestHelper::generateUuid();
         $editorId2 = StrTestHelper::generateUuid();
-        $language2 = Language::JAPANESE;
-        $name2 = 'JYPエンターテイメント';
-        $normalizedName2 = 'jypえんたーていめんと';
-        $CEO2 = 'J.Y. Park';
-        $normalizedCEO2 = 'j.y. park';
-        $founded_in2 = new DateTimeImmutable('1997-04-25');
-        $description2 = 'JYPエンターテイメントに関する説明です。';
-        $status2 = ApprovalStatus::Approved;
 
-        DB::table('draft_agencies')->upsert([
-            'id' => $id2,
+        CreateDraftAgency::create($id2, [
             'published_id' => $publishedId2,
             'translation_set_identifier' => (string)$translationSetIdentifier,
+            'slug' => 'jyp-entertainment',
             'editor_id' => $editorId2,
-            'language' => $language2,
-            'name' => $name2,
-            'normalized_name' => $normalizedName2,
-            'CEO' => $CEO2,
-            'normalized_CEO' => $normalizedCEO2,
-            'founded_in' => $founded_in2,
-            'description' => $description2,
-            'status' => $status2->value,
-        ], 'id');
+            'language' => Language::JAPANESE->value,
+            'name' => 'JYPエンターテイメント',
+            'normalized_name' => 'jypえんたーていめんと',
+            'CEO' => 'J.Y. Park',
+            'normalized_CEO' => 'j.y. park',
+            'founded_in' => '1997-04-25',
+            'description' => 'JYPエンターテイメントに関する説明です。',
+            'status' => ApprovalStatus::Approved->value,
+        ]);
 
         // 異なる翻訳セットのデータ（取得されないはず）
         $id3 = StrTestHelper::generateUuid();
         $publishedId3 = StrTestHelper::generateUuid();
         $editorId3 = StrTestHelper::generateUuid();
-        $language3 = Language::KOREAN;
         $differentTranslationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
-        DB::table('draft_agencies')->upsert([
-            'id' => $id3,
+        CreateDraftAgency::create($id3, [
             'published_id' => $publishedId3,
             'translation_set_identifier' => (string)$differentTranslationSetIdentifier,
+            'slug' => 'hybe',
             'editor_id' => $editorId3,
-            'language' => $language3,
+            'language' => Language::KOREAN->value,
             'name' => 'HYBE',
             'normalized_name' => 'hybe',
             'CEO' => '박지원',
             'normalized_CEO' => 'ㅂㅈㅇ',
-            'founded_in' => new DateTimeImmutable('2005-02-01'),
+            'founded_in' => '2005-02-01',
             'description' => 'HYBEに関する説明です。',
             'status' => ApprovalStatus::Pending->value,
-        ], 'id');
+        ]);
 
         $agencyRepository = $this->app->make(DraftAgencyRepositoryInterface::class);
         $agencies = $agencyRepository->findByTranslationSet($translationSetIdentifier);
@@ -349,7 +340,7 @@ class DraftAgencyRepositoryTest extends TestCase
         $this->assertCount(2, $agencies);
 
         // 取得したデータの検証
-        $agencyIds = array_map(fn ($agency) => (string)$agency->agencyIdentifier(), $agencies);
+        $agencyIds = array_map(static fn ($agency) => (string)$agency->agencyIdentifier(), $agencies);
         $this->assertContains($id1, $agencyIds);
         $this->assertContains($id2, $agencyIds);
         $this->assertNotContains($id3, $agencyIds);
