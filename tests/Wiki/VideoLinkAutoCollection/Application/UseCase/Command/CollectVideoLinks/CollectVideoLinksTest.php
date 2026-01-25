@@ -17,6 +17,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
@@ -268,7 +269,8 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $group = $this->createDummyGroup($resourceId, 'テストグループ');
+        $groupName = 'TWICE';
+        $group = $this->createDummyGroup($resourceId, $groupName, 'twice');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -297,7 +299,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with('テストグループ')
+            ->with($groupName)
             ->andReturn($videos);
 
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
@@ -740,11 +742,12 @@ class CollectVideoLinksTest extends TestCase
         );
     }
 
-    private function createDummyGroup(string $resourceId, string $name): Group
+    private function createDummyGroup(string $resourceId, string $name, string $slug): Group
     {
         return new Group(
             new GroupIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug($slug),
             Language::JAPANESE,
             new GroupName($name),
             $name,

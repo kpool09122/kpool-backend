@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Domain\Factory\GroupFactoryInterface;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Infrastructure\Factory\GroupFactory;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -37,12 +38,14 @@ class GroupFactoryTest extends TestCase
     public function testCreate(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('twice');
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $groupFactory = $this->app->make(GroupFactoryInterface::class);
-        $group = $groupFactory->create($translationSetIdentifier, $language, $name);
+        $group = $groupFactory->create($translationSetIdentifier, $slug, $language, $name);
         $this->assertTrue(UuidValidator::isValid((string)$group->groupIdentifier()));
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
+        $this->assertSame((string)$slug, (string)$group->slug());
         $this->assertSame($language->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
         $this->assertSame('twice', $group->normalizedName());

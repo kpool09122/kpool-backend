@@ -13,6 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -51,6 +52,7 @@ class GroupSnapshotTest extends TestCase
         $snapshotIdentifier = new GroupSnapshotIdentifier(StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('twice');
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
@@ -62,6 +64,7 @@ class GroupSnapshotTest extends TestCase
             $snapshotIdentifier,
             $groupIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,
@@ -84,6 +87,7 @@ class GroupSnapshotTest extends TestCase
         $snapshotIdentifier = new GroupSnapshotIdentifier(StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('twice');
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
         $normalizedName = 'twice';
@@ -96,6 +100,7 @@ class GroupSnapshotTest extends TestCase
             $snapshotIdentifier,
             $groupIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $normalizedName,
@@ -109,6 +114,7 @@ class GroupSnapshotTest extends TestCase
             snapshotIdentifier: $snapshotIdentifier,
             groupIdentifier: $groupIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             language: $language,
             name: $name,
             normalizedName: $normalizedName,
@@ -130,6 +136,7 @@ readonly class GroupSnapshotTestData
         public GroupSnapshotIdentifier  $snapshotIdentifier,
         public GroupIdentifier          $groupIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public Language                 $language,
         public GroupName                $name,
         public string                   $normalizedName,

@@ -11,6 +11,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -26,6 +27,7 @@ class CreateGroupInputTest extends TestCase
         $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new GroupName('TWICE');
+        $slug = new Slug('twice');
         $companyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $description = new Description('### 트와이스: 전 세계를 사로잡은 9인조 걸그룹
 트와이스(TWICE)는 2015년 한국의 서바이벌 오디션 프로그램 \'SIXTEEN\'을 통해 결성된 JYP 엔터테인먼트 소속의 9인조 걸그룹입니다. 멤버는 한국 출신 5명(나연, 정연, 지효, 다현, 채영), 일본 출신 3명(모모, 사나, 미나), 대만 출신 1명(쯔위)의 다국적 구성으로, 다양한 매력이 모여 있습니다.
@@ -38,6 +40,7 @@ class CreateGroupInputTest extends TestCase
             $publishedGroupIdentifier,
             $translation,
             $name,
+            $slug,
             $companyIdentifier,
             $description,
             $principalIdentifier,
@@ -45,6 +48,7 @@ class CreateGroupInputTest extends TestCase
         $this->assertSame((string)$publishedGroupIdentifier, (string)$input->publishedGroupIdentifier());
         $this->assertSame($translation->value, $input->language()->value);
         $this->assertSame((string)$name, (string)$input->name());
+        $this->assertSame((string)$slug, (string)$input->slug());
         $this->assertSame((string)$companyIdentifier, (string)$input->agencyIdentifier());
         $this->assertSame($description, $input->description());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());

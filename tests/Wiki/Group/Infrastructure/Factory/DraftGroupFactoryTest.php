@@ -13,6 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Infrastructure\Factory\DraftGroupFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,11 +42,13 @@ class DraftGroupFactoryTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new GroupName('TWICE');
+        $slug = new Slug('twice');
         $groupFactory = $this->app->make(DraftGroupFactoryInterface::class);
-        $group = $groupFactory->create($editorIdentifier, $language, $name);
+        $group = $groupFactory->create($editorIdentifier, $language, $name, $slug);
         $this->assertTrue(UuidValidator::isValid((string)$group->groupIdentifier()));
         $this->assertNull($group->publishedGroupIdentifier());
         $this->assertTrue(UuidValidator::isValid((string)$group->translationSetIdentifier()));
+        $this->assertSame((string)$slug, (string)$group->slug());
         $this->assertSame((string)$editorIdentifier, (string)$group->editorIdentifier());
         $this->assertSame($language->value, $group->language()->value);
         $this->assertSame((string)$name, (string)$group->name());
@@ -55,7 +58,7 @@ class DraftGroupFactoryTest extends TestCase
         $this->assertSame(ApprovalStatus::Pending, $group->status());
 
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $group = $groupFactory->create($editorIdentifier, $language, $name, $translationSetIdentifier);
+        $group = $groupFactory->create($editorIdentifier, $language, $name, $slug, $translationSetIdentifier);
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
     }
 }

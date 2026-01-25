@@ -10,6 +10,7 @@ use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -32,6 +33,7 @@ readonly class CreateGroup implements CreateGroupInterface
      * @return DraftGroup
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function process(CreateGroupInputPort $input): DraftGroup
     {
@@ -49,10 +51,15 @@ readonly class CreateGroup implements CreateGroupInterface
             throw new UnauthorizedException();
         }
 
+        if ($this->groupRepository->existsBySlug($input->slug())) {
+            throw new DuplicateSlugException();
+        }
+
         $group = $this->groupFactory->create(
             $input->principalIdentifier(),
             $input->language(),
             $input->name(),
+            $input->slug(),
         );
         if ($input->publishedGroupIdentifier()) {
             $publishedGroup = $this->groupRepository->findById($input->publishedGroupIdentifier());

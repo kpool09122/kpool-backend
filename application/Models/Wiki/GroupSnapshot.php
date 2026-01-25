@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $group_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $translation
  * @property string $name
  * @property string $normalized_name
@@ -34,6 +35,7 @@ class GroupSnapshot extends Model
         'id',
         'group_id',
         'translation_set_identifier',
+        'slug',
         'translation',
         'name',
         'normalized_name',

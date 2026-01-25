@@ -103,6 +103,7 @@ readonly class PublishGroup implements PublishGroupInterface
         } else {
             $publishedGroup = $this->groupFactory->create(
                 $group->translationSetIdentifier(),
+                $group->slug(),
                 $group->language(),
                 $group->name(),
             );

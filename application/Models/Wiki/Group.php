@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $translation
  * @property string $name
  * @property string $normalized_name
@@ -30,6 +31,7 @@ class Group extends Model
     protected $fillable = [
         'id',
         'translation_set_identifier',
+        'slug',
         'translation',
         'name',
         'normalized_name',

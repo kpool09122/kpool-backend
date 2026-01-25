@@ -14,6 +14,7 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 final class GroupRepository implements GroupRepositoryInterface
@@ -44,6 +45,13 @@ final class GroupRepository implements GroupRepositoryInterface
         return $groupModels->map(fn (GroupModel $model) => $this->toEntity($model))->toArray();
     }
 
+    public function existsBySlug(Slug $slug): bool
+    {
+        return GroupModel::query()
+            ->where('slug', (string) $slug)
+            ->exists();
+    }
+
     public function save(Group $group): void
     {
         GroupModel::query()->updateOrCreate(
@@ -52,6 +60,7 @@ final class GroupRepository implements GroupRepositoryInterface
             ],
             [
                'translation_set_identifier' => (string)$group->translationSetIdentifier(),
+               'slug' => (string)$group->slug(),
                'translation' => $group->language()->value,
                'name' => (string)$group->name(),
                'normalized_name' => $group->normalizedName(),
@@ -69,6 +78,7 @@ final class GroupRepository implements GroupRepositoryInterface
         return new Group(
             new GroupIdentifier($model->id),
             new TranslationSetIdentifier($model->translation_set_identifier),
+            new Slug($model->slug),
             Language::from($model->translation),
             new GroupName($model->name),
             $model->normalized_name,

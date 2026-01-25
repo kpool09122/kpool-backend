@@ -18,6 +18,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -55,6 +56,7 @@ class GroupServiceTest extends TestCase
             $approvedGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::KOREAN,
             new GroupName('TWICE'),
@@ -69,6 +71,7 @@ class GroupServiceTest extends TestCase
             $excludeGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
@@ -113,6 +116,7 @@ class GroupServiceTest extends TestCase
             $pendingGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::KOREAN,
             new GroupName('TWICE'),
@@ -127,6 +131,7 @@ class GroupServiceTest extends TestCase
             $excludeGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
@@ -170,6 +175,7 @@ class GroupServiceTest extends TestCase
             $excludeGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),
@@ -242,6 +248,7 @@ class GroupServiceTest extends TestCase
             $koreanGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::KOREAN,
             new GroupName('TWICE'),
@@ -260,6 +267,7 @@ class GroupServiceTest extends TestCase
             $englishGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::ENGLISH,
             new GroupName('TWICE'),
@@ -277,6 +285,7 @@ From their bright and cute concept in their early debut years, they have continu
             $excludeGroupIdentifier,
             null,
             $translationSetIdentifier,
+            new Slug('twice'),
             $editorIdentifier,
             Language::JAPANESE,
             new GroupName('TWICE'),

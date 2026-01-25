@@ -13,6 +13,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
 class Group
@@ -20,6 +21,7 @@ class Group
     /**
      * @param GroupIdentifier $groupIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param GroupName $name
      * @param string $normalizedName
@@ -34,6 +36,7 @@ class Group
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
+        private readonly Slug                     $slug,
         private readonly Language                 $language,
         private GroupName                         $name,
         private string                            $normalizedName,
@@ -55,6 +58,11 @@ class Group
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

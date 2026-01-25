@@ -348,9 +348,10 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Group(
             new GroupIdentifier($groupId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('twice'),
             Language::ENGLISH,
-            new GroupName('Group'),
-            'group',
+            new GroupName('TWICE'),
+            'twice',
             null,
             new GroupDescription('Description'),
             new Version(1),

@@ -15,6 +15,7 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 
 class DraftGroupRepository implements DraftGroupRepositoryInterface
 {
@@ -42,6 +43,7 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
                     ? (string) $group->publishedGroupIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $group->translationSetIdentifier(),
+                'slug' => (string) $group->slug(),
                 'editor_id' => $group->editorIdentifier() ? (string) $group->editorIdentifier() : null,
                 'translation' => $group->language()->value,
                 'name' => (string) $group->name(),
@@ -84,6 +86,7 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
             new GroupIdentifier($model->id),
             $model->published_id ? new GroupIdentifier($model->published_id) : null,
             new TranslationSetIdentifier($model->translation_set_identifier),
+            new Slug($model->slug),
             $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
             Language::from($model->translation),
             new GroupName($model->name),

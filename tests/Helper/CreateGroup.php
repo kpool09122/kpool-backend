@@ -11,6 +11,7 @@ class CreateGroup
     /**
      * @param array{
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     translation?: string,
      *     name?: string,
      *     normalized_name?: string,
@@ -25,6 +26,7 @@ class CreateGroup
         DB::table('groups')->insert([
             'id' => $groupId,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'test-group',
             'translation' => $overrides['translation'] ?? 'ja',
             'name' => $overrides['name'] ?? 'テストグループ',
             'normalized_name' => $overrides['normalized_name'] ?? 'テストグループ',

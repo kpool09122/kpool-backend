@@ -12,6 +12,7 @@ class CreateGroupSnapshot
      * @param array{
      *     group_id?: string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     translation?: string,
      *     name?: string,
      *     normalized_name?: string,
@@ -28,6 +29,7 @@ class CreateGroupSnapshot
             'id' => $snapshotId,
             'group_id' => $overrides['group_id'] ?? StrTestHelper::generateUuid(),
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'twice',
             'translation' => $overrides['translation'] ?? 'ko',
             'name' => $overrides['name'] ?? 'TWICE',
             'normalized_name' => $overrides['normalized_name'] ?? 'twice',
