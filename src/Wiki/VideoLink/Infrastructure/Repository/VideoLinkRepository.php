@@ -101,6 +101,26 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
         return $model !== null ? $this->toEntity($model) : null;
     }
 
+    /**
+     * @param string[] $urls
+     *
+     * @return VideoLink[]
+     */
+    public function findByResourceAndUrls(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier, array $urls): array
+    {
+        if ($urls === []) {
+            return [];
+        }
+
+        $models = VideoLinkModel::query()
+            ->where('resource_type', $resourceType->value)
+            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->whereIn('url', $urls)
+            ->get();
+
+        return $models->map(fn (VideoLinkModel $model) => $this->toEntity($model))->toArray();
+    }
+
     private function toEntity(VideoLinkModel $model): VideoLink
     {
         return new VideoLink(

@@ -456,4 +456,119 @@ class VideoLinkRepositoryTest extends TestCase
         $this->assertSame($targetVideoLinkId, (string) $videoLink->videoLinkIdentifier());
         $this->assertSame(2, $videoLink->displayOrder());
     }
+
+    /**
+     * 正常系：指定したリソースに紐づく動画リンクのうち、指定したURLに該当するものを返却すること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByResourceAndUrls(): void
+    {
+        $resourceId = StrTestHelper::generateUuid();
+
+        $videoLinkId1 = StrTestHelper::generateUuid();
+        $videoLinkId2 = StrTestHelper::generateUuid();
+
+        $url1 = 'https://www.youtube.com/watch?v=existing1';
+        $url2 = 'https://www.youtube.com/watch?v=existing2';
+        $url3 = 'https://www.youtube.com/watch?v=notexisting';
+
+        CreateVideoLink::create($videoLinkId1, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'url' => $url1,
+            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+            'title' => 'Existing Video 1',
+            'display_order' => 1,
+        ]);
+
+        CreateVideoLink::create($videoLinkId2, [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'url' => $url2,
+            'video_usage' => VideoUsage::LIVE->value,
+            'title' => 'Existing Video 2',
+            'display_order' => 2,
+        ]);
+
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $videoLinks = $repository->findByResourceAndUrls(
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+            [$url1, $url2, $url3],
+        );
+
+        $this->assertCount(2, $videoLinks);
+        $this->assertContainsOnlyInstancesOf(VideoLink::class, $videoLinks);
+
+        $returnedUrls = array_map(
+            static fn (VideoLink $videoLink): string => (string) $videoLink->url(),
+            $videoLinks,
+        );
+        $this->assertContains($url1, $returnedUrls);
+        $this->assertContains($url2, $returnedUrls);
+        $this->assertNotContains($url3, $returnedUrls);
+    }
+
+    /**
+     * 正常系：異なるリソースの動画リンクは含まれないこと.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByResourceAndUrlsDoesNotReturnOtherResources(): void
+    {
+        $targetResourceId = StrTestHelper::generateUuid();
+        $otherResourceId = StrTestHelper::generateUuid();
+
+        $url = 'https://www.youtube.com/watch?v=sameurl';
+
+        CreateVideoLink::create(StrTestHelper::generateUuid(), [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $otherResourceId,
+            'url' => $url,
+            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+            'title' => 'Other Resource Video',
+            'display_order' => 1,
+        ]);
+
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $videoLinks = $repository->findByResourceAndUrls(
+            ResourceType::TALENT,
+            new ResourceIdentifier($targetResourceId),
+            [$url],
+        );
+
+        $this->assertEmpty($videoLinks);
+    }
+
+    /**
+     * 正常系：空配列を渡した場合、空配列が返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByResourceAndUrlsWithEmptyUrls(): void
+    {
+        $resourceId = StrTestHelper::generateUuid();
+
+        CreateVideoLink::create(StrTestHelper::generateUuid(), [
+            'resource_type' => ResourceType::TALENT->value,
+            'resource_identifier' => $resourceId,
+            'url' => 'https://www.youtube.com/watch?v=existing',
+            'video_usage' => VideoUsage::MUSIC_VIDEO->value,
+            'title' => 'Existing Video',
+            'display_order' => 1,
+        ]);
+
+        $repository = $this->app->make(VideoLinkRepositoryInterface::class);
+        $videoLinks = $repository->findByResourceAndUrls(
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+            [],
+        );
+
+        $this->assertEmpty($videoLinks);
+    }
 }

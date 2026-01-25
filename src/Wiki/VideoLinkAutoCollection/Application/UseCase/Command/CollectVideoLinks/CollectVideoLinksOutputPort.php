@@ -11,6 +11,8 @@ interface CollectVideoLinksOutputPort
 {
     public function noTargetResource(): void;
 
+    public function recentlyCollected(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void;
+
     public function resourceNotFound(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void;
 
     public function success(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier, int $collectedCount): void;
