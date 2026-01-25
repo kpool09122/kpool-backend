@@ -6,13 +6,13 @@ namespace Application\Console\Commands;
 
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Illuminate\Console\Command;
-use Source\Wiki\Principal\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
-use Source\Wiki\Principal\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
-use Source\Wiki\Principal\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionOutput;
-use Source\Wiki\Principal\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInput;
-use Source\Wiki\Principal\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInterface;
-use Source\Wiki\Principal\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryOutput;
-use Source\Wiki\Principal\Domain\ValueObject\YearMonth;
+use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
+use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
+use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionOutput;
+use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInput;
+use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInterface;
+use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryOutput;
+use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 
 class ProcessRolePromotionCommand extends Command
 {

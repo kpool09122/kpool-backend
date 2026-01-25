@@ -11,13 +11,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Source\Wiki\Principal\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
-use Source\Wiki\Principal\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
-use Source\Wiki\Principal\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionOutput;
-use Source\Wiki\Principal\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInput;
-use Source\Wiki\Principal\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInterface;
-use Source\Wiki\Principal\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryOutput;
-use Source\Wiki\Principal\Domain\ValueObject\YearMonth;
+use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInput;
+use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
+use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionOutput;
+use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInput;
+use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryInterface;
+use Source\Wiki\Grading\Application\UseCase\Command\UpdateContributionPointSummary\UpdateContributionPointSummaryOutput;
+use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Throwable;
 
 class ProcessRolePromotionJob implements ShouldQueue, ShouldBeUnique

@@ -6,7 +6,7 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
-use Source\Wiki\Principal\Domain\ValueObject\ContributionPointHistoryIdentifier;
+use Source\Wiki\Grading\Domain\ValueObject\ContributionPointHistoryIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class CreateContributionPointHistory

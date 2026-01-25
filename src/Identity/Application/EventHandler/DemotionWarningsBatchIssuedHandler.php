@@ -6,7 +6,7 @@ namespace Source\Identity\Application\EventHandler;
 
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Source\Wiki\Principal\Domain\Event\DemotionWarningsBatchIssued;
+use Source\Wiki\Grading\Domain\Event\DemotionWarningsBatchIssued;
 
 readonly class DemotionWarningsBatchIssuedHandler
 {

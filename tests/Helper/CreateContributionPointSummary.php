@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
-use Source\Wiki\Principal\Domain\ValueObject\ContributionPointSummaryIdentifier;
+use Source\Wiki\Grading\Domain\ValueObject\ContributionPointSummaryIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class CreateContributionPointSummary
