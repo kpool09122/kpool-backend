@@ -43,6 +43,7 @@ return new class extends Migration
             $table->text('description')->comment('概要')->default('');
             $table->text('status')->comment('公開ステータス');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
+            $table->uuid('merger_id')->nullable()->comment('マージ者ID');
             $table->timestamps();
         });
 

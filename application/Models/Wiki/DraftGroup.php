@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $image_path
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  */
 class DraftGroup extends Model
 {
@@ -41,5 +42,6 @@ class DraftGroup extends Model
         'image_path',
         'status',
         'approver_id',
+        'merger_id',
     ];
 }

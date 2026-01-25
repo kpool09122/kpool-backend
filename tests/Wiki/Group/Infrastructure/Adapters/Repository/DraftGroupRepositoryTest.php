@@ -33,6 +33,8 @@ class DraftGroupRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $translation = Language::ENGLISH;
         $name = 'Stray Kids EN Draft';
         $normalizedName = 'stray kids en draft';
@@ -51,6 +53,8 @@ class DraftGroupRepositoryTest extends TestCase
             'agency_id' => $agencyId,
             'description' => $description,
             'status' => $status->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ], 'id');
 
         $repository = $this->app->make(DraftGroupRepositoryInterface::class);
@@ -67,6 +71,8 @@ class DraftGroupRepositoryTest extends TestCase
         $this->assertSame($agencyId, (string) $group->agencyIdentifier());
         $this->assertSame($description, (string) $group->description());
         $this->assertSame($status, $group->status());
+        $this->assertSame($approverId, (string) $group->approverIdentifier());
+        $this->assertSame($mergerId, (string) $group->mergerIdentifier());
     }
 
     /**
@@ -89,6 +95,9 @@ class DraftGroupRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
+
         $draft = new DraftGroup(
             new GroupIdentifier(StrTestHelper::generateUuid()),
             new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -100,6 +109,8 @@ class DraftGroupRepositoryTest extends TestCase
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new Description('New draft'),
             ApprovalStatus::UnderReview,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
 
         $repository = $this->app->make(DraftGroupRepositoryInterface::class);
@@ -116,6 +127,8 @@ class DraftGroupRepositoryTest extends TestCase
             'agency_id' => (string) $draft->agencyIdentifier(),
             'description' => (string) $draft->description(),
             'status' => $draft->status()->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
     }
 

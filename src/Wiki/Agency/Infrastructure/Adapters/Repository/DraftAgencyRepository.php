@@ -45,6 +45,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             new Description($agencyModel->description),
             ApprovalStatus::from($agencyModel->status),
             $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
+            $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
         );
     }
 
@@ -68,6 +69,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 'description' => (string)$agency->description(),
                 'status' => $agency->status()->value,
                 'approver_id' => $agency->approverIdentifier() ? (string)$agency->approverIdentifier() : null,
+                'merger_id' => $agency->mergerIdentifier() ? (string)$agency->mergerIdentifier() : null,
             ]
         );
     }
@@ -90,7 +92,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             ->where('translation_set_identifier', (string)$translationSetIdentifier)
             ->get();
 
-        return $agencyModels->map(function (DraftAgencyModel $agencyModel) {
+        return $agencyModels->map(static function (DraftAgencyModel $agencyModel) {
             return new DraftAgency(
                 new AgencyIdentifier($agencyModel->id),
                 $agencyModel->published_id ? new AgencyIdentifier($agencyModel->published_id) : null,
@@ -106,6 +108,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 new Description($agencyModel->description),
                 ApprovalStatus::from($agencyModel->status),
                 $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
+                $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
             );
         })->toArray();
     }

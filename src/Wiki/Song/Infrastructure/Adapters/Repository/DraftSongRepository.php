@@ -64,6 +64,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             new Overview($draftModel->overview),
             ApprovalStatus::from($draftModel->status),
             $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
+            $draftModel->merger_id ? new PrincipalIdentifier($draftModel->merger_id) : null,
         );
     }
 
@@ -92,6 +93,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 'overview' => (string) $song->overView(),
                 'status' => $song->status()->value,
                 'approver_id' => $song->approverIdentifier() ? (string) $song->approverIdentifier() : null,
+                'merger_id' => $song->mergerIdentifier() ? (string) $song->mergerIdentifier() : null,
             ],
         );
 
@@ -149,6 +151,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 new Overview($model->overview),
                 ApprovalStatus::from($model->status),
                 $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+                $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
             );
         }
 

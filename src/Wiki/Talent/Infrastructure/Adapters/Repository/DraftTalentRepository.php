@@ -51,6 +51,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             new Career($draftModel->career),
             ApprovalStatus::from($draftModel->status),
             $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
+            $draftModel->merger_id ? new PrincipalIdentifier($draftModel->merger_id) : null,
         );
     }
 
@@ -78,6 +79,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 'career' => (string) $talent->career(),
                 'status' => $talent->status()->value,
                 'approver_id' => $talent->approverIdentifier() ? (string) $talent->approverIdentifier() : null,
+                'merger_id' => $talent->mergerIdentifier() ? (string) $talent->mergerIdentifier() : null,
             ],
         );
 
@@ -125,6 +127,7 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 new Career($model->career),
                 ApprovalStatus::from($model->status),
                 $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+                $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
             );
         }
 

@@ -22,7 +22,9 @@ class CreateDraftTalent
      *     birthday?: ?string,
      *     career?: string,
      *     image_link?: ?string,
-     *     status?: string
+     *     status?: string,
+     *     approver_id?: ?string,
+     *     merger_id?: ?string
      * } $overrides
      */
     public static function create(string $draftTalentId, array $overrides = []): void
@@ -40,6 +42,8 @@ class CreateDraftTalent
             'career' => $overrides['career'] ?? 'Stray Kids main dancer and lead rapper.',
             'image_link' => $overrides['image_link'] ?? null,
             'status' => $overrides['status'] ?? ApprovalStatus::Pending->value,
+            'approver_id' => $overrides['approver_id'] ?? null,
+            'merger_id' => $overrides['merger_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

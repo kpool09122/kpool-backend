@@ -50,6 +50,7 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
                 'description' => (string) $group->description(),
                 'status' => $group->status()->value,
                 'approver_id' => $group->approverIdentifier() ? (string) $group->approverIdentifier() : null,
+                'merger_id' => $group->mergerIdentifier() ? (string) $group->mergerIdentifier() : null,
             ],
         );
     }
@@ -91,6 +92,7 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
             new Description($model->description),
             ApprovalStatus::from($model->status),
             $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+            $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
         );
     }
 }

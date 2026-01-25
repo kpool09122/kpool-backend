@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  */
 class DraftAgency extends Model
 {
@@ -46,6 +47,7 @@ class DraftAgency extends Model
         'description',
         'status',
         'approver_id',
+        'merger_id',
     ];
 
     protected $casts = [

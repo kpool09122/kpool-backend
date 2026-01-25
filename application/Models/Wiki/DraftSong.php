@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?string $music_video_link
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  * @property-read Collection<int, Group> $groups
  * @property-read Collection<int, Talent> $talents
  */
@@ -52,6 +53,7 @@ class DraftSong extends Model
         'music_video_link',
         'status',
         'approver_id',
+        'merger_id',
     ];
 
     protected $casts = [

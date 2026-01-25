@@ -25,7 +25,9 @@ class CreateDraftSong
      *     lyrics?: string,
      *     overview?: string,
      *     cover_image_path?: ?string,
-     *     status?: string
+     *     status?: string,
+     *     approver_id?: ?string,
+     *     merger_id?: ?string
      * } $overrides
      */
     public static function create(string $draftSongId, array $overrides = []): void
@@ -45,6 +47,8 @@ class CreateDraftSong
             'overview' => $overrides['overview'] ?? 'NewJeans debut single.',
             'cover_image_path' => $overrides['cover_image_path'] ?? null,
             'status' => $overrides['status'] ?? ApprovalStatus::Pending->value,
+            'approver_id' => $overrides['approver_id'] ?? null,
+            'merger_id' => $overrides['merger_id'] ?? null,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

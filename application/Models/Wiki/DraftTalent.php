@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property array $relevant_video_links
  * @property string $status
  * @property ?string $approver_id
+ * @property ?string $merger_id
  * @property-read Collection<int, Group> $groups
  */
 class DraftTalent extends Model
@@ -49,6 +50,7 @@ class DraftTalent extends Model
         'relevant_video_links',
         'status',
         'approver_id',
+        'merger_id',
     ];
 
     protected $casts = [

@@ -42,6 +42,8 @@ class DraftSongRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $translationSetIdentifier = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
@@ -64,6 +66,8 @@ class DraftSongRepositoryTest extends TestCase
             'overview' => 'TWICE 8th mini album title track.',
             'cover_image_path' => '/images/songs/twice-feelspecial.jpg',
             'status' => ApprovalStatus::Pending->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $repository = $this->app->make(DraftSongRepositoryInterface::class);
@@ -86,6 +90,8 @@ class DraftSongRepositoryTest extends TestCase
         $this->assertSame('2019-09-23', $draft->releaseDate()->format('Y-m-d'));
         $this->assertSame('TWICE 8th mini album title track.', (string) $draft->overView());
         $this->assertSame(ApprovalStatus::Pending, $draft->status());
+        $this->assertSame($approverId, (string) $draft->approverIdentifier());
+        $this->assertSame($mergerId, (string) $draft->mergerIdentifier());
     }
 
     /**
@@ -138,6 +144,8 @@ class DraftSongRepositoryTest extends TestCase
     {
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
 
         CreateGroup::create($groupId);
         CreateTalent::create($talentId);
@@ -157,6 +165,8 @@ class DraftSongRepositoryTest extends TestCase
             new ReleaseDate(new DateTimeImmutable('2022-07-22')),
             new Overview('NewJeans debut single.'),
             ApprovalStatus::UnderReview,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
 
         $repository = $this->app->make(DraftSongRepositoryInterface::class);
@@ -175,6 +185,8 @@ class DraftSongRepositoryTest extends TestCase
             'release_date' => $draft->releaseDate()?->format('Y-m-d'),
             'overview' => (string) $draft->overView(),
             'status' => $draft->status()->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $this->assertDatabaseHas('draft_song_group', [

@@ -41,6 +41,8 @@ class DraftTalentRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $translation = Language::KOREAN;
         $name = '창빈';
         $realName = '서창빈';
@@ -67,6 +69,8 @@ class DraftTalentRepositoryTest extends TestCase
             'birthday' => $birthday,
             'career' => $career,
             'status' => $status->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $repository = $this->app->make(DraftTalentRepositoryInterface::class);
@@ -90,6 +94,8 @@ class DraftTalentRepositoryTest extends TestCase
         $this->assertSame($birthday, $draft->birthday()->format('Y-m-d'));
         $this->assertSame($career, (string) $draft->career());
         $this->assertSame($status, $draft->status());
+        $this->assertSame($approverId, (string) $draft->approverIdentifier());
+        $this->assertSame($mergerId, (string) $draft->mergerIdentifier());
     }
 
     /**
@@ -148,6 +154,8 @@ class DraftTalentRepositoryTest extends TestCase
     public function testSave(): void
     {
         $groupId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
 
         // 先にグループを作成
         CreateGroup::create($groupId);
@@ -165,6 +173,8 @@ class DraftTalentRepositoryTest extends TestCase
             new Birthday(new DateTimeImmutable('2000-09-15')),
             new Career('Stray Kids lead dancer and sub-rapper. Known for his deep voice.'),
             ApprovalStatus::UnderReview,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
 
         $repository = $this->app->make(DraftTalentRepositoryInterface::class);
@@ -182,6 +192,8 @@ class DraftTalentRepositoryTest extends TestCase
             'birthday' => $draft->birthday()?->format('Y-m-d'),
             'career' => (string) $draft->career(),
             'status' => $draft->status()->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         // 中間テーブルの確認

@@ -38,6 +38,8 @@ class DraftAgencyRepositoryTest extends TestCase
         $publishedId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
         $translationSetIdentifier = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
@@ -72,6 +74,8 @@ class DraftAgencyRepositoryTest extends TestCase
             'founded_in' => $foundedIn,
             'description' => $description,
             'status' => $status->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
 
         $agencyRepository = $this->app->make(DraftAgencyRepositoryInterface::class);
@@ -85,7 +89,9 @@ class DraftAgencyRepositoryTest extends TestCase
         $this->assertSame($CEO, (string)$agency->CEO());
         $this->assertSame($foundedIn, $agency->foundedIn()->value()->format('Y-m-d'));
         $this->assertSame($description, (string)$agency->description());
-        $this->assertSame($status, ApprovalStatus::Pending);
+        $this->assertSame($status, $agency->status());
+        $this->assertSame($approverId, (string)$agency->approverIdentifier());
+        $this->assertSame($mergerId, (string)$agency->mergerIdentifier());
     }
 
     /**
@@ -116,6 +122,8 @@ class DraftAgencyRepositoryTest extends TestCase
         $id = StrTestHelper::generateUuid();
         $publishedId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
+        $approverId = StrTestHelper::generateUuid();
+        $mergerId = StrTestHelper::generateUuid();
         $language = Language::KOREAN;
         $name = 'JYP엔터테인먼트';
         $CEO = 'J.Y. Park';
@@ -147,7 +155,9 @@ class DraftAgencyRepositoryTest extends TestCase
             'j.y. park',
             new FoundedIn($founded_in),
             new Description($description),
-            $status
+            $status,
+            new PrincipalIdentifier($approverId),
+            new PrincipalIdentifier($mergerId),
         );
         $agencyRepository = $this->app->make(DraftAgencyRepositoryInterface::class);
         $agencyRepository->save(
@@ -164,6 +174,8 @@ class DraftAgencyRepositoryTest extends TestCase
             'founded_in' => $founded_in,
             'description' => $description,
             'status' => $status->value,
+            'approver_id' => $approverId,
+            'merger_id' => $mergerId,
         ]);
     }
 
