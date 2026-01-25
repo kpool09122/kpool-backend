@@ -763,15 +763,16 @@ class CollectVideoLinksTest extends TestCase
         return new Song(
             new SongIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::JAPANESE,
+            new Slug('ttt'),
+            Language::KOREAN,
             new SongName($name),
             null,
             null,
             null,
-            new Lyricist(''),
-            new Composer(''),
+            new Lyricist('블랙아이드필승'),
+            new Composer('Sam Lewis'),
             null,
-            new Overview(''),
+            new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.'),
             new Version(1),
         );
     }

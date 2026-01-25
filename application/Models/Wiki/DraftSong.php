@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $id
  * @property ?string $published_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $editor_id
  * @property string $language
  * @property string $name
@@ -41,6 +42,7 @@ class DraftSong extends Model
         'id',
         'published_id',
         'translation_set_identifier',
+        'slug',
         'editor_id',
         'language',
         'name',

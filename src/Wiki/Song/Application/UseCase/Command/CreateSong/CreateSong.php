@@ -6,6 +6,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -32,6 +33,7 @@ readonly class CreateSong implements CreateSongInterface
      * @return DraftSong
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function process(CreateSongInputPort $input): DraftSong
     {
@@ -50,8 +52,13 @@ readonly class CreateSong implements CreateSongInterface
             throw new UnauthorizedException();
         }
 
+        if ($this->songRepository->existsBySlug($input->slug())) {
+            throw new DuplicateSlugException();
+        }
+
         $song = $this->songFactory->create(
             $input->principalIdentifier(),
+            $input->slug(),
             $input->language(),
             $input->name()
         );

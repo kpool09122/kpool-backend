@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\RejectSong\RejectSong;
@@ -709,6 +710,7 @@ class RejectSongTest extends TestCase
     ): RejectSongTestData {
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('slug');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
@@ -725,6 +727,7 @@ class RejectSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,

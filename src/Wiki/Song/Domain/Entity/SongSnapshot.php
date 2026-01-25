@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -25,6 +26,7 @@ readonly class SongSnapshot
      * @param SongSnapshotIdentifier $snapshotIdentifier
      * @param SongIdentifier $songIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param SongName $name
      * @param ?AgencyIdentifier $agencyIdentifier
@@ -41,6 +43,7 @@ readonly class SongSnapshot
         private SongSnapshotIdentifier   $snapshotIdentifier,
         private SongIdentifier           $songIdentifier,
         private TranslationSetIdentifier $translationSetIdentifier,
+        private Slug                     $slug,
         private Language                 $language,
         private SongName                 $name,
         private ?AgencyIdentifier        $agencyIdentifier,
@@ -68,6 +71,11 @@ readonly class SongSnapshot
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function language(): Language

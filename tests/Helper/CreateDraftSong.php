@@ -13,6 +13,7 @@ class CreateDraftSong
      * @param array{
      *     published_id?: ?string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     editor_id?: string,
      *     language?: string,
      *     name?: string,
@@ -36,6 +37,7 @@ class CreateDraftSong
             'id' => $draftSongId,
             'published_id' => $overrides['published_id'] ?? null,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'test-draft-song-' . substr($draftSongId, 0, 8),
             'editor_id' => $overrides['editor_id'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'Hype Boy',

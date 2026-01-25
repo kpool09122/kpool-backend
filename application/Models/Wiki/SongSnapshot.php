@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $song_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $language
  * @property string $name
  * @property ?string $agency_id
@@ -41,6 +42,7 @@ class SongSnapshot extends Model
         'id',
         'song_id',
         'translation_set_identifier',
+        'slug',
         'language',
         'name',
         'agency_id',

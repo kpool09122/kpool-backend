@@ -17,6 +17,7 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\UseCase\Command\MergeSong\MergeSong;
@@ -103,6 +104,8 @@ class MergeSongTest extends TestCase
         $song = $mergeSong->process($input);
         $this->assertSame((string)$dummySong->songIdentifier, (string)$song->songIdentifier());
         $this->assertSame((string)$dummySong->publishedSongIdentifier, (string)$song->publishedSongIdentifier());
+        $this->assertSame((string)$dummySong->translationSetIdentifier, (string)$song->translationSetIdentifier());
+        $this->assertSame((string)$dummySong->slug, (string)$song->slug());
         $this->assertSame((string)$dummySong->editorIdentifier, (string)$song->editorIdentifier());
         $this->assertSame($dummySong->language->value, $song->language()->value);
         $this->assertSame((string)$dummySong->name, (string)$song->name());
@@ -433,6 +436,7 @@ class MergeSongTest extends TestCase
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('ttt');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
@@ -449,6 +453,7 @@ class MergeSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -466,6 +471,7 @@ class MergeSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -494,6 +500,7 @@ readonly class MergeSongTestData
         public SongIdentifier           $songIdentifier,
         public SongIdentifier           $publishedSongIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public SongName                 $name,

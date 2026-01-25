@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
@@ -52,6 +53,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             new SongIdentifier($draftModel->id),
             $draftModel->published_id ? new SongIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
+            new Slug($draftModel->slug),
             $draftModel->editor_id ? new PrincipalIdentifier($draftModel->editor_id) : null,
             Language::from($draftModel->language),
             new SongName($draftModel->name),
@@ -83,6 +85,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                     ? (string) $song->publishedSongIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $song->translationSetIdentifier(),
+                'slug' => (string) $song->slug(),
                 'editor_id' => $song->editorIdentifier() ? (string) $song->editorIdentifier() : null,
                 'language' => $song->language()->value,
                 'name' => (string) $song->name(),
@@ -139,6 +142,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 new SongIdentifier($model->id),
                 $model->published_id ? new SongIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
+                new Slug($model->slug),
                 $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
                 Language::from($model->language),
                 new SongName($model->name),

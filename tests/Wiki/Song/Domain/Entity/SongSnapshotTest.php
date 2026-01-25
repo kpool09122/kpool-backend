@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\SongSnapshot;
@@ -60,6 +61,7 @@ class SongSnapshotTest extends TestCase
         $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUuid());
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-song-snapshot');
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $lyricist = new Lyricist('블랙아이드필승');
@@ -72,6 +74,7 @@ class SongSnapshotTest extends TestCase
             $snapshotIdentifier,
             $songIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             null,
@@ -101,6 +104,7 @@ class SongSnapshotTest extends TestCase
         $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUuid());
         $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-song-snapshot-tt');
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
@@ -117,6 +121,7 @@ class SongSnapshotTest extends TestCase
             $snapshotIdentifier,
             $songIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $agencyIdentifier,
@@ -134,6 +139,7 @@ class SongSnapshotTest extends TestCase
             snapshotIdentifier: $snapshotIdentifier,
             songIdentifier: $songIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             language: $language,
             name: $name,
             agencyIdentifier: $agencyIdentifier,
@@ -159,6 +165,7 @@ readonly class SongSnapshotTestData
         public SongSnapshotIdentifier   $snapshotIdentifier,
         public SongIdentifier           $songIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public Language                 $language,
         public SongName                 $name,
         public AgencyIdentifier         $agencyIdentifier,

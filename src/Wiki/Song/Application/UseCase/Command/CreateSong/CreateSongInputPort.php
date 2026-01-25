@@ -7,6 +7,7 @@ namespace Source\Wiki\Song\Application\UseCase\Command\CreateSong;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -19,6 +20,8 @@ use Source\Wiki\Song\Domain\ValueObject\SongName;
 interface CreateSongInputPort
 {
     public function publishedSongIdentifier(): ?SongIdentifier;
+
+    public function slug(): Slug;
 
     public function language(): Language;
 

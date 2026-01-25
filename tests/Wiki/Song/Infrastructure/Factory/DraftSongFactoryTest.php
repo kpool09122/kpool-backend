@@ -9,6 +9,7 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Song\Infrastructure\Factory\DraftSongFactory;
@@ -38,13 +39,15 @@ class DraftSongFactoryTest extends TestCase
     public function testCreate(): void
     {
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-draft-song-tt');
         $language = Language::KOREAN;
         $name = new SongName('TT');
         $songFactory = $this->app->make(DraftSongFactoryInterface::class);
-        $song = $songFactory->create($editorIdentifier, $language, $name);
+        $song = $songFactory->create($editorIdentifier, $slug, $language, $name);
         $this->assertTrue(UuidValidator::isValid((string)$song->songIdentifier()));
         $this->assertNull($song->publishedSongIdentifier());
         $this->assertTrue(UuidValidator::isValid((string)$song->translationSetIdentifier()));
+        $this->assertSame((string)$slug, (string)$song->slug());
         $this->assertSame((string)$editorIdentifier, (string)$song->editorIdentifier());
         $this->assertSame($language->value, $song->language()->value);
         $this->assertSame((string)$name, (string)$song->name());

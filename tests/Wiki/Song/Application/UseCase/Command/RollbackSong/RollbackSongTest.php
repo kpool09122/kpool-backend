@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -591,8 +592,9 @@ class RollbackSongTest extends TestCase
         return new Song(
             $songIdentifier,
             $translationSetIdentifier,
+            new Slug('ttt'),
             $language,
-            new SongName('Current Name'),
+            new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new GroupIdentifier(StrTestHelper::generateUuid()),
             new TalentIdentifier(StrTestHelper::generateUuid()),
@@ -614,8 +616,9 @@ class RollbackSongTest extends TestCase
             new SongSnapshotIdentifier(StrTestHelper::generateUuid()),
             $songIdentifier,
             $translationSetIdentifier,
+            new Slug('ttt'),
             $language,
-            new SongName('Snapshot Name'),
+            new SongName('TT'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             new GroupIdentifier(StrTestHelper::generateUuid()),
             new TalentIdentifier(StrTestHelper::generateUuid()),

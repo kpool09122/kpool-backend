@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\Composer;
@@ -25,6 +26,7 @@ class DraftSong
      * @param SongIdentifier $songIdentifier
      * @param SongIdentifier|null $publishedSongIdentifier
      * @param TranslationSetIdentifier $translationSetIdentifier
+     * @param Slug $slug
      * @param PrincipalIdentifier|null $editorIdentifier
      * @param Language $language
      * @param SongName $name
@@ -36,6 +38,7 @@ class DraftSong
      * @param ReleaseDate|null $releaseDate
      * @param Overview $overView
      * @param ApprovalStatus $status
+     * @param PrincipalIdentifier|null $approverIdentifier
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
      */
@@ -43,6 +46,7 @@ class DraftSong
         private readonly SongIdentifier           $songIdentifier,
         private ?SongIdentifier                   $publishedSongIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
+        private readonly Slug                     $slug,
         private readonly ?PrincipalIdentifier     $editorIdentifier,
         private readonly Language                 $language,
         private SongName                          $name,
@@ -78,6 +82,11 @@ class DraftSong
     public function translationSetIdentifier(): TranslationSetIdentifier
     {
         return $this->translationSetIdentifier;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function editorIdentifier(): ?PrincipalIdentifier

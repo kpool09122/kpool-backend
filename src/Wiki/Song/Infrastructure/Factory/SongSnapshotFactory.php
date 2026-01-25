@@ -24,6 +24,7 @@ readonly class SongSnapshotFactory implements SongSnapshotFactoryInterface
             new SongSnapshotIdentifier($this->generator->generate()),
             $song->songIdentifier(),
             $song->translationSetIdentifier(),
+            $song->slug(),
             $song->language(),
             $song->name(),
             $song->agencyIdentifier(),

@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
@@ -154,6 +155,7 @@ class DraftSongRepositoryTest extends TestCase
             new SongIdentifier(StrTestHelper::generateUuid()),
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('attention-newjeans'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Attention'),
@@ -176,6 +178,7 @@ class DraftSongRepositoryTest extends TestCase
             'id' => (string) $draft->songIdentifier(),
             'published_id' => (string) $draft->publishedSongIdentifier(),
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
+            'slug' => (string) $draft->slug(),
             'editor_id' => (string) $draft->editorIdentifier(),
             'language' => $draft->language()->value,
             'name' => (string) $draft->name(),
@@ -219,6 +222,7 @@ class DraftSongRepositoryTest extends TestCase
             new SongIdentifier($id),
             new SongIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('next-level-aespa'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new SongName('Next Level'),

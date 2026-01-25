@@ -12,6 +12,7 @@ class CreateSongSnapshot
      * @param array{
      *     song_id?: string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     language?: string,
      *     name?: string,
      *     agency_id?: ?string,
@@ -32,6 +33,7 @@ class CreateSongSnapshot
             'id' => $snapshotId,
             'song_id' => $overrides['song_id'] ?? StrTestHelper::generateUuid(),
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'test-song-snapshot-' . substr($snapshotId, 0, 8),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? 'TT',
             'agency_id' => $overrides['agency_id'] ?? StrTestHelper::generateUuid(),

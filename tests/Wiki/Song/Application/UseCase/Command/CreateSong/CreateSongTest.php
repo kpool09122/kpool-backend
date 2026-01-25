@@ -15,11 +15,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\UseCase\Command\CreateSong\CreateSong;
@@ -80,6 +82,7 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
+            $createDummyCreateSong->slug,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -107,10 +110,14 @@ class CreateSongTest extends TestCase
         $songFactory = Mockery::mock(DraftSongFactoryInterface::class);
         $songFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $createDummyCreateSong->language, $createDummyCreateSong->name)
+            ->with($principalIdentifier, $createDummyCreateSong->slug, $createDummyCreateSong->language, $createDummyCreateSong->name)
             ->andReturn($createDummyCreateSong->song);
 
         $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->with($createDummyCreateSong->slug)
+            ->andReturn(false);
         $songRepository->shouldReceive('findById')
             ->once()
             ->with($createDummyCreateSong->publishedSongIdentifier)
@@ -160,6 +167,7 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
+            $createDummyCreateSong->slug,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -211,6 +219,7 @@ class CreateSongTest extends TestCase
 
         $input = new CreateSongInput(
             $createDummyCreateSong->publishedSongIdentifier,
+            $createDummyCreateSong->slug,
             $createDummyCreateSong->language,
             $createDummyCreateSong->name,
             $createDummyCreateSong->agencyIdentifier,
@@ -244,6 +253,66 @@ class CreateSongTest extends TestCase
     }
 
     /**
+     * 異常系：指定したSlugが既に存在する場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws UnauthorizedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testWhenDuplicateSlug(): void
+    {
+        $createDummyCreateSong = $this->createDummyCreateSong();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $input = new CreateSongInput(
+            $createDummyCreateSong->publishedSongIdentifier,
+            $createDummyCreateSong->slug,
+            $createDummyCreateSong->language,
+            $createDummyCreateSong->name,
+            $createDummyCreateSong->agencyIdentifier,
+            $createDummyCreateSong->groupIdentifier,
+            $createDummyCreateSong->talentIdentifier,
+            $createDummyCreateSong->lyricist,
+            $createDummyCreateSong->composer,
+            $createDummyCreateSong->releaseDate,
+            $createDummyCreateSong->overView,
+            $principalIdentifier
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->once()
+            ->andReturn(true);
+
+        $songRepository = Mockery::mock(SongRepositoryInterface::class);
+        $songRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->with($createDummyCreateSong->slug)
+            ->andReturn(true);
+
+        $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
+        $draftSongRepository->shouldNotReceive('save');
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+
+        $this->expectException(DuplicateSlugException::class);
+        $useCase = $this->app->make(CreateSongInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * ダミーデータを作成するヘルパーメソッド
      *
      * @return CreateSongTestData
@@ -251,6 +320,7 @@ class CreateSongTest extends TestCase
     private function createDummyCreateSong(): CreateSongTestData
     {
         $publishedSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-create-song-tt');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
@@ -269,6 +339,7 @@ class CreateSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -286,6 +357,7 @@ class CreateSongTest extends TestCase
         $publishedSong = new Song(
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $agencyIdentifier,
@@ -300,6 +372,7 @@ class CreateSongTest extends TestCase
 
         return new CreateSongTestData(
             $publishedSongIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -330,6 +403,7 @@ readonly class CreateSongTestData
      */
     public function __construct(
         public SongIdentifier       $publishedSongIdentifier,
+        public Slug                 $slug,
         public PrincipalIdentifier  $editorIdentifier,
         public Language             $language,
         public SongName            $name,

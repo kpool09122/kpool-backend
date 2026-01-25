@@ -20,6 +20,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Song\Application\Exception\ExistsApprovedButNotTranslatedSongException;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
@@ -412,6 +413,7 @@ class ApproveSongTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new SongName('TT');
+        $slug = new Slug('ttt');
         $agencyIdentifier = new AgencyIdentifier($agencyId ?? StrTestHelper::generateUuid());
         $groupIdentifier = new GroupIdentifier($groupId ?? StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier($talentId ?? StrTestHelper::generateUuid());
@@ -425,6 +427,7 @@ class ApproveSongTest extends TestCase
             $songIdentifier,
             $publishedSongIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
