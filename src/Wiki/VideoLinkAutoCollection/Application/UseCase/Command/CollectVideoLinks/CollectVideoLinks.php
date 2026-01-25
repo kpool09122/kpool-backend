@@ -45,6 +45,21 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             return;
         }
 
+        $oneMonthAgo = new DateTimeImmutable('-1 month');
+        if ($status->lastCollectedAt() !== null && $status->lastCollectedAt() > $oneMonthAgo) {
+            $this->logger->info('CollectVideoLinks: Resource was collected within the last month', [
+                'resource_type' => $status->resourceType()->value,
+                'resource_identifier' => (string) $status->resourceIdentifier(),
+                'last_collected_at' => $status->lastCollectedAt()->format('Y-m-d H:i:s'),
+            ]);
+            $output->recentlyCollected(
+                $status->resourceType(),
+                $status->resourceIdentifier(),
+            );
+
+            return;
+        }
+
         $resourceName = match ($status->resourceType()) {
             ResourceType::TALENT => $this->getTalentName($status),
             ResourceType::GROUP => $this->getGroupName($status),

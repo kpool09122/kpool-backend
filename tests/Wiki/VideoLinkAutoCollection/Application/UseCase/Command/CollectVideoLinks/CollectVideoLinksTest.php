@@ -469,6 +469,129 @@ class CollectVideoLinksTest extends TestCase
         $this->assertSame('Resource not found', $output->message);
     }
 
+    /**
+     * 正常系：最終収集日が直近1ヶ月以内の場合、recentlyCollectedが返ること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcessReturnsRecentlyCollectedWhenCollectedWithinOneMonth(): void
+    {
+        $statusId = StrTestHelper::generateUuid();
+        $resourceId = StrTestHelper::generateUuid();
+
+        $status = new VideoLinkCollectionStatus(
+            new VideoLinkCollectionStatusIdentifier($statusId),
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+            new DateTimeImmutable('-2 weeks'),
+            new DateTimeImmutable(),
+        );
+
+        $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);
+        $collectionStatusRepository->shouldReceive('findNextTargetResource')
+            ->once()
+            ->andReturn($status);
+
+        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app->instance(TalentRepositoryInterface::class, Mockery::mock(TalentRepositoryInterface::class));
+        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
+        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+        $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
+        $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
+        $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
+
+        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $output = new CollectVideoLinksOutput();
+        $useCase->process($output);
+
+        $this->assertFalse($output->processed);
+        $this->assertSame(ResourceType::TALENT, $output->resourceType);
+        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame('Resource was collected within the last month', $output->message);
+    }
+
+    /**
+     * 正常系：最終収集日が1ヶ月以上前の場合、通常通り収集処理が行われること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcessCollectsVideosWhenLastCollectedMoreThanOneMonthAgo(): void
+    {
+        $statusId = StrTestHelper::generateUuid();
+        $resourceId = StrTestHelper::generateUuid();
+
+        $status = new VideoLinkCollectionStatus(
+            new VideoLinkCollectionStatusIdentifier($statusId),
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+            new DateTimeImmutable('-2 months'),
+            new DateTimeImmutable(),
+        );
+
+        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+
+        $videos = [
+            new YouTubeVideoInfo(
+                videoId: 'video1',
+                title: 'Test Video 1',
+                url: 'https://www.youtube.com/watch?v=video1',
+                thumbnailUrl: 'https://i.ytimg.com/vi/video1/hqdefault.jpg',
+                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
+                publishedAt: new DateTimeImmutable(),
+            ),
+        ];
+
+        $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);
+        $collectionStatusRepository->shouldReceive('findNextTargetResource')
+            ->once()
+            ->andReturn($status);
+        $collectionStatusRepository->shouldReceive('save')
+            ->once();
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findById')
+            ->once()
+            ->andReturn($talent);
+
+        $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
+        $youtubeSearchService->shouldReceive('searchVideos')
+            ->once()
+            ->andReturn($videos);
+
+        $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
+        $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
+            ->once();
+        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
+            ->once()
+            ->andReturn(null);
+        $videoLinkRepository->shouldReceive('save')
+            ->once();
+
+        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
+        $videoLinkFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($this->createDummyVideoLink($resourceId, 1));
+
+        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
+        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+
+        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $output = new CollectVideoLinksOutput();
+        $useCase->process($output);
+
+        $this->assertTrue($output->processed);
+        $this->assertSame(ResourceType::TALENT, $output->resourceType);
+        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame(1, $output->collectedCount);
+    }
+
     private function createDummyTalent(string $resourceId, string $name): Talent
     {
         return new Talent(
