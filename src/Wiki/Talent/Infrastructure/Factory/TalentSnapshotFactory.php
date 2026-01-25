@@ -24,6 +24,7 @@ readonly class TalentSnapshotFactory implements TalentSnapshotFactoryInterface
             new TalentSnapshotIdentifier($this->generator->generate()),
             $talent->talentIdentifier(),
             $talent->translationSetIdentifier(),
+            $talent->slug(),
             $talent->language(),
             $talent->name(),
             $talent->realName(),

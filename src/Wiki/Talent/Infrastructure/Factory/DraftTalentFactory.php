@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
@@ -25,6 +26,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
 
     /**
      * @param PrincipalIdentifier $editorIdentifier
+     * @param Slug $slug
      * @param Language $language
      * @param TalentName $name
      * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
@@ -32,6 +34,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
      */
     public function create(
         PrincipalIdentifier       $editorIdentifier,
+        Slug                      $slug,
         Language                  $language,
         TalentName                $name,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
@@ -40,6 +43,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
             new TalentIdentifier($this->generator->generate()),
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
+            $slug,
             $editorIdentifier,
             $language,
             $name,

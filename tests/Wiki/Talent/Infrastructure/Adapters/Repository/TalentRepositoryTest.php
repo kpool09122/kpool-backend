@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -148,6 +149,7 @@ class TalentRepositoryTest extends TestCase
         $talent = new Talent(
             new TalentIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('han'),
             Language::KOREAN,
             new TalentName('한'),
             new RealName('지성'),
@@ -341,5 +343,42 @@ class TalentRepositoryTest extends TestCase
         $talent = $repository->findByOwnerAccountId(new AccountIdentifier($ownerAccountId));
 
         $this->assertNull($talent);
+    }
+
+    /**
+     * 正常系：指定したSlugのTalentが存在する場合、trueが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlug(): void
+    {
+        $slug = 'chaeyoung';
+        $id = StrTestHelper::generateUuid();
+
+        CreateTalent::create($id, [
+            'slug' => $slug,
+        ]);
+
+        $talentRepository = $this->app->make(TalentRepositoryInterface::class);
+        $exists = $talentRepository->existsBySlug(new Slug($slug));
+
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * 正常系：指定したSlugのTalentが存在しない場合、falseが返却されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlugWhenNoAgency(): void
+    {
+        $talentRepository = $this->app->make(TalentRepositoryInterface::class);
+        $exists = $talentRepository->existsBySlug(new Slug('non-existent-slug'));
+
+        $this->assertFalse($exists);
     }
 }

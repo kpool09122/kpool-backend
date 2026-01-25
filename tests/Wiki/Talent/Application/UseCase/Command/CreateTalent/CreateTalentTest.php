@@ -15,10 +15,12 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\UseCase\Command\CreateTalent\CreateTalent;
@@ -62,12 +64,13 @@ class CreateTalentTest extends TestCase
     }
 
     /**
-     * 正常系：正しくTalent Entityが作成されること.
+     * 正常系：正しく下書きTalent Wikiが作成されること.
      *
      * @return void
      * @throws BindingResolutionException
-     *      * @throws UnauthorizedException
+     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function testProcess(): void
     {
@@ -78,6 +81,7 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
+            $createTalentInfo->slug,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -103,10 +107,13 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->slug, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->andReturn(false);
         $talentRepository->shouldReceive('findById')
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
@@ -127,6 +134,7 @@ class CreateTalentTest extends TestCase
         $talent = $createTalent->process($input);
         $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
         $this->assertSame((string)$createTalentInfo->publishedTalentIdentifier, (string)$talent->publishedTalentIdentifier());
+        $this->assertSame((string)$createTalentInfo->slug, (string)$talent->slug());
         $this->assertSame((string)$createTalentInfo->editorIdentifier, (string)$talent->editorIdentifier());
         $this->assertSame($createTalentInfo->language->value, $talent->language()->value);
         $this->assertSame((string)$createTalentInfo->name, (string)$talent->name());
@@ -142,8 +150,9 @@ class CreateTalentTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     *      * @throws UnauthorizedException
+     * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function testAuthorized(): void
     {
@@ -154,6 +163,7 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
+            $createTalentInfo->slug,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -179,10 +189,13 @@ class CreateTalentTest extends TestCase
         $talentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $createTalentInfo->language, $createTalentInfo->name)
+            ->with($principalIdentifier, $createTalentInfo->slug, $createTalentInfo->language, $createTalentInfo->name)
             ->andReturn($createTalentInfo->draftTalent);
 
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->andReturn(false);
         $talentRepository->shouldReceive('findById')
             ->once()
             ->with($createTalentInfo->publishedTalentIdentifier)
@@ -209,7 +222,8 @@ class CreateTalentTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     *      * @throws PrincipalNotFoundException
+     * @throws PrincipalNotFoundException
+     * @throws DuplicateSlugException
      */
     public function testUnauthorized(): void
     {
@@ -220,6 +234,7 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
+            $createTalentInfo->slug,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -259,7 +274,8 @@ class CreateTalentTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     *      * @throws UnauthorizedException
+     * @throws UnauthorizedException
+     * @throws DuplicateSlugException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -269,6 +285,7 @@ class CreateTalentTest extends TestCase
 
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
+            $createTalentInfo->slug,
             $createTalentInfo->language,
             $createTalentInfo->name,
             $createTalentInfo->realName,
@@ -300,12 +317,71 @@ class CreateTalentTest extends TestCase
     }
 
     /**
+     * 異常系：slugが重複している場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws DuplicateSlugException
+     * @throws PrincipalNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testWhenDuplicateSlug(): void
+    {
+        $createTalentInfo = $this->createCreateTalentInfo();
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $input = new CreateTalentInput(
+            $createTalentInfo->publishedTalentIdentifier,
+            $createTalentInfo->slug,
+            $createTalentInfo->language,
+            $createTalentInfo->name,
+            $createTalentInfo->realName,
+            $createTalentInfo->agencyIdentifier,
+            $createTalentInfo->groupIdentifiers,
+            $createTalentInfo->birthday,
+            $createTalentInfo->career,
+            $principalIdentifier,
+        );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('existsBySlug')
+            ->once()
+            ->andReturn(true);
+
+        $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageServiceInterface::class, $imageService);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
+
+        $this->expectException(DuplicateSlugException::class);
+        $useCase = $this->app->make(CreateTalentInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * @return CreateTalentTestData
      *      */
     private function createCreateTalentInfo(): CreateTalentTestData
     {
         $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
@@ -327,6 +403,7 @@ class CreateTalentTest extends TestCase
             $talentIdentifier,
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -342,6 +419,7 @@ class CreateTalentTest extends TestCase
         $publishedTalent = new Talent(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $realName,
@@ -355,6 +433,7 @@ class CreateTalentTest extends TestCase
         return new CreateTalentTestData(
             $publishedTalentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $editorIdentifier,
             $language,
             $name,
@@ -383,6 +462,7 @@ readonly class CreateTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,

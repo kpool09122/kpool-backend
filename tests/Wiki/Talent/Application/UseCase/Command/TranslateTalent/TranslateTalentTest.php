@@ -16,6 +16,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
@@ -687,6 +688,7 @@ class TranslateTalentTest extends TestCase
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $language,
             $name,
             $realName,
@@ -720,6 +722,7 @@ TWICEのメンバーとして、チェヨンは数多くのヒット曲に参加
             $jaTalentIdentifier,
             $talentIdentifier,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             $japanese,
             $jaName,
@@ -754,6 +757,7 @@ Recently, she has also begun activities as a solo artist, further broadening her
             $enTalentIdentifier,
             $talentIdentifier,
             $translationSetIdentifier,
+            new Slug('chaeyoung'),
             $editorIdentifier,
             $english,
             $enName,

@@ -8,6 +8,7 @@ use Application\Models\Wiki\Group;
 use Application\Models\Wiki\TalentSnapshot as TalentSnapshotModel;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
@@ -29,6 +30,7 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             'id' => (string)$snapshot->snapshotIdentifier(),
             'talent_id' => (string)$snapshot->talentIdentifier(),
             'translation_set_identifier' => (string)$snapshot->translationSetIdentifier(),
+            'slug' => (string)$snapshot->slug(),
             'language' => $snapshot->language()->value,
             'name' => (string)$snapshot->name(),
             'real_name' => (string)$snapshot->realName(),
@@ -109,6 +111,7 @@ class TalentSnapshotRepository implements TalentSnapshotRepositoryInterface
             new TalentSnapshotIdentifier($model->id),
             new TalentIdentifier($model->talent_id),
             new TranslationSetIdentifier($model->translation_set_identifier),
+            new Slug($model->slug),
             Language::from($model->language),
             new TalentName($model->name),
             new RealName($model->real_name),

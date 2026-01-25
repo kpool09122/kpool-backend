@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\TalentSnapshot;
@@ -63,6 +64,7 @@ class TalentSnapshotRepositoryTest extends TestCase
             new TalentSnapshotIdentifier($snapshotId),
             new TalentIdentifier($talentId),
             new TranslationSetIdentifier($translationSetIdentifier),
+            new Slug('chaeyoung'),
             $language,
             new TalentName($name),
             new RealName($realName),
@@ -116,6 +118,7 @@ class TalentSnapshotRepositoryTest extends TestCase
             new TalentSnapshotIdentifier($snapshotId),
             new TalentIdentifier($talentId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('chaeyoung'),
             Language::KOREAN,
             new TalentName('채영'),
             new RealName(''),

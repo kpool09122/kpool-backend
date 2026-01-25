@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $talent_id
  * @property string $translation_set_identifier
+ * @property string $slug
  * @property string $language
  * @property string $name
  * @property string $real_name
@@ -39,6 +40,7 @@ class TalentSnapshot extends Model
         'id',
         'talent_id',
         'translation_set_identifier',
+        'slug',
         'language',
         'name',
         'real_name',

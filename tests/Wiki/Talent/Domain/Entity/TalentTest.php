@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -182,6 +183,7 @@ class TalentTest extends TestCase
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
+            new Slug('test-talent'),
             Language::KOREAN,
             new TalentName('테스트'),
             new RealName('테스트'),
@@ -273,6 +275,7 @@ class TalentTest extends TestCase
     ): TalentTestData {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
@@ -292,6 +295,7 @@ class TalentTest extends TestCase
         $talent = new Talent(
             $talentIdentifier,
             $translationSetIdentifier,
+            $slug,
             $language,
             $name,
             $realName,
@@ -309,6 +313,7 @@ class TalentTest extends TestCase
         return new TalentTestData(
             talentIdentifier: $talentIdentifier,
             translationSetIdentifier: $translationSetIdentifier,
+            slug: $slug,
             language: $language,
             name: $name,
             realName: $realName,
@@ -336,6 +341,7 @@ readonly class TalentTestData
     public function __construct(
         public TalentIdentifier         $talentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

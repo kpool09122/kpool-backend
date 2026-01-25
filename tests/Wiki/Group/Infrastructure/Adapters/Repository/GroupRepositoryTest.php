@@ -181,7 +181,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：指定したSlugのAgencyが存在する場合、trueが返却されること.
+     * 正常系：指定したSlugのGroupが存在する場合、trueが返却されること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -203,7 +203,7 @@ class GroupRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：指定したSlugのAgencyが存在しない場合、falseが返却されること.
+     * 正常系：指定したSlugのGroupが存在しない場合、falseが返却されること.
      *
      * @return void
      * @throws BindingResolutionException

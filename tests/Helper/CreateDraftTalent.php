@@ -13,6 +13,7 @@ class CreateDraftTalent
      * @param array{
      *     published_id?: ?string,
      *     translation_set_identifier?: string,
+     *     slug?: string,
      *     editor_id?: string,
      *     language?: string,
      *     name?: string,
@@ -33,6 +34,7 @@ class CreateDraftTalent
             'id' => $draftTalentId,
             'published_id' => $overrides['published_id'] ?? null,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
+            'slug' => $overrides['slug'] ?? 'hyunjin',
             'editor_id' => $overrides['editor_id'] ?? StrTestHelper::generateUuid(),
             'language' => $overrides['language'] ?? 'ko',
             'name' => $overrides['name'] ?? '현진',

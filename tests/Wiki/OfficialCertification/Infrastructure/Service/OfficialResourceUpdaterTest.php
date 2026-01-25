@@ -363,9 +363,10 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Talent(
             new TalentIdentifier($talentId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::ENGLISH,
-            new TalentName('Talent'),
-            new RealName('Real Name'),
+            new Slug('chaeyoung'),
+            Language::KOREAN,
+            new TalentName('채영'),
+            new RealName('손채영'),
             null,
             [],
             null,

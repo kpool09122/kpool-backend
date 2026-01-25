@@ -20,6 +20,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\ExistsApprovedButNotTranslatedTalentException;
@@ -123,6 +124,7 @@ class PublishTalentTest extends TestCase
         $publishedTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            new Slug('jihyo'),
             $publishTalentInfo->language,
             $exName,
             $exRealName,
@@ -234,6 +236,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->talentIdentifier,
             null,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->editorIdentifier,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
@@ -255,6 +258,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
@@ -290,7 +294,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->slug, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -448,6 +452,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->talentIdentifier,
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->editorIdentifier,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
@@ -731,6 +736,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->talentIdentifier,
             null,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->editorIdentifier,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
@@ -756,6 +762,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
@@ -791,7 +798,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->slug, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -901,6 +908,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->talentIdentifier,
             null,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->editorIdentifier,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
@@ -927,6 +935,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
@@ -962,7 +971,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->slug, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -1018,6 +1027,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->talentIdentifier,
             null,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->editorIdentifier,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
@@ -1039,6 +1049,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
@@ -1074,7 +1085,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->slug, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -1123,6 +1134,7 @@ class PublishTalentTest extends TestCase
             $publishTalentInfo->talentIdentifier,
             null,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->editorIdentifier,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
@@ -1173,105 +1185,6 @@ class PublishTalentTest extends TestCase
     }
 
     /**
-     * @return PublishTalentTestData
-     *      */
-    private function createPublishTalentInfo(
-        bool $hasPublishedTalent = true,
-        ?PrincipalIdentifier $operatorIdentifier = null,
-        ?PrincipalIdentifier $approverIdentifier = null,
-        ?PrincipalIdentifier $mergerIdentifier = null,
-    ): PublishTalentTestData {
-        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $language = Language::KOREAN;
-        $name = new TalentName('채영');
-        $realName = new RealName('손채영');
-        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $groupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-        ];
-        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
-        $career = new Career('### **경력 소개 예시**
-대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
-2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
-지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
-
-        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $status = ApprovalStatus::UnderReview;
-        $talent = new DraftTalent(
-            $talentIdentifier,
-            $hasPublishedTalent ? $publishedTalentIdentifier : null,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $language,
-            $name,
-            $realName,
-            $agencyIdentifier,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $status,
-            $approverIdentifier,
-            $mergerIdentifier,
-        );
-
-        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
-        $history = new TalentHistory(
-            $historyIdentifier,
-            HistoryActionType::Publish,
-            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            $talent->editorIdentifier(),
-            $hasPublishedTalent ? $publishedTalentIdentifier : null,
-            $talent->talentIdentifier(),
-            $talent->status(),
-            null,
-            null,
-            null,
-            $talent->name(),
-            new \DateTimeImmutable(),
-        );
-
-        // スナップショット（公開済みTalentからスナップショットを作成）
-        $snapshot = new TalentSnapshot(
-            new TalentSnapshotIdentifier(StrTestHelper::generateUuid()),
-            $publishedTalentIdentifier,
-            $translationSetIdentifier,
-            $language,
-            $name,
-            $realName,
-            $agencyIdentifier,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            new Version(1),
-            new \DateTimeImmutable(),
-        );
-
-        return new PublishTalentTestData(
-            $publishedTalentIdentifier,
-            $translationSetIdentifier,
-            $editorIdentifier,
-            $language,
-            $name,
-            $realName,
-            $agencyIdentifier,
-            $groupIdentifiers,
-            $birthday,
-            $career,
-            $talentIdentifier,
-            $status,
-            $talent,
-            $historyIdentifier,
-            $history,
-            $snapshot,
-            $approverIdentifier,
-            $mergerIdentifier,
-        );
-    }
-
-    /**
      * 正常系：新規作成時に貢献ポイントが付与されること.
      *
      * @return void
@@ -1306,6 +1219,7 @@ class PublishTalentTest extends TestCase
         $createdTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            $publishTalentInfo->slug,
             $publishTalentInfo->language,
             $publishTalentInfo->name,
             new RealName(''),
@@ -1341,7 +1255,7 @@ class PublishTalentTest extends TestCase
         $talentFactory = Mockery::mock(TalentFactoryInterface::class);
         $talentFactory->shouldReceive('create')
             ->once()
-            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->language, $publishTalentInfo->name)
+            ->with($publishTalentInfo->translationSetIdentifier, $publishTalentInfo->slug, $publishTalentInfo->language, $publishTalentInfo->name)
             ->andReturn($createdTalent);
 
         $talentService = Mockery::mock(TalentServiceInterface::class);
@@ -1424,6 +1338,7 @@ class PublishTalentTest extends TestCase
         $publishedTalent = new Talent(
             $publishTalentInfo->publishedTalentIdentifier,
             $publishTalentInfo->translationSetIdentifier,
+            new Slug('jihyo'),
             $publishTalentInfo->language,
             new TalentName('지효'),
             new RealName('박지수'),
@@ -1518,6 +1433,113 @@ class PublishTalentTest extends TestCase
 
         $this->assertSame((string) $publishTalentInfo->publishedTalentIdentifier, (string) $result->talentIdentifier());
     }
+
+    /**
+     * @param bool $hasPublishedTalent
+     * @param PrincipalIdentifier|null $operatorIdentifier
+     * @param PrincipalIdentifier|null $approverIdentifier
+     * @param PrincipalIdentifier|null $mergerIdentifier
+     * @return PublishTalentTestData
+     */
+    private function createPublishTalentInfo(
+        bool $hasPublishedTalent = true,
+        ?PrincipalIdentifier $operatorIdentifier = null,
+        ?PrincipalIdentifier $approverIdentifier = null,
+        ?PrincipalIdentifier $mergerIdentifier = null,
+    ): PublishTalentTestData {
+        $publishedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('chaeyoung');
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $language = Language::KOREAN;
+        $name = new TalentName('채영');
+        $realName = new RealName('손채영');
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $groupIdentifiers = [
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+        ];
+        $birthday = new Birthday(new DateTimeImmutable('1994-01-01'));
+        $career = new Career('### **경력 소개 예시**
+대학교 졸업 후, 주식회사 〇〇에 영업직으로 입사하여 법인 대상 IT 솔루션의 신규 고객 개척 및 기존 고객 관리에 4년간 종사했습니다. 고객의 잠재적인 과제를 깊이 있게 파악하고 해결책을 제안하는 \'과제 해결형 영업\'을 강점으로 삼고 있으며, 입사 3년 차에는 연간 개인 매출 목표의 120%를 달성하여 사내 영업 MVP를 수상했습니다.
+2021년부터는 사업 회사의 마케팅부로 이직하여 자사 제품의 프로모션 전략 입안부터 실행까지 담당하고 있습니다. 특히 디지털 마케팅 영역에 주력하여 웹 광고 운영, SEO 대책, SNS 콘텐츠 기획 등을 통해 잠재 고객 확보 수를 전년 대비 150% 향상시킨 실적이 있습니다. 또한, 데이터 분석에 기반한 시책 개선을 특기로 하고 있으며, Google Analytics 등을 활용하여 효과 측정과 다음 전략 수립으로 연결해 왔습니다.
+지금까지의 경력을 통해 쌓아온 \'고객의 과제를 정확하게 파악하는 능력\'과 \'데이터를 기반으로 전략을 세우고 실행하는 능력\'을 활용하여 귀사의 사업 성장에 기여하고 싶습니다. 앞으로는 영업과 마케팅 양쪽의 시각을 겸비한 강점을 살려 보다 효과적인 고객 접근을 실현할 수 있다고 확신합니다.');
+
+        $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $status = ApprovalStatus::UnderReview;
+        $talent = new DraftTalent(
+            $talentIdentifier,
+            $hasPublishedTalent ? $publishedTalentIdentifier : null,
+            $translationSetIdentifier,
+            $slug,
+            $editorIdentifier,
+            $language,
+            $name,
+            $realName,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $status,
+            $approverIdentifier,
+            $mergerIdentifier,
+        );
+
+        $historyIdentifier = new TalentHistoryIdentifier(StrTestHelper::generateUuid());
+        $history = new TalentHistory(
+            $historyIdentifier,
+            HistoryActionType::Publish,
+            $operatorIdentifier ?? new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            $talent->editorIdentifier(),
+            $hasPublishedTalent ? $publishedTalentIdentifier : null,
+            $talent->talentIdentifier(),
+            $talent->status(),
+            null,
+            null,
+            null,
+            $talent->name(),
+            new \DateTimeImmutable(),
+        );
+
+        // スナップショット（公開済みTalentからスナップショットを作成）
+        $snapshot = new TalentSnapshot(
+            new TalentSnapshotIdentifier(StrTestHelper::generateUuid()),
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $slug,
+            $language,
+            $name,
+            $realName,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            new Version(1),
+            new \DateTimeImmutable(),
+        );
+
+        return new PublishTalentTestData(
+            $publishedTalentIdentifier,
+            $translationSetIdentifier,
+            $slug,
+            $editorIdentifier,
+            $language,
+            $name,
+            $realName,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
+            $career,
+            $talentIdentifier,
+            $status,
+            $talent,
+            $historyIdentifier,
+            $history,
+            $snapshot,
+            $approverIdentifier,
+            $mergerIdentifier,
+        );
+    }
 }
 
 
@@ -1533,6 +1555,7 @@ readonly class PublishTalentTestData
     public function __construct(
         public TalentIdentifier         $publishedTalentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
         public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,

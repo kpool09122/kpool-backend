@@ -105,7 +105,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+        $talent = $this->createDummyTalent($resourceId, '채영');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -142,7 +142,7 @@ class CollectVideoLinksTest extends TestCase
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
             ->once()
-            ->with('テストタレント')
+            ->with('채영')
             ->andReturn($videos);
 
         $existingVideoLink = $this->createDummyVideoLink($resourceId, 5);
@@ -541,7 +541,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+        $talent = $this->createDummyTalent($resourceId, '채영');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -625,7 +625,7 @@ class CollectVideoLinksTest extends TestCase
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+        $talent = $this->createDummyTalent($resourceId, '채영');
 
         $existingUrl = 'https://www.youtube.com/watch?v=existing';
         $newUrl = 'https://www.youtube.com/watch?v=new';
@@ -731,9 +731,10 @@ class CollectVideoLinksTest extends TestCase
         return new Talent(
             new TalentIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            Language::JAPANESE,
+            new Slug('chaeyoung'),
+            Language::KOREAN,
             new TalentName($name),
-            new RealName(''),
+            new RealName('손채영'),
             null,
             [],
             null,
