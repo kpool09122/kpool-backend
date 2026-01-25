@@ -97,6 +97,29 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
         return $this->toDomainEntity($eloquent);
     }
 
+    /**
+     * @param IdentityIdentifier[] $identifiers
+     * @return Identity[]
+     */
+    public function findByIds(array $identifiers): array
+    {
+        if (empty($identifiers)) {
+            return [];
+        }
+
+        $ids = array_map(
+            static fn (IdentityIdentifier $id) => (string) $id,
+            $identifiers
+        );
+
+        return IdentityEloquent::query()
+            ->with(['socialConnections'])
+            ->whereIn('id', $ids)
+            ->get()
+            ->map(fn (IdentityEloquent $eloquent) => $this->toDomainEntity($eloquent))
+            ->all();
+    }
+
     public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Identity
     {
         $eloquent = IdentityEloquent::query()

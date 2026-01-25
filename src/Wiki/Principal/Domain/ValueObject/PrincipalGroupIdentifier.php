@@ -10,12 +10,6 @@ use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
 class PrincipalGroupIdentifier extends StringBaseValue
 {
-    public function __construct(string $id)
-    {
-        parent::__construct($id);
-        $this->validate($id);
-    }
-
     protected function validate(string $value): void
     {
         if (! UuidValidator::isValid($value)) {

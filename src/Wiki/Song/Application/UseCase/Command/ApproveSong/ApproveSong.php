@@ -80,6 +80,7 @@ readonly class ApproveSong implements ApproveSongInterface
 
         $previousStatus = $song->status();
         $song->setStatus(ApprovalStatus::Approved);
+        $song->setApproverIdentifier($input->principalIdentifier());
 
         $this->draftSongRepository->save($song);
 

@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $founded_in
  * @property string $description
  * @property string $status
+ * @property ?string $approver_id
  */
 class DraftAgency extends Model
 {
@@ -42,6 +43,7 @@ class DraftAgency extends Model
         'founded_in',
         'description',
         'status',
+        'approver_id',
     ];
 
     protected $casts = [

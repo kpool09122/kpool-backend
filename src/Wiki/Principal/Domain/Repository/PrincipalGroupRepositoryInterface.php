@@ -7,6 +7,7 @@ namespace Source\Wiki\Principal\Domain\Repository;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface PrincipalGroupRepositoryInterface
@@ -24,6 +25,11 @@ interface PrincipalGroupRepositoryInterface
      * @return array<PrincipalGroup>
      */
     public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array;
+
+    /**
+     * @return array<PrincipalGroup>
+     */
+    public function findByRole(RoleIdentifier $roleIdentifier): array;
 
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup;
 

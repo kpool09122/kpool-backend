@@ -535,4 +535,86 @@ class IdentityRepositoryTest extends TestCase
         $this->assertTrue($result->isDelegatedIdentity());
         $this->assertSame((string) $originalIdentityId, (string) $result->originalIdentityIdentifier());
     }
+
+    /**
+     * 正常系: findByIdsで複数のIdentityが見つかること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdsReturnsMultipleIdentities(): void
+    {
+        $identityIdentifier1 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier2 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier3 = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        CreateIdentity::create($identityIdentifier1, [
+            'email' => 'findbyids1@example.com',
+            'username' => 'find-by-ids-user1',
+        ]);
+        CreateIdentity::create($identityIdentifier2, [
+            'email' => 'findbyids2@example.com',
+            'username' => 'find-by-ids-user2',
+        ]);
+        CreateIdentity::create($identityIdentifier3, [
+            'email' => 'findbyids3@example.com',
+            'username' => 'find-by-ids-user3',
+        ]);
+        CreateIdentity::createSocialConnection($identityIdentifier1, SocialProvider::GOOGLE, 'google-findbyids-1');
+
+        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $results = $repository->findByIds([$identityIdentifier1, $identityIdentifier2, $identityIdentifier3]);
+
+        $this->assertCount(3, $results);
+        $this->assertContainsOnlyInstancesOf(Identity::class, $results);
+
+        $resultIds = array_map(
+            fn (Identity $identity) => (string) $identity->identityIdentifier(),
+            $results
+        );
+        $this->assertContains((string) $identityIdentifier1, $resultIds);
+        $this->assertContains((string) $identityIdentifier2, $resultIds);
+        $this->assertContains((string) $identityIdentifier3, $resultIds);
+    }
+
+    /**
+     * 正常系: findByIdsで空の配列を渡した場合に空の配列を返すこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdsReturnsEmptyArrayWhenEmptyInput(): void
+    {
+        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $results = $repository->findByIds([]);
+
+        $this->assertIsArray($results);
+        $this->assertEmpty($results);
+    }
+
+    /**
+     * 正常系: findByIdsで存在しないIdentityは結果に含まれないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdsReturnsOnlyExistingIdentities(): void
+    {
+        $existingIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $nonExistingIdentityId = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        CreateIdentity::create($existingIdentityId, [
+            'email' => 'existing@example.com',
+            'username' => 'existing-user',
+        ]);
+
+        $repository = $this->app->make(IdentityRepositoryInterface::class);
+        $results = $repository->findByIds([$existingIdentityId, $nonExistingIdentityId]);
+
+        $this->assertCount(1, $results);
+        $this->assertSame((string) $existingIdentityId, (string) $results[0]->identityIdentifier());
+    }
 }

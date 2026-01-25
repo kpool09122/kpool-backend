@@ -40,6 +40,7 @@ return new class extends Migration
             $table->date('founded_in')->nullable()->comment('設立年');
             $table->text('description')->comment('概要')->default('');
             $table->text('status')->comment('公開ステータス');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->timestamps();
         });
 

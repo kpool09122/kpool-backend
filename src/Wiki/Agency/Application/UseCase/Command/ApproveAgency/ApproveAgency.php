@@ -79,6 +79,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
 
         $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::Approved);
+        $agency->setApproverIdentifier($input->principalIdentifier());
 
         $this->agencyRepository->save($agency);
 

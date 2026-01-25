@@ -7,6 +7,7 @@ namespace Application\Providers\Identity;
 use Application\Http\Client\OAuthHttpClient;
 use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
+use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
@@ -27,6 +28,7 @@ use Source\Identity\Infrastructure\Repository\OAuthStateRepository;
 use Source\Identity\Infrastructure\Repository\SignupSessionRepository;
 use Source\Identity\Infrastructure\Service\AuthCodeService;
 use Source\Identity\Infrastructure\Service\AuthService;
+use Source\Identity\Infrastructure\Service\CollaboratorNotificationService;
 use Source\Identity\Infrastructure\Service\DelegationValidator;
 use Source\Identity\Infrastructure\Service\SocialOAuthService;
 
@@ -40,6 +42,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(IdentityRepositoryInterface::class, IdentityRepository::class);
         $this->app->singleton(AuthServiceInterface::class, AuthService::class);
         $this->app->singleton(AuthCodeServiceInterface::class, AuthCodeService::class);
+        $this->app->singleton(CollaboratorNotificationServiceInterface::class, CollaboratorNotificationService::class);
         $this->app->singleton(DelegationValidatorInterface::class, DelegationValidator::class);
         $this->app->singleton(OAuthStateGeneratorInterface::class, OAuthStateGenerator::class);
         $this->app->singleton(OAuthStateRepositoryInterface::class, OAuthStateRepository::class);

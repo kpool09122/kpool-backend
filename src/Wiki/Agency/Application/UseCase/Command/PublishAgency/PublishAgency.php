@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -29,16 +30,17 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class PublishAgency implements PublishAgencyInterface
 {
     public function __construct(
-        private AgencyRepositoryInterface         $agencyRepository,
-        private DraftAgencyRepositoryInterface    $draftAgencyRepository,
-        private AgencyServiceInterface            $agencyService,
-        private AgencyFactoryInterface            $agencyFactory,
-        private AgencyHistoryRepositoryInterface  $agencyHistoryRepository,
-        private AgencyHistoryFactoryInterface     $agencyHistoryFactory,
-        private AgencySnapshotFactoryInterface    $agencySnapshotFactory,
-        private AgencySnapshotRepositoryInterface $agencySnapshotRepository,
-        private PrincipalRepositoryInterface      $principalRepository,
-        private PolicyEvaluatorInterface          $policyEvaluator,
+        private AgencyRepositoryInterface            $agencyRepository,
+        private DraftAgencyRepositoryInterface       $draftAgencyRepository,
+        private AgencyServiceInterface               $agencyService,
+        private AgencyFactoryInterface               $agencyFactory,
+        private AgencyHistoryRepositoryInterface     $agencyHistoryRepository,
+        private AgencyHistoryFactoryInterface        $agencyHistoryFactory,
+        private AgencySnapshotFactoryInterface       $agencySnapshotFactory,
+        private AgencySnapshotRepositoryInterface    $agencySnapshotRepository,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private ContributionPointServiceInterface    $contributionPointService,
     ) {
     }
 
@@ -125,6 +127,19 @@ readonly class PublishAgency implements PublishAgencyInterface
             subjectName: $agency->name(),
         );
         $this->agencyHistoryRepository->save($history);
+
+        // Grant contribution points
+        $isNewCreation = $agency->publishedAgencyIdentifier() === null;
+        if ($agency->approverIdentifier() !== null) {
+            $this->contributionPointService->grantPoints(
+                editorIdentifier: $agency->editorIdentifier(),
+                approverIdentifier: $agency->approverIdentifier(),
+                mergerIdentifier: $agency->mergerIdentifier(),
+                resourceType: ResourceType::AGENCY,
+                resourceId: (string) $publishedAgency->agencyIdentifier(),
+                isNewCreation: $isNewCreation,
+            );
+        }
 
         $this->draftAgencyRepository->delete($agency);
 

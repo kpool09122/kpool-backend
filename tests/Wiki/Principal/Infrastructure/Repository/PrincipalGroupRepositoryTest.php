@@ -657,4 +657,70 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->assertTrue($result->hasRole(new RoleIdentifier($roleId1)));
         $this->assertTrue($result->hasRole(new RoleIdentifier($roleId2)));
     }
+
+    /**
+     * 正常系: RoleIdに紐づくPrincipalGroupを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByRole(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $principalGroupId1 = StrTestHelper::generateUuid();
+        $principalGroupId2 = StrTestHelper::generateUuid();
+        $principalGroupId3 = StrTestHelper::generateUuid();
+        $roleId = StrTestHelper::generateUuid();
+        $otherRoleId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateRole::create(new RoleIdentifier($roleId), ['name' => 'Target Role']);
+        CreateRole::create(new RoleIdentifier($otherRoleId), ['name' => 'Other Role']);
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId1),
+            new AccountIdentifier($accountId),
+            ['name' => 'Group 1']
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId2),
+            new AccountIdentifier($accountId),
+            ['name' => 'Group 2']
+        );
+        CreatePrincipalGroup::create(
+            new PrincipalGroupIdentifier($principalGroupId3),
+            new AccountIdentifier($accountId),
+            ['name' => 'Group 3']
+        );
+
+        // Group 1とGroup 2にはTarget Roleをアタッチ
+        // Group 3にはOther Roleをアタッチ（検索対象外）
+        \Illuminate\Support\Facades\DB::table('principal_group_role_attachments')->insert([
+            ['principal_group_id' => $principalGroupId1, 'role_id' => $roleId],
+            ['principal_group_id' => $principalGroupId2, 'role_id' => $roleId],
+            ['principal_group_id' => $principalGroupId3, 'role_id' => $otherRoleId],
+        ]);
+
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findByRole(new RoleIdentifier($roleId));
+
+        $this->assertCount(2, $result);
+        $names = array_map(static fn ($g) => $g->name(), $result);
+        $this->assertContains('Group 1', $names);
+        $this->assertContains('Group 2', $names);
+        $this->assertNotContains('Group 3', $names);
+    }
+
+    /**
+     * 正常系: 指定したRoleIdを持つPrincipalGroupが存在しない場合、空配列が返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByRoleWhenNotFound(): void
+    {
+        $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
+        $result = $repository->findByRole(new RoleIdentifier(StrTestHelper::generateUuid()));
+
+        $this->assertSame([], $result);
+    }
 }

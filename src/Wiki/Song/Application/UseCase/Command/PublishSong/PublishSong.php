@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\PublishSong;
 
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -29,16 +30,17 @@ use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 readonly class PublishSong implements PublishSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface         $songRepository,
-        private DraftSongRepositoryInterface    $draftSongRepository,
-        private SongServiceInterface            $songService,
-        private SongFactoryInterface            $songFactory,
-        private SongHistoryRepositoryInterface  $songHistoryRepository,
-        private SongHistoryFactoryInterface     $songHistoryFactory,
-        private SongSnapshotFactoryInterface    $songSnapshotFactory,
-        private SongSnapshotRepositoryInterface $songSnapshotRepository,
-        private PrincipalRepositoryInterface    $principalRepository,
-        private PolicyEvaluatorInterface $policyEvaluator,
+        private SongRepositoryInterface              $songRepository,
+        private DraftSongRepositoryInterface         $draftSongRepository,
+        private SongServiceInterface                 $songService,
+        private SongFactoryInterface                 $songFactory,
+        private SongHistoryRepositoryInterface       $songHistoryRepository,
+        private SongHistoryFactoryInterface          $songHistoryFactory,
+        private SongSnapshotFactoryInterface         $songSnapshotFactory,
+        private SongSnapshotRepositoryInterface      $songSnapshotRepository,
+        private PrincipalRepositoryInterface         $principalRepository,
+        private PolicyEvaluatorInterface             $policyEvaluator,
+        private ContributionPointServiceInterface    $contributionPointService,
     ) {
     }
 
@@ -136,6 +138,19 @@ readonly class PublishSong implements PublishSongInterface
             subjectName: $song->name(),
         );
         $this->songHistoryRepository->save($history);
+
+        // Grant contribution points
+        $isNewCreation = $song->publishedSongIdentifier() === null;
+        if ($song->approverIdentifier() !== null) {
+            $this->contributionPointService->grantPoints(
+                editorIdentifier: $song->editorIdentifier(),
+                approverIdentifier: $song->approverIdentifier(),
+                mergerIdentifier: $song->mergerIdentifier(),
+                resourceType: ResourceType::SONG,
+                resourceId: (string) $publishedSong->songIdentifier(),
+                isNewCreation: $isNewCreation,
+            );
+        }
 
         $this->draftSongRepository->delete($song);
 

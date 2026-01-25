@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property ?string $image_path
  * @property string $status
+ * @property ?string $approver_id
  */
 class DraftGroup extends Model
 {
@@ -39,5 +40,6 @@ class DraftGroup extends Model
         'description',
         'image_path',
         'status',
+        'approver_id',
     ];
 }

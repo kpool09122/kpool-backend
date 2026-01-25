@@ -320,4 +320,99 @@ class PrincipalRepositoryTest extends TestCase
         $this->assertIsArray($results);
         $this->assertEmpty($results);
     }
+
+    /**
+     * 正常系: findByIdsで複数のプリンシパルを取得できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
+    #[Group('useDb')]
+    public function testFindByIdsReturnsMultiplePrincipals(): void
+    {
+        $identityIdentifier1 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier1, [
+            'email' => 'findbyids1@example.com',
+            'username' => 'findbyids-identity-1',
+        ]);
+
+        $identityIdentifier2 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier2, [
+            'email' => 'findbyids2@example.com',
+            'username' => 'findbyids-identity-2',
+        ]);
+
+        $identityIdentifier3 = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier3, [
+            'email' => 'findbyids3@example.com',
+            'username' => 'findbyids-identity-3',
+        ]);
+
+        $principalIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier2 = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier3 = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        CreatePrincipal::create($principalIdentifier1, $identityIdentifier1);
+        CreatePrincipal::create($principalIdentifier2, $identityIdentifier2);
+        CreatePrincipal::create($principalIdentifier3, $identityIdentifier3);
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByIds([$principalIdentifier1, $principalIdentifier2, $principalIdentifier3]);
+
+        $this->assertCount(3, $results);
+        $this->assertContainsOnlyInstancesOf(Principal::class, $results);
+
+        $resultIds = array_map(
+            fn (Principal $principal) => (string) $principal->principalIdentifier(),
+            $results
+        );
+        $this->assertContains((string) $principalIdentifier1, $resultIds);
+        $this->assertContains((string) $principalIdentifier2, $resultIds);
+        $this->assertContains((string) $principalIdentifier3, $resultIds);
+    }
+
+    /**
+     * 正常系: findByIdsで空の配列を渡した場合に空の配列を返すこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdsReturnsEmptyArrayWhenEmptyInput(): void
+    {
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByIds([]);
+
+        $this->assertIsArray($results);
+        $this->assertEmpty($results);
+    }
+
+    /**
+     * 正常系: findByIdsで存在しないプリンシパルは結果に含まれないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws JsonException
+     */
+    #[Group('useDb')]
+    public function testFindByIdsReturnsOnlyExistingPrincipals(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        CreateIdentity::create($identityIdentifier, [
+            'email' => 'existing-principal@example.com',
+            'username' => 'existing-principal-user',
+        ]);
+
+        $existingPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $nonExistingPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        CreatePrincipal::create($existingPrincipalId, $identityIdentifier);
+
+        $repository = $this->app->make(PrincipalRepositoryInterface::class);
+        $results = $repository->findByIds([$existingPrincipalId, $nonExistingPrincipalId]);
+
+        $this->assertCount(1, $results);
+        $this->assertSame((string) $existingPrincipalId, (string) $results[0]->principalIdentifier());
+    }
 }

@@ -15,6 +15,7 @@ use Source\Wiki\Group\Domain\Repository\GroupHistoryRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
+use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -29,16 +30,17 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class PublishGroup implements PublishGroupInterface
 {
     public function __construct(
-        private GroupRepositoryInterface         $groupRepository,
-        private GroupServiceInterface            $groupService,
-        private GroupFactoryInterface            $groupFactory,
-        private GroupHistoryRepositoryInterface  $groupHistoryRepository,
-        private GroupHistoryFactoryInterface     $groupHistoryFactory,
-        private GroupSnapshotFactoryInterface    $groupSnapshotFactory,
-        private GroupSnapshotRepositoryInterface $groupSnapshotRepository,
-        private PrincipalRepositoryInterface     $principalRepository,
-        private DraftGroupRepositoryInterface    $draftGroupRepository,
-        private PolicyEvaluatorInterface         $policyEvaluator,
+        private GroupRepositoryInterface            $groupRepository,
+        private GroupServiceInterface               $groupService,
+        private GroupFactoryInterface               $groupFactory,
+        private GroupHistoryRepositoryInterface     $groupHistoryRepository,
+        private GroupHistoryFactoryInterface        $groupHistoryFactory,
+        private GroupSnapshotFactoryInterface       $groupSnapshotFactory,
+        private GroupSnapshotRepositoryInterface    $groupSnapshotRepository,
+        private PrincipalRepositoryInterface        $principalRepository,
+        private DraftGroupRepositoryInterface       $draftGroupRepository,
+        private PolicyEvaluatorInterface            $policyEvaluator,
+        private ContributionPointServiceInterface   $contributionPointService,
     ) {
     }
 
@@ -125,6 +127,19 @@ readonly class PublishGroup implements PublishGroupInterface
             subjectName: $group->name(),
         );
         $this->groupHistoryRepository->save($history);
+
+        // Grant contribution points
+        $isNewCreation = $group->publishedGroupIdentifier() === null;
+        if ($group->approverIdentifier() !== null) {
+            $this->contributionPointService->grantPoints(
+                editorIdentifier: $group->editorIdentifier(),
+                approverIdentifier: $group->approverIdentifier(),
+                mergerIdentifier: $group->mergerIdentifier(),
+                resourceType: ResourceType::GROUP,
+                resourceId: (string) $publishedGroup->groupIdentifier(),
+                isNewCreation: $isNewCreation,
+            );
+        }
 
         $this->draftGroupRepository->delete($group);
 

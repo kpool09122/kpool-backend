@@ -52,7 +52,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             new SongIdentifier($draftModel->id),
             $draftModel->published_id ? new SongIdentifier($draftModel->published_id) : null,
             new TranslationSetIdentifier($draftModel->translation_set_identifier),
-            new PrincipalIdentifier($draftModel->editor_id),
+            $draftModel->editor_id ? new PrincipalIdentifier($draftModel->editor_id) : null,
             Language::from($draftModel->language),
             new SongName($draftModel->name),
             $draftModel->agency_id ? new AgencyIdentifier($draftModel->agency_id) : null,
@@ -63,6 +63,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             $releaseDate,
             new Overview($draftModel->overview),
             ApprovalStatus::from($draftModel->status),
+            $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
         );
     }
 
@@ -81,7 +82,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                     ? (string) $song->publishedSongIdentifier()
                     : null,
                 'translation_set_identifier' => (string) $song->translationSetIdentifier(),
-                'editor_id' => (string) $song->editorIdentifier(),
+                'editor_id' => $song->editorIdentifier() ? (string) $song->editorIdentifier() : null,
                 'language' => $song->language()->value,
                 'name' => (string) $song->name(),
                 'agency_id' => $song->agencyIdentifier() ? (string) $song->agencyIdentifier() : null,
@@ -90,6 +91,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 'release_date' => $releaseDateValue,
                 'overview' => (string) $song->overView(),
                 'status' => $song->status()->value,
+                'approver_id' => $song->approverIdentifier() ? (string) $song->approverIdentifier() : null,
             ],
         );
 
@@ -135,7 +137,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 new SongIdentifier($model->id),
                 $model->published_id ? new SongIdentifier($model->published_id) : null,
                 new TranslationSetIdentifier($model->translation_set_identifier),
-                new PrincipalIdentifier($model->editor_id),
+                $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
                 Language::from($model->language),
                 new SongName($model->name),
                 $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
@@ -146,6 +148,7 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 $releaseDate,
                 new Overview($model->overview),
                 ApprovalStatus::from($model->status),
+                $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
             );
         }
 

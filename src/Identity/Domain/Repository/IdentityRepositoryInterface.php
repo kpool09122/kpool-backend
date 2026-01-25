@@ -20,6 +20,12 @@ interface IdentityRepositoryInterface
 
     public function findById(IdentityIdentifier $identifier): ?Identity;
 
+    /**
+     * @param IdentityIdentifier[] $identifiers
+     * @return Identity[]
+     */
+    public function findByIds(array $identifiers): array;
+
     public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Identity;
 
     /**
