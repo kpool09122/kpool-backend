@@ -150,6 +150,9 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once()
             ->with(ResourceType::TALENT, Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId));
+        $videoLinkRepository->shouldReceive('findByResourceAndUrls')
+            ->once()
+            ->andReturn([]);
         $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
             ->once()
             ->with(ResourceType::TALENT, Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId))
@@ -300,6 +303,9 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once();
+        $videoLinkRepository->shouldReceive('findByResourceAndUrls')
+            ->once()
+            ->andReturn([]);
         $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
             ->once()
             ->andReturn(null);
@@ -390,6 +396,9 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once();
+        $videoLinkRepository->shouldReceive('findByResourceAndUrls')
+            ->once()
+            ->andReturn([]);
         $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
             ->once()
             ->andReturn(null);
@@ -563,6 +572,9 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once();
+        $videoLinkRepository->shouldReceive('findByResourceAndUrls')
+            ->once()
+            ->andReturn([]);
         $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
             ->once()
             ->andReturn(null);
@@ -590,6 +602,126 @@ class CollectVideoLinksTest extends TestCase
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
         $this->assertSame($resourceId, (string) $output->resourceIdentifier);
         $this->assertSame(1, $output->collectedCount);
+    }
+
+    /**
+     * 正常系：既に登録されているURLは重複登録されないこと.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testProcessSkipsDuplicateUrls(): void
+    {
+        $statusId = StrTestHelper::generateUuid();
+        $resourceId = StrTestHelper::generateUuid();
+
+        $status = new VideoLinkCollectionStatus(
+            new VideoLinkCollectionStatusIdentifier($statusId),
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+            null,
+            new DateTimeImmutable(),
+        );
+
+        $talent = $this->createDummyTalent($resourceId, 'テストタレント');
+
+        $existingUrl = 'https://www.youtube.com/watch?v=existing';
+        $newUrl = 'https://www.youtube.com/watch?v=new';
+
+        $videos = [
+            new YouTubeVideoInfo(
+                videoId: 'existing',
+                title: 'Existing Video',
+                url: $existingUrl,
+                thumbnailUrl: 'https://i.ytimg.com/vi/existing/hqdefault.jpg',
+                videoUsage: VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
+                publishedAt: new DateTimeImmutable(),
+            ),
+            new YouTubeVideoInfo(
+                videoId: 'new',
+                title: 'New Video',
+                url: $newUrl,
+                thumbnailUrl: 'https://i.ytimg.com/vi/new/hqdefault.jpg',
+                videoUsage: VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
+                publishedAt: new DateTimeImmutable(),
+            ),
+        ];
+
+        $existingVideoLink = new VideoLink(
+            new VideoLinkIdentifier(StrTestHelper::generateUuid()),
+            ResourceType::TALENT,
+            new ResourceIdentifier($resourceId),
+            new ExternalContentLink($existingUrl),
+            VideoUsage::MUSIC_VIDEO,
+            'Existing Video',
+            null,
+            null,
+            1,
+            new DateTimeImmutable(),
+        );
+
+        $collectionStatusRepository = Mockery::mock(VideoLinkCollectionStatusRepositoryInterface::class);
+        $collectionStatusRepository->shouldReceive('findNextTargetResource')
+            ->once()
+            ->andReturn($status);
+        $collectionStatusRepository->shouldReceive('save')
+            ->once();
+
+        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
+        $talentRepository->shouldReceive('findById')
+            ->once()
+            ->andReturn($talent);
+
+        $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
+        $youtubeSearchService->shouldReceive('searchVideos')
+            ->once()
+            ->andReturn($videos);
+
+        $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
+        $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
+            ->once();
+        $videoLinkRepository->shouldReceive('findByResourceAndUrls')
+            ->once()
+            ->with(
+                ResourceType::TALENT,
+                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                [$existingUrl, $newUrl],
+            )
+            ->andReturn([$existingVideoLink]);
+        $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
+            ->once()
+            ->andReturn(null);
+        $videoLinkRepository->shouldReceive('save')
+            ->once();
+
+        $videoLinkFactory = Mockery::mock(VideoLinkFactoryInterface::class);
+        $videoLinkFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                ResourceType::TALENT,
+                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (ExternalContentLink $url): bool => (string) $url === $newUrl),
+                VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
+                'New Video',
+                1,
+            )
+            ->andReturn($this->createDummyVideoLink($resourceId, 1));
+
+        $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
+        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
+        $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
+        $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
+        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
+        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+
+        $useCase = $this->app->make(CollectVideoLinksInterface::class);
+        $output = new CollectVideoLinksOutput();
+        $useCase->process($output);
+
+        $this->assertTrue($output->processed);
+        $this->assertSame(ResourceType::TALENT, $output->resourceType);
+        $this->assertSame(2, $output->collectedCount);
     }
 
     private function createDummyTalent(string $resourceId, string $name): Talent

@@ -93,25 +93,39 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             $status->resourceIdentifier(),
         );
 
+        $videoUrls = array_map(static fn ($video) => $video->url(), $videos);
+        $existingVideoLinks = $this->videoLinkRepository->findByResourceAndUrls(
+            $status->resourceType(),
+            $status->resourceIdentifier(),
+            $videoUrls,
+        );
+        $existingUrls = array_map(static fn ($videoLink) => (string) $videoLink->url(), $existingVideoLinks);
+
         $lastVideoLink = $this->videoLinkRepository->findByResourceWithMaxDisplayOrder(
             $status->resourceType(),
             $status->resourceIdentifier(),
         );
         $maxDisplayOrder = $lastVideoLink?->displayOrder() ?? 0;
 
-        foreach ($videos as $index => $video) {
+        $savedCount = 0;
+        foreach ($videos as $video) {
+            if (in_array($video->url(), $existingUrls, true)) {
+                continue;
+            }
+
             $videoLink = $this->videoLinkFactory->create(
                 $status->resourceType(),
                 $status->resourceIdentifier(),
                 new ExternalContentLink($video->url()),
                 $video->videoUsage(),
                 $video->title(),
-                $maxDisplayOrder + $index + 1,
+                $maxDisplayOrder + $savedCount + 1,
             );
             $videoLink->setThumbnailUrl($video->thumbnailUrl());
             $videoLink->setPublishedAt($video->publishedAt());
 
             $this->videoLinkRepository->save($videoLink);
+            $savedCount++;
         }
 
         $status->markCollected(new DateTimeImmutable());
