@@ -272,6 +272,72 @@ class TalentTest extends TestCase
         $this->assertNotSame($accountIdentifier, $talent->ownerAccountIdentifier());
     }
 
+    /**
+     * 正常系：SourceEditorIdentifierのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetSourceEditorIdentifier(): void
+    {
+        $talentInfo = $this->createDummyTalent();
+
+        // 初期値はnull
+        $this->assertNull($talentInfo->talent->sourceEditorIdentifier());
+
+        // 値を設定
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $talentInfo->talent->setSourceEditorIdentifier($sourceEditorIdentifier);
+        $this->assertSame($sourceEditorIdentifier, $talentInfo->talent->sourceEditorIdentifier());
+
+        // nullを設定
+        $talentInfo->talent->setSourceEditorIdentifier(null);
+        $this->assertNull($talentInfo->talent->sourceEditorIdentifier());
+    }
+
+    /**
+     * 正常系：TranslatedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetTranslatedAt(): void
+    {
+        $talentInfo = $this->createDummyTalent();
+
+        // 初期値はnull
+        $this->assertNull($talentInfo->talent->translatedAt());
+
+        // 値を設定
+        $translatedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $talentInfo->talent->setTranslatedAt($translatedAt);
+        $this->assertSame($translatedAt, $talentInfo->talent->translatedAt());
+
+        // nullを設定
+        $talentInfo->talent->setTranslatedAt(null);
+        $this->assertNull($talentInfo->talent->translatedAt());
+    }
+
+    /**
+     * 正常系：ApprovedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetApprovedAt(): void
+    {
+        $talentInfo = $this->createDummyTalent();
+
+        // 初期値はnull
+        $this->assertNull($talentInfo->talent->approvedAt());
+
+        // 値を設定
+        $approvedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $talentInfo->talent->setApprovedAt($approvedAt);
+        $this->assertSame($approvedAt, $talentInfo->talent->approvedAt());
+
+        // nullを設定
+        $talentInfo->talent->setApprovedAt(null);
+        $this->assertNull($talentInfo->talent->approvedAt());
+    }
+
     private function createDummyTalent(
         ?bool $isOfficial = null,
     ): TalentTestData {

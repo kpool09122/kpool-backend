@@ -98,6 +98,9 @@ final class TalentRepository implements TalentRepositoryInterface
                 'approver_id' => $talent->approverIdentifier() ? (string) $talent->approverIdentifier() : null,
                 'merger_id' => $talent->mergerIdentifier() ? (string) $talent->mergerIdentifier() : null,
                 'merged_at' => $talent->mergedAt(),
+                'source_editor_id' => $talent->sourceEditorIdentifier() ? (string) $talent->sourceEditorIdentifier() : null,
+                'translated_at' => $talent->translatedAt(),
+                'approved_at' => $talent->approvedAt(),
                 'version' => $talent->version()->value(),
                 'is_official' => $talent->isOfficial(),
                 'owner_account_id' => $talent->ownerAccountIdentifier() ? (string) $talent->ownerAccountIdentifier() : null,
@@ -135,6 +138,9 @@ final class TalentRepository implements TalentRepositoryInterface
             $talentModel->approver_id ? new PrincipalIdentifier($talentModel->approver_id) : null,
             (bool) $talentModel->is_official,
             $talentModel->owner_account_id ? new AccountIdentifier($talentModel->owner_account_id) : null,
+            $talentModel->source_editor_id ? new PrincipalIdentifier($talentModel->source_editor_id) : null,
+            $talentModel->translated_at?->toDateTimeImmutable(),
+            $talentModel->approved_at?->toDateTimeImmutable(),
         );
     }
 }

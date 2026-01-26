@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -66,9 +67,12 @@ readonly class TranslateTalent implements TranslateTalentInterface
         $languages = Language::allExcept($talent->language());
 
         $talentDrafts = [];
+        $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
             $talentDraft = $this->translationService->translateTalent($talent, $language);
+            $talentDraft->setSourceEditorIdentifier($talent->editorIdentifier());
+            $talentDraft->setTranslatedAt($translatedAt);
             $talentDrafts[] = $talentDraft;
             $this->draftTalentRepository->save($talentDraft);
         }

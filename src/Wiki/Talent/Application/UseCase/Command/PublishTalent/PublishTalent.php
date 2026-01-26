@@ -124,6 +124,9 @@ readonly class PublishTalent implements PublishTalentInterface
         $publishedTalent->setApproverIdentifier($talent->approverIdentifier());
         $publishedTalent->setMergerIdentifier($talent->mergerIdentifier());
         $publishedTalent->setMergedAt(new DateTimeImmutable());
+        $publishedTalent->setSourceEditorIdentifier($talent->sourceEditorIdentifier());
+        $publishedTalent->setTranslatedAt($talent->translatedAt());
+        $publishedTalent->setApprovedAt($talent->approvedAt());
 
         $this->talentRepository->save($publishedTalent);
 

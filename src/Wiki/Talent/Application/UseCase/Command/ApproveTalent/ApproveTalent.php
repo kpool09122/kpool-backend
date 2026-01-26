@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\ApproveTalent;
 
+use DateTimeImmutable;
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -86,6 +87,7 @@ readonly class ApproveTalent implements ApproveTalentInterface
         $previousStatus = $talent->status();
         $talent->setStatus(ApprovalStatus::Approved);
         $talent->setApproverIdentifier($input->principalIdentifier());
+        $talent->setApprovedAt(new DateTimeImmutable());
 
         $this->draftTalentRepository->save($talent);
 
