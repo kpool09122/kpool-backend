@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Application\UseCase\Command\PublishTalent;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -119,6 +120,10 @@ readonly class PublishTalent implements PublishTalentInterface
         $publishedTalent->setGroupIdentifiers($talent->groupIdentifiers());
         $publishedTalent->setBirthday($talent->birthday());
         $publishedTalent->setCareer($talent->career());
+        $publishedTalent->setEditorIdentifier($talent->editorIdentifier());
+        $publishedTalent->setApproverIdentifier($talent->approverIdentifier());
+        $publishedTalent->setMergerIdentifier($talent->mergerIdentifier());
+        $publishedTalent->setMergedAt(new DateTimeImmutable());
 
         $this->talentRepository->save($publishedTalent);
 

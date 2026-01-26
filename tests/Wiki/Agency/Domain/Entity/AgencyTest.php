@@ -43,6 +43,8 @@ class AgencyTest extends TestCase
         $this->assertSame($createAgency->foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$createAgency->description, (string)$agency->description());
         $this->assertFalse($agency->isOfficial());
+        $this->assertSame((string)$createAgency->editorIdentifier, (string)$agency->editorIdentifier());
+        $this->assertSame((string) $createAgency->approverIdentifier, (string)$agency->approverIdentifier());
         $this->assertSame($createAgency->ownerIdentifier, $agency->ownerAccountIdentifier());
         $this->assertSame($createAgency->version->value(), $agency->version()->value());
 
@@ -349,6 +351,8 @@ DESCRIPTION
 DESCRIPTION
         );
         $version = new Version(1);
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $isOfficial ??= false;
         $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
 
@@ -366,6 +370,8 @@ DESCRIPTION
             $version,
             null,
             null,
+            $editorIdentifier,
+            $approverIdentifier,
             $isOfficial,
             $ownerIdentifier,
         );
@@ -382,6 +388,8 @@ DESCRIPTION
             foundedIn: $foundedIn,
             description: $description,
             version: $version,
+            editorIdentifier: $editorIdentifier,
+            approverIdentifier: $approverIdentifier,
             isOfficial: $isOfficial,
             ownerIdentifier: $ownerIdentifier,
             agency: $agency,
@@ -405,8 +413,10 @@ readonly class AgencyTestData
         public FoundedIn                $foundedIn,
         public Description              $description,
         public Version                  $version,
+        public ?PrincipalIdentifier     $editorIdentifier,
+        public ?PrincipalIdentifier     $approverIdentifier,
         public bool                     $isOfficial,
-        public ?AccountIdentifier        $ownerIdentifier,
+        public ?AccountIdentifier       $ownerIdentifier,
         public Agency                   $agency,
     ) {
     }

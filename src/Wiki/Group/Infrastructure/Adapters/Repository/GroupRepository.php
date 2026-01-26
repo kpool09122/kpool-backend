@@ -14,6 +14,7 @@ use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
@@ -66,6 +67,10 @@ final class GroupRepository implements GroupRepositoryInterface
                'normalized_name' => $group->normalizedName(),
                'agency_id' => $group->agencyIdentifier() ? (string)$group->agencyIdentifier() : null,
                'description' => (string)$group->description(),
+               'editor_id' => $group->editorIdentifier() ? (string) $group->editorIdentifier() : null,
+               'approver_id' => $group->approverIdentifier() ? (string) $group->approverIdentifier() : null,
+               'merger_id' => $group->mergerIdentifier() ? (string) $group->mergerIdentifier() : null,
+               'merged_at' => $group->mergedAt(),
                'version' => $group->version()->value(),
                'is_official' => $group->isOfficial(),
                'owner_account_id' => $group->ownerAccountIdentifier() ? (string) $group->ownerAccountIdentifier() : null,
@@ -85,8 +90,10 @@ final class GroupRepository implements GroupRepositoryInterface
             $model->agency_id ? new AgencyIdentifier($model->agency_id) : null,
             new Description($model->description),
             new Version($model->version),
-            null,
-            null,
+            $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
+            $model->merged_at?->toDateTimeImmutable(),
+            $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
+            $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
             (bool) $model->is_official,
             $model->owner_account_id ? new AccountIdentifier($model->owner_account_id) : null,
         );

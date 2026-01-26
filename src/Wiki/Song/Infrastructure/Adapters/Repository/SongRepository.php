@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -81,6 +82,10 @@ final class SongRepository implements SongRepositoryInterface
                 'composer' => (string) $song->composer(),
                 'release_date' => $releaseDateValue,
                 'overview' => (string) $song->overView(),
+                'editor_id' => $song->editorIdentifier() ? (string) $song->editorIdentifier() : null,
+                'approver_id' => $song->approverIdentifier() ? (string) $song->approverIdentifier() : null,
+                'merger_id' => $song->mergerIdentifier() ? (string) $song->mergerIdentifier() : null,
+                'merged_at' => $song->mergedAt(),
                 'version' => $song->version()->value(),
                 'is_official' => $song->isOfficial(),
                 'owner_account_id' => $song->ownerAccountIdentifier() ? (string) $song->ownerAccountIdentifier() : null,
@@ -122,8 +127,10 @@ final class SongRepository implements SongRepositoryInterface
             $releaseDate,
             new Overview($songModel->overview),
             new Version($songModel->version),
-            null,
-            null,
+            $songModel->merger_id ? new PrincipalIdentifier($songModel->merger_id) : null,
+            $songModel->merged_at?->toDateTimeImmutable(),
+            $songModel->editor_id ? new PrincipalIdentifier($songModel->editor_id) : null,
+            $songModel->approver_id ? new PrincipalIdentifier($songModel->approver_id) : null,
             (bool) $songModel->is_official,
             $songModel->owner_account_id ? new AccountIdentifier($songModel->owner_account_id) : null,
         );

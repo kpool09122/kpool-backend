@@ -33,6 +33,8 @@ class Agency
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
+        private ?PrincipalIdentifier              $editorIdentifier = null,
+        private ?PrincipalIdentifier              $approverIdentifier = null,
         private bool                              $isOfficial = false,
         private ?AccountIdentifier                $ownerAccountIdentifier = null,
     ) {
@@ -156,6 +158,26 @@ class Agency
     public function setMergedAt(?DateTimeImmutable $mergedAt): void
     {
         $this->mergedAt = $mergedAt;
+    }
+
+    public function editorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->editorIdentifier;
+    }
+
+    public function setEditorIdentifier(?PrincipalIdentifier $editorIdentifier): void
+    {
+        $this->editorIdentifier = $editorIdentifier;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function setApproverIdentifier(?PrincipalIdentifier $approverIdentifier): void
+    {
+        $this->approverIdentifier = $approverIdentifier;
     }
 
     public function isOfficial(): bool

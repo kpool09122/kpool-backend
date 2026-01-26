@@ -35,6 +35,8 @@ class Talent
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
+     * @param PrincipalIdentifier|null $editorIdentifier
+     * @param PrincipalIdentifier|null $approverIdentifier
      * @param bool $isOfficial
      * @param AccountIdentifier|null $ownerAccountIdentifier
      */
@@ -52,6 +54,8 @@ class Talent
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
+        private ?PrincipalIdentifier              $editorIdentifier = null,
+        private ?PrincipalIdentifier              $approverIdentifier = null,
         private bool                              $isOfficial = false,
         private ?AccountIdentifier                $ownerAccountIdentifier = null,
     ) {
@@ -182,6 +186,26 @@ class Talent
     public function setMergedAt(?DateTimeImmutable $mergedAt): void
     {
         $this->mergedAt = $mergedAt;
+    }
+
+    public function editorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->editorIdentifier;
+    }
+
+    public function setEditorIdentifier(?PrincipalIdentifier $editorIdentifier): void
+    {
+        $this->editorIdentifier = $editorIdentifier;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function setApproverIdentifier(?PrincipalIdentifier $approverIdentifier): void
+    {
+        $this->approverIdentifier = $approverIdentifier;
     }
 
     public function isOfficial(): bool

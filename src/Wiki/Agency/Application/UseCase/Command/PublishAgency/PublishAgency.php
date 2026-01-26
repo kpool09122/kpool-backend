@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Command\PublishAgency;
 
+use DateTimeImmutable;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
 use Source\Wiki\Agency\Domain\Entity\Agency;
@@ -112,6 +113,10 @@ readonly class PublishAgency implements PublishAgencyInterface
         $publishedAgency->setNormalizedCEO($agency->normalizedCEO());
         $publishedAgency->setDescription($agency->description());
         $publishedAgency->setFoundedIn($agency->foundedIn());
+        $publishedAgency->setEditorIdentifier($agency->editorIdentifier());
+        $publishedAgency->setApproverIdentifier($agency->approverIdentifier());
+        $publishedAgency->setMergerIdentifier($agency->mergerIdentifier());
+        $publishedAgency->setMergedAt(new DateTimeImmutable());
 
         $this->agencyRepository->save($publishedAgency);
 

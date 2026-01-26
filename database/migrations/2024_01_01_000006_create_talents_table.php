@@ -24,6 +24,10 @@ return new class extends Migration
             $table->string('image_link', 255)->nullable()->comment('画像パス');
             $table->boolean('is_official')->default(false)->comment('Official flag');
             $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
+            $table->uuid('editor_id')->nullable()->comment('編集者ID');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
+            $table->uuid('merger_id')->nullable()->comment('マージ者ID');
+            $table->dateTime('merged_at')->nullable()->comment('マージ日時');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
             $table->softDeletes();

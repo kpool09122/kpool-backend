@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
@@ -42,8 +43,10 @@ class AgencyRepository implements AgencyRepositoryInterface
             $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
             new Description($agencyModel->description),
             new Version($agencyModel->version),
-            null,
-            null,
+            $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
+            $agencyModel->merged_at?->toDateTimeImmutable(),
+            $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
+            $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
             (bool) $agencyModel->is_official,
             $agencyModel->owner_account_id ? new AccountIdentifier($agencyModel->owner_account_id) : null,
         );
@@ -78,8 +81,10 @@ class AgencyRepository implements AgencyRepositoryInterface
                 $agencyModel->founded_in ? new FoundedIn($agencyModel->founded_in->toDateTimeImmutable()) : null,
                 new Description($agencyModel->description),
                 new Version($agencyModel->version),
-                null,
-                null,
+                $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
+                $agencyModel->merged_at?->toDateTimeImmutable(),
+                $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
+                $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
                 (bool) $agencyModel->is_official,
                 $agencyModel->owner_account_id ? new AccountIdentifier($agencyModel->owner_account_id) : null,
             );
@@ -102,6 +107,10 @@ class AgencyRepository implements AgencyRepositoryInterface
                 'normalized_CEO' => $agency->normalizedCEO(),
                 'founded_in' => $agency->foundedIn(),
                 'description' => (string)$agency->description(),
+                'editor_id' => $agency->editorIdentifier() ? (string) $agency->editorIdentifier() : null,
+                'approver_id' => $agency->approverIdentifier() ? (string) $agency->approverIdentifier() : null,
+                'merger_id' => $agency->mergerIdentifier() ? (string) $agency->mergerIdentifier() : null,
+                'merged_at' => $agency->mergedAt(),
                 'version' => $agency->version()->value(),
                 'is_official' => $agency->isOfficial(),
                 'owner_account_id' => $agency->ownerAccountIdentifier() ? (string) $agency->ownerAccountIdentifier() : null,
