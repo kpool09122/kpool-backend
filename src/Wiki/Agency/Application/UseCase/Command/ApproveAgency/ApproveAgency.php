@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency;
 
+use DateTimeImmutable;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Exception\ExistsApprovedButNotTranslatedAgencyException;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
@@ -80,6 +81,7 @@ readonly class ApproveAgency implements ApproveAgencyInterface
         $previousStatus = $agency->status();
         $agency->setStatus(ApprovalStatus::Approved);
         $agency->setApproverIdentifier($input->principalIdentifier());
+        $agency->setApprovedAt(new DateTimeImmutable());
 
         $this->agencyRepository->save($agency);
 

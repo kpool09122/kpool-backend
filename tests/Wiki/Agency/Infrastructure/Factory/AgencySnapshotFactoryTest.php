@@ -17,6 +17,7 @@ use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencySnapshotFactory;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -55,6 +56,13 @@ class AgencySnapshotFactoryTest extends TestCase
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('JYP Entertainment is a South Korean entertainment company.');
         $version = new Version(3);
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergedAt = new DateTimeImmutable('2024-01-02 00:00:00');
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $translatedAt = new DateTimeImmutable('2024-01-03 00:00:00');
+        $approvedAt = new DateTimeImmutable('2024-01-04 00:00:00');
 
         $agency = new Agency(
             $agencyIdentifier,
@@ -68,6 +76,15 @@ class AgencySnapshotFactoryTest extends TestCase
             $foundedIn,
             $description,
             $version,
+            $mergerIdentifier,
+            $mergedAt,
+            $editorIdentifier,
+            $approverIdentifier,
+            false,
+            null,
+            $sourceEditorIdentifier,
+            $translatedAt,
+            $approvedAt,
         );
 
         $factory = $this->app->make(AgencySnapshotFactoryInterface::class);
@@ -85,6 +102,13 @@ class AgencySnapshotFactoryTest extends TestCase
         $this->assertSame((string)$description, (string)$snapshot->description());
         $this->assertSame($version->value(), $snapshot->version()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
+        $this->assertSame((string)$editorIdentifier, (string)$snapshot->editorIdentifier());
+        $this->assertSame((string)$approverIdentifier, (string)$snapshot->approverIdentifier());
+        $this->assertSame((string)$mergerIdentifier, (string)$snapshot->mergerIdentifier());
+        $this->assertSame($mergedAt->format('Y-m-d H:i:s'), $snapshot->mergedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$sourceEditorIdentifier, (string)$snapshot->sourceEditorIdentifier());
+        $this->assertSame($translatedAt->format('Y-m-d H:i:s'), $snapshot->translatedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame($approvedAt->format('Y-m-d H:i:s'), $snapshot->approvedAt()->format('Y-m-d H:i:s'));
     }
 
     /**

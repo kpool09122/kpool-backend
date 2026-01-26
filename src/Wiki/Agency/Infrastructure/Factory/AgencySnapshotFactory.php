@@ -34,6 +34,13 @@ readonly class AgencySnapshotFactory implements AgencySnapshotFactoryInterface
             $agency->description(),
             $agency->version(),
             new DateTimeImmutable('now'),
+            $agency->editorIdentifier(),
+            $agency->approverIdentifier(),
+            $agency->mergerIdentifier(),
+            $agency->mergedAt(),
+            $agency->sourceEditorIdentifier(),
+            $agency->translatedAt(),
+            $agency->approvedAt(),
         );
     }
 }

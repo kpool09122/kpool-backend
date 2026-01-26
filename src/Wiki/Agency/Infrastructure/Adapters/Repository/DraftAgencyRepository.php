@@ -46,6 +46,10 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             ApprovalStatus::from($agencyModel->status),
             $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
             $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
+            null,
+            $agencyModel->source_editor_id ? new PrincipalIdentifier($agencyModel->source_editor_id) : null,
+            $agencyModel->translated_at?->toDateTimeImmutable(),
+            $agencyModel->approved_at?->toDateTimeImmutable(),
         );
     }
 
@@ -70,6 +74,9 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 'status' => $agency->status()->value,
                 'approver_id' => $agency->approverIdentifier() ? (string)$agency->approverIdentifier() : null,
                 'merger_id' => $agency->mergerIdentifier() ? (string)$agency->mergerIdentifier() : null,
+                'source_editor_id' => $agency->sourceEditorIdentifier() ? (string)$agency->sourceEditorIdentifier() : null,
+                'translated_at' => $agency->translatedAt(),
+                'approved_at' => $agency->approvedAt(),
             ]
         );
     }
@@ -109,6 +116,10 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 ApprovalStatus::from($agencyModel->status),
                 $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
                 $agencyModel->merger_id ? new PrincipalIdentifier($agencyModel->merger_id) : null,
+                null,
+                $agencyModel->source_editor_id ? new PrincipalIdentifier($agencyModel->source_editor_id) : null,
+                $agencyModel->translated_at?->toDateTimeImmutable(),
+                $agencyModel->approved_at?->toDateTimeImmutable(),
             );
         })->toArray();
     }

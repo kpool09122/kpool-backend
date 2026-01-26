@@ -37,6 +37,9 @@ class Agency
         private ?PrincipalIdentifier              $approverIdentifier = null,
         private bool                              $isOfficial = false,
         private ?AccountIdentifier                $ownerAccountIdentifier = null,
+        private ?PrincipalIdentifier              $sourceEditorIdentifier = null,
+        private ?DateTimeImmutable                $translatedAt = null,
+        private ?DateTimeImmutable                $approvedAt = null,
     ) {
     }
 
@@ -198,5 +201,35 @@ class Agency
 
         $this->isOfficial = true;
         $this->ownerAccountIdentifier = $ownerAccountIdentifier;
+    }
+
+    public function sourceEditorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->sourceEditorIdentifier;
+    }
+
+    public function setSourceEditorIdentifier(?PrincipalIdentifier $sourceEditorIdentifier): void
+    {
+        $this->sourceEditorIdentifier = $sourceEditorIdentifier;
+    }
+
+    public function translatedAt(): ?DateTimeImmutable
+    {
+        return $this->translatedAt;
+    }
+
+    public function setTranslatedAt(?DateTimeImmutable $translatedAt): void
+    {
+        $this->translatedAt = $translatedAt;
+    }
+
+    public function approvedAt(): ?DateTimeImmutable
+    {
+        return $this->approvedAt;
+    }
+
+    public function setApprovedAt(?DateTimeImmutable $approvedAt): void
+    {
+        $this->approvedAt = $approvedAt;
     }
 }

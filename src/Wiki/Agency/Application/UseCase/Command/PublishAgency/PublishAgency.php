@@ -117,6 +117,9 @@ readonly class PublishAgency implements PublishAgencyInterface
         $publishedAgency->setApproverIdentifier($agency->approverIdentifier());
         $publishedAgency->setMergerIdentifier($agency->mergerIdentifier());
         $publishedAgency->setMergedAt(new DateTimeImmutable());
+        $publishedAgency->setSourceEditorIdentifier($agency->sourceEditorIdentifier());
+        $publishedAgency->setTranslatedAt($agency->translatedAt());
+        $publishedAgency->setApprovedAt($agency->approvedAt());
 
         $this->agencyRepository->save($publishedAgency);
 

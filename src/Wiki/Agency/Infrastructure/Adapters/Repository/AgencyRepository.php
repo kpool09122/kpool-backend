@@ -49,6 +49,9 @@ class AgencyRepository implements AgencyRepositoryInterface
             $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
             (bool) $agencyModel->is_official,
             $agencyModel->owner_account_id ? new AccountIdentifier($agencyModel->owner_account_id) : null,
+            $agencyModel->source_editor_id ? new PrincipalIdentifier($agencyModel->source_editor_id) : null,
+            $agencyModel->translated_at?->toDateTimeImmutable(),
+            $agencyModel->approved_at?->toDateTimeImmutable(),
         );
     }
 
@@ -87,6 +90,9 @@ class AgencyRepository implements AgencyRepositoryInterface
                 $agencyModel->approver_id ? new PrincipalIdentifier($agencyModel->approver_id) : null,
                 (bool) $agencyModel->is_official,
                 $agencyModel->owner_account_id ? new AccountIdentifier($agencyModel->owner_account_id) : null,
+                $agencyModel->source_editor_id ? new PrincipalIdentifier($agencyModel->source_editor_id) : null,
+                $agencyModel->translated_at?->toDateTimeImmutable(),
+                $agencyModel->approved_at?->toDateTimeImmutable(),
             );
         })->toArray();
     }
@@ -114,6 +120,9 @@ class AgencyRepository implements AgencyRepositoryInterface
                 'version' => $agency->version()->value(),
                 'is_official' => $agency->isOfficial(),
                 'owner_account_id' => $agency->ownerAccountIdentifier() ? (string) $agency->ownerAccountIdentifier() : null,
+                'source_editor_id' => $agency->sourceEditorIdentifier() ? (string) $agency->sourceEditorIdentifier() : null,
+                'translated_at' => $agency->translatedAt(),
+                'approved_at' => $agency->approvedAt(),
             ]
         );
     }

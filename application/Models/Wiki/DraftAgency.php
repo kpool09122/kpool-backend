@@ -23,6 +23,9 @@ use Illuminate\Support\Carbon;
  * @property string $status
  * @property ?string $approver_id
  * @property ?string $merger_id
+ * @property ?string $source_editor_id
+ * @property ?Carbon $translated_at
+ * @property ?Carbon $approved_at
  */
 class DraftAgency extends Model
 {
@@ -48,9 +51,14 @@ class DraftAgency extends Model
         'status',
         'approver_id',
         'merger_id',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
     ];
 
     protected $casts = [
         'founded_in' => 'date',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 }
