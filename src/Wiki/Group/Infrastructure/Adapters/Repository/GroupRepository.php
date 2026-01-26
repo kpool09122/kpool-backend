@@ -71,6 +71,9 @@ final class GroupRepository implements GroupRepositoryInterface
                'approver_id' => $group->approverIdentifier() ? (string) $group->approverIdentifier() : null,
                'merger_id' => $group->mergerIdentifier() ? (string) $group->mergerIdentifier() : null,
                'merged_at' => $group->mergedAt(),
+               'source_editor_id' => $group->sourceEditorIdentifier() ? (string) $group->sourceEditorIdentifier() : null,
+               'translated_at' => $group->translatedAt(),
+               'approved_at' => $group->approvedAt(),
                'version' => $group->version()->value(),
                'is_official' => $group->isOfficial(),
                'owner_account_id' => $group->ownerAccountIdentifier() ? (string) $group->ownerAccountIdentifier() : null,
@@ -96,6 +99,9 @@ final class GroupRepository implements GroupRepositoryInterface
             $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
             (bool) $model->is_official,
             $model->owner_account_id ? new AccountIdentifier($model->owner_account_id) : null,
+            $model->source_editor_id ? new PrincipalIdentifier($model->source_editor_id) : null,
+            $model->translated_at?->toDateTimeImmutable(),
+            $model->approved_at?->toDateTimeImmutable(),
         );
     }
 }

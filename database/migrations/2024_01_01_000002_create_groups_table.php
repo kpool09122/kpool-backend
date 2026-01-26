@@ -27,6 +27,9 @@ return new class extends Migration
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->uuid('merger_id')->nullable()->comment('マージ者ID');
             $table->dateTime('merged_at')->nullable()->comment('マージ日時');
+            $table->uuid('source_editor_id')->nullable()->comment('翻訳元編集者ID');
+            $table->dateTime('translated_at')->nullable()->comment('翻訳日時');
+            $table->dateTime('approved_at')->nullable()->comment('承認日時');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->timestamps();
         });
@@ -46,6 +49,9 @@ return new class extends Migration
             $table->text('status')->comment('公開ステータス');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->uuid('merger_id')->nullable()->comment('マージ者ID');
+            $table->uuid('source_editor_id')->nullable()->comment('翻訳元編集者ID');
+            $table->dateTime('translated_at')->nullable()->comment('翻訳日時');
+            $table->dateTime('approved_at')->nullable()->comment('承認日時');
             $table->timestamps();
         });
 
@@ -62,6 +68,13 @@ return new class extends Migration
             $table->string('image_path', 255)->nullable()->comment('画像パス');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->dateTime('created_at')->comment('作成日時');
+            $table->uuid('editor_id')->nullable()->comment('編集者ID');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
+            $table->uuid('merger_id')->nullable()->comment('マージ者ID');
+            $table->dateTime('merged_at')->nullable()->comment('マージ日時');
+            $table->uuid('source_editor_id')->nullable()->comment('翻訳元編集者ID');
+            $table->dateTime('translated_at')->nullable()->comment('翻訳日時');
+            $table->dateTime('approved_at')->nullable()->comment('承認日時');
 
             $table->unique(['group_id', 'version']);
         });

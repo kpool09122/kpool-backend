@@ -21,6 +21,9 @@ use Illuminate\Support\Carbon;
  * @property ?string $approver_id
  * @property ?string $merger_id
  * @property ?Carbon $merged_at
+ * @property ?string $source_editor_id
+ * @property ?Carbon $translated_at
+ * @property ?Carbon $approved_at
  * @property int $version
  * @property bool $is_official
  * @property ?string $owner_account_id
@@ -47,6 +50,9 @@ class Group extends Model
         'approver_id',
         'merger_id',
         'merged_at',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
         'version',
         'is_official',
         'owner_account_id',
@@ -54,6 +60,8 @@ class Group extends Model
 
     protected $casts = [
         'merged_at' => 'datetime',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
         'version' => 'integer',
         'is_official' => 'boolean',
     ];

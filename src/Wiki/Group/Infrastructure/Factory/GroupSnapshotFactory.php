@@ -32,6 +32,13 @@ readonly class GroupSnapshotFactory implements GroupSnapshotFactoryInterface
             $group->description(),
             $group->version(),
             new DateTimeImmutable('now'),
+            $group->editorIdentifier(),
+            $group->approverIdentifier(),
+            $group->mergerIdentifier(),
+            $group->mergedAt(),
+            $group->sourceEditorIdentifier(),
+            $group->translatedAt(),
+            $group->approvedAt(),
         );
     }
 }

@@ -47,6 +47,9 @@ class DraftGroup
         private ?PrincipalIdentifier              $approverIdentifier = null,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
+        private ?PrincipalIdentifier              $sourceEditorIdentifier = null,
+        private ?DateTimeImmutable                $translatedAt = null,
+        private ?DateTimeImmutable                $approvedAt = null,
     ) {
     }
 
@@ -163,5 +166,35 @@ class DraftGroup
     public function setMergedAt(?DateTimeImmutable $mergedAt): void
     {
         $this->mergedAt = $mergedAt;
+    }
+
+    public function sourceEditorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->sourceEditorIdentifier;
+    }
+
+    public function setSourceEditorIdentifier(?PrincipalIdentifier $sourceEditorIdentifier): void
+    {
+        $this->sourceEditorIdentifier = $sourceEditorIdentifier;
+    }
+
+    public function translatedAt(): ?DateTimeImmutable
+    {
+        return $this->translatedAt;
+    }
+
+    public function setTranslatedAt(?DateTimeImmutable $translatedAt): void
+    {
+        $this->translatedAt = $translatedAt;
+    }
+
+    public function approvedAt(): ?DateTimeImmutable
+    {
+        return $this->approvedAt;
+    }
+
+    public function setApprovedAt(?DateTimeImmutable $approvedAt): void
+    {
+        $this->approvedAt = $approvedAt;
     }
 }

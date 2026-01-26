@@ -117,6 +117,9 @@ readonly class PublishGroup implements PublishGroupInterface
         $publishedGroup->setApproverIdentifier($group->approverIdentifier());
         $publishedGroup->setMergerIdentifier($group->mergerIdentifier());
         $publishedGroup->setMergedAt(new DateTimeImmutable());
+        $publishedGroup->setSourceEditorIdentifier($group->sourceEditorIdentifier());
+        $publishedGroup->setTranslatedAt($group->translatedAt());
+        $publishedGroup->setApprovedAt($group->approvedAt());
 
         $this->groupRepository->save($publishedGroup);
 

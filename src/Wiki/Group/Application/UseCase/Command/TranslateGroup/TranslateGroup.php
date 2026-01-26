@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\TranslateGroup;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
@@ -61,9 +62,12 @@ readonly class TranslateGroup implements TranslateGroupInterface
         $languages = Language::allExcept($group->language());
 
         $groupDrafts = [];
+        $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
             $groupDraft = $this->translationService->translateGroup($group, $language);
+            $groupDraft->setSourceEditorIdentifier($group->editorIdentifier());
+            $groupDraft->setTranslatedAt($translatedAt);
             $groupDrafts[] = $groupDraft;
             $this->draftGroupRepository->save($groupDraft);
         }

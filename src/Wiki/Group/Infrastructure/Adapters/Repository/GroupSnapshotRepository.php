@@ -14,6 +14,7 @@ use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Domain\ValueObject\GroupSnapshotIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 
@@ -33,6 +34,13 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             'description' => (string)$snapshot->description(),
             'version' => $snapshot->version()->value(),
             'created_at' => $snapshot->createdAt(),
+            'editor_id' => $snapshot->editorIdentifier() ? (string)$snapshot->editorIdentifier() : null,
+            'approver_id' => $snapshot->approverIdentifier() ? (string)$snapshot->approverIdentifier() : null,
+            'merger_id' => $snapshot->mergerIdentifier() ? (string)$snapshot->mergerIdentifier() : null,
+            'merged_at' => $snapshot->mergedAt(),
+            'source_editor_id' => $snapshot->sourceEditorIdentifier() ? (string)$snapshot->sourceEditorIdentifier() : null,
+            'translated_at' => $snapshot->translatedAt(),
+            'approved_at' => $snapshot->approvedAt(),
         ]);
     }
 
@@ -91,6 +99,13 @@ class GroupSnapshotRepository implements GroupSnapshotRepositoryInterface
             new Description($model->description),
             new Version($model->version),
             $model->created_at->toDateTimeImmutable(),
+            $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
+            $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+            $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
+            $model->merged_at?->toDateTimeImmutable(),
+            $model->source_editor_id ? new PrincipalIdentifier($model->source_editor_id) : null,
+            $model->translated_at?->toDateTimeImmutable(),
+            $model->approved_at?->toDateTimeImmutable(),
         );
     }
 }
