@@ -28,6 +28,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property ?string $approver_id
  * @property ?string $merger_id
  * @property Carbon|null $merged_at
+ * @property ?string $source_editor_id
+ * @property Carbon|null $translated_at
+ * @property Carbon|null $approved_at
  * @property int $version
  * @property bool $is_official
  * @property ?string $owner_account_id
@@ -62,6 +65,9 @@ class Song extends Model
         'approver_id',
         'merger_id',
         'merged_at',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
         'version',
         'is_official',
         'owner_account_id',
@@ -70,6 +76,8 @@ class Song extends Model
     protected $casts = [
         'release_date' => 'date',
         'merged_at' => 'datetime',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
         'version' => 'integer',
         'deleted_at' => 'datetime',
         'is_official' => 'boolean',

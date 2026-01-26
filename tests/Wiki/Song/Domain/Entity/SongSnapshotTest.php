@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -49,6 +50,13 @@ class SongSnapshotTest extends TestCase
         $this->assertSame((string)$data->overView, (string)$snapshot->overView());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$data->editorIdentifier, (string)$snapshot->editorIdentifier());
+        $this->assertSame((string)$data->approverIdentifier, (string)$snapshot->approverIdentifier());
+        $this->assertSame((string)$data->mergerIdentifier, (string)$snapshot->mergerIdentifier());
+        $this->assertSame($data->mergedAt->format('Y-m-d H:i:s'), $snapshot->mergedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$data->sourceEditorIdentifier, (string)$snapshot->sourceEditorIdentifier());
+        $this->assertSame($data->translatedAt->format('Y-m-d H:i:s'), $snapshot->translatedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame($data->approvedAt->format('Y-m-d H:i:s'), $snapshot->approvedAt()->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -95,6 +103,52 @@ class SongSnapshotTest extends TestCase
     }
 
     /**
+     * 正常系: オプショナルなプロパティがnullでもインスタンスが生成されること
+     *
+     * @return void
+     */
+    public function test__constructWithNullOptionalProperties(): void
+    {
+        $snapshotIdentifier = new SongSnapshotIdentifier(StrTestHelper::generateUuid());
+        $songIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('test-song-snapshot');
+        $language = Language::KOREAN;
+        $name = new SongName('TT');
+        $lyricist = new Lyricist('블랙아이드필승');
+        $composer = new Composer('Sam Lewis');
+        $overView = new Overview('A song about love.');
+        $version = new Version(1);
+        $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
+
+        $snapshot = new SongSnapshot(
+            $snapshotIdentifier,
+            $songIdentifier,
+            $translationSetIdentifier,
+            $slug,
+            $language,
+            $name,
+            null,
+            null,
+            null,
+            $lyricist,
+            $composer,
+            null,
+            $overView,
+            $version,
+            $createdAt,
+        );
+
+        $this->assertNull($snapshot->editorIdentifier());
+        $this->assertNull($snapshot->approverIdentifier());
+        $this->assertNull($snapshot->mergerIdentifier());
+        $this->assertNull($snapshot->mergedAt());
+        $this->assertNull($snapshot->sourceEditorIdentifier());
+        $this->assertNull($snapshot->translatedAt());
+        $this->assertNull($snapshot->approvedAt());
+    }
+
+    /**
      * ダミーのSongSnapshotを作成するヘルパーメソッド
      *
      * @return SongSnapshotTestData
@@ -116,6 +170,13 @@ class SongSnapshotTest extends TestCase
         $overView = new Overview('TT is a song by TWICE.');
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergedAt = new DateTimeImmutable('2024-01-02 00:00:00');
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $translatedAt = new DateTimeImmutable('2024-01-03 00:00:00');
+        $approvedAt = new DateTimeImmutable('2024-01-04 00:00:00');
 
         $snapshot = new SongSnapshot(
             $snapshotIdentifier,
@@ -133,6 +194,13 @@ class SongSnapshotTest extends TestCase
             $overView,
             $version,
             $createdAt,
+            $editorIdentifier,
+            $approverIdentifier,
+            $mergerIdentifier,
+            $mergedAt,
+            $sourceEditorIdentifier,
+            $translatedAt,
+            $approvedAt,
         );
 
         return new SongSnapshotTestData(
@@ -151,6 +219,13 @@ class SongSnapshotTest extends TestCase
             overView: $overView,
             version: $version,
             createdAt: $createdAt,
+            editorIdentifier: $editorIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+            mergedAt: $mergedAt,
+            sourceEditorIdentifier: $sourceEditorIdentifier,
+            translatedAt: $translatedAt,
+            approvedAt: $approvedAt,
             snapshot: $snapshot,
         );
     }
@@ -177,6 +252,13 @@ readonly class SongSnapshotTestData
         public Overview                 $overView,
         public Version                  $version,
         public DateTimeImmutable        $createdAt,
+        public PrincipalIdentifier      $editorIdentifier,
+        public PrincipalIdentifier      $approverIdentifier,
+        public PrincipalIdentifier      $mergerIdentifier,
+        public DateTimeImmutable        $mergedAt,
+        public PrincipalIdentifier      $sourceEditorIdentifier,
+        public DateTimeImmutable        $translatedAt,
+        public DateTimeImmutable        $approvedAt,
         public SongSnapshot             $snapshot,
     ) {
     }

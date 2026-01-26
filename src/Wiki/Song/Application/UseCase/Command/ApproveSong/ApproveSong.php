@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\ApproveSong;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -81,6 +82,7 @@ readonly class ApproveSong implements ApproveSongInterface
         $previousStatus = $song->status();
         $song->setStatus(ApprovalStatus::Approved);
         $song->setApproverIdentifier($input->principalIdentifier());
+        $song->setApprovedAt(new DateTimeImmutable());
 
         $this->draftSongRepository->save($song);
 

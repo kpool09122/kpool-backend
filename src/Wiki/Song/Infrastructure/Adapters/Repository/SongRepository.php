@@ -86,6 +86,9 @@ final class SongRepository implements SongRepositoryInterface
                 'approver_id' => $song->approverIdentifier() ? (string) $song->approverIdentifier() : null,
                 'merger_id' => $song->mergerIdentifier() ? (string) $song->mergerIdentifier() : null,
                 'merged_at' => $song->mergedAt(),
+                'source_editor_id' => $song->sourceEditorIdentifier() ? (string) $song->sourceEditorIdentifier() : null,
+                'translated_at' => $song->translatedAt(),
+                'approved_at' => $song->approvedAt(),
                 'version' => $song->version()->value(),
                 'is_official' => $song->isOfficial(),
                 'owner_account_id' => $song->ownerAccountIdentifier() ? (string) $song->ownerAccountIdentifier() : null,
@@ -133,6 +136,9 @@ final class SongRepository implements SongRepositoryInterface
             $songModel->approver_id ? new PrincipalIdentifier($songModel->approver_id) : null,
             (bool) $songModel->is_official,
             $songModel->owner_account_id ? new AccountIdentifier($songModel->owner_account_id) : null,
+            $songModel->source_editor_id ? new PrincipalIdentifier($songModel->source_editor_id) : null,
+            $songModel->translated_at?->toDateTimeImmutable(),
+            $songModel->approved_at?->toDateTimeImmutable(),
         );
     }
 }

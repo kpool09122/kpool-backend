@@ -36,6 +36,13 @@ readonly class SongSnapshotFactory implements SongSnapshotFactoryInterface
             $song->overView(),
             $song->version(),
             new DateTimeImmutable('now'),
+            $song->editorIdentifier(),
+            $song->approverIdentifier(),
+            $song->mergerIdentifier(),
+            $song->mergedAt(),
+            $song->sourceEditorIdentifier(),
+            $song->translatedAt(),
+            $song->approvedAt(),
         );
     }
 }

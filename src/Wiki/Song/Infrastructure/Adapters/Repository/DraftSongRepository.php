@@ -67,6 +67,10 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             ApprovalStatus::from($draftModel->status),
             $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
             $draftModel->merger_id ? new PrincipalIdentifier($draftModel->merger_id) : null,
+            null,
+            $draftModel->source_editor_id ? new PrincipalIdentifier($draftModel->source_editor_id) : null,
+            $draftModel->translated_at?->toDateTimeImmutable(),
+            $draftModel->approved_at?->toDateTimeImmutable(),
         );
     }
 
@@ -97,6 +101,9 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 'status' => $song->status()->value,
                 'approver_id' => $song->approverIdentifier() ? (string) $song->approverIdentifier() : null,
                 'merger_id' => $song->mergerIdentifier() ? (string) $song->mergerIdentifier() : null,
+                'source_editor_id' => $song->sourceEditorIdentifier() ? (string) $song->sourceEditorIdentifier() : null,
+                'translated_at' => $song->translatedAt(),
+                'approved_at' => $song->approvedAt(),
             ],
         );
 
@@ -156,6 +163,10 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
                 ApprovalStatus::from($model->status),
                 $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
                 $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
+                null,
+                $model->source_editor_id ? new PrincipalIdentifier($model->source_editor_id) : null,
+                $model->translated_at?->toDateTimeImmutable(),
+                $model->approved_at?->toDateTimeImmutable(),
             );
         }
 

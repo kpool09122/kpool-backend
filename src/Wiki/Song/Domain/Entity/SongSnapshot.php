@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -55,6 +56,13 @@ readonly class SongSnapshot
         private Overview                 $overView,
         private Version                  $version,
         private DateTimeImmutable        $createdAt,
+        private ?PrincipalIdentifier     $editorIdentifier = null,
+        private ?PrincipalIdentifier     $approverIdentifier = null,
+        private ?PrincipalIdentifier     $mergerIdentifier = null,
+        private ?DateTimeImmutable       $mergedAt = null,
+        private ?PrincipalIdentifier     $sourceEditorIdentifier = null,
+        private ?DateTimeImmutable       $translatedAt = null,
+        private ?DateTimeImmutable       $approvedAt = null,
     ) {
     }
 
@@ -131,5 +139,40 @@ readonly class SongSnapshot
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function editorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->editorIdentifier;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function mergerIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->mergerIdentifier;
+    }
+
+    public function mergedAt(): ?DateTimeImmutable
+    {
+        return $this->mergedAt;
+    }
+
+    public function sourceEditorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->sourceEditorIdentifier;
+    }
+
+    public function translatedAt(): ?DateTimeImmutable
+    {
+        return $this->translatedAt;
+    }
+
+    public function approvedAt(): ?DateTimeImmutable
+    {
+        return $this->approvedAt;
     }
 }

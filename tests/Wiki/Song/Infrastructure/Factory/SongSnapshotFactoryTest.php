@@ -10,6 +10,7 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -61,6 +62,13 @@ class SongSnapshotFactoryTest extends TestCase
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
         $overView = new Overview('TT is a song by TWICE.');
         $version = new Version(3);
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergedAt = new DateTimeImmutable('2024-01-02 00:00:00');
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $translatedAt = new DateTimeImmutable('2024-01-03 00:00:00');
+        $approvedAt = new DateTimeImmutable('2024-01-04 00:00:00');
 
         $song = new Song(
             $songIdentifier,
@@ -76,6 +84,15 @@ class SongSnapshotFactoryTest extends TestCase
             $releaseDate,
             $overView,
             $version,
+            $mergerIdentifier,
+            $mergedAt,
+            $editorIdentifier,
+            $approverIdentifier,
+            false,
+            null,
+            $sourceEditorIdentifier,
+            $translatedAt,
+            $approvedAt,
         );
 
         $factory = $this->app->make(SongSnapshotFactoryInterface::class);
@@ -96,6 +113,13 @@ class SongSnapshotFactoryTest extends TestCase
         $this->assertSame((string)$overView, (string)$snapshot->overView());
         $this->assertSame($version->value(), $snapshot->version()->value());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
+        $this->assertSame((string)$editorIdentifier, (string)$snapshot->editorIdentifier());
+        $this->assertSame((string)$approverIdentifier, (string)$snapshot->approverIdentifier());
+        $this->assertSame((string)$mergerIdentifier, (string)$snapshot->mergerIdentifier());
+        $this->assertSame($mergedAt->format('Y-m-d H:i:s'), $snapshot->mergedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$sourceEditorIdentifier, (string)$snapshot->sourceEditorIdentifier());
+        $this->assertSame($translatedAt->format('Y-m-d H:i:s'), $snapshot->translatedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame($approvedAt->format('Y-m-d H:i:s'), $snapshot->approvedAt()->format('Y-m-d H:i:s'));
     }
 
     /**

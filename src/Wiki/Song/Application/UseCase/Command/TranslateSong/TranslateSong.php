@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\TranslateSong;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -62,9 +63,12 @@ readonly class TranslateSong implements TranslateSongInterface
         $languages = Language::allExcept($song->language());
 
         $songDrafts = [];
+        $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
             // 外部翻訳サービスを使って翻訳
             $songDraft = $this->translationService->translateSong($song, $language);
+            $songDraft->setSourceEditorIdentifier($song->editorIdentifier());
+            $songDraft->setTranslatedAt($translatedAt);
             $songDrafts[] = $songDraft;
             $this->draftSongRepository->save($songDraft);
         }

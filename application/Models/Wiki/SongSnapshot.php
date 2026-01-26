@@ -25,6 +25,13 @@ use Illuminate\Support\Carbon;
  * @property ?string $music_video_link
  * @property int $version
  * @property Carbon $created_at
+ * @property ?string $editor_id
+ * @property ?string $approver_id
+ * @property ?string $merger_id
+ * @property ?Carbon $merged_at
+ * @property ?string $source_editor_id
+ * @property ?Carbon $translated_at
+ * @property ?Carbon $approved_at
  * @property-read Collection<int, Group> $groups
  * @property-read Collection<int, Talent> $talents
  */
@@ -54,12 +61,22 @@ class SongSnapshot extends Model
         'music_video_link',
         'version',
         'created_at',
+        'editor_id',
+        'approver_id',
+        'merger_id',
+        'merged_at',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
     ];
 
     protected $casts = [
         'release_date' => 'date',
         'version' => 'integer',
         'created_at' => 'datetime',
+        'merged_at' => 'datetime',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     /**

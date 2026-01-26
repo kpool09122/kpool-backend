@@ -332,6 +332,75 @@ class SongTest extends TestCase
     }
 
     /**
+     * 正常系：SourceEditorIdentifierのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetSourceEditorIdentifier(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        // 初期値はnull
+        $this->assertNull($song->sourceEditorIdentifier());
+
+        // 値を設定
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $song->setSourceEditorIdentifier($sourceEditorIdentifier);
+        $this->assertSame($sourceEditorIdentifier, $song->sourceEditorIdentifier());
+
+        // nullを設定
+        $song->setSourceEditorIdentifier(null);
+        $this->assertNull($song->sourceEditorIdentifier());
+    }
+
+    /**
+     * 正常系：TranslatedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetTranslatedAt(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        // 初期値はnull
+        $this->assertNull($song->translatedAt());
+
+        // 値を設定
+        $translatedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $song->setTranslatedAt($translatedAt);
+        $this->assertSame($translatedAt, $song->translatedAt());
+
+        // nullを設定
+        $song->setTranslatedAt(null);
+        $this->assertNull($song->translatedAt());
+    }
+
+    /**
+     * 正常系：ApprovedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetApprovedAt(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        // 初期値はnull
+        $this->assertNull($song->approvedAt());
+
+        // 値を設定
+        $approvedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $song->setApprovedAt($approvedAt);
+        $this->assertSame($approvedAt, $song->approvedAt());
+
+        // nullを設定
+        $song->setApprovedAt(null);
+        $this->assertNull($song->approvedAt());
+    }
+
+    /**
      * ダミーのSongを作成するヘルパーメソッド
      *
      * @return SongTestData

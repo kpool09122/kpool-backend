@@ -128,6 +128,9 @@ readonly class PublishSong implements PublishSongInterface
         $publishedSong->setApproverIdentifier($song->approverIdentifier());
         $publishedSong->setMergerIdentifier($song->mergerIdentifier());
         $publishedSong->setMergedAt(new DateTimeImmutable());
+        $publishedSong->setSourceEditorIdentifier($song->sourceEditorIdentifier());
+        $publishedSong->setTranslatedAt($song->translatedAt());
+        $publishedSong->setApprovedAt($song->approvedAt());
 
         $this->songRepository->save($publishedSong);
 
