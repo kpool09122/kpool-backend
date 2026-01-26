@@ -53,6 +53,9 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
                 'status' => $group->status()->value,
                 'approver_id' => $group->approverIdentifier() ? (string) $group->approverIdentifier() : null,
                 'merger_id' => $group->mergerIdentifier() ? (string) $group->mergerIdentifier() : null,
+                'source_editor_id' => $group->sourceEditorIdentifier() ? (string) $group->sourceEditorIdentifier() : null,
+                'translated_at' => $group->translatedAt(),
+                'approved_at' => $group->approvedAt(),
             ],
         );
     }
@@ -96,6 +99,10 @@ class DraftGroupRepository implements DraftGroupRepositoryInterface
             ApprovalStatus::from($model->status),
             $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
             $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
+            null,
+            $model->source_editor_id ? new PrincipalIdentifier($model->source_editor_id) : null,
+            $model->translated_at?->toDateTimeImmutable(),
+            $model->approved_at?->toDateTimeImmutable(),
         );
     }
 }

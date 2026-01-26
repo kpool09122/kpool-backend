@@ -43,6 +43,8 @@ class AgencyTest extends TestCase
         $this->assertSame($createAgency->foundedIn->value(), $agency->foundedIn()->value());
         $this->assertSame((string)$createAgency->description, (string)$agency->description());
         $this->assertFalse($agency->isOfficial());
+        $this->assertSame((string)$createAgency->editorIdentifier, (string)$agency->editorIdentifier());
+        $this->assertSame((string) $createAgency->approverIdentifier, (string)$agency->approverIdentifier());
         $this->assertSame($createAgency->ownerIdentifier, $agency->ownerAccountIdentifier());
         $this->assertSame($createAgency->version->value(), $agency->version()->value());
 
@@ -289,6 +291,75 @@ DESCRIPTION
     }
 
     /**
+     * 正常系：SourceEditorIdentifierのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetSourceEditorIdentifier(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        // 初期値はnull
+        $this->assertNull($agency->sourceEditorIdentifier());
+
+        // 値を設定
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $agency->setSourceEditorIdentifier($sourceEditorIdentifier);
+        $this->assertSame($sourceEditorIdentifier, $agency->sourceEditorIdentifier());
+
+        // nullを設定
+        $agency->setSourceEditorIdentifier(null);
+        $this->assertNull($agency->sourceEditorIdentifier());
+    }
+
+    /**
+     * 正常系：TranslatedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetTranslatedAt(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        // 初期値はnull
+        $this->assertNull($agency->translatedAt());
+
+        // 値を設定
+        $translatedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $agency->setTranslatedAt($translatedAt);
+        $this->assertSame($translatedAt, $agency->translatedAt());
+
+        // nullを設定
+        $agency->setTranslatedAt(null);
+        $this->assertNull($agency->translatedAt());
+    }
+
+    /**
+     * 正常系：ApprovedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetApprovedAt(): void
+    {
+        $createAgency = $this->createDummyAgency();
+        $agency = $createAgency->agency;
+
+        // 初期値はnull
+        $this->assertNull($agency->approvedAt());
+
+        // 値を設定
+        $approvedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $agency->setApprovedAt($approvedAt);
+        $this->assertSame($approvedAt, $agency->approvedAt());
+
+        // nullを設定
+        $agency->setApprovedAt(null);
+        $this->assertNull($agency->approvedAt());
+    }
+
+    /**
      * 正常系: 正しくMarkOfficialが動作すること.
      *
      * @return void
@@ -349,6 +420,8 @@ DESCRIPTION
 DESCRIPTION
         );
         $version = new Version(1);
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $isOfficial ??= false;
         $ownerIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
 
@@ -366,6 +439,8 @@ DESCRIPTION
             $version,
             null,
             null,
+            $editorIdentifier,
+            $approverIdentifier,
             $isOfficial,
             $ownerIdentifier,
         );
@@ -382,6 +457,8 @@ DESCRIPTION
             foundedIn: $foundedIn,
             description: $description,
             version: $version,
+            editorIdentifier: $editorIdentifier,
+            approverIdentifier: $approverIdentifier,
             isOfficial: $isOfficial,
             ownerIdentifier: $ownerIdentifier,
             agency: $agency,
@@ -405,8 +482,10 @@ readonly class AgencyTestData
         public FoundedIn                $foundedIn,
         public Description              $description,
         public Version                  $version,
+        public ?PrincipalIdentifier     $editorIdentifier,
+        public ?PrincipalIdentifier     $approverIdentifier,
         public bool                     $isOfficial,
-        public ?AccountIdentifier        $ownerIdentifier,
+        public ?AccountIdentifier       $ownerIdentifier,
         public Agency                   $agency,
     ) {
     }

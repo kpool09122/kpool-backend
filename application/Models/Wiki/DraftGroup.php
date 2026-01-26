@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
@@ -21,6 +22,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $status
  * @property ?string $approver_id
  * @property ?string $merger_id
+ * @property ?string $source_editor_id
+ * @property ?Carbon $translated_at
+ * @property ?Carbon $approved_at
  */
 class DraftGroup extends Model
 {
@@ -45,5 +49,13 @@ class DraftGroup extends Model
         'status',
         'approver_id',
         'merger_id',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
+    ];
+
+    protected $casts = [
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 }

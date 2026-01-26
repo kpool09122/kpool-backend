@@ -215,6 +215,72 @@ class DraftTalentTest extends TestCase
         $this->assertSame($mergedAt, $draftTalentInfo->talent->mergedAt());
     }
 
+    /**
+     * 正常系：SourceEditorIdentifierのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetSourceEditorIdentifier(): void
+    {
+        $draftTalentInfo = $this->createDummyDraftTalent();
+
+        // 初期値はnull
+        $this->assertNull($draftTalentInfo->talent->sourceEditorIdentifier());
+
+        // 値を設定
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $draftTalentInfo->talent->setSourceEditorIdentifier($sourceEditorIdentifier);
+        $this->assertSame($sourceEditorIdentifier, $draftTalentInfo->talent->sourceEditorIdentifier());
+
+        // nullを設定
+        $draftTalentInfo->talent->setSourceEditorIdentifier(null);
+        $this->assertNull($draftTalentInfo->talent->sourceEditorIdentifier());
+    }
+
+    /**
+     * 正常系：TranslatedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetTranslatedAt(): void
+    {
+        $draftTalentInfo = $this->createDummyDraftTalent();
+
+        // 初期値はnull
+        $this->assertNull($draftTalentInfo->talent->translatedAt());
+
+        // 値を設定
+        $translatedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $draftTalentInfo->talent->setTranslatedAt($translatedAt);
+        $this->assertSame($translatedAt, $draftTalentInfo->talent->translatedAt());
+
+        // nullを設定
+        $draftTalentInfo->talent->setTranslatedAt(null);
+        $this->assertNull($draftTalentInfo->talent->translatedAt());
+    }
+
+    /**
+     * 正常系：ApprovedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetApprovedAt(): void
+    {
+        $draftTalentInfo = $this->createDummyDraftTalent();
+
+        // 初期値はnull
+        $this->assertNull($draftTalentInfo->talent->approvedAt());
+
+        // 値を設定
+        $approvedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $draftTalentInfo->talent->setApprovedAt($approvedAt);
+        $this->assertSame($approvedAt, $draftTalentInfo->talent->approvedAt());
+
+        // nullを設定
+        $draftTalentInfo->talent->setApprovedAt(null);
+        $this->assertNull($draftTalentInfo->talent->approvedAt());
+    }
+
     private function createDummyDraftTalent(): DraftTalentTestData
     {
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());

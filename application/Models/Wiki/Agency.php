@@ -18,6 +18,13 @@ use Illuminate\Support\Carbon;
  * @property string $normalized_CEO
  * @property ?Carbon $founded_in
  * @property string $description
+ * @property ?string $editor_id
+ * @property ?string $approver_id
+ * @property ?string $merger_id
+ * @property ?Carbon $merged_at
+ * @property ?string $source_editor_id
+ * @property ?Carbon $translated_at
+ * @property ?Carbon $approved_at
  * @property int $version
  * @property bool $is_official
  * @property ?string $owner_account_id
@@ -41,6 +48,13 @@ class Agency extends Model
         'normalized_CEO',
         'founded_in',
         'description',
+        'editor_id',
+        'approver_id',
+        'merger_id',
+        'merged_at',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
         'version',
         'is_official',
         'owner_account_id',
@@ -48,6 +62,9 @@ class Agency extends Model
 
     protected $casts = [
         'founded_in' => 'date',
+        'merged_at' => 'datetime',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
         'version' => 'integer',
         'is_official' => 'boolean',
     ];

@@ -9,6 +9,7 @@ use Application\Models\Wiki\Talent as TalentModel;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -93,6 +94,13 @@ final class TalentRepository implements TalentRepositoryInterface
                 'agency_id' => $talent->agencyIdentifier() ? (string) $talent->agencyIdentifier() : null,
                 'birthday' => $birthdayValue,
                 'career' => (string) $talent->career(),
+                'editor_id' => $talent->editorIdentifier() ? (string) $talent->editorIdentifier() : null,
+                'approver_id' => $talent->approverIdentifier() ? (string) $talent->approverIdentifier() : null,
+                'merger_id' => $talent->mergerIdentifier() ? (string) $talent->mergerIdentifier() : null,
+                'merged_at' => $talent->mergedAt(),
+                'source_editor_id' => $talent->sourceEditorIdentifier() ? (string) $talent->sourceEditorIdentifier() : null,
+                'translated_at' => $talent->translatedAt(),
+                'approved_at' => $talent->approvedAt(),
                 'version' => $talent->version()->value(),
                 'is_official' => $talent->isOfficial(),
                 'owner_account_id' => $talent->ownerAccountIdentifier() ? (string) $talent->ownerAccountIdentifier() : null,
@@ -124,10 +132,15 @@ final class TalentRepository implements TalentRepositoryInterface
             $talentModel->birthday ? new Birthday($talentModel->birthday->toDateTimeImmutable()) : null,
             new Career($talentModel->career),
             new Version($talentModel->version),
-            null,
-            null,
+            $talentModel->merger_id ? new PrincipalIdentifier($talentModel->merger_id) : null,
+            $talentModel->merged_at?->toDateTimeImmutable(),
+            $talentModel->editor_id ? new PrincipalIdentifier($talentModel->editor_id) : null,
+            $talentModel->approver_id ? new PrincipalIdentifier($talentModel->approver_id) : null,
             (bool) $talentModel->is_official,
             $talentModel->owner_account_id ? new AccountIdentifier($talentModel->owner_account_id) : null,
+            $talentModel->source_editor_id ? new PrincipalIdentifier($talentModel->source_editor_id) : null,
+            $talentModel->translated_at?->toDateTimeImmutable(),
+            $talentModel->approved_at?->toDateTimeImmutable(),
         );
     }
 }

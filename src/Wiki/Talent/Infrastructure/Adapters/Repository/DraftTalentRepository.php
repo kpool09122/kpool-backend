@@ -54,6 +54,10 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
             ApprovalStatus::from($draftModel->status),
             $draftModel->approver_id ? new PrincipalIdentifier($draftModel->approver_id) : null,
             $draftModel->merger_id ? new PrincipalIdentifier($draftModel->merger_id) : null,
+            null,
+            $draftModel->source_editor_id ? new PrincipalIdentifier($draftModel->source_editor_id) : null,
+            $draftModel->translated_at?->toDateTimeImmutable(),
+            $draftModel->approved_at?->toDateTimeImmutable(),
         );
     }
 
@@ -83,6 +87,9 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 'status' => $talent->status()->value,
                 'approver_id' => $talent->approverIdentifier() ? (string) $talent->approverIdentifier() : null,
                 'merger_id' => $talent->mergerIdentifier() ? (string) $talent->mergerIdentifier() : null,
+                'source_editor_id' => $talent->sourceEditorIdentifier() ? (string) $talent->sourceEditorIdentifier() : null,
+                'translated_at' => $talent->translatedAt(),
+                'approved_at' => $talent->approvedAt(),
             ],
         );
 
@@ -132,6 +139,10 @@ final class DraftTalentRepository implements DraftTalentRepositoryInterface
                 ApprovalStatus::from($model->status),
                 $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
                 $model->merger_id ? new PrincipalIdentifier($model->merger_id) : null,
+                null,
+                $model->source_editor_id ? new PrincipalIdentifier($model->source_editor_id) : null,
+                $model->translated_at?->toDateTimeImmutable(),
+                $model->approved_at?->toDateTimeImmutable(),
             );
         }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\ApproveGroup;
 
+use DateTimeImmutable;
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
@@ -80,6 +81,7 @@ readonly class ApproveGroup implements ApproveGroupInterface
         $previousStatus = $group->status();
         $group->setStatus(ApprovalStatus::Approved);
         $group->setApproverIdentifier($input->principalIdentifier());
+        $group->setApprovedAt(new DateTimeImmutable());
 
         $this->groupRepository->save($group);
 

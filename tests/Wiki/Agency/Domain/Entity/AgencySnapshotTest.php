@@ -14,6 +14,7 @@ use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
@@ -43,6 +44,13 @@ class AgencySnapshotTest extends TestCase
         $this->assertSame((string)$data->description, (string)$snapshot->description());
         $this->assertSame($data->version->value(), $snapshot->version()->value());
         $this->assertSame($data->createdAt->format('Y-m-d H:i:s'), $snapshot->createdAt()->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$data->editorIdentifier, (string)$snapshot->editorIdentifier());
+        $this->assertSame((string)$data->approverIdentifier, (string)$snapshot->approverIdentifier());
+        $this->assertSame((string)$data->mergerIdentifier, (string)$snapshot->mergerIdentifier());
+        $this->assertSame($data->mergedAt->format('Y-m-d H:i:s'), $snapshot->mergedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame((string)$data->sourceEditorIdentifier, (string)$snapshot->sourceEditorIdentifier());
+        $this->assertSame($data->translatedAt->format('Y-m-d H:i:s'), $snapshot->translatedAt()->format('Y-m-d H:i:s'));
+        $this->assertSame($data->approvedAt->format('Y-m-d H:i:s'), $snapshot->approvedAt()->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -84,6 +92,51 @@ class AgencySnapshotTest extends TestCase
     }
 
     /**
+     * 正常系: オプショナルなプロパティがnullでもインスタンスが生成されること
+     *
+     * @return void
+     */
+    public function test__constructWithNullOptionalProperties(): void
+    {
+        $snapshotIdentifier = new AgencySnapshotIdentifier(StrTestHelper::generateUuid());
+        $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $language = Language::KOREAN;
+        $name = new AgencyName('SM엔터테인먼트');
+        $normalizedName = 'smㅇㅌㅌㅇㅁㅌ';
+        $CEO = new CEO('Lee Sung-su');
+        $normalizedCEO = 'lee sung-su';
+        $foundedIn = new FoundedIn(new DateTimeImmutable('1995-02-14'));
+        $description = new Description('SM Entertainment is a South Korean entertainment company.');
+        $version = new Version(1);
+        $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
+
+        $snapshot = new AgencySnapshot(
+            $snapshotIdentifier,
+            $agencyIdentifier,
+            $translationSetIdentifier,
+            new Slug('sm-entertainment'),
+            $language,
+            $name,
+            $normalizedName,
+            $CEO,
+            $normalizedCEO,
+            $foundedIn,
+            $description,
+            $version,
+            $createdAt,
+        );
+
+        $this->assertNull($snapshot->editorIdentifier());
+        $this->assertNull($snapshot->approverIdentifier());
+        $this->assertNull($snapshot->mergerIdentifier());
+        $this->assertNull($snapshot->mergedAt());
+        $this->assertNull($snapshot->sourceEditorIdentifier());
+        $this->assertNull($snapshot->translatedAt());
+        $this->assertNull($snapshot->approvedAt());
+    }
+
+    /**
      * ダミーのAgencySnapshotを作成するヘルパーメソッド
      *
      * @return AgencySnapshotTestData
@@ -103,6 +156,13 @@ class AgencySnapshotTest extends TestCase
         $description = new Description('JYP Entertainment is a South Korean entertainment company.');
         $version = new Version(1);
         $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $mergedAt = new DateTimeImmutable('2024-01-02 00:00:00');
+        $sourceEditorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $translatedAt = new DateTimeImmutable('2024-01-03 00:00:00');
+        $approvedAt = new DateTimeImmutable('2024-01-04 00:00:00');
 
         $snapshot = new AgencySnapshot(
             $snapshotIdentifier,
@@ -118,6 +178,13 @@ class AgencySnapshotTest extends TestCase
             $description,
             $version,
             $createdAt,
+            $editorIdentifier,
+            $approverIdentifier,
+            $mergerIdentifier,
+            $mergedAt,
+            $sourceEditorIdentifier,
+            $translatedAt,
+            $approvedAt,
         );
 
         return new AgencySnapshotTestData(
@@ -134,6 +201,13 @@ class AgencySnapshotTest extends TestCase
             description: $description,
             version: $version,
             createdAt: $createdAt,
+            editorIdentifier: $editorIdentifier,
+            approverIdentifier: $approverIdentifier,
+            mergerIdentifier: $mergerIdentifier,
+            mergedAt: $mergedAt,
+            sourceEditorIdentifier: $sourceEditorIdentifier,
+            translatedAt: $translatedAt,
+            approvedAt: $approvedAt,
             snapshot: $snapshot,
         );
     }
@@ -158,6 +232,13 @@ readonly class AgencySnapshotTestData
         public Description               $description,
         public Version                   $version,
         public DateTimeImmutable         $createdAt,
+        public PrincipalIdentifier       $editorIdentifier,
+        public PrincipalIdentifier       $approverIdentifier,
+        public PrincipalIdentifier       $mergerIdentifier,
+        public DateTimeImmutable         $mergedAt,
+        public PrincipalIdentifier       $sourceEditorIdentifier,
+        public DateTimeImmutable         $translatedAt,
+        public DateTimeImmutable         $approvedAt,
         public AgencySnapshot            $snapshot,
     ) {
     }

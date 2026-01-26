@@ -30,6 +30,8 @@ class Group
      * @param Version $version
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
+     * @param PrincipalIdentifier|null $editorIdentifier
+     * @param PrincipalIdentifier|null $approverIdentifier
      * @param bool $isOfficial
      * @param AccountIdentifier|null $ownerAccountIdentifier
      */
@@ -45,8 +47,13 @@ class Group
         private Version                           $version,
         private ?PrincipalIdentifier              $mergerIdentifier = null,
         private ?DateTimeImmutable                $mergedAt = null,
+        private ?PrincipalIdentifier              $editorIdentifier = null,
+        private ?PrincipalIdentifier              $approverIdentifier = null,
         private bool                              $isOfficial = false,
         private ?AccountIdentifier                $ownerAccountIdentifier = null,
+        private ?PrincipalIdentifier              $sourceEditorIdentifier = null,
+        private ?DateTimeImmutable                $translatedAt = null,
+        private ?DateTimeImmutable                $approvedAt = null,
     ) {
     }
 
@@ -150,6 +157,26 @@ class Group
         $this->mergedAt = $mergedAt;
     }
 
+    public function editorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->editorIdentifier;
+    }
+
+    public function setEditorIdentifier(?PrincipalIdentifier $editorIdentifier): void
+    {
+        $this->editorIdentifier = $editorIdentifier;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function setApproverIdentifier(?PrincipalIdentifier $approverIdentifier): void
+    {
+        $this->approverIdentifier = $approverIdentifier;
+    }
+
     public function isOfficial(): bool
     {
         return $this->isOfficial;
@@ -168,5 +195,35 @@ class Group
 
         $this->isOfficial = true;
         $this->ownerAccountIdentifier = $ownerAccountIdentifier;
+    }
+
+    public function sourceEditorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->sourceEditorIdentifier;
+    }
+
+    public function setSourceEditorIdentifier(?PrincipalIdentifier $sourceEditorIdentifier): void
+    {
+        $this->sourceEditorIdentifier = $sourceEditorIdentifier;
+    }
+
+    public function translatedAt(): ?DateTimeImmutable
+    {
+        return $this->translatedAt;
+    }
+
+    public function setTranslatedAt(?DateTimeImmutable $translatedAt): void
+    {
+        $this->translatedAt = $translatedAt;
+    }
+
+    public function approvedAt(): ?DateTimeImmutable
+    {
+        return $this->approvedAt;
+    }
+
+    public function setApprovedAt(?DateTimeImmutable $approvedAt): void
+    {
+        $this->approvedAt = $approvedAt;
     }
 }

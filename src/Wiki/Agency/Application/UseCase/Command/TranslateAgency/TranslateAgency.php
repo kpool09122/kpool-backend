@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
 use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
@@ -62,8 +63,11 @@ readonly class TranslateAgency implements TranslateAgencyInterface
         $languages = Language::allExcept($agency->language());
 
         $agencyDrafts = [];
+        $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
             $agencyDraft = $this->translationService->translateAgency($agency, $language);
+            $agencyDraft->setSourceEditorIdentifier($agency->editorIdentifier());
+            $agencyDraft->setTranslatedAt($translatedAt);
             $agencyDrafts[] = $agencyDraft;
             $this->draftAgencyRepository->save($agencyDraft);
         }

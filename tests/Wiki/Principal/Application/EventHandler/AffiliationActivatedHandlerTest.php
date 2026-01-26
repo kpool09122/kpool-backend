@@ -617,6 +617,8 @@ class AffiliationActivatedHandlerTest extends TestCase
             new Version(1),
             null,
             null,
+            null,
+            null,
             true,
             $ownerAccountIdentifier,
         );

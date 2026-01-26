@@ -34,6 +34,13 @@ readonly class TalentSnapshotFactory implements TalentSnapshotFactoryInterface
             $talent->career(),
             $talent->version(),
             new DateTimeImmutable('now'),
+            $talent->editorIdentifier(),
+            $talent->approverIdentifier(),
+            $talent->mergerIdentifier(),
+            $talent->mergedAt(),
+            $talent->sourceEditorIdentifier(),
+            $talent->translatedAt(),
+            $talent->approvedAt(),
         );
     }
 }

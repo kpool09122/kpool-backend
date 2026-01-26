@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Song\Application\UseCase\Command\PublishSong;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -123,6 +124,13 @@ readonly class PublishSong implements PublishSongInterface
             $publishedSong->setReleaseDate($song->releaseDate());
         }
         $publishedSong->setOverView($song->overView());
+        $publishedSong->setEditorIdentifier($song->editorIdentifier());
+        $publishedSong->setApproverIdentifier($song->approverIdentifier());
+        $publishedSong->setMergerIdentifier($song->mergerIdentifier());
+        $publishedSong->setMergedAt(new DateTimeImmutable());
+        $publishedSong->setSourceEditorIdentifier($song->sourceEditorIdentifier());
+        $publishedSong->setTranslatedAt($song->translatedAt());
+        $publishedSong->setApprovedAt($song->approvedAt());
 
         $this->songRepository->save($publishedSong);
 

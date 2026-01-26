@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Application\UseCase\Command\PublishGroup;
 
+use DateTimeImmutable;
 use Source\Wiki\Group\Application\Exception\ExistsApprovedButNotTranslatedGroupException;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Domain\Entity\Group;
@@ -112,6 +113,13 @@ readonly class PublishGroup implements PublishGroupInterface
             $publishedGroup->setAgencyIdentifier($group->agencyIdentifier());
         }
         $publishedGroup->setDescription($group->description());
+        $publishedGroup->setEditorIdentifier($group->editorIdentifier());
+        $publishedGroup->setApproverIdentifier($group->approverIdentifier());
+        $publishedGroup->setMergerIdentifier($group->mergerIdentifier());
+        $publishedGroup->setMergedAt(new DateTimeImmutable());
+        $publishedGroup->setSourceEditorIdentifier($group->sourceEditorIdentifier());
+        $publishedGroup->setTranslatedAt($group->translatedAt());
+        $publishedGroup->setApprovedAt($group->approvedAt());
 
         $this->groupRepository->save($publishedGroup);
 

@@ -22,6 +22,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $career
  * @property ?string $image_link
  * @property array $relevant_video_links
+ * @property ?string $editor_id
+ * @property ?string $approver_id
+ * @property ?string $merger_id
+ * @property Carbon|null $merged_at
+ * @property ?string $source_editor_id
+ * @property Carbon|null $translated_at
+ * @property Carbon|null $approved_at
  * @property int $version
  * @property bool $is_official
  * @property ?string $owner_account_id
@@ -49,6 +56,13 @@ class Talent extends Model
         'career',
         'image_link',
         'relevant_video_links',
+        'editor_id',
+        'approver_id',
+        'merger_id',
+        'merged_at',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
         'version',
         'is_official',
         'owner_account_id',
@@ -57,6 +71,9 @@ class Talent extends Model
     protected $casts = [
         'birthday' => 'date',
         'relevant_video_links' => 'array',
+        'merged_at' => 'datetime',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
         'version' => 'integer',
         'is_official' => 'boolean',
     ];

@@ -24,6 +24,13 @@ use Illuminate\Support\Carbon;
  * @property array<int, string>|null $relevant_video_links
  * @property int $version
  * @property Carbon $created_at
+ * @property ?string $editor_id
+ * @property ?string $approver_id
+ * @property ?string $merger_id
+ * @property ?Carbon $merged_at
+ * @property ?string $source_editor_id
+ * @property ?Carbon $translated_at
+ * @property ?Carbon $approved_at
  * @property-read Collection<int, Group> $groups
  */
 class TalentSnapshot extends Model
@@ -51,6 +58,13 @@ class TalentSnapshot extends Model
         'relevant_video_links',
         'version',
         'created_at',
+        'editor_id',
+        'approver_id',
+        'merger_id',
+        'merged_at',
+        'source_editor_id',
+        'translated_at',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -58,6 +72,9 @@ class TalentSnapshot extends Model
         'birthday' => 'date',
         'version' => 'integer',
         'created_at' => 'datetime',
+        'merged_at' => 'datetime',
+        'translated_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     /**
