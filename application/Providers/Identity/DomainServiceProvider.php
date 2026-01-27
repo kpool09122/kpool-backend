@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Providers\Identity;
 
-use Application\Http\Client\OAuthHttpClient;
+use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface;

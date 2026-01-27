@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Monetization\Settlement\Infrastructure\Service;
 
-use Application\Http\Client\StripeClient;
+use Application\Http\Client\StripeClient\CreateTransfer\CreateTransferRequest;
+use Application\Http\Client\StripeClient\CreateTransfer\CreateTransferResponse;
+use Application\Http\Client\StripeClient\StripeClient;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
@@ -57,32 +59,17 @@ class TransferGatewayTest extends TestCase
             new StripeConnectedAccountId($stripeConnectedAccountId),
         );
 
-        // Stripe Transfer のモック
-        $mockStripeTransfer = (object) [
-            'id' => 'tr_test123456',
-        ];
-
-        $mockTransfers = Mockery::mock();
-        $mockTransfers->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createTransfer')
             ->once()
-            ->with([
-                'amount' => 10000,
-                'currency' => 'jpy',
-                'destination' => $stripeConnectedAccountId,
-                'metadata' => [
+            ->withArgs(fn (CreateTransferRequest $request) => $request->amount() === 10000
+                && $request->currency() === 'jpy'
+                && $request->destination() === $stripeConnectedAccountId
+                && $request->metadata() === [
                     'transfer_id' => $transferId,
                     'settlement_batch_id' => $settlementBatchId,
-                ],
-            ])
-            ->andReturn($mockStripeTransfer);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('transfers')
-            ->andReturn($mockTransfers);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+                ])
+            ->andReturn(new CreateTransferResponse(id: 'tr_test123456'));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -123,31 +110,17 @@ class TransferGatewayTest extends TestCase
             new StripeConnectedAccountId($stripeConnectedAccountId),
         );
 
-        $mockStripeTransfer = (object) [
-            'id' => 'tr_test_usd_123456',
-        ];
-
-        $mockTransfers = Mockery::mock();
-        $mockTransfers->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createTransfer')
             ->once()
-            ->with([
-                'amount' => 1000,
-                'currency' => 'usd',
-                'destination' => $stripeConnectedAccountId,
-                'metadata' => [
+            ->withArgs(fn (CreateTransferRequest $request) => $request->amount() === 1000
+                && $request->currency() === 'usd'
+                && $request->destination() === $stripeConnectedAccountId
+                && $request->metadata() === [
                     'transfer_id' => $transferId,
                     'settlement_batch_id' => $settlementBatchId,
-                ],
-            ])
-            ->andReturn($mockStripeTransfer);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('transfers')
-            ->andReturn($mockTransfers);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+                ])
+            ->andReturn(new CreateTransferResponse(id: 'tr_test_usd_123456'));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -188,31 +161,17 @@ class TransferGatewayTest extends TestCase
             new StripeConnectedAccountId($stripeConnectedAccountId),
         );
 
-        $mockStripeTransfer = (object) [
-            'id' => 'tr_test_krw_123456',
-        ];
-
-        $mockTransfers = Mockery::mock();
-        $mockTransfers->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createTransfer')
             ->once()
-            ->with([
-                'amount' => 50000,
-                'currency' => 'krw',
-                'destination' => $stripeConnectedAccountId,
-                'metadata' => [
+            ->withArgs(fn (CreateTransferRequest $request) => $request->amount() === 50000
+                && $request->currency() === 'krw'
+                && $request->destination() === $stripeConnectedAccountId
+                && $request->metadata() === [
                     'transfer_id' => $transferId,
                     'settlement_batch_id' => $settlementBatchId,
-                ],
-            ])
-            ->andReturn($mockStripeTransfer);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('transfers')
-            ->andReturn($mockTransfers);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+                ])
+            ->andReturn(new CreateTransferResponse(id: 'tr_test_krw_123456'));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -253,8 +212,8 @@ class TransferGatewayTest extends TestCase
             new StripeConnectedAccountId($stripeConnectedAccountId),
         );
 
-        $mockTransfers = Mockery::mock();
-        $mockTransfers->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createTransfer')
             ->once()
             ->andThrow(InvalidRequestException::factory(
                 'No such connected account',
@@ -264,14 +223,6 @@ class TransferGatewayTest extends TestCase
                 null,
                 'account_invalid'
             ));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('transfers')
-            ->andReturn($mockTransfers);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -313,8 +264,8 @@ class TransferGatewayTest extends TestCase
             new StripeConnectedAccountId($stripeConnectedAccountId),
         );
 
-        $mockTransfers = Mockery::mock();
-        $mockTransfers->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createTransfer')
             ->once()
             ->andThrow(InvalidRequestException::factory(
                 'Insufficient funds in your Stripe balance',
@@ -324,14 +275,6 @@ class TransferGatewayTest extends TestCase
                 null,
                 'balance_insufficient'
             ));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('transfers')
-            ->andReturn($mockTransfers);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 

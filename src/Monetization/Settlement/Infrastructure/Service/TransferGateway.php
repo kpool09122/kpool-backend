@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Settlement\Infrastructure\Service;
 
-use Application\Http\Client\StripeClient;
+use Application\Http\Client\StripeClient\CreateTransfer\CreateTransferRequest;
+use Application\Http\Client\StripeClient\StripeClient;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
@@ -27,26 +28,26 @@ readonly class TransferGateway implements TransferGatewayInterface
     public function execute(Transfer $transfer, MonetizationAccount $account): StripeTransferId
     {
         try {
-            $stripeClient = $this->stripeClient->client();
-
-            $stripeTransfer = $stripeClient->transfers->create([
-                'amount' => $transfer->amount()->amount(),
-                'currency' => strtolower($transfer->amount()->currency()->value),
-                'destination' => (string) $account->stripeConnectedAccountId(),
-                'metadata' => [
+            $request = new CreateTransferRequest(
+                amount: $transfer->amount()->amount(),
+                currency: strtolower($transfer->amount()->currency()->value),
+                destination: (string) $account->stripeConnectedAccountId(),
+                metadata: [
                     'transfer_id' => (string) $transfer->transferIdentifier(),
                     'settlement_batch_id' => (string) $transfer->settlementBatchIdentifier(),
                 ],
-            ]);
+            );
+
+            $response = $this->stripeClient->createTransfer($request);
 
             $this->logger->info('Transfer executed successfully', [
                 'transfer_id' => (string) $transfer->transferIdentifier(),
-                'stripe_transfer_id' => $stripeTransfer->id,
+                'stripe_transfer_id' => $response->id(),
                 'amount' => $transfer->amount()->amount(),
                 'currency' => $transfer->amount()->currency()->value,
             ]);
 
-            return new StripeTransferId($stripeTransfer->id);
+            return new StripeTransferId($response->id());
         } catch (ApiErrorException $e) {
             $this->logger->error('Stripe API error during transfer', [
                 'transfer_id' => (string) $transfer->transferIdentifier(),

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Service;
 
-use Application\Http\Client\OAuthHttpClient;
+use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
+use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
+use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Domain\Exception\SocialOAuthException;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
@@ -56,10 +58,20 @@ readonly class SocialOAuthService implements SocialOAuthServiceInterface
             'provider' => $provider->value,
         ]);
 
-        $tokenResponse = $this->oAuthHttpClient->exchangeCodeForToken($provider, (string) $code);
-        $userInfo = $this->oAuthHttpClient->fetchUserInfo($provider, $tokenResponse['access_token']);
+        $tokenResponse = $this->oAuthHttpClient->exchangeCodeForToken(
+            new ExchangeCodeForTokenRequest(
+                provider: $provider,
+                code: (string) $code,
+            ),
+        );
+        $userInfoResponse = $this->oAuthHttpClient->fetchUserInfo(
+            new FetchUserInfoRequest(
+                provider: $provider,
+                accessToken: $tokenResponse->accessToken(),
+            ),
+        );
 
-        return $this->mapToSocialProfile($provider, $userInfo, $tokenResponse['id_token']);
+        return $this->mapToSocialProfile($provider, $userInfoResponse->data(), $tokenResponse->idToken());
     }
 
     /**

@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Monetization\Payment\Infrastructure\Service;
 
-use Application\Http\Client\StripeClient;
+use Application\Http\Client\StripeClient\CapturePaymentIntent\CapturePaymentIntentRequest;
+use Application\Http\Client\StripeClient\CapturePaymentIntent\CapturePaymentIntentResponse;
+use Application\Http\Client\StripeClient\CreatePaymentIntent\CreatePaymentIntentRequest;
+use Application\Http\Client\StripeClient\CreatePaymentIntent\CreatePaymentIntentResponse;
+use Application\Http\Client\StripeClient\CreateRefund\CreateRefundRequest;
+use Application\Http\Client\StripeClient\CreateRefund\CreateRefundResponse;
+use Application\Http\Client\StripeClient\StripeClient;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
@@ -20,12 +26,11 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Monetization\Payment\Infrastructure\Exception\StripeApiException;
-use Source\Monetization\Payment\Infrastructure\Service\PaymentGateway;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
-use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\CardException;
+use Stripe\PaymentIntent;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateMonetizationAccount;
 use Tests\Helper\CreatePayment;
@@ -59,36 +64,25 @@ class PaymentGatewayTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ApiErrorException
      */
     #[Group('useDb')]
     public function testAuthorizeCreatesPaymentIntent(): void
     {
-        $stripeClient = $this->app->make(StripeClient::class);
-        // Stripe Customer を作成
-        $stripeCustomer = $stripeClient->client()->customers->create([
-            'email' => 'test@example.com',
-            'name' => 'Test User',
-        ]);
-
-        // テストトークン pm_card_visa を使用して Customer にアタッチ
-        $stripeClient->client()->paymentMethods->attach(
-            'pm_card_visa',
-            ['customer' => $stripeCustomer->id]
-        );
-        $stripePaymentMethodId = 'pm_card_visa';
+        $this->app->make(StripeClient::class);
 
         // Account と MonetizationAccount を作成
         $accountId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId);
         $monetizationAccountId = StrTestHelper::generateUuid();
+        $stripeCustomerId = 'cus_test_' . time();
         CreateMonetizationAccount::create($monetizationAccountId, [
             'account_id' => $accountId,
-            'stripe_customer_id' => $stripeCustomer->id,
+            'stripe_customer_id' => $stripeCustomerId,
         ]);
 
         // Payment レコードを作成
         $paymentId = StrTestHelper::generateUuid();
+        $stripePaymentMethodId = 'pm_card_visa';
         CreatePayment::create($paymentId, [
             'buyer_monetization_account_id' => $monetizationAccountId,
             'amount' => 1000,
@@ -98,20 +92,28 @@ class PaymentGatewayTest extends TestCase
         // ドメインエンティティを作成
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
+        // StripeClientをモック
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createPaymentIntent')
+            ->once()
+            ->withArgs(fn (CreatePaymentIntentRequest $request) => $request->amount() === 1000
+                && $request->currency() === 'jpy'
+                && $request->customerId() === $stripeCustomerId
+                && $request->paymentMethodId() === $stripePaymentMethodId)
+            ->andReturn(new CreatePaymentIntentResponse(
+                id: 'pi_test123456',
+                status: PaymentIntent::STATUS_REQUIRES_CAPTURE,
+            ));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
+
         // PaymentGateway を実行
         $gateway = $this->app->make(PaymentGatewayInterface::class);
         $gateway->authorize($payment);
 
         // DB に stripe_payment_intent_id が保存されていることを確認
         $stripePaymentIntentId = DB::table('payments')->where('id', $paymentId)->value('stripe_payment_intent_id');
-        $this->assertNotNull($stripePaymentIntentId);
-        $this->assertStringStartsWith('pi_', $stripePaymentIntentId);
-
-        // Stripe から PaymentIntent を取得して状態を確認
-        $paymentIntent = $stripeClient->client()->paymentIntents->retrieve($stripePaymentIntentId);
-        $this->assertSame('requires_capture', $paymentIntent->status);
-        $this->assertSame(1000, $paymentIntent->amount);
-        $this->assertSame('jpy', $paymentIntent->currency);
+        $this->assertSame('pi_test123456', $stripePaymentIntentId);
     }
 
     /**
@@ -119,31 +121,17 @@ class PaymentGatewayTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ApiErrorException
      */
     #[Group('useDb')]
     public function testCaptureSucceedsAfterAuthorize(): void
     {
-        $stripeClient = $this->app->make(StripeClient::class);
-        // Stripe Customer を作成
-        $stripeCustomer = $stripeClient->client()->customers->create([
-            'email' => 'capture-test@example.com',
-        ]);
-
-        // テストトークン pm_card_visa を使用して Customer にアタッチ
-        $stripeClient->client()->paymentMethods->attach(
-            'pm_card_visa',
-            ['customer' => $stripeCustomer->id]
-        );
-        $stripePaymentMethodId = 'pm_card_visa';
-
         // Account と MonetizationAccount を作成
         $accountId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId);
         $monetizationAccountId = StrTestHelper::generateUuid();
         CreateMonetizationAccount::create($monetizationAccountId, [
             'account_id' => $accountId,
-            'stripe_customer_id' => $stripeCustomer->id,
+            'stripe_customer_id' => 'cus_test123456',
         ]);
 
         // Payment レコードを作成
@@ -151,23 +139,26 @@ class PaymentGatewayTest extends TestCase
         CreatePayment::create($paymentId, [
             'buyer_monetization_account_id' => $monetizationAccountId,
             'amount' => 500,
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'stripe_payment_method_id' => 'pm_card_visa',
+            'stripe_payment_intent_id' => 'pi_test_capture',
         ]);
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 500, Currency::JPY);
 
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('capturePaymentIntent')
+            ->once()
+            ->withArgs(static fn (CapturePaymentIntentRequest $request) => $request->paymentIntentId() === 'pi_test_capture'
+                && $request->amountToCapture() === 500)
+            ->andReturn(new CapturePaymentIntentResponse(
+                id: 'pi_test_capture',
+                status: PaymentIntent::STATUS_SUCCEEDED,
+            ));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
+
         $gateway = $this->app->make(PaymentGatewayInterface::class);
-
-        // Authorize
-        $gateway->authorize($payment);
-
-        // Capture
         $gateway->capture($payment);
-
-        // Stripe から PaymentIntent を取得して状態を確認
-        $stripePaymentIntentId = DB::table('payments')->where('id', $paymentId)->value('stripe_payment_intent_id');
-        $paymentIntent = $stripeClient->client()->paymentIntents->retrieve($stripePaymentIntentId);
-        $this->assertSame('succeeded', $paymentIntent->status);
     }
 
     /**
@@ -175,31 +166,17 @@ class PaymentGatewayTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ApiErrorException
      */
     #[Group('useDb')]
     public function testRefundSucceedsAfterCapture(): void
     {
-        $stripeClient = $this->app->make(StripeClient::class);
-        // Stripe Customer を作成
-        $stripeCustomer = $stripeClient->client()->customers->create([
-            'email' => 'refund-test@example.com',
-        ]);
-
-        // テストトークン pm_card_visa を使用して Customer にアタッチ
-        $stripeClient->client()->paymentMethods->attach(
-            'pm_card_visa',
-            ['customer' => $stripeCustomer->id]
-        );
-        $stripePaymentMethodId = 'pm_card_visa';
-
         // Account と MonetizationAccount を作成
         $accountId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId);
         $monetizationAccountId = StrTestHelper::generateUuid();
         CreateMonetizationAccount::create($monetizationAccountId, [
             'account_id' => $accountId,
-            'stripe_customer_id' => $stripeCustomer->id,
+            'stripe_customer_id' => 'cus_test123456',
         ]);
 
         // Payment レコードを作成
@@ -207,23 +184,27 @@ class PaymentGatewayTest extends TestCase
         CreatePayment::create($paymentId, [
             'buyer_monetization_account_id' => $monetizationAccountId,
             'amount' => 2000,
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'stripe_payment_method_id' => 'pm_card_visa',
+            'stripe_payment_intent_id' => 'pi_test_refund',
         ]);
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 2000, Currency::JPY);
 
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createRefund')
+            ->once()
+            ->withArgs(static fn (CreateRefundRequest $request) => $request->paymentIntentId() === 'pi_test_refund'
+                && $request->amount() === 1000
+                && $request->reason() === 'requested_by_customer')
+            ->andReturn(new CreateRefundResponse(
+                id: 're_test123456',
+                status: 'succeeded',
+            ));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
+
         $gateway = $this->app->make(PaymentGatewayInterface::class);
-
-        // Authorize -> Capture -> Refund
-        $gateway->authorize($payment);
-        $gateway->capture($payment);
         $gateway->refund($payment, new Money(1000, Currency::JPY), 'Customer request');
-
-        // Stripe から PaymentIntent を取得して部分返金を確認
-        $stripePaymentIntentId = DB::table('payments')->where('id', $paymentId)->value('stripe_payment_intent_id');
-        $paymentIntent = $stripeClient->client()->paymentIntents->retrieve($stripePaymentIntentId);
-        $this->assertSame(2000, $paymentIntent->amount);
-        $this->assertSame(2000, $paymentIntent->amount_received);
     }
 
     /**
@@ -346,19 +327,10 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        // StripeClient をモック
-        $mockPaymentIntents = Mockery::mock();
-        $mockPaymentIntents->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createPaymentIntent')
             ->once()
             ->andThrow(CardException::factory('Card declined', 402, null, null, null, 'card_declined'));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('paymentIntents')
-            ->andReturn($mockPaymentIntents);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -423,24 +395,13 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        // PaymentIntent のモック（status が requires_capture 以外）
-        $mockPaymentIntent = (object) [
-            'id' => 'pi_test123456',
-            'status' => 'requires_payment_method',
-        ];
-
-        $mockPaymentIntents = Mockery::mock();
-        $mockPaymentIntents->shouldReceive('create')
-            ->once()
-            ->andReturn($mockPaymentIntent);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('paymentIntents')
-            ->andReturn($mockPaymentIntents);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('createPaymentIntent')
+            ->once()
+            ->andReturn(new CreatePaymentIntentResponse(
+                id: 'pi_test123456',
+                status: 'requires_payment_method',
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -457,32 +418,17 @@ class PaymentGatewayTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ApiErrorException
      */
     #[Group('useDb')]
     public function testAuthorizeCreatesPaymentIntentWithKrw(): void
     {
-        $stripeClient = $this->app->make(StripeClient::class);
-        // Stripe Customer を作成
-        $stripeCustomer = $stripeClient->client()->customers->create([
-            'email' => 'test-krw@example.com',
-            'name' => 'Test User KRW',
-        ]);
-
-        // テストトークン pm_card_visa を使用して Customer にアタッチ
-        $stripeClient->client()->paymentMethods->attach(
-            'pm_card_visa',
-            ['customer' => $stripeCustomer->id]
-        );
-        $stripePaymentMethodId = 'pm_card_visa';
-
         // Account と MonetizationAccount を作成
         $accountId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId);
         $monetizationAccountId = StrTestHelper::generateUuid();
         CreateMonetizationAccount::create($monetizationAccountId, [
             'account_id' => $accountId,
-            'stripe_customer_id' => $stripeCustomer->id,
+            'stripe_customer_id' => 'cus_test_krw',
         ]);
 
         // Payment レコードを作成
@@ -491,11 +437,23 @@ class PaymentGatewayTest extends TestCase
             'buyer_monetization_account_id' => $monetizationAccountId,
             'amount' => 10000,
             'currency' => 'KRW',
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'stripe_payment_method_id' => 'pm_card_visa',
         ]);
 
         // ドメインエンティティを作成
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 10000, Currency::KRW);
+
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createPaymentIntent')
+            ->once()
+            ->withArgs(static fn (CreatePaymentIntentRequest $request) => $request->amount() === 10000
+                && $request->currency() === 'krw')
+            ->andReturn(new CreatePaymentIntentResponse(
+                id: 'pi_test_krw',
+                status: PaymentIntent::STATUS_REQUIRES_CAPTURE,
+            ));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
 
         // PaymentGateway を実行
         $gateway = $this->app->make(PaymentGatewayInterface::class);
@@ -503,14 +461,7 @@ class PaymentGatewayTest extends TestCase
 
         // DB に stripe_payment_intent_id が保存されていることを確認
         $stripePaymentIntentId = DB::table('payments')->where('id', $paymentId)->value('stripe_payment_intent_id');
-        $this->assertNotNull($stripePaymentIntentId);
-        $this->assertStringStartsWith('pi_', $stripePaymentIntentId);
-
-        // Stripe から PaymentIntent を取得して状態を確認
-        $paymentIntent = $stripeClient->client()->paymentIntents->retrieve($stripePaymentIntentId);
-        $this->assertSame('requires_capture', $paymentIntent->status);
-        $this->assertSame(10000, $paymentIntent->amount);
-        $this->assertSame('krw', $paymentIntent->currency);
+        $this->assertSame('pi_test_krw', $stripePaymentIntentId);
     }
 
     /**
@@ -518,32 +469,17 @@ class PaymentGatewayTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ApiErrorException
      */
     #[Group('useDb')]
     public function testAuthorizeCreatesPaymentIntentWithUsd(): void
     {
-        $stripeClient = $this->app->make(StripeClient::class);
-        // Stripe Customer を作成
-        $stripeCustomer = $stripeClient->client()->customers->create([
-            'email' => 'test-usd@example.com',
-            'name' => 'Test User USD',
-        ]);
-
-        // テストトークン pm_card_visa を使用して Customer にアタッチ
-        $stripeClient->client()->paymentMethods->attach(
-            'pm_card_visa',
-            ['customer' => $stripeCustomer->id]
-        );
-        $stripePaymentMethodId = 'pm_card_visa';
-
         // Account と MonetizationAccount を作成
         $accountId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId);
         $monetizationAccountId = StrTestHelper::generateUuid();
         CreateMonetizationAccount::create($monetizationAccountId, [
             'account_id' => $accountId,
-            'stripe_customer_id' => $stripeCustomer->id,
+            'stripe_customer_id' => 'cus_test_usd',
         ]);
 
         // Payment レコードを作成（USD は cents なので 1000 = $10.00）
@@ -552,11 +488,23 @@ class PaymentGatewayTest extends TestCase
             'buyer_monetization_account_id' => $monetizationAccountId,
             'amount' => 1000,
             'currency' => 'USD',
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'stripe_payment_method_id' => 'pm_card_visa',
         ]);
 
         // ドメインエンティティを作成
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::USD);
+
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createPaymentIntent')
+            ->once()
+            ->withArgs(static fn (CreatePaymentIntentRequest $request) => $request->amount() === 1000
+                && $request->currency() === 'usd')
+            ->andReturn(new CreatePaymentIntentResponse(
+                id: 'pi_test_usd',
+                status: PaymentIntent::STATUS_REQUIRES_CAPTURE,
+            ));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
 
         // PaymentGateway を実行
         $gateway = $this->app->make(PaymentGatewayInterface::class);
@@ -564,14 +512,7 @@ class PaymentGatewayTest extends TestCase
 
         // DB に stripe_payment_intent_id が保存されていることを確認
         $stripePaymentIntentId = DB::table('payments')->where('id', $paymentId)->value('stripe_payment_intent_id');
-        $this->assertNotNull($stripePaymentIntentId);
-        $this->assertStringStartsWith('pi_', $stripePaymentIntentId);
-
-        // Stripe から PaymentIntent を取得して状態を確認
-        $paymentIntent = $stripeClient->client()->paymentIntents->retrieve($stripePaymentIntentId);
-        $this->assertSame('requires_capture', $paymentIntent->status);
-        $this->assertSame(1000, $paymentIntent->amount);
-        $this->assertSame('usd', $paymentIntent->currency);
+        $this->assertSame('pi_test_usd', $stripePaymentIntentId);
     }
 
     /**
@@ -669,23 +610,13 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        // PaymentIntent のモック（status が succeeded 以外）
-        $mockPaymentIntent = (object) [
-            'status' => 'requires_payment_method',
-        ];
-
-        $mockPaymentIntents = Mockery::mock();
-        $mockPaymentIntents->shouldReceive('capture')
-            ->once()
-            ->andReturn($mockPaymentIntent);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('paymentIntents')
-            ->andReturn($mockPaymentIntents);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('capturePaymentIntent')
+            ->once()
+            ->andReturn(new CapturePaymentIntentResponse(
+                id: 'pi_test123456',
+                status: 'requires_payment_method',
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -723,23 +654,13 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        // Refund のモック（status が succeeded/pending 以外）
-        $mockRefund = (object) [
-            'status' => 'failed',
-        ];
-
-        $mockRefunds = Mockery::mock();
-        $mockRefunds->shouldReceive('create')
-            ->once()
-            ->andReturn($mockRefund);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('refunds')
-            ->andReturn($mockRefunds);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('createRefund')
+            ->once()
+            ->andReturn(new CreateRefundResponse(
+                id: 're_test123456',
+                status: 'failed',
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -778,18 +699,10 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $mockPaymentIntents = Mockery::mock();
-        $mockPaymentIntents->shouldReceive('capture')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('capturePaymentIntent')
             ->once()
             ->andThrow(CardException::factory('Capture failed', 402, null, null, null, 'capture_failed'));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('paymentIntents')
-            ->andReturn($mockPaymentIntents);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -827,18 +740,10 @@ class PaymentGatewayTest extends TestCase
 
         $payment = $this->createPayment($paymentId, $monetizationAccountId, 1000, Currency::JPY);
 
-        $mockRefunds = Mockery::mock();
-        $mockRefunds->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createRefund')
             ->once()
             ->andThrow(CardException::factory('Refund failed', 402, null, null, null, 'refund_failed'));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('refunds')
-            ->andReturn($mockRefunds);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
