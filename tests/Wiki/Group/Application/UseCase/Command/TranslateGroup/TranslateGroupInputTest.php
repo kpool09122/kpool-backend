@@ -21,5 +21,19 @@ class TranslateGroupInputTest extends TestCase
 
         $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
+        $this->assertNull($input->publishedGroupIdentifier());
+    }
+
+    public function testWithPublishedGroupIdentifier(): void
+    {
+        $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $publishedGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
+
+        $input = new TranslateGroupInput($groupIdentifier, $principalIdentifier, $publishedGroupIdentifier);
+
+        $this->assertSame((string)$groupIdentifier, (string)$input->groupIdentifier());
+        $this->assertSame($principalIdentifier, $input->principalIdentifier());
+        $this->assertSame((string)$publishedGroupIdentifier, (string)$input->publishedGroupIdentifier());
     }
 }

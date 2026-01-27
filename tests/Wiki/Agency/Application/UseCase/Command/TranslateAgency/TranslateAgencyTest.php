@@ -7,16 +7,19 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\TranslateAgency;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Mockery\MockInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\Exception\AgencyNotFoundException;
+use Source\Wiki\Agency\Application\Service\TranslatedAgencyData;
 use Source\Wiki\Agency\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgency;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\TranslateAgency\TranslateAgencyInterface;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
@@ -26,8 +29,8 @@ use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -57,7 +60,7 @@ class TranslateAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcess(): void
@@ -87,33 +90,31 @@ class TranslateAgencyTest extends TestCase
 
         $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->enAgency)
-            ->once()
-            ->andReturn(null);
-        $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->jaAgency)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
         $agencyService->shouldReceive('translateAgency')
-            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
-            ->once()
-            ->andReturn($dummyTranslateAgency->enAgency);
-        $agencyService->shouldReceive('translateAgency')
             ->with($dummyTranslateAgency->agency, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateAgency->jaAgency);
+            ->andReturn($dummyTranslateAgency->jaTranslatedData);
+        $agencyService->shouldReceive('translateAgency')
+            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
+            ->once()
+            ->andReturn($dummyTranslateAgency->enTranslatedData);
+
+        $draftAgencyFactory = $this->createDraftAgencyFactoryMock($dummyTranslateAgency);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->app->instance(DraftAgencyFactoryInterface::class, $draftAgencyFactory);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $agencies = $translateAgency->process($input);
         $this->assertCount(2, $agencies);
-        $this->assertSame($dummyTranslateAgency->jaAgency, $agencies[0]);
-        $this->assertSame($dummyTranslateAgency->enAgency, $agencies[1]);
+        $this->assertInstanceOf(DraftAgency::class, $agencies[0]);
+        $this->assertInstanceOf(DraftAgency::class, $agencies[1]);
     }
 
     /**
@@ -121,7 +122,7 @@ class TranslateAgencyTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testWhenAgencyNotFound(): void
     {
@@ -158,7 +159,7 @@ class TranslateAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -237,7 +238,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->setPolicyEvaluatorResult(false);
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
     }
@@ -248,7 +249,7 @@ class TranslateAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithAdministrator(): void
@@ -278,28 +279,26 @@ class TranslateAgencyTest extends TestCase
 
         $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->enAgency)
-            ->once()
-            ->andReturn(null);
-        $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->jaAgency)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
         $agencyService->shouldReceive('translateAgency')
-            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
-            ->once()
-            ->andReturn($dummyTranslateAgency->enAgency);
-        $agencyService->shouldReceive('translateAgency')
             ->with($dummyTranslateAgency->agency, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateAgency->jaAgency);
+            ->andReturn($dummyTranslateAgency->jaTranslatedData);
+        $agencyService->shouldReceive('translateAgency')
+            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
+            ->once()
+            ->andReturn($dummyTranslateAgency->enTranslatedData);
+
+        $draftAgencyFactory = $this->createDraftAgencyFactoryMock($dummyTranslateAgency);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->app->instance(DraftAgencyFactoryInterface::class, $draftAgencyFactory);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $result = $translateAgency->process($input);
 
@@ -351,7 +350,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->setPolicyEvaluatorResult(false);
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
     }
@@ -398,7 +397,7 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->setPolicyEvaluatorResult(false);
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
     }
@@ -409,7 +408,7 @@ class TranslateAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testAuthorizedAgencyActor(): void
@@ -440,28 +439,26 @@ class TranslateAgencyTest extends TestCase
 
         $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->enAgency)
-            ->once()
-            ->andReturn(null);
-        $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->jaAgency)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
         $agencyService->shouldReceive('translateAgency')
-            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
-            ->once()
-            ->andReturn($dummyTranslateAgency->enAgency);
-        $agencyService->shouldReceive('translateAgency')
             ->with($dummyTranslateAgency->agency, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateAgency->jaAgency);
+            ->andReturn($dummyTranslateAgency->jaTranslatedData);
+        $agencyService->shouldReceive('translateAgency')
+            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
+            ->once()
+            ->andReturn($dummyTranslateAgency->enTranslatedData);
+
+        $draftAgencyFactory = $this->createDraftAgencyFactoryMock($dummyTranslateAgency);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->app->instance(DraftAgencyFactoryInterface::class, $draftAgencyFactory);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $result = $translateAgency->process($input);
 
@@ -476,7 +473,7 @@ class TranslateAgencyTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws AgencyNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function testProcessWithSeniorCollaborator(): void
@@ -506,28 +503,26 @@ class TranslateAgencyTest extends TestCase
 
         $draftAgencyRepository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->enAgency)
-            ->once()
-            ->andReturn(null);
-        $draftAgencyRepository->shouldReceive('save')
-            ->with($dummyTranslateAgency->jaAgency)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $agencyService = Mockery::mock(TranslationServiceInterface::class);
         $agencyService->shouldReceive('translateAgency')
-            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
-            ->once()
-            ->andReturn($dummyTranslateAgency->enAgency);
-        $agencyService->shouldReceive('translateAgency')
             ->with($dummyTranslateAgency->agency, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateAgency->jaAgency);
+            ->andReturn($dummyTranslateAgency->jaTranslatedData);
+        $agencyService->shouldReceive('translateAgency')
+            ->with($dummyTranslateAgency->agency, Language::ENGLISH)
+            ->once()
+            ->andReturn($dummyTranslateAgency->enTranslatedData);
+
+        $draftAgencyFactory = $this->createDraftAgencyFactoryMock($dummyTranslateAgency);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $agencyService);
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
+        $this->app->instance(DraftAgencyFactoryInterface::class, $draftAgencyFactory);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $result = $translateAgency->process($input);
 
@@ -577,9 +572,43 @@ class TranslateAgencyTest extends TestCase
         $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $draftAgencyRepository);
         $this->setPolicyEvaluatorResult(false);
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $translateAgency = $this->app->make(TranslateAgencyInterface::class);
         $translateAgency->process($input);
+    }
+
+    /**
+     * DraftAgencyFactoryのモックを作成するヘルパーメソッド
+     *
+     * @param TranslateAgencyTestData $dummyTranslateAgency
+     * @return MockInterface&DraftAgencyFactoryInterface
+     */
+    private function createDraftAgencyFactoryMock(TranslateAgencyTestData $dummyTranslateAgency): MockInterface
+    {
+        /** @var MockInterface&DraftAgencyFactoryInterface $draftAgencyFactory */
+        $draftAgencyFactory = Mockery::mock(DraftAgencyFactoryInterface::class);
+        $draftAgencyFactory->shouldReceive('create')
+            ->with(
+                null,
+                Language::JAPANESE,
+                Mockery::type(AgencyName::class),
+                $dummyTranslateAgency->agency->slug(),
+                $dummyTranslateAgency->agency->translationSetIdentifier(),
+            )
+            ->once()
+            ->andReturn($dummyTranslateAgency->jaAgency);
+        $draftAgencyFactory->shouldReceive('create')
+            ->with(
+                null,
+                Language::ENGLISH,
+                Mockery::type(AgencyName::class),
+                $dummyTranslateAgency->agency->slug(),
+                $dummyTranslateAgency->agency->translationSetIdentifier(),
+            )
+            ->once()
+            ->andReturn($dummyTranslateAgency->enAgency);
+
+        return $draftAgencyFactory;
     }
 
     /**
@@ -619,38 +648,51 @@ DESC);
             $foundedIn,
             $description,
             $version,
+            editorIdentifier: $editorIdentifier,
         );
 
         $jaAgency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            null,
             $translationSetIdentifier,
             new Slug('test-slug'),
-            $editorIdentifier,
+            null,
             Language::JAPANESE,
             new AgencyName('JYPエンターテインメント'),
             'jypえんたーていんめんと',
-            new CEO('J.Y. Park'),
-            'j.y. park',
-            $foundedIn,
-            new Description('### JYPエンターテインメント (JYP Entertainment)'),
+            new CEO(''),
+            '',
+            null,
+            new Description(''),
             ApprovalStatus::Pending
         );
 
         $enAgency = new DraftAgency(
-            $agencyIdentifier,
-            $publishedAgencyIdentifier,
+            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            null,
             $translationSetIdentifier,
             new Slug('test-slug'),
-            $editorIdentifier,
+            null,
             Language::ENGLISH,
             new AgencyName('JYP Entertainment'),
             'jyp entertainment',
-            new CEO('J.Y. Park'),
-            'j.y. park',
-            $foundedIn,
-            new Description('### JYP Entertainment'),
+            new CEO(''),
+            '',
+            null,
+            new Description(''),
             ApprovalStatus::Pending
+        );
+
+        $jaTranslatedData = new TranslatedAgencyData(
+            translatedName: 'JYPエンターテインメント',
+            translatedCEO: 'J.Y. Park',
+            translatedDescription: '### JYPエンターテインメント (JYP Entertainment)',
+        );
+
+        $enTranslatedData = new TranslatedAgencyData(
+            translatedName: 'JYP Entertainment',
+            translatedCEO: 'J.Y. Park',
+            translatedDescription: '### JYP Entertainment',
         );
 
         return new TranslateAgencyTestData(
@@ -667,6 +709,8 @@ DESC);
             $agency,
             $jaAgency,
             $enAgency,
+            $jaTranslatedData,
+            $enTranslatedData,
         );
     }
 }
@@ -690,6 +734,8 @@ readonly class TranslateAgencyTestData
         public Agency $agency,
         public DraftAgency $jaAgency,
         public DraftAgency $enAgency,
+        public TranslatedAgencyData $jaTranslatedData,
+        public TranslatedAgencyData $enTranslatedData,
     ) {
     }
 }

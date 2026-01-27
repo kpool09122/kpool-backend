@@ -14,7 +14,7 @@ use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 interface DraftTalentFactoryInterface
 {
     /**
-     * @param PrincipalIdentifier $editorIdentifier
+     * @param PrincipalIdentifier|null $editorIdentifier
      * @param Slug $slug
      * @param Language $language
      * @param TalentName $name
@@ -22,7 +22,7 @@ interface DraftTalentFactoryInterface
      * @return DraftTalent
      */
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Slug                      $slug,
         Language                  $language,
         TalentName                $name,

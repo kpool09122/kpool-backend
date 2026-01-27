@@ -44,3 +44,6 @@ clover.xml
 # Mailpit local DB
 /mailpit/
 /mailpit*.db*
+
+# Credentials
+/credentials/

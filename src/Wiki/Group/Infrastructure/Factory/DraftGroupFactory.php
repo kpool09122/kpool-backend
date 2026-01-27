@@ -26,7 +26,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
     }
 
     /**
-     * @param PrincipalIdentifier $editorIdentifier
+     * @param PrincipalIdentifier|null $editorIdentifier
      * @param Language $language
      * @param GroupName $name
      * @param Slug $slug
@@ -34,7 +34,7 @@ readonly class DraftGroupFactory implements DraftGroupFactoryInterface
      * @return DraftGroup
      */
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Language                  $language,
         GroupName                 $name,
         Slug                      $slug,

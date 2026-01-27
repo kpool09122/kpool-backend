@@ -11,5 +11,7 @@ interface TranslateSongInputPort
 {
     public function songIdentifier(): SongIdentifier;
 
+    public function publishedSongIdentifier(): ?SongIdentifier;
+
     public function principalIdentifier(): PrincipalIdentifier;
 }

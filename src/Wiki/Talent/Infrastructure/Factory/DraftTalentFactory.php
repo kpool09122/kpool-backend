@@ -25,7 +25,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
     }
 
     /**
-     * @param PrincipalIdentifier $editorIdentifier
+     * @param PrincipalIdentifier|null $editorIdentifier
      * @param Slug $slug
      * @param Language $language
      * @param TalentName $name
@@ -33,7 +33,7 @@ readonly class DraftTalentFactory implements DraftTalentFactoryInterface
      * @return DraftTalent
      */
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Slug                      $slug,
         Language                  $language,
         TalentName                $name,

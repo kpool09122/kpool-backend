@@ -14,6 +14,16 @@ final readonly class RetrieveAccountResponse
     ) {
     }
 
+    public function params(): RetrieveAccountParams
+    {
+        return RetrieveAccountParams::fromArray([
+            'details_submitted' => $this->detailsSubmitted,
+            'disabled_reason' => $this->disabledReason,
+            'charges_enabled' => $this->chargesEnabled,
+            'payouts_enabled' => $this->payoutsEnabled,
+        ]);
+    }
+
     public function detailsSubmitted(): bool
     {
         return $this->detailsSubmitted;

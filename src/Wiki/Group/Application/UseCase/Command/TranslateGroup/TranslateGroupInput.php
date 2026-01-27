@@ -12,12 +12,18 @@ readonly class TranslateGroupInput implements TranslateGroupInputPort
     public function __construct(
         private GroupIdentifier     $groupIdentifier,
         private PrincipalIdentifier $principalIdentifier,
+        private ?GroupIdentifier    $publishedGroupIdentifier = null,
     ) {
     }
 
     public function groupIdentifier(): GroupIdentifier
     {
         return $this->groupIdentifier;
+    }
+
+    public function publishedGroupIdentifier(): ?GroupIdentifier
+    {
+        return $this->publishedGroupIdentifier;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

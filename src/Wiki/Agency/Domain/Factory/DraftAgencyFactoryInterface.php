@@ -14,7 +14,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 interface DraftAgencyFactoryInterface
 {
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Language                  $language,
         AgencyName                $agencyName,
         Slug                      $slug,

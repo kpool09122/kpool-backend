@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\OAuthHttpClient;
 
+use Application\Http\Client\Foundation\PsrFactories;
+use Application\Http\Client\OAuthHttpClient\Exceptions\OAuthException;
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenResponse;
 use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
 use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoResponse;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\Http;
-use Source\Identity\Domain\Exception\SocialOAuthException;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriInterface;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 
 class OAuthHttpClient
@@ -19,13 +23,15 @@ class OAuthHttpClient
      * @param array<string, array<string, mixed>> $config
      */
     public function __construct(
+        private readonly UriInterface $uri,
+        private readonly ClientInterface $client,
+        private readonly PsrFactories $psrFactories,
         private readonly array $config,
     ) {
     }
 
     /**
-     * @throws SocialOAuthException
-     * @throws ConnectionException
+     * @throws OAuthException
      */
     public function exchangeCodeForToken(ExchangeCodeForTokenRequest $request): ExchangeCodeForTokenResponse
     {
@@ -34,38 +40,26 @@ class OAuthHttpClient
         /** @var string $tokenEndpoint */
         $tokenEndpoint = $providerConfig['token_endpoint'];
 
-        $response = Http::asForm()->post($tokenEndpoint, [
-            'grant_type' => 'authorization_code',
-            'client_id' => $providerConfig['client_id'],
-            'client_secret' => $providerConfig['client_secret'],
-            'redirect_uri' => $providerConfig['redirect_uri'],
-            'code' => $request->code(),
-        ]);
+        $baseRequest = $this->createBaseRequest($tokenEndpoint);
+        $psrRequest = $request->toPsrRequest(
+            $baseRequest,
+            $this->psrFactories->getStreamFactory(),
+            $providerConfig,
+        );
 
-        if ($response->failed()) {
-            throw new SocialOAuthException(
-                sprintf('Failed to exchange code for token: %s', $response->body()),
+        $response = $this->sendRequest($psrRequest);
+
+        if ($response->getStatusCode() >= 400) {
+            throw new OAuthException(
+                sprintf('Failed to exchange code for token: %s', $response->getBody()->getContents()),
             );
         }
 
-        /** @var array<string, mixed> $data */
-        $data = $response->json();
-
-        /** @var string $accessToken */
-        $accessToken = $data['access_token'];
-
-        /** @var string|null $idToken */
-        $idToken = $data['id_token'] ?? null;
-
-        return new ExchangeCodeForTokenResponse(
-            accessToken: $accessToken,
-            idToken: $idToken,
-        );
+        return new ExchangeCodeForTokenResponse($response);
     }
 
     /**
-     * @throws SocialOAuthException
-     * @throws ConnectionException
+     * @throws OAuthException
      */
     public function fetchUserInfo(FetchUserInfoRequest $request): FetchUserInfoResponse
     {
@@ -74,32 +68,64 @@ class OAuthHttpClient
         /** @var string $userinfoEndpoint */
         $userinfoEndpoint = $providerConfig['userinfo_endpoint'];
 
-        $response = Http::withToken($request->accessToken())->get($userinfoEndpoint);
+        $baseRequest = $this->createBaseRequest($userinfoEndpoint);
+        $psrRequest = $request->toPsrRequest($baseRequest, $providerConfig);
 
-        if ($response->failed()) {
-            throw new SocialOAuthException(
-                sprintf('Failed to fetch user info: %s', $response->body()),
+        $response = $this->sendRequest($psrRequest);
+
+        if ($response->getStatusCode() >= 400) {
+            throw new OAuthException(
+                sprintf('Failed to fetch user info: %s', $response->getBody()->getContents()),
             );
         }
 
-        /** @var array<string, mixed> $data */
-        $data = $response->json();
+        return new FetchUserInfoResponse($response);
+    }
 
-        return new FetchUserInfoResponse(
-            data: $data,
-        );
+    /**
+     * @throws OAuthException
+     */
+    private function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        try {
+            return $this->client->sendRequest($request);
+        } catch (ClientExceptionInterface $e) {
+            throw new OAuthException(
+                sprintf('OAuth HTTP request failed: %s', $e->getMessage()),
+                0,
+                $e,
+            );
+        }
+    }
+
+    private function createBaseRequest(string $endpoint): RequestInterface
+    {
+        $parsedUrl = parse_url($endpoint);
+        $scheme = $parsedUrl['scheme'] ?? $this->uri->getScheme();
+        $host = $parsedUrl['host'] ?? $this->uri->getHost();
+        $port = $parsedUrl['port'] ?? $this->uri->getPort();
+
+        $uri = $this->uri
+            ->withScheme($scheme)
+            ->withHost($host);
+
+        if ($port !== null) {
+            $uri = $uri->withPort($port);
+        }
+
+        return $this->psrFactories->getRequestFactory()->createRequest('GET', $uri);
     }
 
     /**
      * @return array<string, mixed>
-     * @throws SocialOAuthException
+     * @throws OAuthException
      */
     private function getProviderConfig(SocialProvider $provider): array
     {
         $config = $this->config[$provider->value] ?? null;
 
         if ($config === null) {
-            throw new SocialOAuthException(
+            throw new OAuthException(
                 sprintf('OAuth configuration not found for provider: %s', $provider->value),
             );
         }

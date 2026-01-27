@@ -14,7 +14,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 interface DraftGroupFactoryInterface
 {
     /**
-     * @param PrincipalIdentifier $editorIdentifier
+     * @param PrincipalIdentifier|null $editorIdentifier
      * @param Language $language
      * @param GroupName $name
      * @param Slug $slug
@@ -22,7 +22,7 @@ interface DraftGroupFactoryInterface
      * @return DraftGroup
      */
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Language                  $language,
         GroupName                 $name,
         Slug                      $slug,

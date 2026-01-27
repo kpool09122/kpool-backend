@@ -11,6 +11,11 @@ final readonly class CreateAccountLinkResponse
     ) {
     }
 
+    public function params(): CreateAccountLinkParams
+    {
+        return CreateAccountLinkParams::fromArray(['url' => $this->url]);
+    }
+
     public function url(): string
     {
         return $this->url;

@@ -16,8 +16,12 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
 use Source\Wiki\Talent\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
+use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Talent\Domain\ValueObject\Career;
+use Source\Wiki\Talent\Domain\ValueObject\RealName;
+use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 
 readonly class TranslateTalent implements TranslateTalentInterface
 {
@@ -25,6 +29,7 @@ readonly class TranslateTalent implements TranslateTalentInterface
         private TalentRepositoryInterface      $talentRepository,
         private DraftTalentRepositoryInterface $draftTalentRepository,
         private TranslationServiceInterface    $translationService,
+        private DraftTalentFactoryInterface    $draftTalentFactory,
         private PrincipalRepositoryInterface   $principalRepository,
         private PolicyEvaluatorInterface       $policyEvaluator,
     ) {
@@ -69,10 +74,29 @@ readonly class TranslateTalent implements TranslateTalentInterface
         $talentDrafts = [];
         $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
-            // 外部翻訳サービスを使って翻訳
-            $talentDraft = $this->translationService->translateTalent($talent, $language);
+            $translatedData = $this->translationService->translateTalent($talent, $language);
+
+            $talentDraft = $this->draftTalentFactory->create(
+                editorIdentifier: null,
+                slug: $talent->slug(),
+                language: $language,
+                name: new TalentName($translatedData->translatedName()),
+                translationSetIdentifier: $talent->translationSetIdentifier(),
+            );
+
+            $talentDraft->setRealName(new RealName($translatedData->translatedRealName()));
+            $talentDraft->setCareer(new Career($translatedData->translatedCareer()));
+            if ($talent->agencyIdentifier() !== null) {
+                $talentDraft->setAgencyIdentifier($talent->agencyIdentifier());
+            }
+            $talentDraft->setGroupIdentifiers($talent->groupIdentifiers());
+            if ($talent->birthday() !== null) {
+                $talentDraft->setBirthday($talent->birthday());
+            }
+            $talentDraft->setPublishedTalentIdentifier($input->publishedTalentIdentifier() ?? $input->talentIdentifier());
             $talentDraft->setSourceEditorIdentifier($talent->editorIdentifier());
             $talentDraft->setTranslatedAt($translatedAt);
+
             $talentDrafts[] = $talentDraft;
             $this->draftTalentRepository->save($talentDraft);
         }

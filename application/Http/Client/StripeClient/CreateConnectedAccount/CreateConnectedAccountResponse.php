@@ -11,6 +11,11 @@ final readonly class CreateConnectedAccountResponse
     ) {
     }
 
+    public function params(): CreateConnectedAccountParams
+    {
+        return CreateConnectedAccountParams::fromArray(['id' => $this->id]);
+    }
+
     public function id(): string
     {
         return $this->id;

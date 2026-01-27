@@ -5,20 +5,19 @@ declare(strict_types=1);
 namespace Source\Wiki\Song\Application\Service;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
 
 interface TranslationServiceInterface
 {
     /**
-     * 外部翻訳サービスを使ってSongを翻訳しDraftSongを作成
+     * 外部翻訳サービスを使ってSongを翻訳しTranslatedSongDataを返す
      *
      * @param Song $song
-     * @param Language $language
-     * @return DraftSong
+     * @param Language $targetLanguage
+     * @return TranslatedSongData
      */
     public function translateSong(
         Song     $song,
-        Language $language,
-    ): DraftSong;
+        Language $targetLanguage,
+    ): TranslatedSongData;
 }

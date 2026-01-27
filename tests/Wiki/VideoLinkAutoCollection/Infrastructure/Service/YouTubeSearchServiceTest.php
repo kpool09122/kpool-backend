@@ -8,9 +8,11 @@ use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsRespons
 use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
 use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
 use Application\Http\Client\YouTubeClient\YouTubeClient;
+use GuzzleHttp\Psr7\HttpFactory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Mockery\MockInterface;
+use Psr\Http\Message\ResponseInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Tests\TestCase;
@@ -303,18 +305,18 @@ class YouTubeSearchServiceTest extends TestCase
 
         $client->shouldReceive('searchVideoIds')
             ->withArgs(fn ($request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
-            ->andReturn(new SearchVideoIdsResponse($viewCountVideoIds));
+            ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($viewCountVideoIds)));
 
         $client->shouldReceive('searchVideoIds')
             ->withArgs(fn ($request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
-            ->andReturn(new SearchVideoIdsResponse($relevanceVideoIds));
+            ->andReturn(new SearchVideoIdsResponse($this->createSearchResponse($relevanceVideoIds)));
 
         $client->shouldReceive('searchRecentVideoIds')
             ->withArgs(fn ($request) => $request->keyword() === 'test keyword')
-            ->andReturn(new SearchRecentVideoIdsResponse($recentVideoIds));
+            ->andReturn(new SearchRecentVideoIdsResponse($this->createSearchResponse($recentVideoIds)));
 
         $client->shouldReceive('getVideoDetails')
-            ->andReturn(new GetVideoDetailsResponse($videoDetails));
+            ->andReturn(new GetVideoDetailsResponse($this->createVideoDetailsResponse($videoDetails)));
 
         return $client;
     }
@@ -332,5 +334,57 @@ class YouTubeSearchServiceTest extends TestCase
             'viewCount' => $viewCount,
             'likeCount' => $likeCount,
         ];
+    }
+
+    /**
+     * @param string[] $videoIds
+     */
+    private function createSearchResponse(array $videoIds): ResponseInterface
+    {
+        $items = array_map(
+            static fn (string $videoId): array => ['id' => ['videoId' => $videoId]],
+            $videoIds,
+        );
+
+        return $this->createJsonResponse(['items' => $items]);
+    }
+
+    /**
+     * @param array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int}> $videoDetails
+     */
+    private function createVideoDetailsResponse(array $videoDetails): ResponseInterface
+    {
+        $items = array_values(array_map(
+            static fn (array $detail): array => [
+                'id' => $detail['id'],
+                'snippet' => [
+                    'title' => $detail['title'],
+                    'publishedAt' => $detail['publishedAt'],
+                    'thumbnails' => [
+                        'high' => ['url' => $detail['thumbnailUrl']],
+                        'default' => ['url' => $detail['thumbnailUrl']],
+                    ],
+                ],
+                'statistics' => [
+                    'viewCount' => (string) $detail['viewCount'],
+                    'likeCount' => (string) $detail['likeCount'],
+                ],
+            ],
+            $videoDetails,
+        ));
+
+        return $this->createJsonResponse(['items' => $items]);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function createJsonResponse(array $data): ResponseInterface
+    {
+        $factory = new HttpFactory();
+        $json = json_encode($data, JSON_THROW_ON_ERROR);
+        $stream = $factory->createStream($json);
+
+        return $factory->createResponse()->withBody($stream);
     }
 }

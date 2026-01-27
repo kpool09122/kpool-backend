@@ -7,6 +7,7 @@ namespace Tests\Wiki\Song\Application\UseCase\Command\TranslateSong;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Mockery\MockInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -21,12 +22,14 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
+use Source\Wiki\Song\Application\Service\TranslatedSongData;
 use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSong;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInput;
 use Source\Wiki\Song\Application\UseCase\Command\TranslateSong\TranslateSongInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Entity\Song;
+use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
@@ -96,33 +99,31 @@ class TranslateSongTest extends TestCase
 
         $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
         $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->enSong)
-            ->once()
-            ->andReturn(null);
-        $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->jaSong)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->english)
+            ->with($dummyTranslateSong->song, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateSong->enSong);
+            ->andReturn($dummyTranslateSong->jaTranslatedData);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->japanese)
+            ->with($dummyTranslateSong->song, Language::ENGLISH)
             ->once()
-            ->andReturn($dummyTranslateSong->jaSong);
+            ->andReturn($dummyTranslateSong->enTranslatedData);
+
+        $draftSongFactory = $this->createDraftSongFactoryMock($dummyTranslateSong);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(DraftSongFactoryInterface::class, $draftSongFactory);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
-        $this->assertSame($dummyTranslateSong->jaSong, $songs[0]);
-        $this->assertSame($dummyTranslateSong->enSong, $songs[1]);
+        $this->assertInstanceOf(DraftSong::class, $songs[0]);
+        $this->assertInstanceOf(DraftSong::class, $songs[1]);
     }
 
     /**
@@ -295,28 +296,26 @@ class TranslateSongTest extends TestCase
 
         $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
         $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->enSong)
-            ->once()
-            ->andReturn(null);
-        $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->jaSong)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->english)
+            ->with($dummyTranslateSong->song, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateSong->enSong);
+            ->andReturn($dummyTranslateSong->jaTranslatedData);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->japanese)
+            ->with($dummyTranslateSong->song, Language::ENGLISH)
             ->once()
-            ->andReturn($dummyTranslateSong->jaSong);
+            ->andReturn($dummyTranslateSong->enTranslatedData);
+
+        $draftSongFactory = $this->createDraftSongFactoryMock($dummyTranslateSong);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(DraftSongFactoryInterface::class, $draftSongFactory);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -383,7 +382,7 @@ class TranslateSongTest extends TestCase
     public function testAuthorizedAgencyActor(): void
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
-        $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
+        $agencyId = (string) $dummyTranslateSong->agencyIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], []);
@@ -407,28 +406,26 @@ class TranslateSongTest extends TestCase
 
         $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
         $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->enSong)
-            ->once()
-            ->andReturn(null);
-        $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->jaSong)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->english)
+            ->with($dummyTranslateSong->song, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateSong->enSong);
+            ->andReturn($dummyTranslateSong->jaTranslatedData);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->japanese)
+            ->with($dummyTranslateSong->song, Language::ENGLISH)
             ->once()
-            ->andReturn($dummyTranslateSong->jaSong);
+            ->andReturn($dummyTranslateSong->enTranslatedData);
+
+        $draftSongFactory = $this->createDraftSongFactoryMock($dummyTranslateSong);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(DraftSongFactoryInterface::class, $draftSongFactory);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -447,7 +444,7 @@ class TranslateSongTest extends TestCase
         $dummyTranslateSong = $this->createDummyTranslateSong();
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
+        $agencyId = (string) $dummyTranslateSong->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], []);
 
@@ -496,8 +493,8 @@ class TranslateSongTest extends TestCase
     public function testAuthorizedTalentActor(): void
     {
         $dummyTranslateSong = $this->createDummyTranslateSong();
-        $agencyId = (string)$dummyTranslateSong->agencyIdentifier;
-        $talentId = (string)$dummyTranslateSong->talentIdentifier;
+        $agencyId = (string) $dummyTranslateSong->agencyIdentifier;
+        $talentId = (string) $dummyTranslateSong->talentIdentifier;
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [], [$talentId]);
@@ -521,28 +518,26 @@ class TranslateSongTest extends TestCase
 
         $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
         $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->enSong)
-            ->once()
-            ->andReturn(null);
-        $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->jaSong)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->english)
+            ->with($dummyTranslateSong->song, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateSong->enSong);
+            ->andReturn($dummyTranslateSong->jaTranslatedData);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->japanese)
+            ->with($dummyTranslateSong->song, Language::ENGLISH)
             ->once()
-            ->andReturn($dummyTranslateSong->jaSong);
+            ->andReturn($dummyTranslateSong->enTranslatedData);
+
+        $draftSongFactory = $this->createDraftSongFactoryMock($dummyTranslateSong);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(DraftSongFactoryInterface::class, $draftSongFactory);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -583,28 +578,26 @@ class TranslateSongTest extends TestCase
 
         $draftSongRepository = Mockery::mock(DraftSongRepositoryInterface::class);
         $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->enSong)
-            ->once()
-            ->andReturn(null);
-        $draftSongRepository->shouldReceive('save')
-            ->with($dummyTranslateSong->jaSong)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->english)
+            ->with($dummyTranslateSong->song, Language::JAPANESE)
             ->once()
-            ->andReturn($dummyTranslateSong->enSong);
+            ->andReturn($dummyTranslateSong->jaTranslatedData);
         $translationService->shouldReceive('translateSong')
-            ->with($dummyTranslateSong->song, $dummyTranslateSong->japanese)
+            ->with($dummyTranslateSong->song, Language::ENGLISH)
             ->once()
-            ->andReturn($dummyTranslateSong->jaSong);
+            ->andReturn($dummyTranslateSong->enTranslatedData);
+
+        $draftSongFactory = $this->createDraftSongFactoryMock($dummyTranslateSong);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(SongRepositoryInterface::class, $songRepository);
         $this->app->instance(DraftSongRepositoryInterface::class, $draftSongRepository);
+        $this->app->instance(DraftSongFactoryInterface::class, $draftSongFactory);
         $translateSong = $this->app->make(TranslateSongInterface::class);
         $songs = $translateSong->process($input);
         $this->assertCount(2, $songs);
@@ -659,6 +652,40 @@ class TranslateSongTest extends TestCase
     }
 
     /**
+     * DraftSongFactoryのモックを作成するヘルパーメソッド
+     *
+     * @param TranslateSongTestData $dummyTranslateSong
+     * @return MockInterface&DraftSongFactoryInterface
+     */
+    private function createDraftSongFactoryMock(TranslateSongTestData $dummyTranslateSong): MockInterface
+    {
+        /** @var MockInterface&DraftSongFactoryInterface $draftSongFactory */
+        $draftSongFactory = Mockery::mock(DraftSongFactoryInterface::class);
+        $draftSongFactory->shouldReceive('create')
+            ->with(
+                null,
+                $dummyTranslateSong->song->slug(),
+                Language::JAPANESE,
+                Mockery::type(SongName::class),
+                $dummyTranslateSong->song->translationSetIdentifier(),
+            )
+            ->once()
+            ->andReturn($dummyTranslateSong->jaSong);
+        $draftSongFactory->shouldReceive('create')
+            ->with(
+                null,
+                $dummyTranslateSong->song->slug(),
+                Language::ENGLISH,
+                Mockery::type(SongName::class),
+                $dummyTranslateSong->song->translationSetIdentifier(),
+            )
+            ->once()
+            ->andReturn($dummyTranslateSong->enSong);
+
+        return $draftSongFactory;
+    }
+
+    /**
      * ダミーデータを作成するヘルパーメソッド
      *
      * @return TranslateSongTestData
@@ -677,7 +704,7 @@ class TranslateSongTest extends TestCase
         $lyricist = new Lyricist('블랙아이드필승');
         $composer = new Composer('Sam Lewis');
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다. 좋아한다는 마음을 전하고 싶은데 어떻게 해야 할지 몰라 눈물이 날 것 같기도 하고, 쿨한 척해 보기도 합니다. 그런 아직은 서투른 사랑의 마음을, 양손 엄지를 아래로 향하게 한 우는 이모티콘 "(T_T)"을 본뜬 "TT 포즈"로 재치있게 표현하고 있습니다. 핼러윈을 테마로 한 뮤직비디오도 특징이며, 멤버들이 다양한 캐릭터로 분장하여 애절하면서도 귀여운 세계관을 그려내고 있습니다.');
+        $overView = new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.');
         $version = new Version(1);
 
         $song = new Song(
@@ -694,66 +721,59 @@ class TranslateSongTest extends TestCase
             $releaseDate,
             $overView,
             $version,
+            editorIdentifier: $editorIdentifier,
         );
 
-        // 日本語版
-        $jaSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $japanese = Language::JAPANESE;
-        $jaName = new SongName('TT');
-        $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $jaGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $jaTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $jaLyricist = new Lyricist('Black Eyed Pilseung');
-        $jaComposer = new Composer('Sam Lewis');
-        $jaReleaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $jaOverView = new Overview('「TT」は初めて恋に落ちた少女の仕方がない心を歌った曲です。好きだという気持ちを伝えたいのですが、どうしたらいいのかわからず、涙が出るようで、クールなふりをしています。そんなまだ不器用な愛の心を、両手の親指を下に向けた泣く絵文字「(T_T)」を模した「TTポーズ」で気持ちよく表現しています。ハロウィンをテーマにしたミュージックビデオも特徴であり、メンバーたちが様々なキャラクターに扮し、切ないながらもかわいい世界観を描いています。');
-
+        // 日本語版 DraftSong
         $jaSong = new DraftSong(
-            $jaSongIdentifier,
-            $songIdentifier,
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            null,
             $translationSetIdentifier,
             $slug,
-            $editorIdentifier,
-            $japanese,
-            $jaName,
-            $jaAgencyIdentifier,
-            $jaGroupIdentifier,
-            $jaTalentIdentifier,
-            $jaLyricist,
-            $jaComposer,
-            $jaReleaseDate,
-            $jaOverView,
+            null,
+            Language::JAPANESE,
+            new SongName('TT'),
+            null,
+            null,
+            null,
+            new Lyricist(''),
+            new Composer(''),
+            null,
+            new Overview(''),
             ApprovalStatus::Pending,
         );
 
-        // 英語版
-        $enSongIdentifier = new SongIdentifier(StrTestHelper::generateUuid());
-        $english = Language::ENGLISH;
-        $enName = new SongName('TT');
-        $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $enGroupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
-        $enTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
-        $enLyricist = new Lyricist('Black Eyed Pilseung');
-        $enComposer = new Composer('Sam Lewis');
-        $enReleaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));
-        $enOverView = new Overview('"TT" is a song about the helpless feelings of a girl who\'s fallen in love for the first time. She wants to express her feelings, but doesn\'t know how, so she feels close to tears or tries to act cool. This awkwardness in love is cleverly expressed with the "TT pose," modeled after the crying emoticon "(T_T)," with both thumbs pointing down. The Halloween-themed music video is also a standout, with the members dressed up as various characters, creating a world that\'s both poignant and cute.');
-
+        // 英語版 DraftSong
         $enSong = new DraftSong(
-            $enSongIdentifier,
-            $songIdentifier,
+            new SongIdentifier(StrTestHelper::generateUuid()),
+            null,
             $translationSetIdentifier,
             $slug,
-            $editorIdentifier,
-            $english,
-            $enName,
-            $enAgencyIdentifier,
-            $enGroupIdentifier,
-            $enTalentIdentifier,
-            $enLyricist,
-            $enComposer,
-            $enReleaseDate,
-            $enOverView,
+            null,
+            Language::ENGLISH,
+            new SongName('TT'),
+            null,
+            null,
+            null,
+            new Lyricist(''),
+            new Composer(''),
+            null,
+            new Overview(''),
             ApprovalStatus::Pending,
+        );
+
+        $jaTranslatedData = new TranslatedSongData(
+            translatedName: 'TT',
+            translatedLyricist: 'Black Eyed Pilseung',
+            translatedComposer: 'Sam Lewis',
+            translatedOverview: '「TT」は初めて恋に落ちた少女の仕方がない心を歌った曲です。',
+        );
+
+        $enTranslatedData = new TranslatedSongData(
+            translatedName: 'TT',
+            translatedLyricist: 'Black Eyed Pilseung',
+            translatedComposer: 'Sam Lewis',
+            translatedOverview: '"TT" is a song about the helpless feelings of a girl who\'s fallen in love for the first time.',
         );
 
         return new TranslateSongTestData(
@@ -770,10 +790,10 @@ class TranslateSongTest extends TestCase
             $releaseDate,
             $overView,
             $song,
-            $japanese,
             $jaSong,
-            $english,
             $enSong,
+            $jaTranslatedData,
+            $enTranslatedData,
         );
     }
 }
@@ -788,7 +808,7 @@ readonly class TranslateSongTestData
      */
     public function __construct(
         public SongIdentifier           $songIdentifier,
-        public PrincipalIdentifier       $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $language,
         public SongName                 $name,
@@ -800,10 +820,10 @@ readonly class TranslateSongTestData
         public ReleaseDate              $releaseDate,
         public Overview                 $overView,
         public Song                     $song,
-        public Language                 $japanese,
         public DraftSong                $jaSong,
-        public Language                 $english,
         public DraftSong                $enSong,
+        public TranslatedSongData       $jaTranslatedData,
+        public TranslatedSongData       $enTranslatedData,
     ) {
     }
 }
