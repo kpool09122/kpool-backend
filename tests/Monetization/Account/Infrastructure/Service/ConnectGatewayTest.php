@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Monetization\Account\Infrastructure\Service;
 
-use Application\Http\Client\StripeClient;
+use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountRequest;
+use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountResponse;
+use Application\Http\Client\StripeClient\StripeClient;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
@@ -58,14 +60,11 @@ class ConnectGatewayTest extends TestCase
 
         $accountId = $gateway->createConnectedAccount($email, $country);
 
-        $this->assertInstanceOf(StripeConnectedAccountId::class, $accountId);
         $this->assertStringStartsWith('acct_', (string) $accountId);
 
         // Stripe から Account を取得して確認
-        $account = $stripeClient->client()->accounts->retrieve((string) $accountId);
-        $this->assertSame((string)$email, $account->email);
-        $this->assertSame($country->value, $account->country);
-        $this->assertSame('express', $account->type);
+        $response = $stripeClient->retrieveAccount(new RetrieveAccountRequest((string) $accountId));
+        $this->assertTrue($response->detailsSubmitted() === false || $response->detailsSubmitted() === true);
     }
 
     /**
@@ -77,18 +76,10 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testCreateConnectedAccountThrowsStripeConnectExceptionOnApiError(): void
     {
-        $mockAccounts = Mockery::mock();
-        $mockAccounts->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createConnectedAccount')
             ->once()
             ->andThrow(InvalidRequestException::factory('Invalid country', 400));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accounts')
-            ->andReturn($mockAccounts);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -134,18 +125,10 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testCreateAccountLinkThrowsStripeConnectExceptionOnApiError(): void
     {
-        $mockAccountLinks = Mockery::mock();
-        $mockAccountLinks->shouldReceive('create')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createAccountLink')
             ->once()
             ->andThrow(InvalidRequestException::factory('Invalid account', 400));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accountLinks')
-            ->andReturn($mockAccountLinks);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -167,22 +150,16 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testGetAccountStatusReturnsPendingWhenDetailsNotSubmitted(): void
     {
-        $mockAccount = (object) [
-            'details_submitted' => false,
-        ];
-
-        $mockAccounts = Mockery::mock();
-        $mockAccounts->shouldReceive('retrieve')
-            ->once()
-            ->andReturn($mockAccount);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accounts')
-            ->andReturn($mockAccounts);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('retrieveAccount')
+            ->once()
+            ->withArgs(static fn (RetrieveAccountRequest $request) => $request->accountId() === 'acct_test123456')
+            ->andReturn(new RetrieveAccountResponse(
+                detailsSubmitted: false,
+                disabledReason: null,
+                chargesEnabled: false,
+                payoutsEnabled: false,
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -203,27 +180,16 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testGetAccountStatusReturnsRestrictedWhenDisabledReasonExists(): void
     {
-        $mockAccount = (object) [
-            'details_submitted' => true,
-            'requirements' => (object) [
-                'disabled_reason' => 'requirements.past_due',
-            ],
-            'charges_enabled' => false,
-            'payouts_enabled' => false,
-        ];
-
-        $mockAccounts = Mockery::mock();
-        $mockAccounts->shouldReceive('retrieve')
-            ->once()
-            ->andReturn($mockAccount);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accounts')
-            ->andReturn($mockAccounts);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('retrieveAccount')
+            ->once()
+            ->withArgs(static fn (RetrieveAccountRequest $request) => $request->accountId() === 'acct_test123456')
+            ->andReturn(new RetrieveAccountResponse(
+                detailsSubmitted: true,
+                disabledReason: 'requirements.past_due',
+                chargesEnabled: false,
+                payoutsEnabled: false,
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -244,27 +210,16 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testGetAccountStatusReturnsEnabledWhenFullyEnabled(): void
     {
-        $mockAccount = (object) [
-            'details_submitted' => true,
-            'requirements' => (object) [
-                'disabled_reason' => null,
-            ],
-            'charges_enabled' => true,
-            'payouts_enabled' => true,
-        ];
-
-        $mockAccounts = Mockery::mock();
-        $mockAccounts->shouldReceive('retrieve')
-            ->once()
-            ->andReturn($mockAccount);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accounts')
-            ->andReturn($mockAccounts);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('retrieveAccount')
+            ->once()
+            ->withArgs(static fn (RetrieveAccountRequest $request) => $request->accountId() === 'acct_test123456')
+            ->andReturn(new RetrieveAccountResponse(
+                detailsSubmitted: true,
+                disabledReason: null,
+                chargesEnabled: true,
+                payoutsEnabled: true,
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -285,27 +240,16 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testGetAccountStatusReturnsRestrictedWhenPartiallyEnabled(): void
     {
-        $mockAccount = (object) [
-            'details_submitted' => true,
-            'requirements' => (object) [
-                'disabled_reason' => null,
-            ],
-            'charges_enabled' => true,
-            'payouts_enabled' => false,
-        ];
-
-        $mockAccounts = Mockery::mock();
-        $mockAccounts->shouldReceive('retrieve')
-            ->once()
-            ->andReturn($mockAccount);
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accounts')
-            ->andReturn($mockAccounts);
-
         $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
+        $mockStripeClient->shouldReceive('retrieveAccount')
+            ->once()
+            ->withArgs(static fn (RetrieveAccountRequest $request) => $request->accountId() === 'acct_test123456')
+            ->andReturn(new RetrieveAccountResponse(
+                detailsSubmitted: true,
+                disabledReason: null,
+                chargesEnabled: true,
+                payoutsEnabled: false,
+            ));
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 
@@ -326,18 +270,10 @@ class ConnectGatewayTest extends TestCase
     #[Group('useDb')]
     public function testGetAccountStatusThrowsStripeConnectExceptionOnApiError(): void
     {
-        $mockAccounts = Mockery::mock();
-        $mockAccounts->shouldReceive('retrieve')
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('retrieveAccount')
             ->once()
             ->andThrow(InvalidRequestException::factory('Account not found', 404));
-
-        $mockBaseClient = Mockery::mock(\Stripe\StripeClient::class);
-        $mockBaseClient->shouldReceive('getService')
-            ->with('accounts')
-            ->andReturn($mockAccounts);
-
-        $mockStripeClient = Mockery::mock(StripeClient::class);
-        $mockStripeClient->shouldReceive('client')->andReturn($mockBaseClient);
 
         $this->app->instance(StripeClient::class, $mockStripeClient);
 

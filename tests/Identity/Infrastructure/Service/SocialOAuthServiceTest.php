@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Identity\Infrastructure\Service;
 
-use Application\Http\Client\OAuthHttpClient;
+use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
+use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenResponse;
+use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
+use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoResponse;
+use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
@@ -129,28 +133,42 @@ class SocialOAuthServiceTest extends TestCase
 
         $code = new OAuthCode('google-auth-code');
 
+        $capturedExchangeRequest = null;
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->with(SocialProvider::GOOGLE, 'google-auth-code')
-            ->andReturn([
-                'access_token' => 'google-access-token',
-                'id_token' => null,
-            ]);
+            ->withArgs(function (ExchangeCodeForTokenRequest $request) use (&$capturedExchangeRequest) {
+                $capturedExchangeRequest = $request;
 
+                return true;
+            })
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'google-access-token',
+                idToken: null,
+            ));
+
+        $capturedFetchRequest = null;
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->with(SocialProvider::GOOGLE, 'google-access-token')
-            ->andReturn([
+            ->withArgs(function (FetchUserInfoRequest $request) use (&$capturedFetchRequest) {
+                $capturedFetchRequest = $request;
+
+                return true;
+            })
+            ->andReturn(new FetchUserInfoResponse([
                 'id' => '123456789',
                 'email' => 'user@gmail.com',
                 'name' => 'Test User',
                 'picture' => 'https://example.com/avatar.jpg',
-            ]);
+            ]));
 
         $profile = $service->fetchProfile(SocialProvider::GOOGLE, $code);
 
+        $this->assertSame(SocialProvider::GOOGLE, $capturedExchangeRequest->provider());
+        $this->assertSame('google-auth-code', $capturedExchangeRequest->code());
+        $this->assertSame(SocialProvider::GOOGLE, $capturedFetchRequest->provider());
+        $this->assertSame('google-access-token', $capturedFetchRequest->accessToken());
         $this->assertSame(SocialProvider::GOOGLE, $profile->provider());
         $this->assertSame('123456789', $profile->providerUserId());
         $this->assertSame('user@gmail.com', (string) $profile->email());
@@ -179,27 +197,41 @@ class SocialOAuthServiceTest extends TestCase
         $code = new OAuthCode('line-auth-code');
         $idToken = $this->createIdToken(['email' => 'user@line.me']);
 
+        $capturedExchangeRequest = null;
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->with(SocialProvider::LINE, 'line-auth-code')
-            ->andReturn([
-                'access_token' => 'line-access-token',
-                'id_token' => $idToken,
-            ]);
+            ->withArgs(function (ExchangeCodeForTokenRequest $request) use (&$capturedExchangeRequest) {
+                $capturedExchangeRequest = $request;
 
+                return true;
+            })
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'line-access-token',
+                idToken: $idToken,
+            ));
+
+        $capturedFetchRequest = null;
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->with(SocialProvider::LINE, 'line-access-token')
-            ->andReturn([
+            ->withArgs(function (FetchUserInfoRequest $request) use (&$capturedFetchRequest) {
+                $capturedFetchRequest = $request;
+
+                return true;
+            })
+            ->andReturn(new FetchUserInfoResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
                 'pictureUrl' => 'https://profile.line-scdn.net/avatar.jpg',
-            ]);
+            ]));
 
         $profile = $service->fetchProfile(SocialProvider::LINE, $code);
 
+        $this->assertSame(SocialProvider::LINE, $capturedExchangeRequest->provider());
+        $this->assertSame('line-auth-code', $capturedExchangeRequest->code());
+        $this->assertSame(SocialProvider::LINE, $capturedFetchRequest->provider());
+        $this->assertSame('line-access-token', $capturedFetchRequest->accessToken());
         $this->assertSame(SocialProvider::LINE, $profile->provider());
         $this->assertSame('U1234567890abcdef', $profile->providerUserId());
         $this->assertSame('user@line.me', (string) $profile->email());
@@ -231,18 +263,18 @@ class SocialOAuthServiceTest extends TestCase
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->andReturn([
-                'access_token' => 'line-access-token',
-                'id_token' => $idToken,
-            ]);
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'line-access-token',
+                idToken: $idToken,
+            ));
 
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->andReturn([
+            ->andReturn(new FetchUserInfoResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
-            ]);
+            ]));
 
         $this->expectException(SocialOAuthException::class);
         $this->expectExceptionMessage('Email not available from LINE. Please grant email permission.');
@@ -273,18 +305,18 @@ class SocialOAuthServiceTest extends TestCase
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->andReturn([
-                'access_token' => 'line-access-token',
-                'id_token' => null,
-            ]);
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'line-access-token',
+                idToken: null,
+            ));
 
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->andReturn([
+            ->andReturn(new FetchUserInfoResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
-            ]);
+            ]));
 
         $this->expectException(SocialOAuthException::class);
         $this->expectExceptionMessage('Email not available from LINE. Please grant email permission.');
@@ -315,18 +347,18 @@ class SocialOAuthServiceTest extends TestCase
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->andReturn([
-                'access_token' => 'line-access-token',
-                'id_token' => 'invalid-token-without-dots',
-            ]);
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'line-access-token',
+                idToken: 'invalid-token-without-dots',
+            ));
 
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->andReturn([
+            ->andReturn(new FetchUserInfoResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
-            ]);
+            ]));
 
         $this->expectException(SocialOAuthException::class);
         $this->expectExceptionMessage('Email not available from LINE. Please grant email permission.');
@@ -362,18 +394,18 @@ class SocialOAuthServiceTest extends TestCase
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->andReturn([
-                'access_token' => 'line-access-token',
-                'id_token' => $invalidIdToken,
-            ]);
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'line-access-token',
+                idToken: $invalidIdToken,
+            ));
 
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->andReturn([
+            ->andReturn(new FetchUserInfoResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
-            ]);
+            ]));
 
         $this->expectException(SocialOAuthException::class);
         $this->expectExceptionMessage('Email not available from LINE. Please grant email permission.');
@@ -401,20 +433,30 @@ class SocialOAuthServiceTest extends TestCase
 
         $code = new OAuthCode('kakao-auth-code');
 
+        $capturedExchangeRequest = null;
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->with(SocialProvider::KAKAO, 'kakao-auth-code')
-            ->andReturn([
-                'access_token' => 'kakao-access-token',
-                'id_token' => null,
-            ]);
+            ->withArgs(function (ExchangeCodeForTokenRequest $request) use (&$capturedExchangeRequest) {
+                $capturedExchangeRequest = $request;
 
+                return true;
+            })
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'kakao-access-token',
+                idToken: null,
+            ));
+
+        $capturedFetchRequest = null;
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->with(SocialProvider::KAKAO, 'kakao-access-token')
-            ->andReturn([
+            ->withArgs(function (FetchUserInfoRequest $request) use (&$capturedFetchRequest) {
+                $capturedFetchRequest = $request;
+
+                return true;
+            })
+            ->andReturn(new FetchUserInfoResponse([
                 'id' => 9876543210,
                 'kakao_account' => [
                     'email' => 'user@kakao.com',
@@ -423,10 +465,14 @@ class SocialOAuthServiceTest extends TestCase
                         'profile_image_url' => 'https://k.kakaocdn.net/avatar.jpg',
                     ],
                 ],
-            ]);
+            ]));
 
         $profile = $service->fetchProfile(SocialProvider::KAKAO, $code);
 
+        $this->assertSame(SocialProvider::KAKAO, $capturedExchangeRequest->provider());
+        $this->assertSame('kakao-auth-code', $capturedExchangeRequest->code());
+        $this->assertSame(SocialProvider::KAKAO, $capturedFetchRequest->provider());
+        $this->assertSame('kakao-access-token', $capturedFetchRequest->accessToken());
         $this->assertSame(SocialProvider::KAKAO, $profile->provider());
         $this->assertSame('9876543210', $profile->providerUserId());
         $this->assertSame('user@kakao.com', (string) $profile->email());
@@ -457,22 +503,22 @@ class SocialOAuthServiceTest extends TestCase
         $oAuthHttpClient
             ->shouldReceive('exchangeCodeForToken')
             ->once()
-            ->andReturn([
-                'access_token' => 'kakao-access-token',
-                'id_token' => null,
-            ]);
+            ->andReturn(new ExchangeCodeForTokenResponse(
+                accessToken: 'kakao-access-token',
+                idToken: null,
+            ));
 
         $oAuthHttpClient
             ->shouldReceive('fetchUserInfo')
             ->once()
-            ->andReturn([
+            ->andReturn(new FetchUserInfoResponse([
                 'id' => 9876543210,
                 'kakao_account' => [
                     'profile' => [
                         'nickname' => 'Kakao User',
                     ],
                 ],
-            ]);
+            ]));
 
         $this->expectException(SocialOAuthException::class);
         $this->expectExceptionMessage('Email not available from Kakao. Please grant email permission.');

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\VideoLinkAutoCollection\Infrastructure\Service;
 
-use Application\Http\Client\YouTubeClient;
+use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsRequest;
+use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest;
+use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
+use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
@@ -39,13 +42,15 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
             return [];
         }
 
-        $viewCountVideoIds = $this->youTubeClient->searchVideoIds($keyword, 'viewCount', self::MAX_RESULTS_PER_SEARCH);
-        $relevanceVideoIds = $this->youTubeClient->searchVideoIds($keyword, 'relevance', self::MAX_RESULTS_PER_SEARCH);
+        $viewCountVideoIds = $this->youTubeClient->searchVideoIds(
+            new SearchVideoIdsRequest($keyword, 'viewCount', self::MAX_RESULTS_PER_SEARCH),
+        )->videoIds();
+        $relevanceVideoIds = $this->youTubeClient->searchVideoIds(
+            new SearchVideoIdsRequest($keyword, 'relevance', self::MAX_RESULTS_PER_SEARCH),
+        )->videoIds();
         $recentVideoIds = $this->youTubeClient->searchRecentVideoIds(
-            $keyword,
-            self::MAX_RESULTS_PER_SEARCH,
-            CarbonImmutable::now()->subMonth(),
-        );
+            new SearchRecentVideoIdsRequest($keyword, self::MAX_RESULTS_PER_SEARCH, CarbonImmutable::now()->subMonth()),
+        )->videoIds();
 
         $allVideoIds = array_unique(array_merge($viewCountVideoIds, $relevanceVideoIds, $recentVideoIds));
 
@@ -53,7 +58,9 @@ class YouTubeSearchService implements YouTubeSearchServiceInterface
             return [];
         }
 
-        $videoDetails = $this->youTubeClient->getVideoDetails($allVideoIds);
+        $videoDetails = $this->youTubeClient->getVideoDetails(
+            new GetVideoDetailsRequest($allVideoIds),
+        )->details();
 
         $viewCountVideos = $this->selectTopVideos($videoDetails, $viewCountVideoIds, 'viewCount', VideoUsage::YOUTUBE_AUTO_VIEW_COUNT, false);
         $likeRateVideos = $this->selectTopVideos($videoDetails, $relevanceVideoIds, 'likeRate', VideoUsage::YOUTUBE_AUTO_LIKE_COUNT, true);

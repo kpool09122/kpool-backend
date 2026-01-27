@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Payment\Infrastructure\Service;
 
-use Application\Http\Client\StripeClient;
+use Application\Http\Client\StripeClient\CapturePaymentIntent\CapturePaymentIntentRequest;
+use Application\Http\Client\StripeClient\CreatePaymentIntent\CreatePaymentIntentRequest;
+use Application\Http\Client\StripeClient\CreateRefund\CreateRefundRequest;
+use Application\Http\Client\StripeClient\StripeClient;
 use Application\Models\Monetization\Payment as PaymentEloquent;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
@@ -33,8 +36,6 @@ readonly class PaymentGateway implements PaymentGatewayInterface
     public function authorize(Payment $payment): void
     {
         try {
-            $stripeClient = $this->stripeClient->client();
-
             $monetizationAccount = $this->monetizationAccountRepository->findById(
                 $payment->buyerMonetizationAccountIdentifier()
             );
@@ -61,43 +62,42 @@ readonly class PaymentGateway implements PaymentGatewayInterface
                 throw new PaymentGatewayException('Stripe payment method not set.');
             }
 
-            $paymentIntent = $stripeClient->paymentIntents->create([
-                'amount' => $this->convertToStripeAmount(
+            $request = new CreatePaymentIntentRequest(
+                amount: $this->convertToStripeAmount(
                     $payment->money()->amount(),
                     $payment->money()->currency()
                 ),
-                'currency' => strtolower($payment->money()->currency()->value),
-                'customer' => (string) $stripeCustomerId,
-                'payment_method' => $stripePaymentMethodId,
-                'payment_method_types' => $this->mapPaymentMethodTypes($payment),
-                'capture_method' => 'manual',
-                'confirm' => true,
-                'off_session' => true,
-                'metadata' => [
+                currency: strtolower($payment->money()->currency()->value),
+                customerId: (string) $stripeCustomerId,
+                paymentMethodId: $stripePaymentMethodId,
+                paymentMethodTypes: $this->mapPaymentMethodTypes($payment),
+                metadata: [
                     'payment_id' => (string) $payment->paymentId(),
                     'order_id' => (string) $payment->orderIdentifier(),
                 ],
-            ]);
+            );
+
+            $response = $this->stripeClient->createPaymentIntent($request);
 
             PaymentEloquent::query()
                 ->where('id', (string) $payment->paymentId())
-                ->update(['stripe_payment_intent_id' => $paymentIntent->id]);
+                ->update(['stripe_payment_intent_id' => $response->id()]);
 
-            if ($paymentIntent->status !== PaymentIntent::STATUS_REQUIRES_CAPTURE) {
+            if ($response->status() !== PaymentIntent::STATUS_REQUIRES_CAPTURE) {
                 $this->logger->warning('Unexpected PaymentIntent status after authorization', [
                     'payment_id' => (string) $payment->paymentId(),
-                    'stripe_payment_intent_id' => $paymentIntent->id,
-                    'status' => $paymentIntent->status,
+                    'stripe_payment_intent_id' => $response->id(),
+                    'status' => $response->status(),
                 ]);
 
                 throw new PaymentGatewayException(
-                    sprintf('Authorization failed: unexpected status "%s"', $paymentIntent->status)
+                    sprintf('Authorization failed: unexpected status "%s"', $response->status())
                 );
             }
 
             $this->logger->info('Payment authorized successfully', [
                 'payment_id' => (string) $payment->paymentId(),
-                'stripe_payment_intent_id' => $paymentIntent->id,
+                'stripe_payment_intent_id' => $response->id(),
             ]);
         } catch (ApiErrorException $e) {
             $this->logger->error('Stripe API error during authorization', [
@@ -116,8 +116,6 @@ readonly class PaymentGateway implements PaymentGatewayInterface
     public function capture(Payment $payment): void
     {
         try {
-            $stripeClient = $this->stripeClient->client();
-
             $eloquent = PaymentEloquent::query()
                 ->where('id', (string) $payment->paymentId())
                 ->first(['stripe_payment_intent_id']);
@@ -126,19 +124,19 @@ readonly class PaymentGateway implements PaymentGatewayInterface
                 throw new PaymentGatewayException('Stripe Payment Intent not found for this payment.');
             }
 
-            $paymentIntent = $stripeClient->paymentIntents->capture(
-                $eloquent->stripe_payment_intent_id,
-                [
-                    'amount_to_capture' => $this->convertToStripeAmount(
-                        $payment->money()->amount(),
-                        $payment->money()->currency()
-                    ),
-                ]
+            $request = new CapturePaymentIntentRequest(
+                paymentIntentId: $eloquent->stripe_payment_intent_id,
+                amountToCapture: $this->convertToStripeAmount(
+                    $payment->money()->amount(),
+                    $payment->money()->currency()
+                ),
             );
 
-            if ($paymentIntent->status !== PaymentIntent::STATUS_SUCCEEDED) {
+            $response = $this->stripeClient->capturePaymentIntent($request);
+
+            if ($response->status() !== PaymentIntent::STATUS_SUCCEEDED) {
                 throw new PaymentGatewayException(
-                    sprintf('Capture failed: unexpected status "%s"', $paymentIntent->status)
+                    sprintf('Capture failed: unexpected status "%s"', $response->status())
                 );
             }
 
@@ -163,8 +161,6 @@ readonly class PaymentGateway implements PaymentGatewayInterface
     public function refund(Payment $payment, Money $amount, string $reason): void
     {
         try {
-            $stripeClient = $this->stripeClient->client();
-
             $eloquent = PaymentEloquent::query()
                 ->where('id', (string) $payment->paymentId())
                 ->first(['stripe_payment_intent_id']);
@@ -173,28 +169,30 @@ readonly class PaymentGateway implements PaymentGatewayInterface
                 throw new PaymentGatewayException('Stripe Payment Intent not found for this payment.');
             }
 
-            $refund = $stripeClient->refunds->create([
-                'payment_intent' => $eloquent->stripe_payment_intent_id,
-                'amount' => $this->convertToStripeAmount(
+            $request = new CreateRefundRequest(
+                paymentIntentId: $eloquent->stripe_payment_intent_id,
+                amount: $this->convertToStripeAmount(
                     $amount->amount(),
                     $amount->currency()
                 ),
-                'reason' => $this->mapRefundReason($reason),
-                'metadata' => [
+                reason: $this->mapRefundReason($reason),
+                metadata: [
                     'payment_id' => (string) $payment->paymentId(),
                     'refund_reason' => $reason,
                 ],
-            ]);
+            );
 
-            if (! in_array($refund->status, ['succeeded', 'pending'], true)) {
+            $response = $this->stripeClient->createRefund($request);
+
+            if (! in_array($response->status(), ['succeeded', 'pending'], true)) {
                 throw new PaymentGatewayException(
-                    sprintf('Refund failed: status "%s"', $refund->status)
+                    sprintf('Refund failed: status "%s"', $response->status())
                 );
             }
 
             $this->logger->info('Payment refunded successfully', [
                 'payment_id' => (string) $payment->paymentId(),
-                'stripe_refund_id' => $refund->id,
+                'stripe_refund_id' => $response->id(),
                 'amount' => $amount->amount(),
                 'currency' => $amount->currency()->value,
             ]);

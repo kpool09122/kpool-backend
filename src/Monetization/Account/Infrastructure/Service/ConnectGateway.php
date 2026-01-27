@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Account\Infrastructure\Service;
 
-use Application\Http\Client\StripeClient;
+use Application\Http\Client\StripeClient\CreateAccountLink\CreateAccountLinkRequest;
+use Application\Http\Client\StripeClient\CreateConnectedAccount\CreateConnectedAccountRequest;
+use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountRequest;
+use Application\Http\Client\StripeClient\StripeClient;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\ConnectAccountStatus;
@@ -28,28 +31,23 @@ readonly class ConnectGateway implements ConnectGatewayInterface
     public function createConnectedAccount(Email $email, CountryCode $countryCode): StripeConnectedAccountId
     {
         try {
-            $stripeClient = $this->stripeClient->client();
+            $request = new CreateConnectedAccountRequest(
+                email: (string) $email,
+                country: $countryCode->value,
+            );
 
-            $account = $stripeClient->accounts->create([
-                'type' => 'express',
-                'country' => $countryCode->value,
-                'email' => (string)$email,
-                'capabilities' => [
-                    'card_payments' => ['requested' => true],
-                    'transfers' => ['requested' => true],
-                ],
-            ]);
+            $response = $this->stripeClient->createConnectedAccount($request);
 
             $this->logger->info('Stripe Connected Account created', [
-                'account_id' => $account->id,
-                'email' => (string)$email,
+                'account_id' => $response->id(),
+                'email' => (string) $email,
                 'country' => $countryCode->value,
             ]);
 
-            return new StripeConnectedAccountId($account->id);
+            return new StripeConnectedAccountId($response->id());
         } catch (ApiErrorException $e) {
             $this->logger->error('Failed to create Stripe Connected Account', [
-                'email' => (string)$email,
+                'email' => (string) $email,
                 'country' => $countryCode->value,
                 'error' => $e->getMessage(),
                 'code' => $e->getError()?->code,
@@ -71,21 +69,20 @@ readonly class ConnectGateway implements ConnectGatewayInterface
         string $returnUrl
     ): string {
         try {
-            $stripeClient = $this->stripeClient->client();
+            $request = new CreateAccountLinkRequest(
+                accountId: (string) $accountId,
+                refreshUrl: $refreshUrl,
+                returnUrl: $returnUrl,
+            );
 
-            $accountLink = $stripeClient->accountLinks->create([
-                'account' => (string) $accountId,
-                'refresh_url' => $refreshUrl,
-                'return_url' => $returnUrl,
-                'type' => 'account_onboarding',
-            ]);
+            $response = $this->stripeClient->createAccountLink($request);
 
             $this->logger->info('Stripe Account Link created', [
                 'account_id' => (string) $accountId,
-                'url' => $accountLink->url,
+                'url' => $response->url(),
             ]);
 
-            return $accountLink->url;
+            return $response->url();
         } catch (ApiErrorException $e) {
             $this->logger->error('Failed to create Stripe Account Link', [
                 'account_id' => (string) $accountId,
@@ -106,22 +103,21 @@ readonly class ConnectGateway implements ConnectGatewayInterface
     public function getAccountStatus(StripeConnectedAccountId $accountId): ConnectAccountStatus
     {
         try {
-            $stripeClient = $this->stripeClient->client();
+            $request = new RetrieveAccountRequest(
+                accountId: (string) $accountId,
+            );
 
-            $account = $stripeClient->accounts->retrieve((string) $accountId);
+            $response = $this->stripeClient->retrieveAccount($request);
 
-            if (! $account->details_submitted) {
+            if (! $response->detailsSubmitted()) {
                 return ConnectAccountStatus::PENDING;
             }
 
-            if ($account->requirements?->disabled_reason !== null) {
+            if ($response->disabledReason() !== null) {
                 return ConnectAccountStatus::RESTRICTED;
             }
 
-            $chargesEnabled = $account->charges_enabled ?? false;
-            $payoutsEnabled = $account->payouts_enabled ?? false;
-
-            if ($chargesEnabled && $payoutsEnabled) {
+            if ($response->chargesEnabled() && $response->payoutsEnabled()) {
                 return ConnectAccountStatus::ENABLED;
             }
 

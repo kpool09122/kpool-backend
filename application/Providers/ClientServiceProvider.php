@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Application\Providers;
 
-use Application\Http\Client\OAuthHttpClient;
-use Application\Http\Client\StripeClient;
-use Application\Http\Client\YouTubeClient;
+use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
+use Application\Http\Client\StripeClient\StripeClient;
+use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Illuminate\Support\ServiceProvider;
 
 class ClientServiceProvider extends ServiceProvider

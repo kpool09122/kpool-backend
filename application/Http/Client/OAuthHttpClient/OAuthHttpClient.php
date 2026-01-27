@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client;
+namespace Application\Http\Client\OAuthHttpClient;
 
+use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
+use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenResponse;
+use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
+use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoResponse;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Source\Identity\Domain\Exception\SocialOAuthException;
 use Source\Identity\Domain\ValueObject\SocialProvider;
@@ -19,12 +24,12 @@ class OAuthHttpClient
     }
 
     /**
-     * @return array{access_token: string, id_token: string|null}
      * @throws SocialOAuthException
+     * @throws ConnectionException
      */
-    public function exchangeCodeForToken(SocialProvider $provider, string $code): array
+    public function exchangeCodeForToken(ExchangeCodeForTokenRequest $request): ExchangeCodeForTokenResponse
     {
-        $providerConfig = $this->getProviderConfig($provider);
+        $providerConfig = $this->getProviderConfig($request->provider());
 
         /** @var string $tokenEndpoint */
         $tokenEndpoint = $providerConfig['token_endpoint'];
@@ -34,13 +39,10 @@ class OAuthHttpClient
             'client_id' => $providerConfig['client_id'],
             'client_secret' => $providerConfig['client_secret'],
             'redirect_uri' => $providerConfig['redirect_uri'],
-            'code' => $code,
+            'code' => $request->code(),
         ]);
 
         if ($response->failed()) {
-            /** @var string|null $errorCode */
-            $errorCode = $response->json('error');
-
             throw new SocialOAuthException(
                 sprintf('Failed to exchange code for token: %s', $response->body()),
             );
@@ -55,29 +57,26 @@ class OAuthHttpClient
         /** @var string|null $idToken */
         $idToken = $data['id_token'] ?? null;
 
-        return [
-            'access_token' => $accessToken,
-            'id_token' => $idToken,
-        ];
+        return new ExchangeCodeForTokenResponse(
+            accessToken: $accessToken,
+            idToken: $idToken,
+        );
     }
 
     /**
-     * @return array<string, mixed>
      * @throws SocialOAuthException
+     * @throws ConnectionException
      */
-    public function fetchUserInfo(SocialProvider $provider, string $accessToken): array
+    public function fetchUserInfo(FetchUserInfoRequest $request): FetchUserInfoResponse
     {
-        $providerConfig = $this->getProviderConfig($provider);
+        $providerConfig = $this->getProviderConfig($request->provider());
 
         /** @var string $userinfoEndpoint */
         $userinfoEndpoint = $providerConfig['userinfo_endpoint'];
 
-        $response = Http::withToken($accessToken)->get($userinfoEndpoint);
+        $response = Http::withToken($request->accessToken())->get($userinfoEndpoint);
 
         if ($response->failed()) {
-            /** @var string|null $errorCode */
-            $errorCode = $response->json('error');
-
             throw new SocialOAuthException(
                 sprintf('Failed to fetch user info: %s', $response->body()),
             );
@@ -86,7 +85,9 @@ class OAuthHttpClient
         /** @var array<string, mixed> $data */
         $data = $response->json();
 
-        return $data;
+        return new FetchUserInfoResponse(
+            data: $data,
+        );
     }
 
     /**

@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client;
+namespace Application\Http\Client\YouTubeClient;
 
-use Carbon\CarbonImmutable;
+use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsRequest;
+use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsResponse;
+use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsRequest;
+use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
+use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsRequest;
+use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -22,18 +27,15 @@ class YouTubeClient
         return $this->apiKey !== '';
     }
 
-    /**
-     * @return string[]
-     */
-    public function searchVideoIds(string $keyword, string $order, int $maxResults): array
+    public function searchVideoIds(SearchVideoIdsRequest $request): SearchVideoIdsResponse
     {
         $response = Http::get(self::BASE_URL.'/search', [
             'key' => $this->apiKey,
-            'q' => $keyword,
+            'q' => $request->keyword(),
             'type' => 'video',
             'part' => 'id',
-            'order' => $order,
-            'maxResults' => $maxResults,
+            'order' => $request->order(),
+            'maxResults' => $request->maxResults(),
         ]);
 
         if (! $response->successful()) {
@@ -42,30 +44,29 @@ class YouTubeClient
                 'body' => $response->body(),
             ]);
 
-            return [];
+            return new SearchVideoIdsResponse(videoIds: []);
         }
 
         $data = $response->json();
 
-        return array_map(
+        $videoIds = array_map(
             static fn (array $item): string => $item['id']['videoId'],
             $data['items'] ?? [],
         );
+
+        return new SearchVideoIdsResponse(videoIds: $videoIds);
     }
 
-    /**
-     * @return string[]
-     */
-    public function searchRecentVideoIds(string $keyword, int $maxResults, CarbonImmutable $publishedAfter): array
+    public function searchRecentVideoIds(SearchRecentVideoIdsRequest $request): SearchRecentVideoIdsResponse
     {
         $response = Http::get(self::BASE_URL.'/search', [
             'key' => $this->apiKey,
-            'q' => $keyword,
+            'q' => $request->keyword(),
             'type' => 'video',
             'part' => 'id',
             'order' => 'viewCount',
-            'publishedAfter' => $publishedAfter->format('c'),
-            'maxResults' => $maxResults,
+            'publishedAfter' => $request->publishedAfter()->format('c'),
+            'maxResults' => $request->maxResults(),
         ]);
 
         if (! $response->successful()) {
@@ -74,25 +75,23 @@ class YouTubeClient
                 'body' => $response->body(),
             ]);
 
-            return [];
+            return new SearchRecentVideoIdsResponse(videoIds: []);
         }
 
         $data = $response->json();
 
-        return array_map(
+        $videoIds = array_map(
             static fn (array $item): string => $item['id']['videoId'],
             $data['items'] ?? [],
         );
+
+        return new SearchRecentVideoIdsResponse(videoIds: $videoIds);
     }
 
-    /**
-     * @param  string[]  $videoIds
-     * @return array<string, array{id: string, title: string, publishedAt: string, thumbnailUrl: string, viewCount: int, likeCount: int}>
-     */
-    public function getVideoDetails(array $videoIds): array
+    public function getVideoDetails(GetVideoDetailsRequest $request): GetVideoDetailsResponse
     {
         $details = [];
-        $chunks = array_chunk($videoIds, 50);
+        $chunks = array_chunk($request->videoIds(), 50);
 
         foreach ($chunks as $chunk) {
             $response = Http::get(self::BASE_URL.'/videos', [
@@ -124,6 +123,6 @@ class YouTubeClient
             }
         }
 
-        return $details;
+        return new GetVideoDetailsResponse(details: $details);
     }
 }

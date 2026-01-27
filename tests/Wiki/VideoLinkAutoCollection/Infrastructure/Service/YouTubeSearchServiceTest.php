@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\VideoLinkAutoCollection\Infrastructure\Service;
 
-use Application\Http\Client\YouTubeClient;
+use Application\Http\Client\YouTubeClient\GetVideoDetails\GetVideoDetailsResponse;
+use Application\Http\Client\YouTubeClient\SearchRecentVideoIds\SearchRecentVideoIdsResponse;
+use Application\Http\Client\YouTubeClient\SearchVideoIds\SearchVideoIdsResponse;
+use Application\Http\Client\YouTubeClient\YouTubeClient;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Mockery\MockInterface;
@@ -299,19 +302,19 @@ class YouTubeSearchServiceTest extends TestCase
             ->andReturn(true);
 
         $client->shouldReceive('searchVideoIds')
-            ->with('test keyword', 'viewCount', Mockery::any())
-            ->andReturn($viewCountVideoIds);
+            ->withArgs(fn ($request) => $request->keyword() === 'test keyword' && $request->order() === 'viewCount')
+            ->andReturn(new SearchVideoIdsResponse($viewCountVideoIds));
 
         $client->shouldReceive('searchVideoIds')
-            ->with('test keyword', 'relevance', Mockery::any())
-            ->andReturn($relevanceVideoIds);
+            ->withArgs(fn ($request) => $request->keyword() === 'test keyword' && $request->order() === 'relevance')
+            ->andReturn(new SearchVideoIdsResponse($relevanceVideoIds));
 
         $client->shouldReceive('searchRecentVideoIds')
-            ->with('test keyword', Mockery::any(), Mockery::any())
-            ->andReturn($recentVideoIds);
+            ->withArgs(fn ($request) => $request->keyword() === 'test keyword')
+            ->andReturn(new SearchRecentVideoIdsResponse($recentVideoIds));
 
         $client->shouldReceive('getVideoDetails')
-            ->andReturn($videoDetails);
+            ->andReturn(new GetVideoDetailsResponse($videoDetails));
 
         return $client;
     }
@@ -325,7 +328,7 @@ class YouTubeSearchServiceTest extends TestCase
             'id' => $id,
             'title' => $title,
             'publishedAt' => '2024-01-15T10:30:00Z',
-            'thumbnailUrl' => "https://i.ytimg.com/vi/{$id}/hqdefault.jpg",
+            'thumbnailUrl' => "https://i.ytimg.com/vi/$id/hqdefault.jpg",
             'viewCount' => $viewCount,
             'likeCount' => $likeCount,
         ];
