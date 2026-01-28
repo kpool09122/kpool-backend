@@ -34,9 +34,9 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
     ): DraftSong {
         $normalizedName = $this->normalizationService->normalize((string) $name, $language);
         $lyricist = new Lyricist('');
-        $normalizedLyricist = $this->normalizationService->normalize((string) $lyricist, $language);
+        $normalizedLyricist = '';
         $composer = new Composer('');
-        $normalizedComposer = $this->normalizationService->normalize((string) $composer, $language);
+        $normalizedComposer = '';
 
         return new DraftSong(
             new SongIdentifier($this->generator->generate()),

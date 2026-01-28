@@ -127,7 +127,7 @@ class TalentSnapshotFactoryTest extends TestCase
             $name,
             $normalizationService->normalize((string) $name, $language),
             $realName,
-            $normalizationService->normalize((string) $realName, $language),
+            '',
             null,
             [],
             null,
