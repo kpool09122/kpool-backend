@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\YouTubeClient\SearchVideoIds;
 
+use Application\Http\Client\Foundation\Json\Decoder;
+use Psr\Http\Message\ResponseInterface;
+
 final readonly class SearchVideoIdsResponse
 {
-    /**
-     * @param string[] $videoIds
-     */
-    public function __construct(
-        private array $videoIds,
-    ) {
+    private string $contents;
+
+    public function __construct(ResponseInterface $response)
+    {
+        $this->contents = $response->getBody()->getContents();
+    }
+
+    public function params(): SearchVideoIdsParams
+    {
+        /** @var array<string, mixed> $data */
+        $data = Decoder::decode($this->contents, true);
+
+        return SearchVideoIdsParams::fromArray($data);
     }
 
     /**
@@ -19,6 +29,6 @@ final readonly class SearchVideoIdsResponse
      */
     public function videoIds(): array
     {
-        return $this->videoIds;
+        return $this->params()->videoIds();
     }
 }

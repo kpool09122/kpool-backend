@@ -16,17 +16,23 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Song\Application\Exception\SongNotFoundException;
 use Source\Wiki\Song\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
+use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
+use Source\Wiki\Song\Domain\ValueObject\Composer;
+use Source\Wiki\Song\Domain\ValueObject\Lyricist;
+use Source\Wiki\Song\Domain\ValueObject\Overview;
+use Source\Wiki\Song\Domain\ValueObject\SongName;
 
 readonly class TranslateSong implements TranslateSongInterface
 {
     public function __construct(
-        private SongRepositoryInterface $songRepository,
+        private SongRepositoryInterface      $songRepository,
         private DraftSongRepositoryInterface $draftSongRepository,
-        private TranslationServiceInterface $translationService,
+        private TranslationServiceInterface  $translationService,
+        private DraftSongFactoryInterface    $draftSongFactory,
         private PrincipalRepositoryInterface $principalRepository,
-        private PolicyEvaluatorInterface $policyEvaluator,
+        private PolicyEvaluatorInterface     $policyEvaluator,
     ) {
     }
 
@@ -65,10 +71,35 @@ readonly class TranslateSong implements TranslateSongInterface
         $songDrafts = [];
         $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
-            // 外部翻訳サービスを使って翻訳
-            $songDraft = $this->translationService->translateSong($song, $language);
+            $translatedData = $this->translationService->translateSong($song, $language);
+
+            $songDraft = $this->draftSongFactory->create(
+                editorIdentifier: null,
+                slug: $song->slug(),
+                language: $language,
+                name: new SongName($translatedData->translatedName()),
+                translationSetIdentifier: $song->translationSetIdentifier(),
+            );
+
+            $songDraft->setLyricist(new Lyricist($translatedData->translatedLyricist()));
+            $songDraft->setComposer(new Composer($translatedData->translatedComposer()));
+            $songDraft->setOverView(new Overview($translatedData->translatedOverview()));
+            if ($song->agencyIdentifier() !== null) {
+                $songDraft->setAgencyIdentifier($song->agencyIdentifier());
+            }
+            if ($song->groupIdentifier() !== null) {
+                $songDraft->setGroupIdentifier($song->groupIdentifier());
+            }
+            if ($song->talentIdentifier() !== null) {
+                $songDraft->setTalentIdentifier($song->talentIdentifier());
+            }
+            if ($song->releaseDate() !== null) {
+                $songDraft->setReleaseDate($song->releaseDate());
+            }
+            $songDraft->setPublishedSongIdentifier($input->publishedSongIdentifier() ?? $input->songIdentifier());
             $songDraft->setSourceEditorIdentifier($song->editorIdentifier());
             $songDraft->setTranslatedAt($translatedAt);
+
             $songDrafts[] = $songDraft;
             $this->draftSongRepository->save($songDraft);
         }

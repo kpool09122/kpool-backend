@@ -12,6 +12,14 @@ final readonly class CreateRefundResponse
     ) {
     }
 
+    public function params(): CreateRefundParams
+    {
+        return CreateRefundParams::fromArray([
+            'id' => $this->id,
+            'status' => $this->status,
+        ]);
+    }
+
     public function id(): string
     {
         return $this->id;

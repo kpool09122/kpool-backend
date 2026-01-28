@@ -44,17 +44,44 @@ class DraftTalentFactoryTest extends TestCase
         $name = new TalentName('채영');
         $talentFactory = $this->app->make(DraftTalentFactoryInterface::class);
         $talent = $talentFactory->create($editorIdentifier, $slug, $language, $name);
-        $this->assertTrue(UuidValidator::isValid((string)$talent->talentIdentifier()));
+        $this->assertTrue(UuidValidator::isValid((string) $talent->talentIdentifier()));
         $this->assertNull($talent->publishedTalentIdentifier());
-        $this->assertSame((string)$slug, (string)$talent->slug());
-        $this->assertSame((string)$editorIdentifier, (string)$talent->editorIdentifier());
+        $this->assertSame((string) $slug, (string) $talent->slug());
+        $this->assertSame((string) $editorIdentifier, (string) $talent->editorIdentifier());
         $this->assertSame($language->value, $talent->language()->value);
-        $this->assertSame((string)$name, (string)$talent->name());
-        $this->assertSame('', (string)$talent->realName());
+        $this->assertSame((string) $name, (string) $talent->name());
+        $this->assertSame('', (string) $talent->realName());
         $this->assertNull($talent->agencyIdentifier());
         $this->assertSame([], $talent->groupIdentifiers());
         $this->assertNull($talent->birthday());
-        $this->assertSame('', (string)$talent->career());
+        $this->assertSame('', (string) $talent->career());
+        $this->assertSame(ApprovalStatus::Pending, $talent->status());
+    }
+
+    /**
+     * 正常系: editorIdentifierがnullでもTalent Entityが正しく作成されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testCreateWithNullEditor(): void
+    {
+        $slug = new Slug('chaeyoung');
+        $language = Language::KOREAN;
+        $name = new TalentName('채영');
+        $talentFactory = $this->app->make(DraftTalentFactoryInterface::class);
+        $talent = $talentFactory->create(null, $slug, $language, $name);
+        $this->assertTrue(UuidValidator::isValid((string) $talent->talentIdentifier()));
+        $this->assertNull($talent->publishedTalentIdentifier());
+        $this->assertSame((string) $slug, (string) $talent->slug());
+        $this->assertNull($talent->editorIdentifier());
+        $this->assertSame($language->value, $talent->language()->value);
+        $this->assertSame((string) $name, (string) $talent->name());
+        $this->assertSame('', (string) $talent->realName());
+        $this->assertNull($talent->agencyIdentifier());
+        $this->assertSame([], $talent->groupIdentifiers());
+        $this->assertNull($talent->birthday());
+        $this->assertSame('', (string) $talent->career());
         $this->assertSame(ApprovalStatus::Pending, $talent->status());
     }
 }

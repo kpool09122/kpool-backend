@@ -12,6 +12,14 @@ final readonly class CreatePaymentIntentResponse
     ) {
     }
 
+    public function params(): CreatePaymentIntentParams
+    {
+        return CreatePaymentIntentParams::fromArray([
+            'id' => $this->id,
+            'status' => $this->status,
+        ]);
+    }
+
     public function id(): string
     {
         return $this->id;

@@ -4,67 +4,47 @@ declare(strict_types=1);
 
 namespace Tests\Monetization\Account\Infrastructure\Service;
 
+use Application\Http\Client\StripeClient\CreateAccountLink\CreateAccountLinkResponse;
+use Application\Http\Client\StripeClient\CreateConnectedAccount\CreateConnectedAccountResponse;
 use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountRequest;
 use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountResponse;
 use Application\Http\Client\StripeClient\StripeClient;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use PHPUnit\Framework\Attributes\Group;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\ConnectAccountStatus;
 use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
 use Source\Monetization\Account\Infrastructure\Exception\StripeConnectException;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
-use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\InvalidRequestException;
 use Tests\TestCase;
 
 class ConnectGatewayTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Stripe API key が設定されていない場合はスキップ
-        $stripeKey = config('services.stripe.secret_key', '');
-        if ($stripeKey === '' || $stripeKey === null) {
-            $this->markTestSkipped('STRIPE_SECRET_KEY is not set');
-        }
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        parent::defineEnvironment($app);
-
-        // テスト用に環境変数から Stripe 設定を読み込む
-        // @phpstan-ignore larastan.noEnvCallsOutsideOfConfig
-        $app['config']->set('services.stripe.secret_key', env('STRIPE_SECRET_KEY', ''));
-    }
-
     /**
      * 正常系: createConnectedAccount で Stripe Connected Account が作成されること.
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws ApiErrorException
      */
-    #[Group('useDb')]
     public function testCreateConnectedAccountSuccess(): void
     {
-        $stripeClient = $this->app->make(StripeClient::class);
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createConnectedAccount')
+            ->once()
+            ->andReturn(new CreateConnectedAccountResponse('acct_test123456'));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
+
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        $email = new Email('test-connect-' . time() . '@example.com');
+        $email = new Email('test-connect@example.com');
         $country = CountryCode::JAPAN;
 
         $accountId = $gateway->createConnectedAccount($email, $country);
 
         $this->assertStringStartsWith('acct_', (string) $accountId);
-
-        // Stripe から Account を取得して確認
-        $response = $stripeClient->retrieveAccount(new RetrieveAccountRequest((string) $accountId));
-        $this->assertTrue($response->detailsSubmitted() === false || $response->detailsSubmitted() === true);
     }
 
     /**
@@ -73,7 +53,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testCreateConnectedAccountThrowsStripeConnectExceptionOnApiError(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -97,16 +76,18 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testCreateAccountLinkSuccess(): void
     {
+        $mockStripeClient = Mockery::mock(StripeClient::class);
+        $mockStripeClient->shouldReceive('createAccountLink')
+            ->once()
+            ->andReturn(new CreateAccountLinkResponse('https://connect.stripe.com/setup/test123'));
+
+        $this->app->instance(StripeClient::class, $mockStripeClient);
+
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        // まず Connected Account を作成
-        $email = new Email('test-link-' . time() . '@example.com');
-        $accountId = $gateway->createConnectedAccount($email, CountryCode::JAPAN);
-
-        // Account Link を作成
+        $accountId = new StripeConnectedAccountId('acct_test123456');
         $refreshUrl = 'https://example.com/refresh';
         $returnUrl = 'https://example.com/return';
 
@@ -122,7 +103,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testCreateAccountLinkThrowsStripeConnectExceptionOnApiError(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -147,7 +127,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testGetAccountStatusReturnsPendingWhenDetailsNotSubmitted(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -177,7 +156,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testGetAccountStatusReturnsRestrictedWhenDisabledReasonExists(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -207,7 +185,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testGetAccountStatusReturnsEnabledWhenFullyEnabled(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -237,7 +214,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testGetAccountStatusReturnsRestrictedWhenPartiallyEnabled(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -267,7 +243,6 @@ class ConnectGatewayTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      */
-    #[Group('useDb')]
     public function testGetAccountStatusThrowsStripeConnectExceptionOnApiError(): void
     {
         $mockStripeClient = Mockery::mock(StripeClient::class);

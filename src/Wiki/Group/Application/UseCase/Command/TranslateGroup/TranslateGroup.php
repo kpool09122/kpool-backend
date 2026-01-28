@@ -9,12 +9,15 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Application\Exception\GroupNotFoundException;
 use Source\Wiki\Group\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
+use Source\Wiki\Group\Domain\ValueObject\Description;
+use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -25,6 +28,7 @@ readonly class TranslateGroup implements TranslateGroupInterface
         private GroupRepositoryInterface      $groupRepository,
         private DraftGroupRepositoryInterface $draftGroupRepository,
         private TranslationServiceInterface   $translationService,
+        private DraftGroupFactoryInterface    $draftGroupFactory,
         private PrincipalRepositoryInterface  $principalRepository,
         private PolicyEvaluatorInterface      $policyEvaluator,
     ) {
@@ -34,7 +38,7 @@ readonly class TranslateGroup implements TranslateGroupInterface
      * @param TranslateGroupInputPort $input
      * @return DraftGroup[]
      * @throws GroupNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function process(TranslateGroupInputPort $input): array
@@ -56,7 +60,7 @@ readonly class TranslateGroup implements TranslateGroupInterface
         );
 
         if (! $this->policyEvaluator->evaluate($principal, Action::TRANSLATE, $resource)) {
-            throw new UnauthorizedException();
+            throw new DisallowedException();
         }
 
         $languages = Language::allExcept($group->language());
@@ -64,10 +68,24 @@ readonly class TranslateGroup implements TranslateGroupInterface
         $groupDrafts = [];
         $translatedAt = new DateTimeImmutable();
         foreach ($languages as $language) {
-            // 外部翻訳サービスを使って翻訳
-            $groupDraft = $this->translationService->translateGroup($group, $language);
+            $translatedData = $this->translationService->translateGroup($group, $language);
+
+            $groupDraft = $this->draftGroupFactory->create(
+                editorIdentifier: null,
+                language: $language,
+                name: new GroupName($translatedData->translatedName()),
+                slug: $group->slug(),
+                translationSetIdentifier: $group->translationSetIdentifier(),
+            );
+
+            $groupDraft->setDescription(new Description($translatedData->translatedDescription()));
+            if ($group->agencyIdentifier() !== null) {
+                $groupDraft->setAgencyIdentifier($group->agencyIdentifier());
+            }
+            $groupDraft->setPublishedGroupIdentifier($input->publishedGroupIdentifier() ?? $input->groupIdentifier());
             $groupDraft->setSourceEditorIdentifier($group->editorIdentifier());
             $groupDraft->setTranslatedAt($translatedAt);
+
             $groupDrafts[] = $groupDraft;
             $this->draftGroupRepository->save($groupDraft);
         }

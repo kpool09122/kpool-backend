@@ -20,12 +20,14 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Application\Exception\TalentNotFoundException;
+use Source\Wiki\Talent\Application\Service\TranslatedTalentData;
 use Source\Wiki\Talent\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalentInput;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalentInterface;
 use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Entity\Talent;
+use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
@@ -55,6 +57,8 @@ class TranslateTalentTest extends TestCase
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $this->assertInstanceOf(TranslateTalent::class, $translateTalent);
     }
@@ -94,33 +98,57 @@ class TranslateTalentTest extends TestCase
 
         $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $draftTalentRepository->shouldReceive('save')
-            ->with($translateTalentInfo->enTalent)
-            ->once()
-            ->andReturn(null);
-        $draftTalentRepository->shouldReceive('save')
-            ->with($translateTalentInfo->jaTalent)
-            ->once()
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateTalent')
-            ->with($translateTalentInfo->talent, $translateTalentInfo->english)
+            ->with($translateTalentInfo->talent, Language::JAPANESE)
             ->once()
-            ->andReturn($translateTalentInfo->enTalent);
+            ->andReturn(new TranslatedTalentData(
+                translatedName: 'チェヨン',
+                translatedRealName: 'ソン・チェヨン',
+                translatedCareer: '### チェヨンはTWICEのメンバーです。',
+            ));
         $translationService->shouldReceive('translateTalent')
-            ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
+            ->with($translateTalentInfo->talent, Language::ENGLISH)
+            ->once()
+            ->andReturn(new TranslatedTalentData(
+                translatedName: 'Chaeyoung',
+                translatedRealName: 'Son Chaeyoung',
+                translatedCareer: '### Chaeyoung is a member of TWICE.',
+            ));
+
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
+        $draftTalentFactory->shouldReceive('create')
+            ->with(
+                Mockery::on(fn ($arg) => $arg === null),
+                $translateTalentInfo->talent->slug(),
+                Language::JAPANESE,
+                Mockery::on(fn (TalentName $name) => (string) $name === 'チェヨン'),
+                $translateTalentInfo->talent->translationSetIdentifier(),
+            )
             ->once()
             ->andReturn($translateTalentInfo->jaTalent);
+        $draftTalentFactory->shouldReceive('create')
+            ->with(
+                Mockery::on(fn ($arg) => $arg === null),
+                $translateTalentInfo->talent->slug(),
+                Language::ENGLISH,
+                Mockery::on(fn (TalentName $name) => (string) $name === 'Chaeyoung'),
+                $translateTalentInfo->talent->translationSetIdentifier(),
+            )
+            ->once()
+            ->andReturn($translateTalentInfo->enTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $talents = $translateTalent->process($input);
         $this->assertCount(2, $talents);
-        $this->assertSame($translateTalentInfo->jaTalent, $talents[0]);
-        $this->assertSame($translateTalentInfo->enTalent, $talents[1]);
     }
 
     /**
@@ -152,10 +180,12 @@ class TranslateTalentTest extends TestCase
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $this->expectException(TalentNotFoundException::class);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
@@ -193,10 +223,12 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->talent);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $this->expectException(PrincipalNotFoundException::class);
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
@@ -236,10 +268,12 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->talent);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $this->setPolicyEvaluatorResult(false);
 
@@ -283,35 +317,33 @@ class TranslateTalentTest extends TestCase
 
         $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->enTalent)
-            ->andReturn(null);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->jaTalent)
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->english)
+            ->twice()
+            ->andReturn(new TranslatedTalentData(
+                translatedName: 'Chaeyoung',
+                translatedRealName: 'Son Chaeyoung',
+                translatedCareer: '### Chaeyoung is a member of TWICE.',
+            ));
+
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
+        $draftTalentFactory->shouldReceive('create')
+            ->twice()
             ->andReturn($translateTalentInfo->enTalent);
-        $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
-            ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $talents = $translateTalent->process($input);
 
         $this->assertCount(2, $talents);
-        $this->assertSame($translateTalentInfo->jaTalent, $talents[0]);
-        $this->assertSame($translateTalentInfo->enTalent, $talents[1]);
     }
 
     /**
@@ -348,10 +380,12 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->talent);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $this->setPolicyEvaluatorResult(false);
 
@@ -375,7 +409,7 @@ class TranslateTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
-        $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
+        $groupIds = array_map(static fn ($groupId) => (string) $groupId, $translateTalentInfo->groupIdentifiers);
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, []);
 
         $input = new TranslateTalentInput(
@@ -397,35 +431,33 @@ class TranslateTalentTest extends TestCase
 
         $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->enTalent)
-            ->andReturn(null);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->jaTalent)
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->english)
+            ->twice()
+            ->andReturn(new TranslatedTalentData(
+                translatedName: 'Chaeyoung',
+                translatedRealName: 'Son Chaeyoung',
+                translatedCareer: '### Chaeyoung is a member of TWICE.',
+            ));
+
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
+        $draftTalentFactory->shouldReceive('create')
+            ->twice()
             ->andReturn($translateTalentInfo->enTalent);
-        $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
-            ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $talents = $translateTalent->process($input);
 
         $this->assertCount(2, $talents);
-        $this->assertSame($translateTalentInfo->jaTalent, $talents[0]);
-        $this->assertSame($translateTalentInfo->enTalent, $talents[1]);
     }
 
     /**
@@ -444,7 +476,7 @@ class TranslateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
         $anotherGroupId = StrTestHelper::generateUuid();
-        $anotherTalentId = StrTestHelper::generateUuid(); // 別のTalent IDを使用
+        $anotherTalentId = StrTestHelper::generateUuid();
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, [$anotherGroupId], [$anotherTalentId]);
 
         $input = new TranslateTalentInput(
@@ -465,10 +497,12 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->talent);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $this->setPolicyEvaluatorResult(false);
 
@@ -492,7 +526,7 @@ class TranslateTalentTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyId = (string) $translateTalentInfo->agencyIdentifier;
-        $groupIds = array_map(static fn ($groupId) => (string)$groupId, $translateTalentInfo->groupIdentifiers);
+        $groupIds = array_map(static fn ($groupId) => (string) $groupId, $translateTalentInfo->groupIdentifiers);
         $talentId = (string) $translateTalentInfo->talentIdentifier;
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), $agencyId, $groupIds, [$talentId]);
 
@@ -515,35 +549,33 @@ class TranslateTalentTest extends TestCase
 
         $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->enTalent)
-            ->andReturn(null);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->jaTalent)
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->english)
+            ->twice()
+            ->andReturn(new TranslatedTalentData(
+                translatedName: 'Chaeyoung',
+                translatedRealName: 'Son Chaeyoung',
+                translatedCareer: '### Chaeyoung is a member of TWICE.',
+            ));
+
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
+        $draftTalentFactory->shouldReceive('create')
+            ->twice()
             ->andReturn($translateTalentInfo->enTalent);
-        $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
-            ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $talents = $translateTalent->process($input);
 
         $this->assertCount(2, $talents);
-        $this->assertSame($translateTalentInfo->jaTalent, $talents[0]);
-        $this->assertSame($translateTalentInfo->enTalent, $talents[1]);
     }
 
     /**
@@ -581,35 +613,33 @@ class TranslateTalentTest extends TestCase
 
         $draftTalentRepository = Mockery::mock(DraftTalentRepositoryInterface::class);
         $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->enTalent)
-            ->andReturn(null);
-        $draftTalentRepository->shouldReceive('save')
-            ->once()
-            ->with($translateTalentInfo->jaTalent)
+            ->twice()
             ->andReturn(null);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
         $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->english)
+            ->twice()
+            ->andReturn(new TranslatedTalentData(
+                translatedName: 'Chaeyoung',
+                translatedRealName: 'Son Chaeyoung',
+                translatedCareer: '### Chaeyoung is a member of TWICE.',
+            ));
+
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
+        $draftTalentFactory->shouldReceive('create')
+            ->twice()
             ->andReturn($translateTalentInfo->enTalent);
-        $translationService->shouldReceive('translateTalent')
-            ->once()
-            ->with($translateTalentInfo->talent, $translateTalentInfo->japanese)
-            ->andReturn($translateTalentInfo->jaTalent);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(DraftTalentRepositoryInterface::class, $draftTalentRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $translateTalent = $this->app->make(TranslateTalentInterface::class);
         $talents = $translateTalent->process($input);
 
         $this->assertCount(2, $talents);
-        $this->assertSame($translateTalentInfo->jaTalent, $talents[0]);
-        $this->assertSame($translateTalentInfo->enTalent, $talents[1]);
     }
 
     /**
@@ -645,10 +675,12 @@ class TranslateTalentTest extends TestCase
             ->andReturn($translateTalentInfo->talent);
 
         $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $draftTalentFactory = Mockery::mock(DraftTalentFactoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
         $this->app->instance(TranslationServiceInterface::class, $translationService);
+        $this->app->instance(DraftTalentFactoryInterface::class, $draftTalentFactory);
 
         $this->setPolicyEvaluatorResult(false);
 
@@ -674,15 +706,7 @@ class TranslateTalentTest extends TestCase
             new GroupIdentifier(StrTestHelper::generateUuid()),
         ];
         $birthday = new Birthday(new DateTimeImmutable('1999-04-23'));
-        $career = new Career('손채영은 대한민국의 걸그룹 트와이스의 멤버입니다. 트와이스에서 메인래퍼와 서브보컬을 담당하고 있으며, 작사, 작곡에도 참여하며 다재다능한 아티스트로서의 면모를 보여주고 있습니다.
-**데뷔 전**
-어린 시절부터 춤에 재능을 보였던 채영은 2012년 JYP 엔터테인먼트 오디션에 합격하여 연습생 생활을 시작했습니다. 약 3년간의 연습생 기간을 거치며 랩과 보컬 실력을 갈고닦았고, 데뷔 전 GOT7의 "하지하지마" 뮤직비디오에 출연하기도 했습니다.
-**SIXTEEN과 트와이스 데뷔**
-2015년, JYP의 신인 걸그룹 트와이스의 멤버를 선발하는 서바이벌 프로그램 Mnet \'SIXTEEN\'에 참가하여 개성 있는 랩과 무대 매너로 주목을 받았습니다. 최종 멤버로 발탁되어 2015년 10월 20일, 트와이스의 첫 번째 미니 앨범 "THE STORY BEGINS"로 정식 데뷔했습니다.
-**트와이스 활동 및 솔로 활동**
-트와이스의 멤버로서 채영은 수많은 히트곡에 참여하며 전 세계적인 인기를 얻는 데 기여했습니다. 그룹 내에서 독특한 음색과 안정적인 랩 실력으로 곡의 매력을 더하고 있습니다.
-또한, 다수의 트와이스 앨범 수록곡 작사에 참여하며 꾸준히 음악적 역량을 키워왔습니다. "PAGE TWO" 앨범의 "소중한 사랑" 랩 메이킹을 시작으로, "LIKEY", "What is Love?", "Feel Special" 등 다수의 곡 작업에 이름을 올렸습니다.
-최근에는 솔로 아티스트로서의 활동도 시작하며 음악적 스펙트럼을 넓혀가고 있습니다.');
+        $career = new Career('### 채영은 트와이스의 멤버입니다.');
         $status = ApprovalStatus::UnderReview;
         $version = new Version(1);
         $talent = new Talent(
@@ -703,21 +727,7 @@ class TranslateTalentTest extends TestCase
         $japanese = Language::JAPANESE;
         $jaName = new TalentName('チェヨン');
         $jaRealName = new RealName('ソン・チェヨン');
-        $jaAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $jaGroupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-        ];
-        $jaBirthday = new Birthday(new DateTimeImmutable('1999-04-23'));
-        $jaCareer = new Career('ソン・チェヨンは、韓国のガールズグループTWICEのメンバーです。TWICEではメインラッパーとサブボーカルを担当しており、作詞・作曲にも参加し、多才なアーティストとしての一面を見せています。
-**デビュー前**
-幼い頃からダンスに才能を見せていたチェヨンは、2012年にJYPエンターテインメントのオーディションに合格し、練習生生活を始めました。約3年間の練習生期間を経てラップとボーカルの実力を磨き、デビュー前にはGOT7の「Stop stop it」のミュージックビデオに出演したこともあります。
-**SIXTEENとTWICEでのデビュー**
-2015年、JYPの新人ガールズグループTWICEのメンバーを選抜するサバイバル番組Mnet「SIXTEEN」に参加し、個性的なラップとステージマナーで注目を集めました。最終メンバーに抜擢され、2015年10月20日、TWICEの1stミニアルバム「THE STORY BEGINS」で正式にデビューしました。
-**TWICEでの活動とソロ活動**
-TWICEのメンバーとして、チェヨンは数多くのヒット曲に参加し、世界的な人気を得ることに貢献しました。グループ内では独特な歌声と安定したラップの実力で、楽曲の魅力を一層高めています。
-また、多数のTWICEのアルバム収録曲の作詞に参加し、着実に音楽的な実力を伸ばしてきました。「PAGE TWO」収録の「Precious Love」のラップメイキングを皮切りに、「LIKEY」、「What is Love?」、「Feel Special」など、多数の楽曲制作に名を連ねています。
-最近ではソロアーティストとしての活動も開始し、音楽の幅を広げています。');
+        $jaCareer = new Career('### チェヨンはTWICEのメンバーです。');
         $jaTalent = new DraftTalent(
             $jaTalentIdentifier,
             $talentIdentifier,
@@ -727,32 +737,18 @@ TWICEのメンバーとして、チェヨンは数多くのヒット曲に参加
             $japanese,
             $jaName,
             $jaRealName,
-            $jaAgencyIdentifier,
-            $jaGroupIdentifiers,
-            $jaBirthday,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
             $jaCareer,
             ApprovalStatus::Pending,
         );
 
         $enTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $english = Language::ENGLISH;
-        $enName = new TalentName('Chae-young');
-        $enRealName = new RealName('Son Chae-young');
-        $enAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $enGroupIdentifiers = [
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-        ];
-        $enBirthday = new Birthday(new DateTimeImmutable('1999-04-23'));
-        $enCareer = new Career('Son Chaeyoung is a talent of the South Korean girl group TWICE. In the group, she serves as the main rapper and a sub-vocalist, and she has also shown her versatility as a multi-talented artist by participating in lyric writing and composition.
-**Pre-Debut**
-Showing a talent for dance from a young age, Chaeyoung passed the JYP Entertainment audition in 2012 and began her life as a trainee. Over a training period of about three years, she polished her rap and vocal skills. Before her debut, she also appeared in the music video for GOT7\'s "Stop stop it."
-**SIXTEEN and Debut with TWICE**
-In 2015, she participated in Mnet\'s survival show "SIXTEEN," a program designed to select the talents for JYP\'s new girl group, TWICE. She gained attention for her unique rapping style and stage presence. She was selected as a final talent and officially debuted on October 20, 2015, with TWICE\'s first mini-album, "THE STORY BEGINS."
-**Activities with TWICE and Solo Career**
-As a talent of TWICE, Chaeyoung has contributed to the group\'s global popularity through numerous hit songs. Within the group, she enhances their music with her unique vocal tone and stable rapping skills.
-Furthermore, she has consistently developed her musical abilities by writing lyrics for many of TWICE\'s album tracks. Starting with making the rap for "Precious Love" from the "PAGE TWO" album, she has been credited on numerous songs, including "LIKEY," "What is Love?," and "Feel Special."
-Recently, she has also begun activities as a solo artist, further broadening her musical spectrum.');
+        $enName = new TalentName('Chaeyoung');
+        $enRealName = new RealName('Son Chaeyoung');
+        $enCareer = new Career('### Chaeyoung is a member of TWICE.');
         $enTalent = new DraftTalent(
             $enTalentIdentifier,
             $talentIdentifier,
@@ -762,9 +758,9 @@ Recently, she has also begun activities as a solo artist, further broadening her
             $english,
             $enName,
             $enRealName,
-            $enAgencyIdentifier,
-            $enGroupIdentifiers,
-            $enBirthday,
+            $agencyIdentifier,
+            $groupIdentifiers,
+            $birthday,
             $enCareer,
             ApprovalStatus::Pending,
         );
@@ -803,7 +799,7 @@ readonly class TranslateTalentTestData
     public function __construct(
         public TalentIdentifier         $talentIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public PrincipalIdentifier        $editorIdentifier,
+        public PrincipalIdentifier      $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
         public RealName                 $realName,

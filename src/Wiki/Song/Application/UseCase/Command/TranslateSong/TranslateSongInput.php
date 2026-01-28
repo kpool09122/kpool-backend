@@ -12,12 +12,18 @@ readonly class TranslateSongInput implements TranslateSongInputPort
     public function __construct(
         private SongIdentifier      $songIdentifier,
         private PrincipalIdentifier $principalIdentifier,
+        private ?SongIdentifier     $publishedSongIdentifier = null,
     ) {
     }
 
     public function songIdentifier(): SongIdentifier
     {
         return $this->songIdentifier;
+    }
+
+    public function publishedSongIdentifier(): ?SongIdentifier
+    {
+        return $this->publishedSongIdentifier;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

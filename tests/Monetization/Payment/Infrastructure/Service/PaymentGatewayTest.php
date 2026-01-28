@@ -39,26 +39,6 @@ use Tests\TestCase;
 
 class PaymentGatewayTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Stripe API key が設定されていない場合はスキップ
-        $stripeKey = config('services.stripe.secret_key', '');
-        if ($stripeKey === '' || $stripeKey === null) {
-            $this->markTestSkipped('STRIPE_SECRET_KEY is not set');
-        }
-    }
-
-    protected function defineEnvironment($app): void
-    {
-        parent::defineEnvironment($app);
-
-        // テスト用に環境変数から Stripe 設定を読み込む
-        // @phpstan-ignore larastan.noEnvCallsOutsideOfConfig
-        $app['config']->set('services.stripe.secret_key', env('STRIPE_SECRET_KEY', ''));
-    }
-
     /**
      * 正常系: authorize で PaymentIntent が作成されること.
      *
@@ -68,8 +48,6 @@ class PaymentGatewayTest extends TestCase
     #[Group('useDb')]
     public function testAuthorizeCreatesPaymentIntent(): void
     {
-        $this->app->make(StripeClient::class);
-
         // Account と MonetizationAccount を作成
         $accountId = StrTestHelper::generateUuid();
         CreateAccount::create($accountId);

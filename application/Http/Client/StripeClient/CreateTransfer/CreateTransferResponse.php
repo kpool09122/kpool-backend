@@ -11,6 +11,11 @@ final readonly class CreateTransferResponse
     ) {
     }
 
+    public function params(): CreateTransferParams
+    {
+        return CreateTransferParams::fromArray(['id' => $this->id]);
+    }
+
     public function id(): string
     {
         return $this->id;

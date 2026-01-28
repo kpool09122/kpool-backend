@@ -11,5 +11,7 @@ interface TranslateGroupInputPort
 {
     public function groupIdentifier(): GroupIdentifier;
 
+    public function publishedGroupIdentifier(): ?GroupIdentifier;
+
     public function principalIdentifier(): PrincipalIdentifier;
 }

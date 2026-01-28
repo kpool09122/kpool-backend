@@ -29,8 +29,12 @@ class DraftGroup
      * @param AgencyIdentifier|null $agencyIdentifier
      * @param Description $description
      * @param ApprovalStatus $status
+     * @param PrincipalIdentifier|null $approverIdentifier
      * @param PrincipalIdentifier|null $mergerIdentifier
      * @param DateTimeImmutable|null $mergedAt
+     * @param PrincipalIdentifier|null $sourceEditorIdentifier
+     * @param DateTimeImmutable|null $translatedAt
+     * @param DateTimeImmutable|null $approvedAt
      */
     public function __construct(
         private readonly GroupIdentifier          $groupIdentifier,

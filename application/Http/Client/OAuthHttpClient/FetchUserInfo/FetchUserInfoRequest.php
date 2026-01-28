@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\OAuthHttpClient\FetchUserInfo;
 
+use Psr\Http\Message\RequestInterface;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 
 final readonly class FetchUserInfoRequest
@@ -22,5 +23,21 @@ final readonly class FetchUserInfoRequest
     public function accessToken(): string
     {
         return $this->accessToken;
+    }
+
+    /**
+     * @param array<string, mixed> $providerConfig
+     */
+    public function toPsrRequest(
+        RequestInterface $request,
+        array $providerConfig,
+    ): RequestInterface {
+        /** @var string $userinfoEndpoint */
+        $userinfoEndpoint = $providerConfig['userinfo_endpoint'];
+
+        return $request
+            ->withMethod('GET')
+            ->withUri($request->getUri()->withPath(parse_url($userinfoEndpoint, PHP_URL_PATH) ?: ''))
+            ->withHeader('Authorization', 'Bearer '.$this->accessToken);
     }
 }

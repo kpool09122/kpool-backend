@@ -25,8 +25,16 @@ readonly class DraftSongFactory implements DraftSongFactoryInterface
     ) {
     }
 
+    /**
+     * @param PrincipalIdentifier|null $editorIdentifier
+     * @param Slug $slug
+     * @param Language $language
+     * @param SongName $name
+     * @param TranslationSetIdentifier|null $translationSetIdentifier 既存の翻訳セットIDがあれば指定
+     * @return DraftSong
+     */
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Slug                      $slug,
         Language                  $language,
         SongName                  $name,

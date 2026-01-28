@@ -61,4 +61,30 @@ class DraftGroupFactoryTest extends TestCase
         $group = $groupFactory->create($editorIdentifier, $language, $name, $slug, $translationSetIdentifier);
         $this->assertSame((string)$translationSetIdentifier, (string)$group->translationSetIdentifier());
     }
+
+    /**
+     * 正常系: editorIdentifierがnullの場合もDraftGroup Entityが正しく作成されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testCreateWithNullEditorIdentifier(): void
+    {
+        $language = Language::ENGLISH;
+        $name = new GroupName('NewJeans');
+        $slug = new Slug('newjeans');
+        $groupFactory = $this->app->make(DraftGroupFactoryInterface::class);
+        $group = $groupFactory->create(null, $language, $name, $slug);
+        $this->assertTrue(UuidValidator::isValid((string)$group->groupIdentifier()));
+        $this->assertNull($group->publishedGroupIdentifier());
+        $this->assertTrue(UuidValidator::isValid((string)$group->translationSetIdentifier()));
+        $this->assertSame((string)$slug, (string)$group->slug());
+        $this->assertNull($group->editorIdentifier());
+        $this->assertSame($language->value, $group->language()->value);
+        $this->assertSame((string)$name, (string)$group->name());
+        $this->assertSame('newjeans', $group->normalizedName());
+        $this->assertNull($group->agencyIdentifier());
+        $this->assertSame('', (string)$group->description());
+        $this->assertSame(ApprovalStatus::Pending, $group->status());
+    }
 }

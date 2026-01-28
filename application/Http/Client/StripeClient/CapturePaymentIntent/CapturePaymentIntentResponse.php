@@ -12,6 +12,14 @@ final readonly class CapturePaymentIntentResponse
     ) {
     }
 
+    public function params(): CapturePaymentIntentParams
+    {
+        return CapturePaymentIntentParams::fromArray([
+            'id' => $this->id,
+            'status' => $this->status,
+        ]);
+    }
+
     public function id(): string
     {
         return $this->id;

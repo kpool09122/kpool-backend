@@ -11,5 +11,7 @@ interface TranslateTalentInputPort
 {
     public function talentIdentifier(): TalentIdentifier;
 
+    public function publishedTalentIdentifier(): ?TalentIdentifier;
+
     public function principalIdentifier(): PrincipalIdentifier;
 }

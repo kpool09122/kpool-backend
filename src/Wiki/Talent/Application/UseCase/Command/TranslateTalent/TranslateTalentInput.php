@@ -12,12 +12,18 @@ readonly class TranslateTalentInput implements TranslateTalentInputPort
     public function __construct(
         private TalentIdentifier    $talentIdentifier,
         private PrincipalIdentifier $principalIdentifier,
+        private ?TalentIdentifier   $publishedTalentIdentifier = null,
     ) {
     }
 
     public function talentIdentifier(): TalentIdentifier
     {
         return $this->talentIdentifier;
+    }
+
+    public function publishedTalentIdentifier(): ?TalentIdentifier
+    {
+        return $this->publishedTalentIdentifier;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

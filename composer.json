@@ -11,7 +11,8 @@
         "psr/log": "^3.0",
         "ext-mbstring": "*",
         "stripe/stripe-php": "^19.1",
-        "ext-gd": "*"
+        "ext-gd": "*",
+        "google/cloud-translate": "^2.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

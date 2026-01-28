@@ -27,7 +27,7 @@ readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
     }
 
     public function create(
-        PrincipalIdentifier       $editorIdentifier,
+        ?PrincipalIdentifier      $editorIdentifier,
         Language                  $language,
         AgencyName                $agencyName,
         Slug                      $slug,
