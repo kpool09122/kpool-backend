@@ -77,6 +77,24 @@ class SongTest extends TestCase
     }
 
     /**
+     * 正常系：NormalizedNameのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedName(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $this->assertSame($createSong->normalizedName, $song->normalizedName());
+
+        $newNormalizedName = 'i can\'t stop me';
+        $song->setNormalizedName($newNormalizedName);
+        $this->assertNotSame($createSong->normalizedName, $song->normalizedName());
+        $this->assertSame($newNormalizedName, $song->normalizedName());
+    }
+
+    /**
      * 正常系：GroupIdentifierのsetterが正しく動作すること.
      *
      * @return void
@@ -128,6 +146,24 @@ class SongTest extends TestCase
     }
 
     /**
+     * 正常系：NormalizedLyricistのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedLyricist(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $this->assertSame($createSong->normalizedLyricist, $song->normalizedLyricist());
+
+        $newNormalizedLyricist = 'j.y. park';
+        $song->setNormalizedLyricist($newNormalizedLyricist);
+        $this->assertNotSame($createSong->normalizedLyricist, $song->normalizedLyricist());
+        $this->assertSame($newNormalizedLyricist, $song->normalizedLyricist());
+    }
+
+    /**
      * 正常系：Composerのsetterが正しく動作すること.
      *
      * @return void
@@ -142,6 +178,24 @@ class SongTest extends TestCase
         $createSong->song->setComposer($newComposer);
         $this->assertNotSame((string)$createSong->composer, (string)$createSong->song->composer());
         $this->assertSame((string)$newComposer, (string)$createSong->song->composer());
+    }
+
+    /**
+     * 正常系：NormalizedComposerのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedComposer(): void
+    {
+        $createSong = $this->createDummySong();
+        $song = $createSong->song;
+
+        $this->assertSame($createSong->normalizedComposer, $song->normalizedComposer());
+
+        $newNormalizedComposer = 'j.y. park';
+        $song->setNormalizedComposer($newNormalizedComposer);
+        $this->assertNotSame($createSong->normalizedComposer, $song->normalizedComposer());
+        $this->assertSame($newNormalizedComposer, $song->normalizedComposer());
     }
 
     /**

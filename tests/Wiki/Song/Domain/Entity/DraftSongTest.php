@@ -85,6 +85,24 @@ class DraftSongTest extends TestCase
     }
 
     /**
+     * 正常系：NormalizedNameのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedName(): void
+    {
+        $createDraftSong = $this->createDummyDraftSong();
+        $song = $createDraftSong->song;
+
+        $this->assertSame($createDraftSong->normalizedName, $song->normalizedName());
+
+        $newNormalizedName = 'i can\'t stop me';
+        $song->setNormalizedName($newNormalizedName);
+        $this->assertNotSame($createDraftSong->normalizedName, $song->normalizedName());
+        $this->assertSame($newNormalizedName, $song->normalizedName());
+    }
+
+    /**
      * 正常系：AgencyIDのsetterが正しく動作すること.
      *
      * @return void
@@ -153,6 +171,24 @@ class DraftSongTest extends TestCase
     }
 
     /**
+     * 正常系：NormalizedLyricistのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedLyricist(): void
+    {
+        $createDraftSong = $this->createDummyDraftSong();
+        $song = $createDraftSong->song;
+
+        $this->assertSame($createDraftSong->normalizedLyricist, $song->normalizedLyricist());
+
+        $newNormalizedLyricist = 'j.y. park';
+        $song->setNormalizedLyricist($newNormalizedLyricist);
+        $this->assertNotSame($createDraftSong->normalizedLyricist, $song->normalizedLyricist());
+        $this->assertSame($newNormalizedLyricist, $song->normalizedLyricist());
+    }
+
+    /**
      * 正常系：Composerのsetterが正しく動作すること.
      *
      * @return void
@@ -167,6 +203,24 @@ class DraftSongTest extends TestCase
         $createDraftSong->song->setComposer($newComposer);
         $this->assertNotSame((string)$createDraftSong->composer, (string)$createDraftSong->song->composer());
         $this->assertSame((string)$newComposer, (string)$createDraftSong->song->composer());
+    }
+
+    /**
+     * 正常系：NormalizedComposerのsetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetNormalizedComposer(): void
+    {
+        $createDraftSong = $this->createDummyDraftSong();
+        $song = $createDraftSong->song;
+
+        $this->assertSame($createDraftSong->normalizedComposer, $song->normalizedComposer());
+
+        $newNormalizedComposer = 'j.y. park';
+        $song->setNormalizedComposer($newNormalizedComposer);
+        $this->assertNotSame($createDraftSong->normalizedComposer, $song->normalizedComposer());
+        $this->assertSame($newNormalizedComposer, $song->normalizedComposer());
     }
 
     /**

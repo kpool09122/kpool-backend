@@ -42,7 +42,9 @@ class TalentTest extends TestCase
         $this->assertSame((string)$talentInfo->talentIdentifier, (string)$talentInfo->talent->talentIdentifier());
         $this->assertSame($talentInfo->language->value, $talentInfo->talent->language()->value);
         $this->assertSame((string)$talentInfo->name, (string)$talentInfo->talent->name());
+        $this->assertSame($talentInfo->normalizedName, $talentInfo->talent->normalizedName());
         $this->assertSame((string)$talentInfo->realName, (string)$talentInfo->talent->realName());
+        $this->assertSame($talentInfo->normalizedRealName, $talentInfo->talent->normalizedRealName());
         $this->assertSame((string)$talentInfo->birthday, (string)$talentInfo->talent->birthday());
         $this->assertSame($talentInfo->groupIdentifiers, $talentInfo->talent->groupIdentifiers());
         $this->assertSame((string)$talentInfo->career, (string)$talentInfo->talent->career());
@@ -77,6 +79,24 @@ class TalentTest extends TestCase
     }
 
     /**
+     * 正常系：NormalizedNameのsetterが正しく動作すること.
+     *
+     * @throws ExceedMaxRelevantVideoLinksException
+     * @return void
+     */
+    public function testSetNormalizedName(): void
+    {
+        $talentInfo = $this->createDummyTalent();
+
+        $this->assertSame($talentInfo->normalizedName, $talentInfo->talent->normalizedName());
+
+        $newNormalizedName = 'ㅈㅎ';
+        $talentInfo->talent->setNormalizedName($newNormalizedName);
+        $this->assertNotSame($talentInfo->normalizedName, $talentInfo->talent->normalizedName());
+        $this->assertSame($newNormalizedName, $talentInfo->talent->normalizedName());
+    }
+
+    /**
      * 正常系：RealNameのsetterが正しく動作すること.
      *
      * @throws ExceedMaxRelevantVideoLinksException
@@ -92,6 +112,24 @@ class TalentTest extends TestCase
         $talentInfo->talent->setRealName($newRealName);
         $this->assertNotSame((string)$talentInfo->realName, (string)$talentInfo->talent->realName());
         $this->assertSame((string)$newRealName, (string)$talentInfo->talent->realName());
+    }
+
+    /**
+     * 正常系：NormalizedRealNameのsetterが正しく動作すること.
+     *
+     * @throws ExceedMaxRelevantVideoLinksException
+     * @return void
+     */
+    public function testSetNormalizedRealName(): void
+    {
+        $talentInfo = $this->createDummyTalent();
+
+        $this->assertSame($talentInfo->normalizedRealName, $talentInfo->talent->normalizedRealName());
+
+        $newNormalizedRealName = 'ㅂㅈㅅ';
+        $talentInfo->talent->setNormalizedRealName($newNormalizedRealName);
+        $this->assertNotSame($talentInfo->normalizedRealName, $talentInfo->talent->normalizedRealName());
+        $this->assertSame($newNormalizedRealName, $talentInfo->talent->normalizedRealName());
     }
 
     /**
