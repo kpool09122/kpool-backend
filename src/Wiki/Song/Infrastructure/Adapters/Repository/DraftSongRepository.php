@@ -70,10 +70,6 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
             ],
         );
 
-        if (! $draftModel instanceof DraftSongModel) {
-            throw new \LogicException('DraftSongModel::query()->updateOrCreate() must return ' . DraftSongModel::class);
-        }
-
         $groupId = $song->groupIdentifier() ? [(string) $song->groupIdentifier()] : [];
         $draftModel->groups()->sync($groupId);
 
@@ -112,21 +108,6 @@ final class DraftSongRepository implements DraftSongRepositoryInterface
         $releaseDate = $draftModel->release_date
             ? new ReleaseDate($draftModel->release_date->toDateTimeImmutable())
             : null;
-
-        $normalizedName = $draftModel->getAttribute('normalized_name');
-        if (! is_string($normalizedName)) {
-            throw new \LogicException('draft_songs.normalized_name must be string');
-        }
-
-        $normalizedLyricist = $draftModel->getAttribute('normalized_lyricist');
-        if (! is_string($normalizedLyricist)) {
-            throw new \LogicException('draft_songs.normalized_lyricist must be string');
-        }
-
-        $normalizedComposer = $draftModel->getAttribute('normalized_composer');
-        if (! is_string($normalizedComposer)) {
-            throw new \LogicException('draft_songs.normalized_composer must be string');
-        }
 
         return new DraftSong(
             new SongIdentifier($draftModel->id),
