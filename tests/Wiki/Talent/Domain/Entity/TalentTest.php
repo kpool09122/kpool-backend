@@ -237,9 +237,9 @@ class TalentTest extends TestCase
             $translationSetIdentifier,
             Language::KOREAN,
             new TalentName('테스트'),
-            '',
+            'ㅌㅅㅌ',
             new RealName('테스트'),
-            '',
+            'ㅌㅅㅌ',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,
@@ -338,7 +338,9 @@ class TalentTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
+        $normalizedName = 'ㅊㅇ';
         $realName = new RealName('손채영');
+        $normalizedRealName = 'ㅅㅊㅇ';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -362,9 +364,9 @@ class TalentTest extends TestCase
             $translationSetIdentifier,
             $language,
             $name,
-            '',
+            $normalizedName,
             $realName,
-            '',
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,
@@ -383,7 +385,9 @@ class TalentTest extends TestCase
             translationSetIdentifier: $translationSetIdentifier,
             language: $language,
             name: $name,
+            normalizedName: $normalizedName,
             realName: $realName,
+            normalizedRealName: $normalizedRealName,
             agencyIdentifier: $agencyIdentifier,
             groupIdentifiers: $groupIdentifiers,
             birthday: $birthday,
@@ -415,7 +419,9 @@ readonly class TalentTestData
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $language,
         public TalentName               $name,
+        public string                   $normalizedName,
         public RealName                 $realName,
+        public string                   $normalizedRealName,
         public AgencyIdentifier         $agencyIdentifier,
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,

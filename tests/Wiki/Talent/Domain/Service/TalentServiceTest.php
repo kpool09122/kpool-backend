@@ -60,16 +60,18 @@ class TalentServiceTest extends TestCase
 
         // 承認済みのDraftTalent (韓国語版)
         $approvedTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $approvedName = new TalentName('채영');
+        $approvedRealName = new RealName('손채영');
         $approvedTalent = new DraftTalent(
             $approvedTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::KOREAN,
-            new TalentName('채영'),
-            '',
-            new RealName('손채영'),
-            '',
+            $approvedName,
+            'ㅊㅇ',
+            $approvedRealName,
+            'ㅅㅊㅇ',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -84,16 +86,18 @@ class TalentServiceTest extends TestCase
         );
 
         // 除外対象のDraftTalent (日本語版)
+        $excludeName = new TalentName('チェヨン');
+        $excludeRealName = new RealName('ソン・チェヨン');
         $excludeTalent = new DraftTalent(
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::JAPANESE,
-            new TalentName('チェヨン'),
-            '',
-            new RealName('ソン・チェヨン'),
-            '',
+            $excludeName,
+            'ちぇよん',
+            $excludeRealName,
+            'そんちぇよん',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -139,16 +143,18 @@ class TalentServiceTest extends TestCase
 
         // Pending状態のDraftTalent (韓国語版)
         $pendingTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $pendingName = new TalentName('채영');
+        $pendingRealName = new RealName('손채영');
         $pendingTalent = new DraftTalent(
             $pendingTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::KOREAN,
-            new TalentName('채영'),
-            '',
-            new RealName('손채영'),
-            '',
+            $pendingName,
+            'ㅊㅇ',
+            $pendingRealName,
+            'ㅅㅊㅇ',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -163,16 +169,18 @@ class TalentServiceTest extends TestCase
         );
 
         // 除外対象のDraftTalent (日本語版)
+        $excludeName = new TalentName('チェヨン');
+        $excludeRealName = new RealName('ソン・チェヨン');
         $excludeTalent = new DraftTalent(
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::JAPANESE,
-            new TalentName('チェヨン'),
-            '',
-            new RealName('ソン・チェヨン'),
-            '',
+            $excludeName,
+            'ちぇよん',
+            $excludeRealName,
+            'そんちぇよん',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -217,16 +225,18 @@ class TalentServiceTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         // 自分自身 (Approved状態だが除外される)
+        $selfName = new TalentName('チェヨン');
+        $selfRealName = new RealName('ソン・チェヨン');
         $selfTalent = new DraftTalent(
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::JAPANESE,
-            new TalentName('チェヨン'),
-            '',
-            new RealName('ソン・チェヨン'),
-            '',
+            $selfName,
+            'ちぇよん',
+            $selfRealName,
+            'そんちぇよん',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [
                 new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -300,16 +310,18 @@ class TalentServiceTest extends TestCase
 
         // 韓国語版 (Approved)
         $koreanTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $koreanName = new TalentName('채영');
+        $koreanRealName = new RealName('손채영');
         $koreanTalent = new DraftTalent(
             $koreanTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::KOREAN,
-            new TalentName('채영'),
-            '',
-            new RealName('손채영'),
-            '',
+            $koreanName,
+            'ㅊㅇ',
+            $koreanRealName,
+            'ㅅㅊㅇ',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,
@@ -321,16 +333,18 @@ class TalentServiceTest extends TestCase
 
         // 英語版 (Approved)
         $englishTalentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
+        $englishName = new TalentName('Chaeyoung');
+        $englishRealName = new RealName('Son Chaeyoung');
         $englishTalent = new DraftTalent(
             $englishTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::ENGLISH,
-            new TalentName('Chaeyoung'),
-            '',
-            new RealName('Son Chaeyoung'),
-            '',
+            $englishName,
+            'chaeyoung',
+            $englishRealName,
+            'son chaeyoung',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,
@@ -341,16 +355,18 @@ class TalentServiceTest extends TestCase
         );
 
         // 日本語版 (Pending, 除外対象)
+        $japaneseName = new TalentName('チェヨン');
+        $japaneseRealName = new RealName('ソン・チェヨン');
         $japaneseTalent = new DraftTalent(
             $excludeTalentIdentifier,
             null,
             $translationSetIdentifier,
             $editorIdentifier,
             Language::JAPANESE,
-            new TalentName('チェヨン'),
-            '',
-            new RealName('ソン・チェヨン'),
-            '',
+            $japaneseName,
+            'ちぇよん',
+            $japaneseRealName,
+            'そんちぇよん',
             new AgencyIdentifier(StrTestHelper::generateUuid()),
             [],
             null,

@@ -11,7 +11,6 @@ use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
@@ -67,9 +66,8 @@ class TalentSnapshotFactoryTest extends TestCase
         $relevantVideoLinks = new RelevantVideoLinks([$link1, $link2]);
         $version = new Version(3);
 
-        $normalizationService = $this->app->make(NormalizationServiceInterface::class);
-        $normalizedName = $normalizationService->normalize((string) $name, $language);
-        $normalizedRealName = $normalizationService->normalize((string) $realName, $language);
+        $normalizedName = 'ㅊㅇ';
+        $normalizedRealName = 'ㅅㅊㅇ';
 
         $talent = new Talent(
             $talentIdentifier,
@@ -115,7 +113,6 @@ class TalentSnapshotFactoryTest extends TestCase
      */
     public function testCreateWithNullAgencyIdentifier(): void
     {
-        $normalizationService = $this->app->make(NormalizationServiceInterface::class);
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('');
@@ -125,7 +122,7 @@ class TalentSnapshotFactoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             $language,
             $name,
-            $normalizationService->normalize((string) $name, $language),
+            'ㅊㅇ',
             $realName,
             '',
             null,

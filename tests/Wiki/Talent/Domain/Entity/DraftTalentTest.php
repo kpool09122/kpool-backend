@@ -280,7 +280,9 @@ class DraftTalentTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $name = new TalentName('채영');
+        $normalizedName = 'ㅊㅇ';
         $realName = new RealName('손채영');
+        $normalizedRealName = 'ㅅㅊㅇ';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -304,9 +306,9 @@ class DraftTalentTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
-            '',
+            $normalizedName,
             $realName,
-            '',
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,
@@ -323,7 +325,9 @@ class DraftTalentTest extends TestCase
             editorIdentifier: $editorIdentifier,
             language: $language,
             name: $name,
+            normalizedName: $normalizedName,
             realName: $realName,
+            normalizedRealName: $normalizedRealName,
             agencyIdentifier: $agencyIdentifier,
             groupIdentifiers: $groupIdentifiers,
             birthday: $birthday,
@@ -355,7 +359,9 @@ readonly class DraftTalentTestData
         public PrincipalIdentifier        $editorIdentifier,
         public Language                 $language,
         public TalentName               $name,
+        public string                   $normalizedName,
         public RealName                 $realName,
+        public string                   $normalizedRealName,
         public AgencyIdentifier         $agencyIdentifier,
         public array                    $groupIdentifiers,
         public Birthday                 $birthday,

@@ -872,7 +872,9 @@ class ApproveTalentTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $translation = Language::KOREAN;
         $name = new TalentName('채영');
+        $normalizedName = 'ㅊㅇ';
         $realName = new RealName('손채영');
+        $normalizedRealName = 'ㅅㅊㅇ';
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -901,9 +903,9 @@ class ApproveTalentTest extends TestCase
             $editorIdentifier,
             $translation,
             $name,
-            (string) $name,
+            $normalizedName,
             $realName,
-            (string) $realName,
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,
@@ -919,9 +921,9 @@ class ApproveTalentTest extends TestCase
             $translationSetIdentifier,
             $translation,
             $name,
-            (string) $name,
+            $normalizedName,
             $realName,
-            (string) $realName,
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,

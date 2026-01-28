@@ -273,7 +273,7 @@ class CreateSongTest extends TestCase
         $groupIdentifier = new GroupIdentifier(StrTestHelper::generateUuid());
         $talentIdentifier = new TalentIdentifier(StrTestHelper::generateUuid());
         $lyricist = new Lyricist('블랙아이드필승');
-        $normalizedLyricist = '블랙아이드필승';
+        $normalizedLyricist = 'ㅂㄹㅇㅇㄷㅍㅅ';
         $composer = new Composer('Sam Lewis');
         $normalizedComposer = 'sam lewis';
         $releaseDate = new ReleaseDate(new DateTimeImmutable('2016-10-24'));

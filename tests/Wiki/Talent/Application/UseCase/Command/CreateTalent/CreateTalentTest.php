@@ -81,6 +81,9 @@ class CreateTalentTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
+        $expectedNormalizedName = 'ㅊㅇ';
+        $expectedNormalizedRealName = 'ㅅㅊㅇ';
+
         $input = new CreateTalentInput(
             $createTalentInfo->publishedTalentIdentifier,
             $createTalentInfo->language,
@@ -148,6 +151,8 @@ class CreateTalentTest extends TestCase
         $this->assertSame((string)$createTalentInfo->imageLink, (string)$talent->imageLink());
         $this->assertSame($createTalentInfo->relevantVideoLinks->toStringArray(), $talent->relevantVideoLinks()->toStringArray());
         $this->assertSame($createTalentInfo->status, $talent->status());
+        $this->assertSame($expectedNormalizedName, $talent->normalizedName());
+        $this->assertSame($expectedNormalizedRealName, $talent->normalizedRealName());
     }
 
     /**
@@ -337,6 +342,9 @@ class CreateTalentTest extends TestCase
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
+        $normalizedName = 'ㅊㅇ';
+        $normalizedRealName = 'ㅅㅊㅇ';
+
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -365,9 +373,9 @@ class CreateTalentTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
-            '',
+            $normalizedName,
             $realName,
-            '',
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,
@@ -383,9 +391,9 @@ class CreateTalentTest extends TestCase
             $translationSetIdentifier,
             $language,
             $name,
-            '',
+            $normalizedName,
             $realName,
-            '',
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,

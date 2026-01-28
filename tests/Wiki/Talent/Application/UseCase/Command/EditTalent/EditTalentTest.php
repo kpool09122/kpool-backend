@@ -540,6 +540,9 @@ class EditTalentTest extends TestCase
         $language = Language::KOREAN;
         $name = new TalentName('채영');
         $realName = new RealName('손채영');
+        $normalizedName = 'ㅊㅇ';
+        $normalizedRealName = 'ㅅㅊㅇ';
+
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [
             new GroupIdentifier(StrTestHelper::generateUuid()),
@@ -568,9 +571,9 @@ class EditTalentTest extends TestCase
             $editorIdentifier,
             $language,
             $name,
-            '',
+            $normalizedName,
             $realName,
-            '',
+            $normalizedRealName,
             $agencyIdentifier,
             $groupIdentifiers,
             $birthday,
