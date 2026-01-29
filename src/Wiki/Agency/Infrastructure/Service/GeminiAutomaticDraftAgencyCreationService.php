@@ -9,7 +9,7 @@ use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyParams;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
 use Psr\Log\LoggerInterface;
-use Source\Wiki\Agency\Application\DTO\GeneratedAgencyData;
+use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\GeneratedAgencyData;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
 

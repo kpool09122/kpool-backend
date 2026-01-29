@@ -8,11 +8,13 @@ use Application\Http\Client\Foundation\PsrFactories;
 use Application\Http\Client\GeminiClient\Exceptions\GeminiException;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyResponse;
+use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupRequest;
+use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupResponse;
+use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use JsonException;
 
 class GeminiClient
 {
@@ -50,6 +52,27 @@ class GeminiClient
         $response = $this->sendRequest($psrRequest);
 
         return new GenerateAgencyResponse($response);
+    }
+
+    /**
+     * @throws GeminiException
+     * @throws JsonException
+     */
+    public function generateGroup(GenerateGroupRequest $request): GenerateGroupResponse
+    {
+        if (! $this->isConfigured()) {
+            throw new GeminiException('Gemini API key is not configured');
+        }
+
+        $baseRequest = $this->createBaseRequest();
+        $psrRequest = $request->toPsrRequest(
+            $baseRequest,
+            $this->psrFactories->getStreamFactory(),
+        );
+
+        $response = $this->sendRequest($psrRequest);
+
+        return new GenerateGroupResponse($response);
     }
 
     private function createBaseRequest(): RequestInterface

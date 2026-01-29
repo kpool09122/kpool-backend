@@ -2,23 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Agency\Application\DTO;
+namespace Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup;
 
-use Application\Http\Client\GeminiClient\GenerateAgency\SourceReference;
+use Source\Wiki\Shared\Application\DTO\SourceReference;
 
-final readonly class GeneratedAgencyData
+final readonly class GeneratedGroupData
 {
     /**
      * @param string|null $alphabetName
-     * @param string|null $ceoName
-     * @param int|null $foundedYear
      * @param string|null $description
      * @param SourceReference[] $sources
      */
     public function __construct(
         private ?string $alphabetName,
-        private ?string $ceoName,
-        private ?int $foundedYear,
         private ?string $description,
         private array $sources,
     ) {
@@ -27,16 +23,6 @@ final readonly class GeneratedAgencyData
     public function alphabetName(): ?string
     {
         return $this->alphabetName;
-    }
-
-    public function ceoName(): ?string
-    {
-        return $this->ceoName;
-    }
-
-    public function foundedYear(): ?int
-    {
-        return $this->foundedYear;
     }
 
     public function description(): ?string

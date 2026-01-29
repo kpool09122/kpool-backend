@@ -8,10 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
-use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
-use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class AutomaticDraftGroupCreationPayloadTest extends TestCase
@@ -21,26 +18,17 @@ class AutomaticDraftGroupCreationPayloadTest extends TestCase
      */
     public function test__construct(): void
     {
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $groupName = new GroupName('TWICE');
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $description = new Description('auto generated group profile');
-        $source = new AutomaticDraftGroupSource('news::source-id');
         $payload = new AutomaticDraftGroupCreationPayload(
-            $editorIdentifier,
             $language,
             $groupName,
             $agencyIdentifier,
-            $description,
-            $source,
         );
 
-        $this->assertSame($editorIdentifier, $payload->editorIdentifier());
-        $this->assertSame($language, $payload->translation());
+        $this->assertSame($language, $payload->language());
         $this->assertSame($groupName, $payload->name());
         $this->assertSame($agencyIdentifier, $payload->agencyIdentifier());
-        $this->assertSame($description, $payload->description());
-        $this->assertSame($source, $payload->source());
     }
 }

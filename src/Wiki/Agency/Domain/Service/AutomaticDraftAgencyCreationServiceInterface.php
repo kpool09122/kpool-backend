@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Service;
 
-use Source\Wiki\Agency\Application\DTO\GeneratedAgencyData;
+use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\GeneratedAgencyData;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
 
 interface AutomaticDraftAgencyCreationServiceInterface

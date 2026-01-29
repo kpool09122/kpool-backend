@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client\GeminiClient\GenerateAgency;
+namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
 use Application\Http\Client\Foundation\Json\Decoder;
 use Psr\Http\Message\ResponseInterface;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
-final readonly class GenerateAgencyResponse
+final readonly class GenerateGroupResponse
 {
     private string $contents;
 
@@ -17,7 +17,7 @@ final readonly class GenerateAgencyResponse
         $this->contents = $response->getBody()->getContents();
     }
 
-    public function params(): GenerateAgencyParams
+    public function params(): GenerateGroupParams
     {
         /** @var array<string, mixed> $responseBody */
         $responseBody = Decoder::decode($this->contents, true);
@@ -28,7 +28,7 @@ final readonly class GenerateAgencyResponse
 
         $sources = $this->extractSources($responseBody);
 
-        return GenerateAgencyParams::fromArray($data, $sources);
+        return GenerateGroupParams::fromArray($data, $sources);
     }
 
     /**

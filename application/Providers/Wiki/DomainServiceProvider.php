@@ -54,6 +54,7 @@ use Source\Wiki\Group\Domain\Factory\GroupSnapshotFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Repository\GroupSnapshotRepositoryInterface;
+use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
 use Source\Wiki\Group\Domain\Service\GroupService;
 use Source\Wiki\Group\Domain\Service\GroupServiceInterface;
 use Source\Wiki\Group\Infrastructure\Adapters\Repository\DraftGroupRepository;
@@ -63,6 +64,7 @@ use Source\Wiki\Group\Infrastructure\Factory\DraftGroupFactory;
 use Source\Wiki\Group\Infrastructure\Factory\GroupFactory;
 use Source\Wiki\Group\Infrastructure\Factory\GroupHistoryFactory;
 use Source\Wiki\Group\Infrastructure\Factory\GroupSnapshotFactory;
+use Source\Wiki\Group\Infrastructure\Service\GeminiAutomaticDraftGroupCreationService;
 use Source\Wiki\Group\Infrastructure\Service\GoogleTranslationService as GroupGoogleTranslationService;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
@@ -244,5 +246,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(TalentTranslationServiceInterface::class, TalentGoogleTranslationService::class);
         $this->app->singleton(SongTranslationServiceInterface::class, SongGoogleTranslationService::class);
         $this->app->singleton(AutomaticDraftAgencyCreationServiceInterface::class, GeminiAutomaticDraftAgencyCreationService::class);
+        $this->app->singleton(AutomaticDraftGroupCreationServiceInterface::class, GeminiAutomaticDraftGroupCreationService::class);
     }
 }

@@ -8,23 +8,19 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInput;
 use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\AutomaticCreateDraftGroupInterface;
-use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\GeneratedGroupData;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
-use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupSource;
-use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
@@ -37,13 +33,15 @@ class AutomaticCreateDraftGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
+     * @throws UnauthorizedException
      */
     public function testProcessWithAdministrator(): void
     {
-        $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal($principalIdentifier);
-        $draftGroup = $this->makeDraftGroup();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $payload = $this->makePayload();
+        $generatedData = $this->makeGeneratedGroupData();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -52,26 +50,35 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
-        $service->shouldReceive('create')
+        $service->shouldReceive('generate')
             ->once()
-            ->with($payload, $principal)
-            ->andReturn($draftGroup);
+            ->with($payload)
+            ->andReturn($generatedData);
+
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
+        $slugGeneratorService->shouldReceive('generate')
+            ->once()
+            ->with('TWICE')
+            ->andReturn(new Slug('twice'));
 
         $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with($draftGroup)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
 
         $result = $useCase->process($input);
-        $this->assertSame($draftGroup, $result);
+
+        $this->assertEquals((string) $payload->name(), (string) $result->name());
+        $this->assertEquals('twice', (string) $result->slug());
+        $this->assertEquals('auto generated description', (string) $result->description());
     }
 
     /**
@@ -79,13 +86,15 @@ class AutomaticCreateDraftGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
+     * @throws UnauthorizedException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
-        $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal($principalIdentifier);
-        $draftGroup = $this->makeDraftGroup();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $payload = $this->makePayload();
+        $generatedData = $this->makeGeneratedGroupData();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -94,26 +103,34 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
-        $service->shouldReceive('create')
+        $service->shouldReceive('generate')
             ->once()
-            ->with($payload, $principal)
-            ->andReturn($draftGroup);
+            ->with($payload)
+            ->andReturn($generatedData);
+
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
+        $slugGeneratorService->shouldReceive('generate')
+            ->once()
+            ->with('TWICE')
+            ->andReturn(new Slug('twice'));
 
         $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with($draftGroup)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
 
         $result = $useCase->process($input);
-        $this->assertSame($draftGroup, $result);
+
+        $this->assertEquals((string) $payload->name(), (string) $result->name());
+        $this->assertEquals('twice', (string) $result->slug());
     }
 
     /**
@@ -121,12 +138,14 @@ class AutomaticCreateDraftGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
+     * @throws UnauthorizedException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
-        $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = $this->makePrincipal($principalIdentifier);
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $payload = $this->makePayload();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -135,10 +154,12 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
@@ -157,8 +178,9 @@ class AutomaticCreateDraftGroupTest extends TestCase
      */
     public function testWhenNotFoundPrincipal(): void
     {
-        $payload = $this->makePayload();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $payload = $this->makePayload();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -167,10 +189,12 @@ class AutomaticCreateDraftGroupTest extends TestCase
             ->andReturn(null);
 
         $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
@@ -180,37 +204,76 @@ class AutomaticCreateDraftGroupTest extends TestCase
         $useCase->process($input);
     }
 
+    /**
+     * 正常系: API失敗時に空文字やNullが使用されること.
+     *
+     * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function testProcessWithEmptyGeneratedData(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $payload = $this->makePayload();
+        $emptyGeneratedData = new GeneratedGroupData(
+            alphabetName: null,
+            description: null,
+            sources: [],
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $service = Mockery::mock(AutomaticDraftGroupCreationServiceInterface::class);
+        $service->shouldReceive('generate')
+            ->once()
+            ->with($payload)
+            ->andReturn($emptyGeneratedData);
+
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
+        $slugGeneratorService->shouldReceive('generate')
+            ->once()
+            ->with('트와이스')
+            ->andReturn(new Slug('twice'));
+
+        $repository = Mockery::mock(DraftGroupRepositoryInterface::class);
+        $repository->shouldReceive('save')
+            ->once()
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AutomaticDraftGroupCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
+        $this->app->instance(DraftGroupRepositoryInterface::class, $repository);
+
+        $input = new AutomaticCreateDraftGroupInput($payload, $principalIdentifier);
+        $useCase = $this->app->make(AutomaticCreateDraftGroupInterface::class);
+
+        $result = $useCase->process($input);
+
+        $this->assertSame('', (string) $result->description());
+    }
+
     private function makePayload(): AutomaticDraftGroupCreationPayload
     {
         return new AutomaticDraftGroupCreationPayload(
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new GroupName('TWICE'),
+            new GroupName('트와이스'),
             new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new Description('auto generated group profile'),
-            new AutomaticDraftGroupSource('news::12345'),
         );
     }
 
-    private function makePrincipal(PrincipalIdentifier $principalIdentifier): Principal
+    private function makeGeneratedGroupData(): GeneratedGroupData
     {
-        return new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
-    }
-
-    private function makeDraftGroup(): DraftGroup
-    {
-        return new DraftGroup(
-            new GroupIdentifier(StrTestHelper::generateUuid()),
-            null,
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice'),
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::KOREAN,
-            new GroupName('TWICE'),
-            'twice',
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            new Description('auto generated group'),
-            ApprovalStatus::Pending,
+        return new GeneratedGroupData(
+            alphabetName: 'TWICE',
+            description: 'auto generated description',
+            sources: [],
         );
     }
 }

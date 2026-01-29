@@ -2,19 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client\GeminiClient\GenerateAgency;
+namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
-final readonly class GenerateAgencyParams
+final readonly class GenerateGroupParams
 {
     /**
      * @param SourceReference[] $sources
      */
     public function __construct(
         private ?string $alphabetName,
-        private ?string $ceoName,
-        private ?int $foundedYear,
         private ?string $description,
         private array $sources,
     ) {
@@ -28,8 +26,6 @@ final readonly class GenerateAgencyParams
     {
         return new self(
             alphabetName: $data['alphabet_name'] ?? null,
-            ceoName: $data['ceo_name'] ?? null,
-            foundedYear: isset($data['founded_year']) ? (int)$data['founded_year'] : null,
             description: $data['description'] ?? null,
             sources: $sources,
         );
@@ -39,8 +35,6 @@ final readonly class GenerateAgencyParams
     {
         return new self(
             alphabetName: null,
-            ceoName: null,
-            foundedYear: null,
             description: null,
             sources: [],
         );
@@ -49,16 +43,6 @@ final readonly class GenerateAgencyParams
     public function alphabetName(): ?string
     {
         return $this->alphabetName;
-    }
-
-    public function ceoName(): ?string
-    {
-        return $this->ceoName;
-    }
-
-    public function foundedYear(): ?int
-    {
-        return $this->foundedYear;
     }
 
     public function description(): ?string

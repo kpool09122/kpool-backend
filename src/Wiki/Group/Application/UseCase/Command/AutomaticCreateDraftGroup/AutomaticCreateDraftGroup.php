@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup;
 
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Group\Domain\Factory\DraftGroupFactoryInterface;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
 use Source\Wiki\Group\Domain\Service\AutomaticDraftGroupCreationServiceInterface;
+use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
+use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -19,9 +22,11 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
 {
     public function __construct(
         private AutomaticDraftGroupCreationServiceInterface $automaticDraftGroupCreationService,
+        private DraftGroupFactoryInterface $draftGroupFactory,
         private DraftGroupRepositoryInterface $groupRepository,
         private PrincipalRepositoryInterface $principalRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private SlugGeneratorServiceInterface $slugGeneratorService,
     ) {
     }
 
@@ -49,7 +54,24 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
             throw new UnauthorizedException();
         }
 
-        $draftGroup = $this->automaticDraftGroupCreationService->create($input->payload(), $principal);
+        $payload = $input->payload();
+        $generatedData = $this->automaticDraftGroupCreationService->generate($payload);
+
+        $slugSource = $generatedData->alphabetName() ?? (string)$payload->name();
+        $slug = $this->slugGeneratorService->generate($slugSource);
+
+        $draftGroup = $this->draftGroupFactory->create(
+            editorIdentifier: null,
+            language: $payload->language(),
+            name: $payload->name(),
+            slug: $slug,
+        );
+
+        $draftGroup->setAgencyIdentifier($payload->agencyIdentifier());
+
+        $description = $generatedData->description() ?? '';
+        $draftGroup->setDescription(new Description($description));
+
         $this->groupRepository->save($draftGroup);
 
         return $draftGroup;

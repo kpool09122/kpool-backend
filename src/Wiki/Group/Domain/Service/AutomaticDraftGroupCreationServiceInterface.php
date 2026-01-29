@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Group\Domain\Service;
 
-use Source\Wiki\Group\Domain\Entity\DraftGroup;
+use Source\Wiki\Group\Application\UseCase\Command\AutomaticCreateDraftGroup\GeneratedGroupData;
 use Source\Wiki\Group\Domain\ValueObject\AutomaticDraftGroupCreationPayload;
-use Source\Wiki\Principal\Domain\Entity\Principal;
 
 interface AutomaticDraftGroupCreationServiceInterface
 {
     /**
+     * Gemini APIを使用してグループ情報を自動生成する
+     *
      * @param AutomaticDraftGroupCreationPayload $payload
-     * @param Principal $requestedBy
-     * @return DraftGroup
+     * @return GeneratedGroupData
      */
-    public function create(
+    public function generate(
         AutomaticDraftGroupCreationPayload $payload,
-        Principal $requestedBy,
-    ): DraftGroup;
+    ): GeneratedGroupData;
 }

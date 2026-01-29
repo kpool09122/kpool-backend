@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client\GeminiClient\GenerateAgency;
+namespace Source\Wiki\Shared\Application\DTO;
 
 final readonly class SourceReference
 {
