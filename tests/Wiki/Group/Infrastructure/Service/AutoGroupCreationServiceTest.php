@@ -6,6 +6,7 @@ namespace Tests\Wiki\Group\Infrastructure\Service;
 
 use Application\Http\Client\GeminiClient\Exceptions\GeminiException;
 use Application\Http\Client\GeminiClient\GeminiClient;
+use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupRequest;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupResponse;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use JsonException;
@@ -13,11 +14,20 @@ use Mockery;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Agency\Domain\Entity\Agency;
+use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier as AgencyDomainIdentifier;
+use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
+use Source\Wiki\Agency\Domain\ValueObject\CEO;
+use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\Service\AutoGroupCreationServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Group\Domain\ValueObject\AutoGroupCreationPayload;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Infrastructure\Service\AutoGroupCreationService;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -82,6 +92,11 @@ DESCRIPTION;
 
         $response = $this->createGeminiResponse($responseJson);
 
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
             ->once()
@@ -108,6 +123,11 @@ DESCRIPTION;
      */
     public function testGenerateReturnsEmptyDataOnGeminiException(): void
     {
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
             ->once()
@@ -150,6 +170,11 @@ DESCRIPTION;
         ], JSON_THROW_ON_ERROR);
 
         $response = $this->createGeminiResponse($responseJson);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
@@ -208,6 +233,11 @@ DESCRIPTION;
         ], JSON_THROW_ON_ERROR);
 
         $response = $this->createGeminiResponse($responseJson);
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
@@ -276,6 +306,11 @@ DESCRIPTION;
 
         $response = $this->createGeminiResponse($responseJson);
 
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
             ->once()
@@ -336,6 +371,11 @@ DESCRIPTION;
 
         $response = $this->createGeminiResponse($responseJson);
 
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
             ->once()
@@ -354,12 +394,200 @@ DESCRIPTION;
         $this->assertCount(1, $result->sources());
     }
 
-    private function makePayload(string $name, Language $language): AutoGroupCreationPayload
+    /**
+     * 正常系: AgencyIdentifierがある場合、AgencyNameがリクエストに含まれること.
+     *
+     * @throws JsonException
+     * @throws BindingResolutionException
+     */
+    public function testGenerateWithAgencyName(): void
     {
+        $agencyId = StrTestHelper::generateUuid();
+        $agencyName = 'JYP Entertainment';
+
+        $agency = new Agency(
+            new AgencyDomainIdentifier($agencyId),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+            new Slug('jyp-entertainment'),
+            Language::KOREAN,
+            new AgencyName($agencyName),
+            'jyp entertainment',
+            new CEO(''),
+            '',
+            null,
+            new Description(''),
+            new Version(1),
+        );
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->once()
+            ->andReturn($agency);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
+        $responseJson = json_encode([
+            'candidates' => [
+                [
+                    'content' => [
+                        'parts' => [
+                            [
+                                'text' => json_encode([
+                                    'alphabet_name' => 'TWICE',
+                                    'description' => 'TWICE is a K-pop group affiliated with JYP Entertainment.',
+                                ], JSON_THROW_ON_ERROR),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->createGeminiResponse($responseJson);
+
+        $geminiClient = Mockery::mock(GeminiClient::class);
+        $geminiClient->shouldReceive('generateGroup')
+            ->once()
+            ->withArgs(function (GenerateGroupRequest $request) use ($agencyName) {
+                return $request->agencyName() === $agencyName;
+            })
+            ->andReturn(new GenerateGroupResponse($response));
+
+        $this->app->instance(GeminiClient::class, $geminiClient);
+
+        $service = $this->app->make(AutoGroupCreationServiceInterface::class);
+        $payload = new AutoGroupCreationPayload(
+            Language::JAPANESE,
+            new GroupName('트와이스'),
+            new AgencyIdentifier($agencyId),
+        );
+
+        $result = $service->generate($payload);
+
+        $this->assertSame('TWICE', $result->alphabetName());
+    }
+
+    /**
+     * 正常系: AgencyIdentifierがnullの場合、AgencyNameがnullであること.
+     *
+     * @throws JsonException
+     * @throws BindingResolutionException
+     */
+    public function testGenerateWithoutAgencyIdentifier(): void
+    {
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldNotReceive('findById');
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
+        $responseJson = json_encode([
+            'candidates' => [
+                [
+                    'content' => [
+                        'parts' => [
+                            [
+                                'text' => json_encode([
+                                    'alphabet_name' => 'BTS',
+                                    'description' => 'BTS is a K-pop group.',
+                                ], JSON_THROW_ON_ERROR),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->createGeminiResponse($responseJson);
+
+        $geminiClient = Mockery::mock(GeminiClient::class);
+        $geminiClient->shouldReceive('generateGroup')
+            ->once()
+            ->withArgs(function (GenerateGroupRequest $request) {
+                return $request->agencyName() === null;
+            })
+            ->andReturn(new GenerateGroupResponse($response));
+
+        $this->app->instance(GeminiClient::class, $geminiClient);
+
+        $service = $this->app->make(AutoGroupCreationServiceInterface::class);
+        $payload = new AutoGroupCreationPayload(
+            Language::KOREAN,
+            new GroupName('BTS'),
+            null,
+        );
+
+        $result = $service->generate($payload);
+
+        $this->assertSame('BTS', $result->alphabetName());
+    }
+
+    /**
+     * 正常系: AgencyIdentifierがあるが、Agencyが見つからない場合、AgencyNameがnullであること.
+     *
+     * @throws JsonException
+     * @throws BindingResolutionException
+     */
+    public function testGenerateWithAgencyNotFound(): void
+    {
+        $agencyId = StrTestHelper::generateUuid();
+
+        $agencyRepository = Mockery::mock(AgencyRepositoryInterface::class);
+        $agencyRepository->shouldReceive('findById')
+            ->once()
+            ->andReturn(null);
+
+        $this->app->instance(AgencyRepositoryInterface::class, $agencyRepository);
+
+        $responseJson = json_encode([
+            'candidates' => [
+                [
+                    'content' => [
+                        'parts' => [
+                            [
+                                'text' => json_encode([
+                                    'alphabet_name' => 'STAYC',
+                                    'description' => 'STAYC is a K-pop group.',
+                                ], JSON_THROW_ON_ERROR),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], JSON_THROW_ON_ERROR);
+
+        $response = $this->createGeminiResponse($responseJson);
+
+        $geminiClient = Mockery::mock(GeminiClient::class);
+        $geminiClient->shouldReceive('generateGroup')
+            ->once()
+            ->withArgs(function (GenerateGroupRequest $request) {
+                return $request->agencyName() === null;
+            })
+            ->andReturn(new GenerateGroupResponse($response));
+
+        $this->app->instance(GeminiClient::class, $geminiClient);
+
+        $service = $this->app->make(AutoGroupCreationServiceInterface::class);
+        $payload = new AutoGroupCreationPayload(
+            Language::KOREAN,
+            new GroupName('스테이씨'),
+            new AgencyIdentifier($agencyId),
+        );
+
+        $result = $service->generate($payload);
+
+        $this->assertSame('STAYC', $result->alphabetName());
+    }
+
+    private function makePayload(
+        string $name,
+        Language $language,
+        ?AgencyIdentifier $agencyIdentifier = null,
+    ): AutoGroupCreationPayload {
         return new AutoGroupCreationPayload(
             $language,
             new GroupName($name),
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
+            $agencyIdentifier,
         );
     }
 

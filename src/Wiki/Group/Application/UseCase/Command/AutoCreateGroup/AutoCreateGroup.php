@@ -11,8 +11,8 @@ use Source\Wiki\Group\Domain\Service\AutoGroupCreationServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\Description;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
@@ -33,7 +33,7 @@ readonly class AutoCreateGroup implements AutoCreateGroupInterface
     /**
      * @param AutoCreateGroupInputPort $input
      * @return DraftGroup
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
     public function process(AutoCreateGroupInputPort $input): DraftGroup
@@ -51,7 +51,7 @@ readonly class AutoCreateGroup implements AutoCreateGroupInterface
         );
 
         if (! $this->policyEvaluator->evaluate($principal, Action::AUTOMATIC_CREATE, $resource)) {
-            throw new UnauthorizedException();
+            throw new DisallowedException();
         }
 
         $payload = $input->payload();

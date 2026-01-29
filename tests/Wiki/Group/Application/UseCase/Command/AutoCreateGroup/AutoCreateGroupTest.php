@@ -18,8 +18,8 @@ use Source\Wiki\Group\Domain\ValueObject\AutoGroupCreationPayload;
 use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -33,7 +33,7 @@ class AutoCreateGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testProcessWithAdministrator(): void
     {
@@ -86,7 +86,7 @@ class AutoCreateGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -138,7 +138,7 @@ class AutoCreateGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
@@ -166,7 +166,7 @@ class AutoCreateGroupTest extends TestCase
         $this->setPolicyEvaluatorResult(false);
         $useCase = $this->app->make(AutoCreateGroupInterface::class);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $useCase->process($input);
     }
 
@@ -174,7 +174,7 @@ class AutoCreateGroupTest extends TestCase
      * 異常系: 指定したIDに紐づくPrincipalが存在しない場合、例外がスローされること.
      *
      * @throws BindingResolutionException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -209,7 +209,7 @@ class AutoCreateGroupTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testProcessWithEmptyGeneratedData(): void
     {

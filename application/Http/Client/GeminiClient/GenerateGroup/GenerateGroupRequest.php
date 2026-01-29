@@ -12,6 +12,7 @@ final readonly class GenerateGroupRequest
     public function __construct(
         private string $groupName,
         private string $language,
+        private ?string $agencyName = null,
     ) {
     }
 
@@ -23,6 +24,11 @@ final readonly class GenerateGroupRequest
     public function language(): string
     {
         return $this->language;
+    }
+
+    public function agencyName(): ?string
+    {
+        return $this->agencyName;
     }
 
     public function toPsrRequest(
@@ -80,9 +86,13 @@ final readonly class GenerateGroupRequest
             default => 'English',
         };
 
+        $agencyContext = $this->agencyName !== null
+            ? " affiliated with {$this->agencyName}"
+            : '';
+
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following K-POP group/artist using Wikipedia and official homepage, then collect information.
+Research the following K-POP group/artist{$agencyContext} using Wikipedia and official homepage, then collect information.
 
 ## Target
 - Group/Artist Name: {$this->groupName}
