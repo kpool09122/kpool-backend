@@ -15,6 +15,7 @@ use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyService;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
+use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
 use Source\Wiki\Agency\Infrastructure\Adapters\Repository\AgencyRepository;
 use Source\Wiki\Agency\Infrastructure\Adapters\Repository\AgencySnapshotRepository;
 use Source\Wiki\Agency\Infrastructure\Adapters\Repository\DraftAgencyRepository;
@@ -22,6 +23,7 @@ use Source\Wiki\Agency\Infrastructure\Factory\AgencyFactory;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyHistoryFactory;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencySnapshotFactory;
 use Source\Wiki\Agency\Infrastructure\Factory\DraftAgencyFactory;
+use Source\Wiki\Agency\Infrastructure\Service\GeminiAutomaticDraftAgencyCreationService;
 use Source\Wiki\Agency\Infrastructure\Service\GoogleTranslationService as AgencyGoogleTranslationService;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotion;
 use Source\Wiki\Grading\Application\UseCase\Command\ProcessRolePromotion\ProcessRolePromotionInterface;
@@ -106,7 +108,9 @@ use Source\Wiki\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationQueryService;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
+use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
+use Source\Wiki\Shared\Infrastructure\Service\SlugGeneratorService;
 use Source\Wiki\Song\Application\Service\TranslationServiceInterface as SongTranslationServiceInterface;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
@@ -190,6 +194,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(DraftTalentFactoryInterface::class, DraftTalentFactory::class);
         $this->app->singleton(DraftSongFactoryInterface::class, DraftSongFactory::class);
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
+        $this->app->singleton(SlugGeneratorServiceInterface::class, SlugGeneratorService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);
         $this->app->singleton(PolicyFactoryInterface::class, PolicyFactory::class);
@@ -238,5 +243,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(GroupTranslationServiceInterface::class, GroupGoogleTranslationService::class);
         $this->app->singleton(TalentTranslationServiceInterface::class, TalentGoogleTranslationService::class);
         $this->app->singleton(SongTranslationServiceInterface::class, SongGoogleTranslationService::class);
+        $this->app->singleton(AutomaticDraftAgencyCreationServiceInterface::class, GeminiAutomaticDraftAgencyCreationService::class);
     }
 }

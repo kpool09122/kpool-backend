@@ -4,29 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency;
 
-use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Agency\Application\DTO\GeneratedAgencyData;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInput;
 use Source\Wiki\Agency\Application\UseCase\Command\AutomaticCreateDraftAgency\AutomaticCreateDraftAgencyInterface;
-use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutomaticDraftAgencyCreationServiceInterface;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
-use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencySource;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
-use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Tests\Helper\StrTestHelper;
@@ -39,6 +32,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
+     * @throws DisallowedException
      */
     public function testProcessWithAdministrator(): void
     {
@@ -46,7 +40,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $payload = $this->makePayload();
-        $draftAgency = $this->makeDraftAgency();
+        $generatedData = $this->makeGeneratedAgencyData();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -55,26 +49,36 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
-        $service->shouldReceive('create')
+        $service->shouldReceive('generate')
             ->once()
-            ->with($payload, $principal)
-            ->andReturn($draftAgency);
+            ->with($payload)
+            ->andReturn($generatedData);
+
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
+        $slugGeneratorService->shouldReceive('generate')
+            ->once()
+            ->with('JYP Entertainment')
+            ->andReturn(new Slug('jyp-entertainment'));
 
         $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with($draftAgency)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
         $result = $useCase->process($input);
-        $this->assertSame($draftAgency, $result);
+
+        $this->assertEquals((string) $payload->name(), (string) $result->name());
+        $this->assertEquals('jyp-entertainment', (string) $result->slug());
+        $this->assertEquals('J.Y. Park', (string) $result->CEO());
+        $this->assertEquals('auto generated description', (string) $result->description());
     }
 
     /**
@@ -82,6 +86,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
+     * @throws DisallowedException
      */
     public function testProcessWithSeniorCollaborator(): void
     {
@@ -89,7 +94,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
 
         $payload = $this->makePayload();
-        $draftAgency = $this->makeDraftAgency();
+        $generatedData = $this->makeGeneratedAgencyData();
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -98,26 +103,34 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
-        $service->shouldReceive('create')
+        $service->shouldReceive('generate')
             ->once()
-            ->with($payload, $principal)
-            ->andReturn($draftAgency);
+            ->with($payload)
+            ->andReturn($generatedData);
+
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
+        $slugGeneratorService->shouldReceive('generate')
+            ->once()
+            ->with('JYP Entertainment')
+            ->andReturn(new Slug('jyp-entertainment'));
 
         $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with($draftAgency)
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
         $result = $useCase->process($input);
-        $this->assertSame($draftAgency, $result);
+
+        $this->assertEquals((string) $payload->name(), (string) $result->name());
+        $this->assertEquals('jyp-entertainment', (string) $result->slug());
     }
 
     /**
@@ -125,7 +138,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
-     * @throws UnauthorizedException
+     * @throws DisallowedException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -140,10 +153,12 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->andReturn(null);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
@@ -158,6 +173,7 @@ class AutomaticCreateDraftAgencyTest extends TestCase
      *
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
+     * @throws DisallowedException
      */
     public function testProcessWithUnauthorizedRole(): void
     {
@@ -173,50 +189,97 @@ class AutomaticCreateDraftAgencyTest extends TestCase
             ->andReturn($principal);
 
         $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
 
         $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
         $this->setPolicyEvaluatorResult(false);
         $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
 
-        $this->expectException(UnauthorizedException::class);
+        $this->expectException(DisallowedException::class);
         $useCase->process($input);
+    }
+
+    /**
+     * 正常系: API失敗時に空文字やNullが使用されること.
+     *
+     * @throws BindingResolutionException
+     * @throws PrincipalNotFoundException
+     * @throws DisallowedException
+     */
+    public function testProcessWithEmptyGeneratedData(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $payload = $this->makePayload();
+        $emptyGeneratedData = new GeneratedAgencyData(
+            alphabetName: null,
+            ceoName: null,
+            foundedYear: null,
+            description: null,
+            sources: [],
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $service = Mockery::mock(AutomaticDraftAgencyCreationServiceInterface::class);
+        $service->shouldReceive('generate')
+            ->once()
+            ->with($payload)
+            ->andReturn($emptyGeneratedData);
+
+        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
+        $slugGeneratorService->shouldReceive('generate')
+            ->once()
+            ->with('JYP엔터테인먼트')
+            ->andReturn(new Slug('jyp-entertainment'));
+
+        $repository = Mockery::mock(DraftAgencyRepositoryInterface::class);
+        $repository->shouldReceive('save')
+            ->once()
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(AutomaticDraftAgencyCreationServiceInterface::class, $service);
+        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
+        $this->app->instance(DraftAgencyRepositoryInterface::class, $repository);
+
+        $input = new AutomaticCreateDraftAgencyInput($payload, $principalIdentifier);
+        $useCase = $this->app->make(AutomaticCreateDraftAgencyInterface::class);
+
+        $result = $useCase->process($input);
+
+        $this->assertSame('', (string) $result->CEO());
+        $this->assertSame('', (string) $result->description());
+        $this->assertNull($result->foundedIn());
     }
 
     private function makePayload(): AutomaticDraftAgencyCreationPayload
     {
         return new AutomaticDraftAgencyCreationPayload(
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
             new AgencyName('JYP엔터테인먼트'),
-            new CEO('J.Y. Park'),
-            new FoundedIn(new DateTimeImmutable('1997-04-25')),
-            new Description('### JYP엔터테인먼트 (JYP Entertainment)
-가수 겸 음악プロデューサー인 **박진영(J.Y. Park)**이 1997년에 설립한 한국의 대형 종합 엔터테인먼트 기업입니다.'),
-            new AutomaticDraftAgencySource('news::12345'),
         );
     }
 
-    private function makeDraftAgency(): DraftAgency
+    private function makeGeneratedAgencyData(): GeneratedAgencyData
     {
-        return new DraftAgency(
-            new AgencyIdentifier(StrTestHelper::generateUuid()),
-            null,
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('test-slug'),
-            new PrincipalIdentifier(StrTestHelper::generateUuid()),
-            Language::KOREAN,
-            new AgencyName('JYP엔터테인먼트'),
-            'JYPㅇㅌㅌㅇㅁㅌ',
-            new CEO('J.Y. Park'),
-            'j.y. park',
-            new FoundedIn(new DateTimeImmutable('1997-04-25')),
-            new Description('auto generated'),
-            ApprovalStatus::Pending,
+        return new GeneratedAgencyData(
+            alphabetName: 'JYP Entertainment',
+            ceoName: 'J.Y. Park',
+            foundedYear: 1997,
+            description: 'auto generated description',
+            sources: [],
         );
     }
 }

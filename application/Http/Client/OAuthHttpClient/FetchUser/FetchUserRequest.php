@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client\OAuthHttpClient\FetchUserInfo;
+namespace Application\Http\Client\OAuthHttpClient\FetchUser;
 
 use Psr\Http\Message\RequestInterface;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 
-final readonly class FetchUserInfoRequest
+final readonly class FetchUserRequest
 {
     public function __construct(
         private SocialProvider $provider,

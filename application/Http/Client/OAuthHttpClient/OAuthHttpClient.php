@@ -8,8 +8,8 @@ use Application\Http\Client\Foundation\PsrFactories;
 use Application\Http\Client\OAuthHttpClient\Exceptions\OAuthException;
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenResponse;
-use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
-use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoResponse;
+use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserRequest;
+use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserResponse;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -61,7 +61,7 @@ class OAuthHttpClient
     /**
      * @throws OAuthException
      */
-    public function fetchUserInfo(FetchUserInfoRequest $request): FetchUserInfoResponse
+    public function fetchUser(FetchUserRequest $request): FetchUserResponse
     {
         $providerConfig = $this->getProviderConfig($request->provider());
 
@@ -79,7 +79,7 @@ class OAuthHttpClient
             );
         }
 
-        return new FetchUserInfoResponse($response);
+        return new FetchUserResponse($response);
     }
 
     /**

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client\OAuthHttpClient\FetchUserInfo;
+namespace Application\Http\Client\OAuthHttpClient\FetchUser;
 
-final readonly class FetchUserInfoParams
+final readonly class FetchUserParams
 {
     /**
      * @param array<string, mixed> $params

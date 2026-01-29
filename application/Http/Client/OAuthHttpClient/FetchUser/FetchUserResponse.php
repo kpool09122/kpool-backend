@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Client\OAuthHttpClient\FetchUserInfo;
+namespace Application\Http\Client\OAuthHttpClient\FetchUser;
 
 use Application\Http\Client\Foundation\Json\Decoder;
 use Psr\Http\Message\ResponseInterface;
 
-final readonly class FetchUserInfoResponse
+final readonly class FetchUserResponse
 {
     private string $contents;
 
@@ -16,12 +16,12 @@ final readonly class FetchUserInfoResponse
         $this->contents = $response->getBody()->getContents();
     }
 
-    public function params(): FetchUserInfoParams
+    public function params(): FetchUserParams
     {
         /** @var array<string, mixed> $data */
         $data = Decoder::decode($this->contents, true);
 
-        return FetchUserInfoParams::fromArray($data);
+        return FetchUserParams::fromArray($data);
     }
 
     /**

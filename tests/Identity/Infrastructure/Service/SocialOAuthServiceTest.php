@@ -6,8 +6,8 @@ namespace Tests\Identity\Infrastructure\Service;
 
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenResponse;
-use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
-use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoResponse;
+use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserRequest;
+use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserResponse;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use DateTimeImmutable;
 use GuzzleHttp\Psr7\HttpFactory;
@@ -153,14 +153,14 @@ class SocialOAuthServiceTest extends TestCase
 
         $capturedFetchRequest = null;
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->withArgs(function (FetchUserInfoRequest $request) use (&$capturedFetchRequest) {
+            ->withArgs(function (FetchUserRequest $request) use (&$capturedFetchRequest) {
                 $capturedFetchRequest = $request;
 
                 return true;
             })
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'id' => '123456789',
                 'email' => 'user@gmail.com',
                 'name' => 'Test User',
@@ -219,14 +219,14 @@ class SocialOAuthServiceTest extends TestCase
 
         $capturedFetchRequest = null;
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->withArgs(function (FetchUserInfoRequest $request) use (&$capturedFetchRequest) {
+            ->withArgs(function (FetchUserRequest $request) use (&$capturedFetchRequest) {
                 $capturedFetchRequest = $request;
 
                 return true;
             })
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
                 'pictureUrl' => 'https://profile.line-scdn.net/avatar.jpg',
@@ -277,9 +277,9 @@ class SocialOAuthServiceTest extends TestCase
             ));
 
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
             ])));
@@ -320,9 +320,9 @@ class SocialOAuthServiceTest extends TestCase
             ));
 
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
             ])));
@@ -364,9 +364,9 @@ class SocialOAuthServiceTest extends TestCase
             ));
 
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
             ])));
@@ -413,9 +413,9 @@ class SocialOAuthServiceTest extends TestCase
             ));
 
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'userId' => 'U1234567890abcdef',
                 'displayName' => 'LINE User',
             ])));
@@ -463,14 +463,14 @@ class SocialOAuthServiceTest extends TestCase
 
         $capturedFetchRequest = null;
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->withArgs(function (FetchUserInfoRequest $request) use (&$capturedFetchRequest) {
+            ->withArgs(function (FetchUserRequest $request) use (&$capturedFetchRequest) {
                 $capturedFetchRequest = $request;
 
                 return true;
             })
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'id' => 9876543210,
                 'kakao_account' => [
                     'email' => 'user@kakao.com',
@@ -524,9 +524,9 @@ class SocialOAuthServiceTest extends TestCase
             ));
 
         $oAuthHttpClient
-            ->shouldReceive('fetchUserInfo')
+            ->shouldReceive('fetchUser')
             ->once()
-            ->andReturn(new FetchUserInfoResponse($this->createJsonResponse([
+            ->andReturn(new FetchUserResponse($this->createJsonResponse([
                 'id' => 9876543210,
                 'kakao_account' => [
                     'profile' => [

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Providers;
 
 use Application\Http\Client\Foundation\PsrFactories;
+use Application\Http\Client\GeminiClient\GeminiClient;
 use Application\Http\Client\GoogleTranslateClient\GoogleTranslateClient;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Application\Http\Client\StripeClient\StripeClient;
@@ -76,6 +77,21 @@ class ClientServiceProvider extends ServiceProvider
             $credentialsPath = config('google.credentials_path', '');
 
             return new GoogleTranslateClient($projectId, $credentialsPath);
+        });
+
+        $this->app->singleton(GeminiClient::class, function (Application $app) {
+            /** @var string $apiKey */
+            $apiKey = config('google.gemini_api_key', '');
+
+            /** @var string $model */
+            $model = config('google.gemini_model', 'gemini-2.0-flash');
+
+            return new GeminiClient(
+                apiKey: $apiKey,
+                model: $model,
+                httpClient: $app->make(ClientInterface::class),
+                psrFactories: $app->make(PsrFactories::class),
+            );
         });
     }
 }

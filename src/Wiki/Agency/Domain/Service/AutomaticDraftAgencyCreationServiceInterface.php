@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Agency\Domain\Service;
 
-use Source\Wiki\Agency\Domain\Entity\DraftAgency;
+use Source\Wiki\Agency\Application\DTO\GeneratedAgencyData;
 use Source\Wiki\Agency\Domain\ValueObject\AutomaticDraftAgencyCreationPayload;
-use Source\Wiki\Principal\Domain\Entity\Principal;
 
 interface AutomaticDraftAgencyCreationServiceInterface
 {
     /**
+     * Gemini APIを使用して事務所情報を自動生成する
+     *
      * @param AutomaticDraftAgencyCreationPayload $payload
-     * @param Principal $requestedBy
-     * @return DraftAgency
+     * @return GeneratedAgencyData
      */
-    public function create(
+    public function generate(
         AutomaticDraftAgencyCreationPayload $payload,
-        Principal $requestedBy,
-    ): DraftAgency;
+    ): GeneratedAgencyData;
 }
