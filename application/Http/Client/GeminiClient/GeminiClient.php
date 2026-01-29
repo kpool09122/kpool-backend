@@ -10,6 +10,8 @@ use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyResponse;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupRequest;
 use Application\Http\Client\GeminiClient\GenerateGroup\GenerateGroupResponse;
+use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
+use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentResponse;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -73,6 +75,27 @@ class GeminiClient
         $response = $this->sendRequest($psrRequest);
 
         return new GenerateGroupResponse($response);
+    }
+
+    /**
+     * @throws GeminiException
+     * @throws JsonException
+     */
+    public function generateTalent(GenerateTalentRequest $request): GenerateTalentResponse
+    {
+        if (! $this->isConfigured()) {
+            throw new GeminiException('Gemini API key is not configured');
+        }
+
+        $baseRequest = $this->createBaseRequest();
+        $psrRequest = $request->toPsrRequest(
+            $baseRequest,
+            $this->psrFactories->getStreamFactory(),
+        );
+
+        $response = $this->sendRequest($psrRequest);
+
+        return new GenerateTalentResponse($response);
     }
 
     private function createBaseRequest(): RequestInterface

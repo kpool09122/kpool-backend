@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Talent\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 final readonly class AutomaticDraftTalentCreationPayload
 {
@@ -13,21 +12,11 @@ final readonly class AutomaticDraftTalentCreationPayload
      * @param GroupIdentifier[] $groupIdentifiers
      */
     public function __construct(
-        private PrincipalIdentifier        $editorIdentifier,
         private Language                   $language,
         private TalentName                 $name,
-        private RealName                   $realName,
         private ?AgencyIdentifier          $agencyIdentifier,
         private array                      $groupIdentifiers,
-        private ?Birthday                  $birthday,
-        private Career                     $career,
-        private AutomaticDraftTalentSource $source,
     ) {
-    }
-
-    public function editorIdentifier(): PrincipalIdentifier
-    {
-        return $this->editorIdentifier;
     }
 
     public function language(): Language
@@ -38,11 +27,6 @@ final readonly class AutomaticDraftTalentCreationPayload
     public function name(): TalentName
     {
         return $this->name;
-    }
-
-    public function realName(): RealName
-    {
-        return $this->realName;
     }
 
     public function agencyIdentifier(): ?AgencyIdentifier
@@ -56,20 +40,5 @@ final readonly class AutomaticDraftTalentCreationPayload
     public function groupIdentifiers(): array
     {
         return $this->groupIdentifiers;
-    }
-
-    public function birthday(): ?Birthday
-    {
-        return $this->birthday;
-    }
-
-    public function career(): Career
-    {
-        return $this->career;
-    }
-
-    public function source(): AutomaticDraftTalentSource
-    {
-        return $this->source;
     }
 }

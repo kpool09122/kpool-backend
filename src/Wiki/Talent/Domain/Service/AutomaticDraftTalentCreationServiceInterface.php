@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Talent\Domain\Service;
 
-use Source\Wiki\Principal\Domain\Entity\Principal;
-use Source\Wiki\Talent\Domain\Entity\DraftTalent;
+use Source\Wiki\Talent\Application\UseCase\Command\AutomaticCreateDraftTalent\GeneratedTalentData;
 use Source\Wiki\Talent\Domain\ValueObject\AutomaticDraftTalentCreationPayload;
 
 interface AutomaticDraftTalentCreationServiceInterface
 {
     /**
+     * Gemini APIを使用してタレント情報を自動生成する
+     *
      * @param AutomaticDraftTalentCreationPayload $payload
-     * @param Principal $requestedBy
-     * @return DraftTalent
+     * @return GeneratedTalentData
      */
-    public function create(
+    public function generate(
         AutomaticDraftTalentCreationPayload $payload,
-        Principal $requestedBy,
-    ): DraftTalent;
+    ): GeneratedTalentData;
 }
