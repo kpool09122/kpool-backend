@@ -12,6 +12,9 @@ final readonly class GenerateSongRequest
     public function __construct(
         private string $songName,
         private string $language,
+        private ?string $agencyName = null,
+        private ?string $groupName = null,
+        private ?string $talentName = null,
     ) {
     }
 
@@ -23,6 +26,21 @@ final readonly class GenerateSongRequest
     public function language(): string
     {
         return $this->language;
+    }
+
+    public function agencyName(): ?string
+    {
+        return $this->agencyName;
+    }
+
+    public function groupName(): ?string
+    {
+        return $this->groupName;
+    }
+
+    public function talentName(): ?string
+    {
+        return $this->talentName;
     }
 
     public function toPsrRequest(
@@ -83,9 +101,11 @@ final readonly class GenerateSongRequest
             default => 'English',
         };
 
+        $affiliationContext = $this->buildAffiliationContext();
+
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following K-POP song using Wikipedia and official homepage, then collect information.
+Research the following K-POP song{$affiliationContext} using Wikipedia and official homepage, then collect information.
 
 ## Target
 - Song Name: {$this->songName}
@@ -108,5 +128,33 @@ Research the following K-POP song using Wikipedia and official homepage, then co
 - Use reliable sources (Wikipedia, official websites)
 - If information is not found, set the field to null
 PROMPT;
+    }
+
+    private function buildAffiliationContext(): string
+    {
+        $parts = [];
+
+        if ($this->agencyName !== null) {
+            $parts[] = "with rights held by {$this->agencyName}";
+        }
+
+        $performers = [];
+        if ($this->groupName !== null) {
+            $performers[] = $this->groupName;
+        }
+        if ($this->talentName !== null) {
+            $performers[] = $this->talentName;
+        }
+
+        if (count($performers) > 0) {
+            $performerList = implode(' and ', $performers);
+            $parts[] = "performed by {$performerList}";
+        }
+
+        if (count($parts) === 0) {
+            return '';
+        }
+
+        return ' (' . implode(', ', $parts) . ')';
     }
 }
