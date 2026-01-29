@@ -13,6 +13,12 @@ interface GroupRepositoryInterface
 {
     public function findById(GroupIdentifier $groupIdentifier): ?Group;
 
+    /**
+     * @param GroupIdentifier[] $groupIdentifiers
+     * @return Group[]
+     */
+    public function findByIds(array $groupIdentifiers): array;
+
     public function existsBySlug(Slug $slug): bool;
 
     /**

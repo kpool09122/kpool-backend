@@ -9,9 +9,14 @@ use Psr\Http\Message\StreamFactoryInterface;
 
 final readonly class GenerateTalentRequest
 {
+    /**
+     * @param string[] $groupNames
+     */
     public function __construct(
         private string $talentName,
         private string $language,
+        private ?string $agencyName = null,
+        private array $groupNames = [],
     ) {
     }
 
@@ -23,6 +28,19 @@ final readonly class GenerateTalentRequest
     public function language(): string
     {
         return $this->language;
+    }
+
+    public function agencyName(): ?string
+    {
+        return $this->agencyName;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function groupNames(): array
+    {
+        return $this->groupNames;
     }
 
     public function toPsrRequest(
@@ -82,9 +100,11 @@ final readonly class GenerateTalentRequest
             default => 'English',
         };
 
+        $affiliationContext = $this->buildAffiliationContext();
+
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following K-POP idol/talent using Wikipedia and official homepage, then collect information.
+Research the following K-POP idol/talent{$affiliationContext} using Wikipedia and official homepage, then collect information.
 
 ## Target
 - Talent Name: {$this->talentName}
@@ -106,5 +126,25 @@ Research the following K-POP idol/talent using Wikipedia and official homepage, 
 - Use reliable sources (Wikipedia, official websites)
 - If information is not found, set the field to null
 PROMPT;
+    }
+
+    private function buildAffiliationContext(): string
+    {
+        $parts = [];
+
+        if ($this->agencyName !== null) {
+            $parts[] = "contracted with {$this->agencyName}";
+        }
+
+        if (count($this->groupNames) > 0) {
+            $groupList = implode(', ', $this->groupNames);
+            $parts[] = "member of {$groupList}";
+        }
+
+        if (count($parts) === 0) {
+            return '';
+        }
+
+        return ' (' . implode(' and ', $parts) . ')';
     }
 }
