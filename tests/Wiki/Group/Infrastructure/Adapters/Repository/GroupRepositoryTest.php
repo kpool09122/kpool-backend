@@ -216,4 +216,107 @@ class GroupRepositoryTest extends TestCase
 
         $this->assertFalse($exists);
     }
+
+    /**
+     * 正常系：複数のIDでグループ情報が取得できること.
+     * @throws BindingResolutionException
+     */
+    #[PHPUnitGroup('useDb')]
+    public function testFindByIds(): void
+    {
+        $id1 = StrTestHelper::generateUuid();
+        $id2 = StrTestHelper::generateUuid();
+        $id3 = StrTestHelper::generateUuid();
+
+        CreateGroup::create($id1, [
+            'slug' => 'twice',
+            'name' => 'TWICE',
+            'normalized_name' => 'twice',
+            'version' => 1,
+        ]);
+
+        CreateGroup::create($id2, [
+            'slug' => 'aespa',
+            'name' => 'aespa',
+            'normalized_name' => 'aespa',
+            'version' => 1,
+        ]);
+
+        CreateGroup::create($id3, [
+            'slug' => 'ive',
+            'name' => 'IVE',
+            'normalized_name' => 'ive',
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(GroupRepositoryInterface::class);
+        $groups = $repository->findByIds([
+            new GroupIdentifier($id1),
+            new GroupIdentifier($id2),
+        ]);
+
+        $this->assertCount(2, $groups);
+        $ids = array_map(static fn (Group $g) => (string) $g->groupIdentifier(), $groups);
+        $this->assertContains($id1, $ids);
+        $this->assertContains($id2, $ids);
+        $this->assertNotContains($id3, $ids);
+    }
+
+    /**
+     * 正常系：指定したIDのグループが存在しない場合、空配列が返却されること.
+     * @throws BindingResolutionException
+     */
+    #[PHPUnitGroup('useDb')]
+    public function testFindByIdsWhenNotExist(): void
+    {
+        $repository = $this->app->make(GroupRepositoryInterface::class);
+        $groups = $repository->findByIds([
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+            new GroupIdentifier(StrTestHelper::generateUuid()),
+        ]);
+
+        $this->assertIsArray($groups);
+        $this->assertEmpty($groups);
+    }
+
+    /**
+     * 正常系：空配列を渡した場合、空配列が返却されること.
+     * @throws BindingResolutionException
+     */
+    #[PHPUnitGroup('useDb')]
+    public function testFindByIdsWithEmptyArray(): void
+    {
+        $repository = $this->app->make(GroupRepositoryInterface::class);
+        $groups = $repository->findByIds([]);
+
+        $this->assertIsArray($groups);
+        $this->assertEmpty($groups);
+    }
+
+    /**
+     * 正常系：一部のIDが存在しない場合、存在するグループのみが返却されること.
+     * @throws BindingResolutionException
+     */
+    #[PHPUnitGroup('useDb')]
+    public function testFindByIdsWithPartialMatch(): void
+    {
+        $id1 = StrTestHelper::generateUuid();
+        $nonExistentId = StrTestHelper::generateUuid();
+
+        CreateGroup::create($id1, [
+            'slug' => 'twice',
+            'name' => 'TWICE',
+            'normalized_name' => 'twice',
+            'version' => 1,
+        ]);
+
+        $repository = $this->app->make(GroupRepositoryInterface::class);
+        $groups = $repository->findByIds([
+            new GroupIdentifier($id1),
+            new GroupIdentifier($nonExistentId),
+        ]);
+
+        $this->assertCount(1, $groups);
+        $this->assertSame($id1, (string) $groups[0]->groupIdentifier());
+    }
 }

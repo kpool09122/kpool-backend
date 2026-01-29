@@ -34,6 +34,26 @@ final class GroupRepository implements GroupRepositoryInterface
     }
 
     /**
+     * @param GroupIdentifier[] $groupIdentifiers
+     * @return Group[]
+     */
+    public function findByIds(array $groupIdentifiers): array
+    {
+        if (count($groupIdentifiers) === 0) {
+            return [];
+        }
+
+        $ids = array_map(static fn (GroupIdentifier $id) => (string) $id, $groupIdentifiers);
+
+        $groupModels = GroupModel::query()
+            ->whereIn('id', $ids)
+            ->whereNotNull('version')
+            ->get();
+
+        return $groupModels->map(fn (GroupModel $model) => $this->toEntity($model))->toArray();
+    }
+
+    /**
      * @return Group[]
      */
     public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array

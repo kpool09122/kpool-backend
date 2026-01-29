@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Service;
 
 use Application\Http\Client\OAuthHttpClient\ExchangeCodeForToken\ExchangeCodeForTokenRequest;
-use Application\Http\Client\OAuthHttpClient\FetchUserInfo\FetchUserInfoRequest;
+use Application\Http\Client\OAuthHttpClient\FetchUser\FetchUserRequest;
 use Application\Http\Client\OAuthHttpClient\OAuthHttpClient;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Domain\Exception\SocialOAuthException;
@@ -64,8 +64,8 @@ readonly class SocialOAuthService implements SocialOAuthServiceInterface
                 code: (string) $code,
             ),
         );
-        $userInfoResponse = $this->oAuthHttpClient->fetchUserInfo(
-            new FetchUserInfoRequest(
+        $userInfoResponse = $this->oAuthHttpClient->fetchUser(
+            new FetchUserRequest(
                 provider: $provider,
                 accessToken: $tokenResponse->accessToken(),
             ),
