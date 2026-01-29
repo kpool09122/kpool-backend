@@ -121,6 +121,7 @@ use Source\Wiki\Song\Domain\Factory\SongSnapshotFactoryInterface;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
+use Source\Wiki\Song\Domain\Service\AutomaticDraftSongCreationServiceInterface;
 use Source\Wiki\Song\Domain\Service\SongService;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Infrastructure\Adapters\Repository\DraftSongRepository;
@@ -130,6 +131,7 @@ use Source\Wiki\Song\Infrastructure\Factory\DraftSongFactory;
 use Source\Wiki\Song\Infrastructure\Factory\SongFactory;
 use Source\Wiki\Song\Infrastructure\Factory\SongHistoryFactory;
 use Source\Wiki\Song\Infrastructure\Factory\SongSnapshotFactory;
+use Source\Wiki\Song\Infrastructure\Service\GeminiAutomaticDraftSongCreationService;
 use Source\Wiki\Song\Infrastructure\Service\GoogleTranslationService as SongGoogleTranslationService;
 use Source\Wiki\Talent\Application\Service\TranslationServiceInterface as TalentTranslationServiceInterface;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
@@ -250,5 +252,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AutomaticDraftAgencyCreationServiceInterface::class, GeminiAutomaticDraftAgencyCreationService::class);
         $this->app->singleton(AutomaticDraftGroupCreationServiceInterface::class, GeminiAutomaticDraftGroupCreationService::class);
         $this->app->singleton(AutomaticDraftTalentCreationServiceInterface::class, GeminiAutomaticDraftTalentCreationService::class);
+        $this->app->singleton(AutomaticDraftSongCreationServiceInterface::class, GeminiAutomaticDraftSongCreationService::class);
     }
 }

@@ -6,32 +6,20 @@ namespace Source\Wiki\Song\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 
 final readonly class AutomaticDraftSongCreationPayload
 {
     public function __construct(
-        private PrincipalIdentifier      $editorIdentifier,
-        private Language                 $language,
-        private SongName                 $name,
-        private ?AgencyIdentifier        $agencyIdentifier,
-        private ?GroupIdentifier         $groupIdentifier,
-        private ?TalentIdentifier        $talentIdentifier,
-        private Lyricist                 $lyricist,
-        private Composer                 $composer,
-        private ?ReleaseDate             $releaseDate,
-        private Overview                 $overview,
-        private AutomaticDraftSongSource $source,
+        private Language           $language,
+        private SongName           $name,
+        private ?AgencyIdentifier  $agencyIdentifier,
+        private ?GroupIdentifier   $groupIdentifier,
+        private ?TalentIdentifier  $talentIdentifier,
     ) {
     }
 
-    public function editorIdentifier(): PrincipalIdentifier
-    {
-        return $this->editorIdentifier;
-    }
-
-    public function translation(): Language
+    public function language(): Language
     {
         return $this->language;
     }
@@ -54,30 +42,5 @@ final readonly class AutomaticDraftSongCreationPayload
     public function talentIdentifier(): ?TalentIdentifier
     {
         return $this->talentIdentifier;
-    }
-
-    public function lyricist(): Lyricist
-    {
-        return $this->lyricist;
-    }
-
-    public function composer(): Composer
-    {
-        return $this->composer;
-    }
-
-    public function releaseDate(): ?ReleaseDate
-    {
-        return $this->releaseDate;
-    }
-
-    public function overview(): Overview
-    {
-        return $this->overview;
-    }
-
-    public function source(): AutomaticDraftSongSource
-    {
-        return $this->source;
     }
 }

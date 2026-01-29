@@ -67,7 +67,9 @@ readonly class AutomaticCreateDraftGroup implements AutomaticCreateDraftGroupInt
             slug: $slug,
         );
 
-        $draftGroup->setAgencyIdentifier($payload->agencyIdentifier());
+        if ($payload->agencyIdentifier()) {
+            $draftGroup->setAgencyIdentifier($payload->agencyIdentifier());
+        }
 
         $description = $generatedData->description() ?? '';
         $draftGroup->setDescription(new Description($description));
