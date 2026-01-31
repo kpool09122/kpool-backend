@@ -91,14 +91,14 @@ class ReplyContactTest extends TestCase
             })
             ->andReturnNull();
 
-        $reply = new ReplyCotact(
+        $unsentReply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $identityIdentifier,
             $contact->email(),
             new ReplyContent($expectedContent),
-            ReplyStatus::SENT,
-            new DateTimeImmutable('2020-01-01 00:00:00'),
+            ReplyStatus::UNSENT,
+            null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
         );
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
@@ -116,15 +116,32 @@ class ReplyContactTest extends TestCase
                     && $ii === $identityIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
-                    && $status === ReplyStatus::SENT
-                    && $sentAt instanceof DateTimeImmutable;
+                    && $status === ReplyStatus::UNSENT
+                    && $sentAt === null;
             })
-            ->andReturn($reply);
+            ->andReturn($unsentReply);
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findById')
+            ->once()
+            ->with($unsentReply->replyIdentifier())
+            ->andReturn($unsentReply);
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->with($reply)
+            ->with($unsentReply)
+            ->andReturnNull();
+        $replyContactRepository->shouldReceive('save')
+            ->once()
+            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $identityIdentifier): bool {
+                return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
+                    && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
+                    && (string)$saved->identityIdentifier() === (string)$identityIdentifier
+                    && (string)$saved->toEmail() === (string)$contact->email()
+                    && (string)$saved->content() === $expectedContent
+                    && $saved->status() === ReplyStatus::SENT
+                    && $saved->sentAt() instanceof DateTimeImmutable
+                    && $saved->createdAt() === $unsentReply->createdAt();
+            })
             ->andReturnNull();
 
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
@@ -218,13 +235,13 @@ class ReplyContactTest extends TestCase
             ->once()
             ->andThrow(new RuntimeException('send failed'));
 
-        $failedReply = new ReplyCotact(
+        $unsentReply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             $identityIdentifier,
             $contact->email(),
             new ReplyContent($expectedContent),
-            ReplyStatus::FAILED,
+            ReplyStatus::UNSENT,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
         );
@@ -243,15 +260,32 @@ class ReplyContactTest extends TestCase
                     && $ii === $identityIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
-                    && $status === ReplyStatus::FAILED
+                    && $status === ReplyStatus::UNSENT
                     && $sentAt === null;
             })
-            ->andReturn($failedReply);
+            ->andReturn($unsentReply);
 
         $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findById')
+            ->once()
+            ->with($unsentReply->replyIdentifier())
+            ->andReturn($unsentReply);
         $replyContactRepository->shouldReceive('save')
             ->once()
-            ->with($failedReply)
+            ->with($unsentReply)
+            ->andReturnNull();
+        $replyContactRepository->shouldReceive('save')
+            ->once()
+            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $identityIdentifier): bool {
+                return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
+                    && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
+                    && (string)$saved->identityIdentifier() === (string)$identityIdentifier
+                    && (string)$saved->toEmail() === (string)$contact->email()
+                    && (string)$saved->content() === $expectedContent
+                    && $saved->status() === ReplyStatus::FAILED
+                    && $saved->sentAt() === null
+                    && $saved->createdAt() === $unsentReply->createdAt();
+            })
             ->andReturnNull();
 
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);

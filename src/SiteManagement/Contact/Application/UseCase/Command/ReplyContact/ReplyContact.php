@@ -7,6 +7,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact
 use DateTimeImmutable;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
+use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
@@ -38,33 +39,51 @@ readonly class ReplyContact implements ReplyContactInterface
 
         $content = new ReplyContent($input->content());
 
+        $reply = $this->replyContactFactory->create(
+            $contact->contactIdentifier(),
+            $input->identityIdentifier(),
+            $contact->email(),
+            $content,
+            ReplyStatus::UNSENT,
+            null,
+        );
+        $this->replyContactRepository->save($reply);
+
         try {
             $this->emailService->sendReplyToUser(
                 $contact->email(),
                 $content,
             );
         } catch (Throwable $e) {
-            $reply = $this->replyContactFactory->create(
-                $contact->contactIdentifier(),
-                $input->identityIdentifier(),
-                $contact->email(),
-                $content,
+            $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+            $failed = new ReplyCotact(
+                $persisted->replyIdentifier(),
+                $persisted->contactIdentifier(),
+                $persisted->identityIdentifier(),
+                $persisted->toEmail(),
+                $persisted->content(),
                 ReplyStatus::FAILED,
                 null,
+                $persisted->createdAt(),
             );
-            $this->replyContactRepository->save($reply);
+            $this->replyContactRepository->save($failed);
 
             throw new FailedToSendEmailException($e->getMessage());
         }
 
-        $reply = $this->replyContactFactory->create(
-            $contact->contactIdentifier(),
-            $input->identityIdentifier(),
-            $contact->email(),
-            $content,
+        // findById で取得してからステータス更新
+        $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+        $sentAt = new DateTimeImmutable('now');
+        $sent = new ReplyCotact(
+            $persisted->replyIdentifier(),
+            $persisted->contactIdentifier(),
+            $persisted->identityIdentifier(),
+            $persisted->toEmail(),
+            $persisted->content(),
             ReplyStatus::SENT,
-            new DateTimeImmutable('now'),
+            $sentAt,
+            $persisted->createdAt(),
         );
-        $this->replyContactRepository->save($reply);
+        $this->replyContactRepository->save($sent);
     }
 }

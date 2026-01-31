@@ -6,6 +6,9 @@ namespace Source\SiteManagement\Contact\Domain\ValueObject;
 
 enum ReplyStatus: int
 {
+    /** 未送信 */
+    case UNSENT = 0;
+
     /** 送信済み */
     case SENT = 1;
 
