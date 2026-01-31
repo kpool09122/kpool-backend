@@ -15,6 +15,7 @@ class ReplyStatusTest extends TestCase
      */
     public function testValue(): void
     {
+        $this->assertSame(0, ReplyStatus::UNSENT->value);
         $this->assertSame(1, ReplyStatus::SENT->value);
         $this->assertSame(2, ReplyStatus::FAILED->value);
     }
@@ -25,6 +26,6 @@ class ReplyStatusTest extends TestCase
     public function testFromThrowsWhenUndefinedValue(): void
     {
         $this->expectException(ValueError::class);
-        ReplyStatus::from(0);
+        ReplyStatus::from(3);
     }
 }
