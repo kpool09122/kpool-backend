@@ -39,7 +39,7 @@ class DraftImageRepositoryTest extends TestCase
             'published_id' => $publishedId,
             'resource_type' => ResourceType::TALENT->value,
             'draft_resource_identifier' => $draftResourceId,
-            'editor_id' => $editorId,
+            'uploader_id' => $editorId,
             'image_path' => '/images/talents/profile.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
@@ -53,11 +53,11 @@ class DraftImageRepositoryTest extends TestCase
         $this->assertSame($publishedId, (string) $draft->publishedImageIdentifier());
         $this->assertSame(ResourceType::TALENT, $draft->resourceType());
         $this->assertSame($draftResourceId, (string) $draft->draftResourceIdentifier());
-        $this->assertSame($editorId, (string) $draft->editorIdentifier());
+        $this->assertSame($editorId, (string) $draft->uploaderIdentifier());
         $this->assertSame('/images/talents/profile.jpg', (string) $draft->imagePath());
         $this->assertSame(ImageUsage::PROFILE, $draft->imageUsage());
         $this->assertSame(1, $draft->displayOrder());
-        $this->assertInstanceOf(DateTimeImmutable::class, $draft->createdAt());
+        $this->assertInstanceOf(DateTimeImmutable::class, $draft->uploadedAt());
     }
 
     /**
@@ -207,7 +207,7 @@ class DraftImageRepositoryTest extends TestCase
             'published_id' => (string) $draft->publishedImageIdentifier(),
             'resource_type' => $draft->resourceType()->value,
             'draft_resource_identifier' => (string) $draft->draftResourceIdentifier(),
-            'editor_id' => (string) $draft->editorIdentifier(),
+            'uploader_id' => (string) $draft->uploaderIdentifier(),
             'image_path' => (string) $draft->imagePath(),
             'image_usage' => $draft->imageUsage()->value,
             'display_order' => $draft->displayOrder(),
@@ -268,7 +268,7 @@ class DraftImageRepositoryTest extends TestCase
         CreateDraftImage::create($draftId, [
             'resource_type' => ResourceType::TALENT->value,
             'draft_resource_identifier' => $draftResourceId,
-            'editor_id' => $editorId,
+            'uploader_id' => $editorId,
             'image_path' => '/images/talents/old.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,

@@ -52,7 +52,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
                 'published_id' => $draftImage->publishedImageIdentifier() ? (string) $draftImage->publishedImageIdentifier() : null,
                 'resource_type' => $draftImage->resourceType()->value,
                 'draft_resource_identifier' => (string) $draftImage->draftResourceIdentifier(),
-                'editor_id' => (string) $draftImage->editorIdentifier(),
+                'uploader_id' => (string) $draftImage->uploaderIdentifier(),
                 'image_path' => (string) $draftImage->imagePath(),
                 'image_usage' => $draftImage->imageUsage()->value,
                 'display_order' => $draftImage->displayOrder(),
@@ -61,6 +61,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
                 'alt_text' => $draftImage->altText(),
                 'status' => $draftImage->status()->value,
                 'agreed_to_terms_at' => $draftImage->agreedToTermsAt(),
+                'uploaded_at' => $draftImage->uploadedAt(),
             ],
         );
     }
@@ -87,7 +88,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             $model->published_id ? new ImageIdentifier($model->published_id) : null,
             ResourceType::from($model->resource_type),
             new ResourceIdentifier($model->draft_resource_identifier),
-            new PrincipalIdentifier($model->editor_id),
+            new PrincipalIdentifier($model->uploader_id),
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,
@@ -96,7 +97,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             $model->alt_text,
             ApprovalStatus::from($model->status),
             $model->agreed_to_terms_at->toDateTimeImmutable(),
-            $model->created_at->toDateTimeImmutable(),
+            $model->uploaded_at->toDateTimeImmutable(),
         );
     }
 }

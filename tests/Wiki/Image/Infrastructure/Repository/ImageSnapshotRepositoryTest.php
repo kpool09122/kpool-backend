@@ -13,6 +13,7 @@ use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Tests\Helper\CreateImageSnapshot;
 use Tests\Helper\StrTestHelper;
@@ -37,7 +38,12 @@ class ImageSnapshotRepositoryTest extends TestCase
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
-        $createdAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploadedAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approvedAt = new DateTimeImmutable('2024-01-02 00:00:00');
+        $updaterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $updatedAt = new DateTimeImmutable('2024-01-03 00:00:00');
 
         $snapshot = new ImageSnapshot(
             new ImageSnapshotIdentifier($snapshotId),
@@ -49,7 +55,12 @@ class ImageSnapshotRepositoryTest extends TestCase
             $sourceUrl,
             $sourceName,
             $altText,
-            $createdAt,
+            $uploaderIdentifier,
+            $uploadedAt,
+            $approverIdentifier,
+            $approvedAt,
+            $updaterIdentifier,
+            $updatedAt,
         );
 
         $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
@@ -65,6 +76,9 @@ class ImageSnapshotRepositoryTest extends TestCase
             'source_url' => $sourceUrl,
             'source_name' => $sourceName,
             'alt_text' => $altText,
+            'uploader_id' => (string) $uploaderIdentifier,
+            'approver_id' => (string) $approverIdentifier,
+            'updater_id' => (string) $updaterIdentifier,
         ]);
     }
 
@@ -86,7 +100,6 @@ class ImageSnapshotRepositoryTest extends TestCase
             'image_path' => '/images/talents/profile.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
-            'created_at' => '2024-01-01 00:00:00',
         ]);
 
         $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
@@ -99,7 +112,6 @@ class ImageSnapshotRepositoryTest extends TestCase
         $this->assertSame('/images/talents/profile.jpg', (string) $snapshot->imagePath());
         $this->assertSame(ImageUsage::PROFILE, $snapshot->imageUsage());
         $this->assertSame(1, $snapshot->displayOrder());
-        $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
     }
 
     /**

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImage;
@@ -21,11 +22,19 @@ use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
+use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
+use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
@@ -46,12 +55,16 @@ class ApproveImageTest extends TestCase
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
         $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
         $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
         $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app->instance(ImageFactoryInterface::class, $imageFactory);
         $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
         $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $approveImage = $this->app->make(ApproveImageInterface::class);
         $this->assertInstanceOf(ApproveImage::class, $approveImage);
@@ -64,12 +77,17 @@ class ApproveImageTest extends TestCase
      * @throws BindingResolutionException
      * @throws ImageNotFoundException
      * @throws InvalidStatusException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessNewImage(): void
     {
         $testData = $this->createTestDataForNewImage();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $resource = new Resource(type: ResourceType::IMAGE);
 
-        $input = new ApproveImageInput($testData->draftImageIdentifier);
+        $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
 
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $draftImageRepository->shouldReceive('findById')
@@ -99,17 +117,38 @@ class ApproveImageTest extends TestCase
                 $testData->sourceUrl,
                 $testData->sourceName,
                 $testData->altText,
+                Mockery::type(PrincipalIdentifier::class),
+                Mockery::type(PrincipalIdentifier::class),
+                Mockery::type(\DateTimeImmutable::class),
             )
             ->andReturn($testData->image);
 
         $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
         $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
 
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+        $imageAuthorizationResourceBuilder->shouldReceive('buildFromDraftImage')
+            ->once()
+            ->with($testData->draftImage)
+            ->andReturn($resource);
+
         $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app->instance(ImageFactoryInterface::class, $imageFactory);
         $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
         $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $approveImage = $this->app->make(ApproveImageInterface::class);
         $result = $approveImage->process($input);
@@ -131,11 +170,14 @@ class ApproveImageTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidStatusException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessDraftImageNotFound(): void
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
-        $input = new ApproveImageInput($imageIdentifier);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $input = new ApproveImageInput($imageIdentifier, $principalIdentifier);
 
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $draftImageRepository->shouldReceive('findById')
@@ -147,12 +189,16 @@ class ApproveImageTest extends TestCase
         $imageFactory = Mockery::mock(ImageFactoryInterface::class);
         $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
         $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
         $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app->instance(ImageFactoryInterface::class, $imageFactory);
         $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
         $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(ImageNotFoundException::class);
         $approveImage = $this->app->make(ApproveImageInterface::class);
@@ -165,11 +211,16 @@ class ApproveImageTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws ImageNotFoundException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessInvalidStatus(): void
     {
         $testData = $this->createTestDataWithInvalidStatus();
-        $input = new ApproveImageInput($testData->draftImageIdentifier);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $resource = new Resource(type: ResourceType::IMAGE);
+        $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
 
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $draftImageRepository->shouldReceive('findById')
@@ -182,11 +233,29 @@ class ApproveImageTest extends TestCase
         $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
         $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
 
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+        $imageAuthorizationResourceBuilder->shouldReceive('buildFromDraftImage')
+            ->once()
+            ->with($testData->draftImage)
+            ->andReturn($resource);
+
         $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app->instance(ImageFactoryInterface::class, $imageFactory);
         $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
         $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(InvalidStatusException::class);
         $approveImage = $this->app->make(ApproveImageInterface::class);
@@ -200,14 +269,35 @@ class ApproveImageTest extends TestCase
      * @throws BindingResolutionException
      * @throws ImageNotFoundException
      * @throws InvalidStatusException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessUpdateExistingImage(): void
     {
         $testData = $this->createTestDataForExistingImage();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $resource = new Resource(type: ResourceType::IMAGE);
 
-        $input = new ApproveImageInput($testData->draftImageIdentifier);
+        $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
 
-        $snapshot = Mockery::mock(ImageSnapshot::class);
+        $snapshot = new ImageSnapshot(
+            new ImageSnapshotIdentifier(StrTestHelper::generateUuid()),
+            $testData->existingImage->imageIdentifier(),
+            $testData->existingImage->resourceIdentifier(),
+            $testData->existingImage->imagePath(),
+            $testData->existingImage->imageUsage(),
+            $testData->existingImage->displayOrder(),
+            $testData->existingImage->sourceUrl(),
+            $testData->existingImage->sourceName(),
+            $testData->existingImage->altText(),
+            $testData->existingImage->uploaderIdentifier(),
+            $testData->existingImage->uploadedAt(),
+            $testData->existingImage->approverIdentifier(),
+            $testData->existingImage->approvedAt(),
+            $testData->existingImage->updaterIdentifier(),
+            $testData->existingImage->updatedAt(),
+        );
 
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $draftImageRepository->shouldReceive('findById')
@@ -243,11 +333,29 @@ class ApproveImageTest extends TestCase
             ->with($snapshot)
             ->andReturn(null);
 
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+        $imageAuthorizationResourceBuilder->shouldReceive('buildFromDraftImage')
+            ->once()
+            ->with($testData->draftImage)
+            ->andReturn($resource);
+
         $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
         $this->app->instance(ImageFactoryInterface::class, $imageFactory);
         $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
         $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $approveImage = $this->app->make(ApproveImageInterface::class);
         $result = $approveImage->process($input);
@@ -260,6 +368,112 @@ class ApproveImageTest extends TestCase
         $this->assertSame($testData->newSourceUrl, $result->sourceUrl());
         $this->assertSame($testData->newSourceName, $result->sourceName());
         $this->assertSame($testData->newAltText, $result->altText());
+    }
+
+    /**
+     * 異常系：権限がない場合、DisallowedExceptionがスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws ImageNotFoundException
+     * @throws InvalidStatusException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessDisallowed(): void
+    {
+        $testData = $this->createTestDataForNewImage();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $resource = new Resource(type: ResourceType::IMAGE);
+
+        $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
+
+        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
+        $draftImageRepository->shouldReceive('findById')
+            ->once()
+            ->with($testData->draftImageIdentifier)
+            ->andReturn($testData->draftImage);
+
+        $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
+        $imageFactory = Mockery::mock(ImageFactoryInterface::class);
+        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
+        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+        $imageAuthorizationResourceBuilder->shouldReceive('buildFromDraftImage')
+            ->once()
+            ->with($testData->draftImage)
+            ->andReturn($resource);
+
+        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+
+        $this->expectException(DisallowedException::class);
+        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage->process($input);
+    }
+
+    /**
+     * 異常系：Principalが見つからない場合、PrincipalNotFoundExceptionがスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws ImageNotFoundException
+     * @throws InvalidStatusException
+     * @throws DisallowedException
+     */
+    public function testProcessPrincipalNotFound(): void
+    {
+        $testData = $this->createTestDataForNewImage();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $input = new ApproveImageInput($testData->draftImageIdentifier, $principalIdentifier);
+
+        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
+        $draftImageRepository->shouldReceive('findById')
+            ->once()
+            ->with($testData->draftImageIdentifier)
+            ->andReturn($testData->draftImage);
+
+        $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
+        $imageFactory = Mockery::mock(ImageFactoryInterface::class);
+        $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
+        $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn(null);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+
+        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(ImageFactoryInterface::class, $imageFactory);
+        $this->app->instance(ImageSnapshotFactoryInterface::class, $imageSnapshotFactory);
+        $this->app->instance(ImageSnapshotRepositoryInterface::class, $imageSnapshotRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $approveImage = $this->app->make(ApproveImageInterface::class);
+        $approveImage->process($input);
     }
 
     /**
@@ -277,15 +491,15 @@ class ApproveImageTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $createdAt = new DateTimeImmutable();
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploadedAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
             $draftImageIdentifier,
             null, // publishedImageIdentifier - 新規作成
             $resourceType,
             $resourceIdentifier,
-            $principalIdentifier,
+            $uploaderIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -294,10 +508,12 @@ class ApproveImageTest extends TestCase
             $altText,
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
-            $createdAt,
+            $uploadedAt,
         );
 
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approvedAt = new DateTimeImmutable();
         $image = new Image(
             $imageIdentifier,
             $resourceType,
@@ -308,8 +524,12 @@ class ApproveImageTest extends TestCase
             $sourceUrl,
             $sourceName,
             $altText,
-            $createdAt,
-            $createdAt,
+            $uploaderIdentifier,
+            $uploadedAt,
+            $approverIdentifier,
+            $approvedAt,
+            null,
+            null,
         );
 
         return new ApproveImageTestData(
@@ -342,15 +562,15 @@ class ApproveImageTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $createdAt = new DateTimeImmutable();
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploadedAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
             $draftImageIdentifier,
             null,
             $resourceType,
             $resourceIdentifier,
-            $principalIdentifier,
+            $uploaderIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -359,7 +579,7 @@ class ApproveImageTest extends TestCase
             $altText,
             ApprovalStatus::Pending, // UnderReviewではない
             $agreedToTermsAt,
-            $createdAt,
+            $uploadedAt,
         );
 
         return new ApproveImageTestData(
@@ -386,9 +606,9 @@ class ApproveImageTest extends TestCase
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
         $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
-        $createdAt = new DateTimeImmutable();
+        $uploadedAt = new DateTimeImmutable();
 
         // 既存Imageのデータ（更新前）
         $existingImagePath = new ImagePath('images/existing.png');
@@ -397,6 +617,8 @@ class ApproveImageTest extends TestCase
         $existingSourceUrl = 'https://example.com/existing';
         $existingSourceName = 'Existing Source';
         $existingAltText = 'Existing alt text';
+        $existingApproverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $existingApprovedAt = new DateTimeImmutable();
 
         // DraftImageのデータ（更新後の値）
         $newImagePath = new ImagePath('images/updated.png');
@@ -416,8 +638,12 @@ class ApproveImageTest extends TestCase
             $existingSourceUrl,
             $existingSourceName,
             $existingAltText,
-            $createdAt,
-            $createdAt,
+            $uploaderIdentifier,
+            $uploadedAt,
+            $existingApproverIdentifier,
+            $existingApprovedAt,
+            null,
+            null,
         );
 
         $draftImage = new DraftImage(
@@ -425,7 +651,7 @@ class ApproveImageTest extends TestCase
             $publishedImageIdentifier, // 既存Imageを参照
             $resourceType,
             $resourceIdentifier,
-            $principalIdentifier,
+            $uploaderIdentifier,
             $newImagePath,
             $newImageUsage,
             $newDisplayOrder,
@@ -434,7 +660,7 @@ class ApproveImageTest extends TestCase
             $newAltText,
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
-            $createdAt,
+            $uploadedAt,
         );
 
         return new ApproveImageUpdateTestData(

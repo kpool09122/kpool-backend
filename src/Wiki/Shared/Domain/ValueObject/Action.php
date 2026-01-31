@@ -17,4 +17,5 @@ enum Action: string
     case MERGE = 'merge';
     case AUTOMATIC_CREATE = 'automatic_create';
     case SAVE_VIDEO_LINKS = 'save_video_links';
+    case DELETE = 'delete';
 }

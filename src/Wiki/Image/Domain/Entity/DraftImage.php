@@ -20,7 +20,7 @@ class DraftImage
         private readonly ?ImageIdentifier $publishedImageIdentifier,
         private readonly ResourceType $resourceType,
         private readonly ResourceIdentifier $draftResourceIdentifier,
-        private readonly PrincipalIdentifier $editorIdentifier,
+        private readonly PrincipalIdentifier $uploaderIdentifier,
         private ImagePath $imagePath,
         private ImageUsage $imageUsage,
         private int $displayOrder,
@@ -29,7 +29,7 @@ class DraftImage
         private string $altText,
         private ApprovalStatus $status,
         private readonly DateTimeImmutable $agreedToTermsAt,
-        private readonly DateTimeImmutable $createdAt,
+        private readonly DateTimeImmutable $uploadedAt,
     ) {
     }
 
@@ -53,9 +53,9 @@ class DraftImage
         return $this->draftResourceIdentifier;
     }
 
-    public function editorIdentifier(): PrincipalIdentifier
+    public function uploaderIdentifier(): PrincipalIdentifier
     {
-        return $this->editorIdentifier;
+        return $this->uploaderIdentifier;
     }
 
     public function imagePath(): ImagePath
@@ -88,9 +88,9 @@ class DraftImage
         $this->displayOrder = $displayOrder;
     }
 
-    public function createdAt(): DateTimeImmutable
+    public function uploadedAt(): DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->uploadedAt;
     }
 
     public function sourceUrl(): string

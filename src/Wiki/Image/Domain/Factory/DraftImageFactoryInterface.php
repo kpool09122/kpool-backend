@@ -19,7 +19,7 @@ interface DraftImageFactoryInterface
         ?ImageIdentifier $publishedImageIdentifier,
         ResourceType $resourceType,
         ResourceIdentifier $draftResourceIdentifier,
-        PrincipalIdentifier $editorIdentifier,
+        PrincipalIdentifier $uploaderIdentifier,
         ImagePath $imagePath,
         ImageUsage $imageUsage,
         int $displayOrder,

@@ -89,6 +89,19 @@ class SystemPolicySeeder extends Seeder
                         ),
                     ]),
                 ),
+                // IMAGE の承認・却下・削除（agencyId が一致するもの）
+                new Statement(
+                    effect: Effect::ALLOW,
+                    actions: [Action::APPROVE, Action::REJECT, Action::DELETE],
+                    resourceTypes: [ResourceType::IMAGE],
+                    condition: new Condition([
+                        new ConditionClause(
+                            ConditionKey::RESOURCE_AGENCY_ID,
+                            ConditionOperator::EQUALS,
+                            ConditionValue::PRINCIPAL_AGENCY_ID,
+                        ),
+                    ]),
+                ),
             ],
             isSystemPolicy: true,
         );
@@ -107,6 +120,19 @@ class SystemPolicySeeder extends Seeder
                     effect: Effect::ALLOW,
                     actions: [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE, Action::AUTOMATIC_CREATE, Action::SAVE_VIDEO_LINKS],
                     resourceTypes: [ResourceType::TALENT],
+                    condition: new Condition([
+                        new ConditionClause(
+                            ConditionKey::RESOURCE_TALENT_ID,
+                            ConditionOperator::IN,
+                            ConditionValue::PRINCIPAL_TALENT_IDS,
+                        ),
+                    ]),
+                ),
+                // IMAGE の承認・却下・削除（talentId が一致するもの）
+                new Statement(
+                    effect: Effect::ALLOW,
+                    actions: [Action::APPROVE, Action::REJECT, Action::DELETE],
+                    resourceTypes: [ResourceType::IMAGE],
                     condition: new Condition([
                         new ConditionClause(
                             ConditionKey::RESOURCE_TALENT_ID,

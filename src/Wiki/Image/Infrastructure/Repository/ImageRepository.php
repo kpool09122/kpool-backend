@@ -10,6 +10,7 @@ use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -55,6 +56,12 @@ final class ImageRepository implements ImageRepositoryInterface
                 'source_url' => $image->sourceUrl(),
                 'source_name' => $image->sourceName(),
                 'alt_text' => $image->altText(),
+                'uploader_id' => (string) $image->uploaderIdentifier(),
+                'uploaded_at' => $image->uploadedAt(),
+                'approver_id' => $image->approverIdentifier() ? (string) $image->approverIdentifier() : null,
+                'approved_at' => $image->approvedAt(),
+                'updater_id' => $image->updaterIdentifier() ? (string) $image->updaterIdentifier() : null,
+                'updated_at' => $image->updatedAt(),
             ],
         );
     }
@@ -78,8 +85,12 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->source_url,
             $model->source_name,
             $model->alt_text,
-            $model->created_at->toDateTimeImmutable(),
-            $model->updated_at->toDateTimeImmutable(),
+            new PrincipalIdentifier($model->uploader_id),
+            $model->uploaded_at->toDateTimeImmutable(),
+            $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+            $model->approved_at?->toDateTimeImmutable(),
+            $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
+            $model->updated_at?->toDateTimeImmutable(),
         );
     }
 }

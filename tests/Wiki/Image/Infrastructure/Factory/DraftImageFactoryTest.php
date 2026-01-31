@@ -41,7 +41,7 @@ class DraftImageFactoryTest extends TestCase
     {
         $resourceType = ResourceType::TALENT;
         $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -55,7 +55,7 @@ class DraftImageFactoryTest extends TestCase
             null,
             $resourceType,
             $draftResourceIdentifier,
-            $editorIdentifier,
+            $uploaderIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -69,7 +69,7 @@ class DraftImageFactoryTest extends TestCase
         $this->assertNull($draftImage->publishedImageIdentifier());
         $this->assertSame($resourceType, $draftImage->resourceType());
         $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->draftResourceIdentifier());
-        $this->assertSame((string) $editorIdentifier, (string) $draftImage->editorIdentifier());
+        $this->assertSame((string) $uploaderIdentifier, (string) $draftImage->uploaderIdentifier());
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
         $this->assertSame($imageUsage, $draftImage->imageUsage());
         $this->assertSame($displayOrder, $draftImage->displayOrder());
@@ -90,7 +90,7 @@ class DraftImageFactoryTest extends TestCase
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::SONG;
         $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
         $imageUsage = ImageUsage::COVER;
         $displayOrder = 0;
@@ -104,7 +104,7 @@ class DraftImageFactoryTest extends TestCase
             $publishedImageIdentifier,
             $resourceType,
             $draftResourceIdentifier,
-            $editorIdentifier,
+            $uploaderIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,

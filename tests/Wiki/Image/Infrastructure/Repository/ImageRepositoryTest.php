@@ -12,6 +12,7 @@ use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\CreateImage;
@@ -49,8 +50,7 @@ class ImageRepositoryTest extends TestCase
         $this->assertSame('/images/talents/profile.jpg', (string) $image->imagePath());
         $this->assertSame(ImageUsage::PROFILE, $image->imageUsage());
         $this->assertSame(1, $image->displayOrder());
-        $this->assertInstanceOf(DateTimeImmutable::class, $image->createdAt());
-        $this->assertInstanceOf(DateTimeImmutable::class, $image->updatedAt());
+        $this->assertInstanceOf(DateTimeImmutable::class, $image->uploadedAt());
     }
 
     /**
@@ -151,6 +151,10 @@ class ImageRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $now = new DateTimeImmutable();
+
         $image = new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
@@ -161,8 +165,12 @@ class ImageRepositoryTest extends TestCase
             'https://example.com/source',
             'Example Source',
             'Profile image of talent',
-            new DateTimeImmutable(),
-            new DateTimeImmutable(),
+            $uploaderIdentifier,
+            $now,
+            $approverIdentifier,
+            $now,
+            null,
+            null,
         );
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
@@ -178,6 +186,8 @@ class ImageRepositoryTest extends TestCase
             'source_url' => $image->sourceUrl(),
             'source_name' => $image->sourceName(),
             'alt_text' => $image->altText(),
+            'uploader_id' => (string) $uploaderIdentifier,
+            'approver_id' => (string) $approverIdentifier,
         ]);
     }
 
@@ -200,6 +210,10 @@ class ImageRepositoryTest extends TestCase
             'display_order' => 1,
         ]);
 
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $now = new DateTimeImmutable();
+
         $image = new Image(
             new ImageIdentifier($imageId),
             ResourceType::TALENT,
@@ -210,8 +224,12 @@ class ImageRepositoryTest extends TestCase
             'https://example.com/updated-source',
             'Updated Source',
             'Updated alt text',
-            new DateTimeImmutable(),
-            new DateTimeImmutable(),
+            $uploaderIdentifier,
+            $now,
+            $approverIdentifier,
+            $now,
+            null,
+            null,
         );
 
         $repository = $this->app->make(ImageRepositoryInterface::class);

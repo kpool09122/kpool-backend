@@ -9,21 +9,27 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 
-class ImageSnapshot
+readonly class ImageSnapshot
 {
     public function __construct(
-        private readonly ImageSnapshotIdentifier $snapshotIdentifier,
-        private readonly ImageIdentifier $imageIdentifier,
-        private readonly ResourceIdentifier $resourceSnapshotIdentifier,
-        private readonly ImagePath $imagePath,
-        private readonly ImageUsage $imageUsage,
-        private readonly int $displayOrder,
-        private readonly string $sourceUrl,
-        private readonly string $sourceName,
-        private readonly string $altText,
-        private readonly DateTimeImmutable $createdAt,
+        private ImageSnapshotIdentifier $snapshotIdentifier,
+        private ImageIdentifier         $imageIdentifier,
+        private ResourceIdentifier      $resourceSnapshotIdentifier,
+        private ImagePath               $imagePath,
+        private ImageUsage              $imageUsage,
+        private int                     $displayOrder,
+        private string                  $sourceUrl,
+        private string                  $sourceName,
+        private string                  $altText,
+        private PrincipalIdentifier     $uploaderIdentifier,
+        private DateTimeImmutable       $uploadedAt,
+        private ?PrincipalIdentifier    $approverIdentifier,
+        private ?DateTimeImmutable      $approvedAt,
+        private ?PrincipalIdentifier    $updaterIdentifier,
+        private ?DateTimeImmutable      $updatedAt,
     ) {
     }
 
@@ -57,9 +63,34 @@ class ImageSnapshot
         return $this->displayOrder;
     }
 
-    public function createdAt(): DateTimeImmutable
+    public function uploaderIdentifier(): PrincipalIdentifier
     {
-        return $this->createdAt;
+        return $this->uploaderIdentifier;
+    }
+
+    public function uploadedAt(): DateTimeImmutable
+    {
+        return $this->uploadedAt;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function approvedAt(): ?DateTimeImmutable
+    {
+        return $this->approvedAt;
+    }
+
+    public function updaterIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->updaterIdentifier;
+    }
+
+    public function updatedAt(): ?DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 
     public function sourceUrl(): string

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -23,8 +24,12 @@ class Image
         private string $sourceUrl,
         private string $sourceName,
         private string $altText,
-        private readonly DateTimeImmutable $createdAt,
-        private DateTimeImmutable $updatedAt,
+        private readonly PrincipalIdentifier $uploaderIdentifier,
+        private readonly DateTimeImmutable $uploadedAt,
+        private ?PrincipalIdentifier $approverIdentifier,
+        private ?DateTimeImmutable $approvedAt,
+        private ?PrincipalIdentifier $updaterIdentifier,
+        private ?DateTimeImmutable $updatedAt,
     ) {
     }
 
@@ -73,14 +78,54 @@ class Image
         $this->displayOrder = $displayOrder;
     }
 
-    public function createdAt(): DateTimeImmutable
+    public function uploaderIdentifier(): PrincipalIdentifier
     {
-        return $this->createdAt;
+        return $this->uploaderIdentifier;
     }
 
-    public function updatedAt(): DateTimeImmutable
+    public function uploadedAt(): DateTimeImmutable
+    {
+        return $this->uploadedAt;
+    }
+
+    public function approverIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->approverIdentifier;
+    }
+
+    public function setApproverIdentifier(PrincipalIdentifier $approverIdentifier): void
+    {
+        $this->approverIdentifier = $approverIdentifier;
+    }
+
+    public function approvedAt(): ?DateTimeImmutable
+    {
+        return $this->approvedAt;
+    }
+
+    public function setApprovedAt(DateTimeImmutable $approvedAt): void
+    {
+        $this->approvedAt = $approvedAt;
+    }
+
+    public function updaterIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->updaterIdentifier;
+    }
+
+    public function setUpdaterIdentifier(PrincipalIdentifier $updaterIdentifier): void
+    {
+        $this->updaterIdentifier = $updaterIdentifier;
+    }
+
+    public function updatedAt(): ?DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(DateTimeImmutable $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
     }
 
     public function sourceUrl(): string

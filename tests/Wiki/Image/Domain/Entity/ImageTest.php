@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
@@ -30,7 +31,11 @@ class ImageTest extends TestCase
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
-        $createdAt = new DateTimeImmutable();
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploadedAt = new DateTimeImmutable();
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approvedAt = new DateTimeImmutable();
+        $updaterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $updatedAt = new DateTimeImmutable();
 
         $image = new Image(
@@ -43,7 +48,11 @@ class ImageTest extends TestCase
             $sourceUrl,
             $sourceName,
             $altText,
-            $createdAt,
+            $uploaderIdentifier,
+            $uploadedAt,
+            $approverIdentifier,
+            $approvedAt,
+            $updaterIdentifier,
             $updatedAt,
         );
 
@@ -56,7 +65,11 @@ class ImageTest extends TestCase
         $this->assertSame($sourceUrl, $image->sourceUrl());
         $this->assertSame($sourceName, $image->sourceName());
         $this->assertSame($altText, $image->altText());
-        $this->assertSame($createdAt, $image->createdAt());
+        $this->assertSame((string) $uploaderIdentifier, (string) $image->uploaderIdentifier());
+        $this->assertSame($uploadedAt, $image->uploadedAt());
+        $this->assertSame((string) $approverIdentifier, (string) $image->approverIdentifier());
+        $this->assertSame($approvedAt, $image->approvedAt());
+        $this->assertSame((string) $updaterIdentifier, (string) $image->updaterIdentifier());
         $this->assertSame($updatedAt, $image->updatedAt());
     }
 
@@ -148,8 +161,12 @@ class ImageTest extends TestCase
             'https://example.com/source',
             'Example Source',
             'Profile image of talent',
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
+            null,
+            null,
         );
     }
 }

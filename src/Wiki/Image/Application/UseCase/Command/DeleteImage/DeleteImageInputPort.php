@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Application\UseCase\Command\DeleteImage;
 
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 interface DeleteImageInputPort
 {
     public function imageIdentifier(): ImageIdentifier;
 
-    public function isDraft(): bool;
+    public function principalIdentifier(): PrincipalIdentifier;
 }

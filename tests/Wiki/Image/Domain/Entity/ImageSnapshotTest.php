@@ -11,6 +11,7 @@ use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -30,7 +31,12 @@ class ImageSnapshotTest extends TestCase
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
-        $createdAt = new DateTimeImmutable();
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploadedAt = new DateTimeImmutable();
+        $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $approvedAt = new DateTimeImmutable();
+        $updaterIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $updatedAt = new DateTimeImmutable();
 
         $imageSnapshot = new ImageSnapshot(
             $snapshotIdentifier,
@@ -42,7 +48,12 @@ class ImageSnapshotTest extends TestCase
             $sourceUrl,
             $sourceName,
             $altText,
-            $createdAt,
+            $uploaderIdentifier,
+            $uploadedAt,
+            $approverIdentifier,
+            $approvedAt,
+            $updaterIdentifier,
+            $updatedAt,
         );
 
         $this->assertSame((string) $snapshotIdentifier, (string) $imageSnapshot->snapshotIdentifier());
@@ -54,6 +65,11 @@ class ImageSnapshotTest extends TestCase
         $this->assertSame($sourceUrl, $imageSnapshot->sourceUrl());
         $this->assertSame($sourceName, $imageSnapshot->sourceName());
         $this->assertSame($altText, $imageSnapshot->altText());
-        $this->assertSame($createdAt, $imageSnapshot->createdAt());
+        $this->assertSame((string) $uploaderIdentifier, (string) $imageSnapshot->uploaderIdentifier());
+        $this->assertSame($uploadedAt, $imageSnapshot->uploadedAt());
+        $this->assertSame((string) $approverIdentifier, (string) $imageSnapshot->approverIdentifier());
+        $this->assertSame($approvedAt, $imageSnapshot->approvedAt());
+        $this->assertSame((string) $updaterIdentifier, (string) $imageSnapshot->updaterIdentifier());
+        $this->assertSame($updatedAt, $imageSnapshot->updatedAt());
     }
 }
