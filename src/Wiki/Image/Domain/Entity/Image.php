@@ -24,6 +24,9 @@ class Image
         private string $sourceUrl,
         private string $sourceName,
         private string $altText,
+        private bool $isHidden,
+        private ?PrincipalIdentifier $hiddenBy,
+        private ?DateTimeImmutable $hiddenAt,
         private readonly PrincipalIdentifier $uploaderIdentifier,
         private readonly DateTimeImmutable $uploadedAt,
         private ?PrincipalIdentifier $approverIdentifier,
@@ -156,5 +159,34 @@ class Image
     public function setAltText(string $altText): void
     {
         $this->altText = $altText;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->isHidden;
+    }
+
+    public function hiddenBy(): ?PrincipalIdentifier
+    {
+        return $this->hiddenBy;
+    }
+
+    public function hiddenAt(): ?DateTimeImmutable
+    {
+        return $this->hiddenAt;
+    }
+
+    public function hide(PrincipalIdentifier $hiddenBy): void
+    {
+        $this->isHidden = true;
+        $this->hiddenBy = $hiddenBy;
+        $this->hiddenAt = new DateTimeImmutable();
+    }
+
+    public function unhide(): void
+    {
+        $this->isHidden = false;
+        $this->hiddenBy = null;
+        $this->hiddenAt = null;
     }
 }

@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('source_url', 512)->comment('出典元URL');
             $table->string('source_name', 255)->comment('出典元サイト名');
             $table->string('alt_text', 512)->comment('alt属性テキスト');
+            $table->boolean('is_hidden')->default(false)->comment('非表示フラグ');
+            $table->uuid('hidden_by')->nullable()->comment('非表示実行者ID');
+            $table->timestamp('hidden_at')->nullable()->comment('非表示日時');
             $table->uuid('uploader_id')->comment('アップロード者ID');
             $table->timestamp('uploaded_at')->comment('アップロード日時');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');

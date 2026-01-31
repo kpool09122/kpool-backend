@@ -31,6 +31,9 @@ class ImageTest extends TestCase
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
+        $isHidden = true;
+        $hiddenBy = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $hiddenAt = new DateTimeImmutable();
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $uploadedAt = new DateTimeImmutable();
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -48,6 +51,9 @@ class ImageTest extends TestCase
             $sourceUrl,
             $sourceName,
             $altText,
+            $isHidden,
+            $hiddenBy,
+            $hiddenAt,
             $uploaderIdentifier,
             $uploadedAt,
             $approverIdentifier,
@@ -65,6 +71,9 @@ class ImageTest extends TestCase
         $this->assertSame($sourceUrl, $image->sourceUrl());
         $this->assertSame($sourceName, $image->sourceName());
         $this->assertSame($altText, $image->altText());
+        $this->assertSame($isHidden, $image->isHidden());
+        $this->assertSame((string) $hiddenBy, (string) $image->hiddenBy());
+        $this->assertSame($hiddenAt, $image->hiddenAt());
         $this->assertSame((string) $uploaderIdentifier, (string) $image->uploaderIdentifier());
         $this->assertSame($uploadedAt, $image->uploadedAt());
         $this->assertSame((string) $approverIdentifier, (string) $image->approverIdentifier());
@@ -149,7 +158,44 @@ class ImageTest extends TestCase
         $this->assertSame($newAltText, $image->altText());
     }
 
-    private function createDummyImage(): Image
+    /**
+     * 正常系: hide()が正しく動作すること.
+     */
+    public function testHide(): void
+    {
+        $image = $this->createDummyImage();
+        $hiddenBy = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $this->assertFalse($image->isHidden());
+        $this->assertNull($image->hiddenBy());
+        $this->assertNull($image->hiddenAt());
+
+        $image->hide($hiddenBy);
+
+        $this->assertTrue($image->isHidden());
+        $this->assertSame((string) $hiddenBy, (string) $image->hiddenBy());
+        $this->assertInstanceOf(DateTimeImmutable::class, $image->hiddenAt());
+    }
+
+    /**
+     * 正常系: unhide()が正しく動作すること.
+     */
+    public function testUnhide(): void
+    {
+        $image = $this->createDummyImage(isHidden: true);
+
+        $this->assertTrue($image->isHidden());
+        $this->assertNotNull($image->hiddenBy());
+        $this->assertNotNull($image->hiddenAt());
+
+        $image->unhide();
+
+        $this->assertFalse($image->isHidden());
+        $this->assertNull($image->hiddenBy());
+        $this->assertNull($image->hiddenAt());
+    }
+
+    private function createDummyImage(bool $isHidden = false): Image
     {
         return new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
@@ -161,6 +207,9 @@ class ImageTest extends TestCase
             'https://example.com/source',
             'Example Source',
             'Profile image of talent',
+            $isHidden,
+            $isHidden ? new PrincipalIdentifier(StrTestHelper::generateUuid()) : null,
+            $isHidden ? new DateTimeImmutable() : null,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),

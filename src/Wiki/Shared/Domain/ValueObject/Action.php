@@ -18,4 +18,6 @@ enum Action: string
     case AUTOMATIC_CREATE = 'automatic_create';
     case SAVE_VIDEO_LINKS = 'save_video_links';
     case DELETE = 'delete';
+    case HIDE = 'hide';
+    case UNHIDE = 'unhide';
 }

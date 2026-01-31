@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $source_url
  * @property string $source_name
  * @property string $alt_text
+ * @property bool $is_hidden
+ * @property ?string $hidden_by
+ * @property ?Carbon $hidden_at
  * @property string $uploader_id
  * @property Carbon $uploaded_at
  * @property ?string $approver_id
@@ -44,6 +47,9 @@ class WikiImage extends Model
         'source_url',
         'source_name',
         'alt_text',
+        'is_hidden',
+        'hidden_by',
+        'hidden_at',
         'uploader_id',
         'uploaded_at',
         'approver_id',
@@ -54,6 +60,8 @@ class WikiImage extends Model
 
     protected $casts = [
         'display_order' => 'integer',
+        'is_hidden' => 'boolean',
+        'hidden_at' => 'datetime',
         'uploaded_at' => 'datetime',
         'approved_at' => 'datetime',
         'updated_at' => 'datetime',
