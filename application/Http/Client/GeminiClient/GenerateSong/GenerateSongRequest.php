@@ -105,7 +105,7 @@ final readonly class GenerateSongRequest
 
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following K-POP song{$affiliationContext} using Wikipedia and official homepage, then collect information.
+Research the following K-POP song{$affiliationContext} using Wikipedia, Namuwiki, and official homepage, then collect information.
 
 ## Target
 - Song Name: {$this->songName}
@@ -123,9 +123,13 @@ Research the following K-POP song{$affiliationContext} using Wikipedia and offic
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
-- Prioritize Korean language sources: search Korean Wikipedia (ko.wikipedia.org) and Korean official websites first
+- Prioritize Korean language sources in this order:
+  1. Korean Wikipedia: Convert the name to Korean, URL-encode it, and access https://ko.wikipedia.org/wiki/{encoded_korean_name}
+  2. Namuwiki: Convert the name to Korean, URL-encode it, and access https://namu.wiki/w/{encoded_korean_name}
+  3. Korean official websites
+- If direct URL access fails (page not found), use a search query to find the correct page
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
-- Use reliable sources (Wikipedia, official websites)
+- Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
 PROMPT;
     }

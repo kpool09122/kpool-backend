@@ -72,6 +72,11 @@ final readonly class GenerateGroupRequest
                     'properties' => [
                         'alphabet_name' => ['type' => 'string', 'nullable' => true],
                         'description' => ['type' => 'string', 'nullable' => true],
+                        'fandom_name' => ['type' => 'string', 'nullable' => true],
+                        'instagram_url' => ['type' => 'string', 'nullable' => true],
+                        'tiktok_url' => ['type' => 'string', 'nullable' => true],
+                        'youtube_url' => ['type' => 'string', 'nullable' => true],
+                        'x_url' => ['type' => 'string', 'nullable' => true],
                     ],
                 ],
             ],
@@ -92,7 +97,7 @@ final readonly class GenerateGroupRequest
 
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following K-POP group/artist{$agencyContext} using Wikipedia and official homepage, then collect information.
+Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuwiki, and official homepage, then collect information.
 
 ## Target
 - Group/Artist Name: {$this->groupName}
@@ -104,12 +109,23 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia and of
 ## Required Information
 1. alphabet_name: Group/Artist name in English alphabet only (e.g., "BTS", "BLACKPINK", "NewJeans"). Use official English name if available, otherwise romanize the name.
 2. Detailed description of the group/artist (debut date, members, major achievements, characteristics, etc. approximately 2000 characters)
+3. fandom_name: Official name for the fan community (e.g., "ARMY" for BTS, "BLINK" for BLACKPINK, "Bunnies" for NewJeans). If unknown, set to null.
+4. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
+   - instagram_url: Official Instagram URL (e.g., "https://www.instagram.com/newjeans_official/")
+   - tiktok_url: Official TikTok URL (e.g., "https://www.tiktok.com/@newjeans_official")
+   - youtube_url: Official YouTube channel URL (e.g., "https://www.youtube.com/@NewJeans_official")
+   - x_url: Official X(Twitter) URL (e.g., "https://x.com/NewJeans_ADOR" or "https://twitter.com/NewJeans_ADOR")
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
-- Prioritize Korean language sources: search Korean Wikipedia (ko.wikipedia.org) and Korean official websites first
+- Prioritize Korean language sources in this order:
+  1. Korean Wikipedia: Convert the name to Korean, URL-encode it, and access https://ko.wikipedia.org/wiki/{encoded_korean_name}
+  2. Namuwiki: Convert the name to Korean, URL-encode it, and access https://namu.wiki/w/{encoded_korean_name}
+  3. Korean official websites
+- If direct URL access fails (page not found), use a search query to find the correct page
+- Extract official SNS URLs from the external links section of Wikipedia or Namuwiki pages
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
-- Use reliable sources (Wikipedia, official websites)
+- Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
 PROMPT;
     }
