@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Infrastructure\Factory;
 
-use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
@@ -33,7 +32,12 @@ readonly class ImageSnapshotFactory implements ImageSnapshotFactoryInterface
             $image->sourceUrl(),
             $image->sourceName(),
             $image->altText(),
-            new DateTimeImmutable(),
+            $image->uploaderIdentifier(),
+            $image->uploadedAt(),
+            $image->approverIdentifier(),
+            $image->approvedAt(),
+            $image->updaterIdentifier(),
+            $image->updatedAt(),
         );
     }
 }

@@ -9,6 +9,12 @@ use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
+use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 
 readonly class UploadImage implements UploadImageInterface
 {
@@ -16,6 +22,9 @@ readonly class UploadImage implements UploadImageInterface
         private ImageServiceInterface $imageService,
         private DraftImageFactoryInterface $draftImageFactory,
         private DraftImageRepositoryInterface $draftImageRepository,
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
+        private ImageAuthorizationResourceBuilderInterface $imageAuthorizationResourceBuilder,
     ) {
     }
 
@@ -23,9 +32,27 @@ readonly class UploadImage implements UploadImageInterface
      * @param UploadImageInputPort $input
      * @return DraftImage
      * @throws InvalidBase64ImageException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function process(UploadImageInputPort $input): DraftImage
     {
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
+
+        $action = $input->publishedImageIdentifier() === null ? Action::CREATE : Action::EDIT;
+        $resource = $this->imageAuthorizationResourceBuilder->buildFromDraftResource(
+            $input->resourceType(),
+            $input->draftResourceIdentifier(),
+        );
+
+        if (! $this->policyEvaluator->evaluate($principal, $action, $resource)) {
+            throw new DisallowedException();
+        }
+
         $uploadResult = $this->imageService->upload($input->base64EncodedImage());
 
         $draftImage = $this->draftImageFactory->create(

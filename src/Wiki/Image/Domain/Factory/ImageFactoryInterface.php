@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Domain\Factory;
 
+use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -21,5 +23,8 @@ interface ImageFactoryInterface
         string $sourceUrl,
         string $sourceName,
         string $altText,
+        PrincipalIdentifier $uploaderIdentifier,
+        PrincipalIdentifier $approverIdentifier,
+        DateTimeImmutable $approvedAt,
     ): Image;
 }

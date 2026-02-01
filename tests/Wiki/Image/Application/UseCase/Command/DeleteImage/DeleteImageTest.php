@@ -7,19 +7,25 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\DeleteImage;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImage;
 use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImageInterface;
-use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
-use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
+use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
-use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as SharedPrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
@@ -35,46 +41,16 @@ class DeleteImageTest extends TestCase
      */
     public function test__construct(): void
     {
-        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $deleteImage = $this->app->make(DeleteImageInterface::class);
         $this->assertInstanceOf(DeleteImage::class, $deleteImage);
-    }
-
-    /**
-     * 正常系：DraftImageが正しく削除されること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws ImageNotFoundException
-     */
-    public function testProcessDeleteDraftImage(): void
-    {
-        $testData = $this->createDraftImageTestData();
-
-        $input = new DeleteImageInput($testData->draftImageIdentifier, true);
-
-        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
-        $draftImageRepository->shouldReceive('findById')
-            ->once()
-            ->with($testData->draftImageIdentifier)
-            ->andReturn($testData->draftImage);
-        $draftImageRepository->shouldReceive('delete')
-            ->once()
-            ->with($testData->draftImageIdentifier)
-            ->andReturn(null);
-
-        $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
-
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
-        $deleteImage->process($input);
     }
 
     /**
@@ -83,14 +59,17 @@ class DeleteImageTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws ImageNotFoundException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessDeleteImage(): void
     {
         $testData = $this->createImageTestData();
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $resource = new Resource(type: ResourceType::IMAGE);
 
-        $input = new DeleteImageInput($testData->imageIdentifier, false);
-
-        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
+        $input = new DeleteImageInput($testData->imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')
@@ -102,36 +81,26 @@ class DeleteImageTest extends TestCase
             ->with($testData->imageIdentifier)
             ->andReturn(null);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
-        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
-
-        $deleteImage = $this->app->make(DeleteImageInterface::class);
-        $deleteImage->process($input);
-    }
-
-    /**
-     * 異常系：DraftImageが見つからない場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     */
-    public function testProcessDraftImageNotFound(): void
-    {
-        $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
-        $input = new DeleteImageInput($imageIdentifier, true);
-
-        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
-        $draftImageRepository->shouldReceive('findById')
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
             ->once()
-            ->with($imageIdentifier)
-            ->andReturn(null);
+            ->with($principalIdentifier)
+            ->andReturn($principal);
 
-        $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+        $imageAuthorizationResourceBuilder->shouldReceive('buildFromImage')
+            ->once()
+            ->with($testData->image)
+            ->andReturn($resource);
+
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
-        $this->expectException(ImageNotFoundException::class);
         $deleteImage = $this->app->make(DeleteImageInterface::class);
         $deleteImage->process($input);
     }
@@ -141,13 +110,15 @@ class DeleteImageTest extends TestCase
      *
      * @return void
      * @throws BindingResolutionException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      */
     public function testProcessImageNotFound(): void
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
-        $input = new DeleteImageInput($imageIdentifier, false);
-
-        $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $input = new DeleteImageInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')
@@ -155,8 +126,17 @@ class DeleteImageTest extends TestCase
             ->with($imageIdentifier)
             ->andReturn(null);
 
-        $this->app->instance(DraftImageRepositoryInterface::class, $draftImageRepository);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+
         $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $this->expectException(ImageNotFoundException::class);
         $deleteImage = $this->app->make(DeleteImageInterface::class);
@@ -164,44 +144,84 @@ class DeleteImageTest extends TestCase
     }
 
     /**
-     * @return DeleteImageDraftTestData
+     * 異常系：Image削除時に権限がない場合、DisallowedExceptionがスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws ImageNotFoundException
+     * @throws PrincipalNotFoundException
      */
-    private function createDraftImageTestData(): DeleteImageDraftTestData
+    public function testProcessDeleteImageDisallowed(): void
     {
-        $draftImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
-        $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
-        $imagePath = new ImagePath('images/test.png');
-        $imageUsage = ImageUsage::PROFILE;
-        $displayOrder = 1;
-        $sourceUrl = 'https://example.com/source';
-        $sourceName = 'Example Source';
-        $altText = 'Profile image of talent';
-        $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $testData = $this->createImageTestData();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $createdAt = new DateTimeImmutable();
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $resource = new Resource(type: ResourceType::IMAGE);
 
-        $draftImage = new DraftImage(
-            $draftImageIdentifier,
-            null,
-            $resourceType,
-            $resourceIdentifier,
-            $principalIdentifier,
-            $imagePath,
-            $imageUsage,
-            $displayOrder,
-            $sourceUrl,
-            $sourceName,
-            $altText,
-            ApprovalStatus::UnderReview,
-            $agreedToTermsAt,
-            $createdAt,
-        );
+        $input = new DeleteImageInput($testData->imageIdentifier, $principalIdentifier);
 
-        return new DeleteImageDraftTestData(
-            $draftImageIdentifier,
-            $draftImage,
-        );
+        $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
+        $imageRepository->shouldReceive('findById')
+            ->once()
+            ->with($testData->imageIdentifier)
+            ->andReturn($testData->image);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+        $imageAuthorizationResourceBuilder->shouldReceive('buildFromImage')
+            ->once()
+            ->with($testData->image)
+            ->andReturn($resource);
+
+        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+
+        $this->expectException(DisallowedException::class);
+        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage->process($input);
+    }
+
+    /**
+     * 異常系：Principalが見つからない場合、PrincipalNotFoundExceptionがスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws ImageNotFoundException
+     * @throws DisallowedException
+     */
+    public function testProcessPrincipalNotFound(): void
+    {
+        $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $input = new DeleteImageInput($imageIdentifier, $principalIdentifier);
+
+        $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->once()
+            ->with($principalIdentifier)
+            ->andReturn(null);
+
+        $imageAuthorizationResourceBuilder = Mockery::mock(ImageAuthorizationResourceBuilderInterface::class);
+
+        $this->app->instance(ImageRepositoryInterface::class, $imageRepository);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
+
+        $this->expectException(PrincipalNotFoundException::class);
+        $deleteImage = $this->app->make(DeleteImageInterface::class);
+        $deleteImage->process($input);
     }
 
     /**
@@ -218,7 +238,10 @@ class DeleteImageTest extends TestCase
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
-        $createdAt = new DateTimeImmutable();
+        $uploaderIdentifier = new SharedPrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploadedAt = new DateTimeImmutable();
+        $approverIdentifier = new SharedPrincipalIdentifier(StrTestHelper::generateUuid());
+        $approvedAt = new DateTimeImmutable();
 
         $image = new Image(
             $imageIdentifier,
@@ -230,26 +253,21 @@ class DeleteImageTest extends TestCase
             $sourceUrl,
             $sourceName,
             $altText,
-            $createdAt,
-            $createdAt,
+            false,
+            null,
+            null,
+            $uploaderIdentifier,
+            $uploadedAt,
+            $approverIdentifier,
+            $approvedAt,
+            null,
+            null,
         );
 
         return new DeleteImageTestData(
             $imageIdentifier,
             $image,
         );
-    }
-}
-
-/**
- * テストデータを保持するクラス
- */
-readonly class DeleteImageDraftTestData
-{
-    public function __construct(
-        public ImageIdentifier $draftImageIdentifier,
-        public DraftImage $draftImage,
-    ) {
     }
 }
 

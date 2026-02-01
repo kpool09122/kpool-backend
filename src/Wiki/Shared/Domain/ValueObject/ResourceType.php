@@ -10,4 +10,5 @@ enum ResourceType: string
     case GROUP = 'group';
     case TALENT = 'talent';
     case SONG = 'song';
+    case IMAGE = 'image';
 }

@@ -11,6 +11,7 @@ use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 
 final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
@@ -53,7 +54,12 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             'source_url' => $imageSnapshot->sourceUrl(),
             'source_name' => $imageSnapshot->sourceName(),
             'alt_text' => $imageSnapshot->altText(),
-            'created_at' => $imageSnapshot->createdAt(),
+            'uploader_id' => (string) $imageSnapshot->uploaderIdentifier(),
+            'uploaded_at' => $imageSnapshot->uploadedAt(),
+            'approver_id' => $imageSnapshot->approverIdentifier() ? (string) $imageSnapshot->approverIdentifier() : null,
+            'approved_at' => $imageSnapshot->approvedAt(),
+            'updater_id' => $imageSnapshot->updaterIdentifier() ? (string) $imageSnapshot->updaterIdentifier() : null,
+            'updated_at' => $imageSnapshot->updatedAt(),
         ]);
     }
 
@@ -69,7 +75,12 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             $model->source_url,
             $model->source_name,
             $model->alt_text,
-            $model->created_at->toDateTimeImmutable(),
+            new PrincipalIdentifier($model->uploader_id),
+            $model->uploaded_at->toDateTimeImmutable(),
+            $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,
+            $model->approved_at?->toDateTimeImmutable(),
+            $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
+            $model->updated_at?->toDateTimeImmutable(),
         );
     }
 }

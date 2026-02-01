@@ -11,6 +11,7 @@ use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -30,9 +31,10 @@ readonly class ImageFactory implements ImageFactoryInterface
         string $sourceUrl,
         string $sourceName,
         string $altText,
+        PrincipalIdentifier $uploaderIdentifier,
+        PrincipalIdentifier $approverIdentifier,
+        DateTimeImmutable $approvedAt,
     ): Image {
-        $now = new DateTimeImmutable();
-
         return new Image(
             new ImageIdentifier($this->uuidGenerator->generate()),
             $resourceType,
@@ -43,8 +45,15 @@ readonly class ImageFactory implements ImageFactoryInterface
             $sourceUrl,
             $sourceName,
             $altText,
-            $now,
-            $now,
+            false,
+            null,
+            null,
+            $uploaderIdentifier,
+            $approvedAt,
+            $approverIdentifier,
+            $approvedAt,
+            null,
+            null,
         );
     }
 }

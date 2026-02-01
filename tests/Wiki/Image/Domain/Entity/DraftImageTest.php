@@ -26,7 +26,7 @@ class DraftImageTest extends TestCase
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
         $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -35,14 +35,14 @@ class DraftImageTest extends TestCase
         $altText = 'Profile image of talent';
         $status = ApprovalStatus::UnderReview;
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
-        $createdAt = new DateTimeImmutable();
+        $uploadedAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
             $imageIdentifier,
             null,
             $resourceType,
             $draftResourceIdentifier,
-            $editorIdentifier,
+            $uploaderIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -51,14 +51,14 @@ class DraftImageTest extends TestCase
             $altText,
             $status,
             $agreedToTermsAt,
-            $createdAt,
+            $uploadedAt,
         );
 
         $this->assertSame((string) $imageIdentifier, (string) $draftImage->imageIdentifier());
         $this->assertNull($draftImage->publishedImageIdentifier());
         $this->assertSame($resourceType, $draftImage->resourceType());
         $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->draftResourceIdentifier());
-        $this->assertSame((string) $editorIdentifier, (string) $draftImage->editorIdentifier());
+        $this->assertSame((string) $uploaderIdentifier, (string) $draftImage->uploaderIdentifier());
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
         $this->assertSame($imageUsage, $draftImage->imageUsage());
         $this->assertSame($displayOrder, $draftImage->displayOrder());
@@ -67,7 +67,7 @@ class DraftImageTest extends TestCase
         $this->assertSame($altText, $draftImage->altText());
         $this->assertSame($status, $draftImage->status());
         $this->assertSame($agreedToTermsAt, $draftImage->agreedToTermsAt());
-        $this->assertSame($createdAt, $draftImage->createdAt());
+        $this->assertSame($uploadedAt, $draftImage->uploadedAt());
     }
 
     /**
@@ -79,7 +79,7 @@ class DraftImageTest extends TestCase
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::SONG;
         $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
-        $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
         $imageUsage = ImageUsage::COVER;
         $displayOrder = 0;
@@ -88,14 +88,14 @@ class DraftImageTest extends TestCase
         $altText = 'Cover image of song';
         $status = ApprovalStatus::UnderReview;
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
-        $createdAt = new DateTimeImmutable();
+        $uploadedAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
             $imageIdentifier,
             $publishedImageIdentifier,
             $resourceType,
             $draftResourceIdentifier,
-            $editorIdentifier,
+            $uploaderIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -104,7 +104,7 @@ class DraftImageTest extends TestCase
             $altText,
             $status,
             $agreedToTermsAt,
-            $createdAt,
+            $uploadedAt,
         );
 
         $this->assertSame((string) $publishedImageIdentifier, (string) $draftImage->publishedImageIdentifier());
@@ -202,7 +202,7 @@ class DraftImageTest extends TestCase
             'Profile image of talent',
             ApprovalStatus::UnderReview,
             new DateTimeImmutable('2024-01-01 00:00:00'),
-            new DateTimeImmutable(),
+            new DateTimeImmutable(), // uploadedAt
         );
     }
 }

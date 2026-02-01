@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $published_id
  * @property string $resource_type
  * @property string $draft_resource_identifier
- * @property string $editor_id
+ * @property string $uploader_id
  * @property string $image_path
  * @property string $image_usage
  * @property int $display_order
@@ -21,12 +21,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $alt_text
  * @property string $status
  * @property Carbon $agreed_to_terms_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property Carbon $uploaded_at
  */
 class DraftWikiImage extends Model
 {
     public $incrementing = false;
+
+    public $timestamps = false;
 
     protected $table = 'draft_wiki_images';
 
@@ -37,7 +38,7 @@ class DraftWikiImage extends Model
         'published_id',
         'resource_type',
         'draft_resource_identifier',
-        'editor_id',
+        'uploader_id',
         'image_path',
         'image_usage',
         'display_order',
@@ -46,10 +47,12 @@ class DraftWikiImage extends Model
         'alt_text',
         'status',
         'agreed_to_terms_at',
+        'uploaded_at',
     ];
 
     protected $casts = [
         'display_order' => 'integer',
         'agreed_to_terms_at' => 'datetime',
+        'uploaded_at' => 'datetime',
     ];
 }

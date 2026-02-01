@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Application\UseCase\Command\DeleteImage;
 
 use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class DeleteImageInput implements DeleteImageInputPort
 {
     public function __construct(
         private ImageIdentifier $imageIdentifier,
-        private bool $isDraft,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -19,8 +20,8 @@ readonly class DeleteImageInput implements DeleteImageInputPort
         return $this->imageIdentifier;
     }
 
-    public function isDraft(): bool
+    public function principalIdentifier(): PrincipalIdentifier
     {
-        return $this->isDraft;
+        return $this->principalIdentifier;
     }
 }

@@ -21,7 +21,15 @@ return new class extends Migration
             $table->string('source_url', 512)->comment('出典元URL');
             $table->string('source_name', 255)->comment('出典元サイト名');
             $table->string('alt_text', 512)->comment('alt属性テキスト');
-            $table->timestamps();
+            $table->boolean('is_hidden')->default(false)->comment('非表示フラグ');
+            $table->uuid('hidden_by')->nullable()->comment('非表示実行者ID');
+            $table->timestamp('hidden_at')->nullable()->comment('非表示日時');
+            $table->uuid('uploader_id')->comment('アップロード者ID');
+            $table->timestamp('uploaded_at')->comment('アップロード日時');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
+            $table->timestamp('approved_at')->nullable()->comment('承認日時');
+            $table->uuid('updater_id')->nullable()->comment('更新者ID');
+            $table->timestamp('updated_at')->nullable()->comment('更新日時');
 
             $table->index(['resource_type', 'resource_identifier'], 'idx_resource');
             $table->index('image_usage', 'idx_usage');
@@ -32,7 +40,7 @@ return new class extends Migration
             $table->uuid('published_id')->nullable()->comment('公開済み画像ID');
             $table->string('resource_type', 16)->comment('リソースタイプ (talent, song, group)');
             $table->uuid('draft_resource_identifier')->comment('下書きリソースID');
-            $table->uuid('editor_id')->comment('編集者ID');
+            $table->uuid('uploader_id')->comment('アップロード者ID');
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
             $table->integer('display_order')->default(0)->comment('表示順');
@@ -41,7 +49,7 @@ return new class extends Migration
             $table->string('alt_text', 512)->comment('alt属性テキスト');
             $table->string('status', 16)->default('pending')->comment('承認ステータス (pending, under_review, approved, rejected)');
             $table->timestamp('agreed_to_terms_at')->comment('規約同意日時');
-            $table->timestamps();
+            $table->timestamp('uploaded_at')->comment('アップロード日時');
 
             $table->index(['resource_type', 'draft_resource_identifier'], 'idx_draft_resource');
         });
@@ -56,7 +64,12 @@ return new class extends Migration
             $table->string('source_url', 512)->comment('出典元URL');
             $table->string('source_name', 255)->comment('出典元サイト名');
             $table->string('alt_text', 512)->comment('alt属性テキスト');
-            $table->dateTime('created_at')->comment('作成日時');
+            $table->uuid('uploader_id')->comment('アップロード者ID');
+            $table->timestamp('uploaded_at')->comment('アップロード日時');
+            $table->uuid('approver_id')->nullable()->comment('承認者ID');
+            $table->timestamp('approved_at')->nullable()->comment('承認日時');
+            $table->uuid('updater_id')->nullable()->comment('更新者ID');
+            $table->timestamp('updated_at')->nullable()->comment('更新日時');
 
             $table->index('resource_snapshot_identifier', 'idx_resource_snapshot');
         });

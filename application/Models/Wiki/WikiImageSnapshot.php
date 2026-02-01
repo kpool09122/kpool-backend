@@ -17,7 +17,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $source_url
  * @property string $source_name
  * @property string $alt_text
- * @property Carbon $created_at
+ * @property string $uploader_id
+ * @property Carbon $uploaded_at
+ * @property ?string $approver_id
+ * @property ?Carbon $approved_at
+ * @property ?string $updater_id
+ * @property ?Carbon $updated_at
  */
 class WikiImageSnapshot extends Model
 {
@@ -39,11 +44,18 @@ class WikiImageSnapshot extends Model
         'source_url',
         'source_name',
         'alt_text',
-        'created_at',
+        'uploader_id',
+        'uploaded_at',
+        'approver_id',
+        'approved_at',
+        'updater_id',
+        'updated_at',
     ];
 
     protected $casts = [
         'display_order' => 'integer',
-        'created_at' => 'datetime',
+        'uploaded_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }

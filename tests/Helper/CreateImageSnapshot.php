@@ -19,7 +19,12 @@ class CreateImageSnapshot
      *     source_url?: string,
      *     source_name?: string,
      *     alt_text?: string,
-     *     created_at?: string,
+     *     uploader_id?: string,
+     *     uploaded_at?: string,
+     *     approver_id?: string|null,
+     *     approved_at?: string|null,
+     *     updater_id?: string|null,
+     *     updated_at?: string|null,
      * } $overrides
      */
     public static function create(string $snapshotId, array $overrides = []): void
@@ -34,7 +39,12 @@ class CreateImageSnapshot
             'source_url' => $overrides['source_url'] ?? 'https://example.com/source',
             'source_name' => $overrides['source_name'] ?? 'Example Source',
             'alt_text' => $overrides['alt_text'] ?? 'Test image',
-            'created_at' => $overrides['created_at'] ?? '2024-01-01 00:00:00',
+            'uploader_id' => $overrides['uploader_id'] ?? StrTestHelper::generateUuid(),
+            'uploaded_at' => $overrides['uploaded_at'] ?? '2024-01-01 00:00:00',
+            'approver_id' => $overrides['approver_id'] ?? StrTestHelper::generateUuid(),
+            'approved_at' => $overrides['approved_at'] ?? '2024-01-01 00:00:00',
+            'updater_id' => $overrides['updater_id'] ?? null,
+            'updated_at' => $overrides['updated_at'] ?? null,
         ]);
     }
 }

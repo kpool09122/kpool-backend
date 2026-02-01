@@ -55,8 +55,16 @@ use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImage;
 use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImage;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImage;
+use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\ApproveImageHideRequest\ApproveImageHideRequest;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\ApproveImageHideRequest\ApproveImageHideRequestInterface;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RejectImageHideRequest\RejectImageHideRequest;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RejectImageHideRequest\RejectImageHideRequestInterface;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHide;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHideInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertification;
@@ -196,5 +204,9 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ApproveImageInterface::class, ApproveImage::class);
         $this->app->singleton(RejectImageInterface::class, RejectImage::class);
         $this->app->singleton(DeleteImageInterface::class, DeleteImage::class);
+        $this->app->singleton(UnhideImageInterface::class, UnhideImage::class);
+        $this->app->singleton(RequestImageHideInterface::class, RequestImageHide::class);
+        $this->app->singleton(ApproveImageHideRequestInterface::class, ApproveImageHideRequest::class);
+        $this->app->singleton(RejectImageHideRequestInterface::class, RejectImageHideRequest::class);
     }
 }
