@@ -12,11 +12,11 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Song\Domain\Entity\DraftSong;
 use Source\Wiki\Song\Domain\Factory\DraftSongFactoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
 
 readonly class DraftSongFactory implements DraftSongFactoryInterface
 {

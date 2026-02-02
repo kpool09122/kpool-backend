@@ -6,8 +6,8 @@ namespace Tests\Wiki\Agency\Domain\ValueObject;
 
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AutoAgencyCreationPayload;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 class AutoAgencyCreationPayloadTest extends TestCase
 {
@@ -18,7 +18,7 @@ class AutoAgencyCreationPayloadTest extends TestCase
      */
     public function test__construct(): void
     {
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $translation = Language::KOREAN;
 
         $payload = new AutoAgencyCreationPayload(

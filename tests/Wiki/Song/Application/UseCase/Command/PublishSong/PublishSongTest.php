@@ -42,14 +42,14 @@ use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongSnapshotRepositoryInterface;
 use Source\Wiki\Song\Domain\Service\SongServiceInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
-use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongHistoryIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Song\Domain\ValueObject\SongSnapshotIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\ReleaseDate;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

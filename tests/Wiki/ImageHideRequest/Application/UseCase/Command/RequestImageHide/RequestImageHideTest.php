@@ -11,7 +11,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\ImageHideRequest\Application\Exception\ImageHideRequestAlreadyPendingException;
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHide;
@@ -22,6 +21,7 @@ use Source\Wiki\ImageHideRequest\Domain\Factory\ImageHideRequestFactoryInterface
 use Source\Wiki\ImageHideRequest\Domain\Repository\ImageHideRequestRepositoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;

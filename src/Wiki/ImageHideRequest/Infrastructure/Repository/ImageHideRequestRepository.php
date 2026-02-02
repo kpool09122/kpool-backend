@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\ImageHideRequest\Infrastructure\Repository;
 
 use Application\Models\Wiki\ImageHideRequest as ImageHideRequestModel;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\Repository\ImageHideRequestRepositoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class ImageHideRequestRepository implements ImageHideRequestRepositoryInterface

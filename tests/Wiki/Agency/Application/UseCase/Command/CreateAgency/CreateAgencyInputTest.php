@@ -8,11 +8,11 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Application\UseCase\Command\CreateAgency\CreateAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -26,7 +26,7 @@ class CreateAgencyInputTest extends TestCase
     public function test__construct(): void
     {
         $publishedAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $slug = new Slug('jyp-entertainment');
         $language = Language::KOREAN;
         $CEO = new CEO('J.Y. Park');

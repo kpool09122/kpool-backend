@@ -12,13 +12,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\AgencySnapshot;
 use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\CreateAgencySnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -53,7 +53,7 @@ class AgencySnapshotRepositoryTest extends TestCase
             new TranslationSetIdentifier($translationSetIdentifier),
             new Slug('jyp-entertainment'),
             $language,
-            new AgencyName($name),
+            new Name($name),
             $normalizedName,
             new CEO($CEO),
             $normalizedCEO,
@@ -99,7 +99,7 @@ class AgencySnapshotRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('sm-entertainment'),
             Language::KOREAN,
-            new AgencyName('SM엔터테인먼트'),
+            new Name('SM엔터테인먼트'),
             'smㅇㅌㅌㅇㅁㅌ',
             new CEO('Lee Sung-su'),
             'lee sung-su',

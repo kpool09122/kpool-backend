@@ -7,11 +7,11 @@ namespace Source\Wiki\Talent\Application\UseCase\Command\EditTalent;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Birthday;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 
 interface EditTalentInputPort
 {

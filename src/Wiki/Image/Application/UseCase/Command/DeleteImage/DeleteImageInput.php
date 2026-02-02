@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Application\UseCase\Command\DeleteImage;
 
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class DeleteImageInput implements DeleteImageInputPort

@@ -6,9 +6,9 @@ namespace Source\Wiki\ImageHideRequest\Domain\Entity;
 
 use DateTimeImmutable;
 use DomainException;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class ImageHideRequest

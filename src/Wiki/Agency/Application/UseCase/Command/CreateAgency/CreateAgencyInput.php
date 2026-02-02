@@ -6,19 +6,19 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 readonly class CreateAgencyInput implements CreateAgencyInputPort
 {
     /**
      * @param ?AgencyIdentifier $publishedAgencyIdentifier
      * @param Language $language
-     * @param AgencyName $name
+     * @param Name $name
      * @param Slug $slug
      * @param CEO $CEO
      * @param ?FoundedIn $foundedIn
@@ -28,7 +28,7 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
     public function __construct(
         private ?AgencyIdentifier   $publishedAgencyIdentifier,
         private Language            $language,
-        private AgencyName          $name,
+        private Name                $name,
         private Slug                $slug,
         private CEO                 $CEO,
         private ?FoundedIn          $foundedIn,
@@ -47,7 +47,7 @@ readonly class CreateAgencyInput implements CreateAgencyInputPort
         return $this->language;
     }
 
-    public function name(): AgencyName
+    public function name(): Name
     {
         return $this->name;
     }

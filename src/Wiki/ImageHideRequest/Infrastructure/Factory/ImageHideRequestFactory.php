@@ -6,11 +6,11 @@ namespace Source\Wiki\ImageHideRequest\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\Factory\ImageHideRequestFactoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 
 readonly class ImageHideRequestFactory implements ImageHideRequestFactoryInterface
 {

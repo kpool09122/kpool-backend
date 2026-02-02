@@ -10,14 +10,14 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\AgencySnapshot;
 use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 class AgencySnapshotRepository implements AgencySnapshotRepositoryInterface
 {
@@ -96,7 +96,7 @@ class AgencySnapshotRepository implements AgencySnapshotRepositoryInterface
             new TranslationSetIdentifier($model->translation_set_identifier),
             new Slug($model->slug),
             Language::from($model->language),
-            new AgencyName($model->name),
+            new Name($model->name),
             $model->normalized_name,
             new CEO($model->CEO),
             $model->normalized_CEO,

@@ -14,9 +14,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Domain\Service\AutoAgencyCreationServiceInterface;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AutoAgencyCreationPayload;
 use Source\Wiki\Agency\Infrastructure\Service\AutoAgencyCreationService;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\TestCase;
 
 class AutoAgencyCreationServiceTest extends TestCase
@@ -93,7 +93,7 @@ DESCRIPTION;
         $service = $this->app->make(AutoAgencyCreationServiceInterface::class);
         $payload = new AutoAgencyCreationPayload(
             language: Language::JAPANESE,
-            name: new AgencyName('JYP엔터테인먼트'),
+            name: new Name('JYP엔터테인먼트'),
         );
 
         $result = $service->generate($payload);
@@ -124,7 +124,7 @@ DESCRIPTION;
         $service = $this->app->make(AutoAgencyCreationServiceInterface::class);
         $payload = new AutoAgencyCreationPayload(
             language: Language::KOREAN,
-            name: new AgencyName('SM엔터테인먼트'),
+            name: new Name('SM엔터테인먼트'),
         );
 
         $result = $service->generate($payload);
@@ -173,7 +173,7 @@ DESCRIPTION;
         $service = $this->app->make(AutoAgencyCreationServiceInterface::class);
         $payload = new AutoAgencyCreationPayload(
             language: Language::JAPANESE,
-            name: new AgencyName('HYBE'),
+            name: new Name('HYBE'),
         );
 
         $result = $service->generate($payload);
@@ -238,7 +238,7 @@ DESCRIPTION;
         $service = $this->app->make(AutoAgencyCreationServiceInterface::class);
         $payload = new AutoAgencyCreationPayload(
             language: Language::KOREAN,
-            name: new AgencyName('SM엔터테인먼트'),
+            name: new Name('SM엔터테인먼트'),
         );
 
         $result = $service->generate($payload);
@@ -312,7 +312,7 @@ DESCRIPTION;
         $service = $this->app->make(AutoAgencyCreationServiceInterface::class);
         $payload = new AutoAgencyCreationPayload(
             language: Language::JAPANESE,
-            name: new AgencyName('YGエンターテインメント'),
+            name: new Name('YGエンターテインメント'),
         );
 
         $result = $service->generate($payload);
@@ -377,7 +377,7 @@ DESCRIPTION;
         $service = $this->app->make(AutoAgencyCreationServiceInterface::class);
         $payload = new AutoAgencyCreationPayload(
             language: Language::ENGLISH,
-            name: new AgencyName('Starship Entertainment'),
+            name: new Name('Starship Entertainment'),
         );
 
         $result = $service->generate($payload);

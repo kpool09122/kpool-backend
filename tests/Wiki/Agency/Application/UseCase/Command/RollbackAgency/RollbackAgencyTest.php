@@ -23,11 +23,8 @@ use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencySnapshotRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -39,6 +36,9 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -626,7 +626,7 @@ class RollbackAgencyTest extends TestCase
             $translationSetIdentifier,
             new Slug('test-slug'),
             $language,
-            new AgencyName('Test Agency'),
+            new Name('Test Agency'),
             'test agency',
             new CEO('Test CEO'),
             'test ceo',
@@ -648,7 +648,7 @@ class RollbackAgencyTest extends TestCase
             $translationSetIdentifier,
             new Slug('test-slug'),
             $language,
-            new AgencyName('Snapshot Agency Name'),
+            new Name('Snapshot Agency Name'),
             'snapshot agency name',
             new CEO('Snapshot CEO'),
             'snapshot ceo',
@@ -674,7 +674,7 @@ class RollbackAgencyTest extends TestCase
             null,
             new Version(5),
             new Version(2),
-            new AgencyName('Test Agency'),
+            new Name('Test Agency'),
             new DateTimeImmutable(),
         );
     }

@@ -11,13 +11,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 class AgencyRepository implements AgencyRepositoryInterface
 {
@@ -36,7 +36,7 @@ class AgencyRepository implements AgencyRepositoryInterface
             new TranslationSetIdentifier($agencyModel->translation_set_identifier),
             new Slug($agencyModel->slug),
             Language::from($agencyModel->language),
-            new AgencyName($agencyModel->name),
+            new Name($agencyModel->name),
             $agencyModel->normalized_name,
             new CEO($agencyModel->CEO),
             $agencyModel->normalized_CEO,
@@ -77,7 +77,7 @@ class AgencyRepository implements AgencyRepositoryInterface
                 new TranslationSetIdentifier($agencyModel->translation_set_identifier),
                 new Slug($agencyModel->slug),
                 Language::from($agencyModel->language),
-                new AgencyName($agencyModel->name),
+                new Name($agencyModel->name),
                 $agencyModel->normalized_name,
                 new CEO($agencyModel->CEO),
                 $agencyModel->normalized_CEO,

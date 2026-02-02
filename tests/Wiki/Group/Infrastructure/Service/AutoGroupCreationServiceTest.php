@@ -18,8 +18,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier as AgencyDomainIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Group\Domain\Service\AutoGroupCreationServiceInterface;
 use Source\Wiki\Group\Domain\ValueObject\AgencyIdentifier;
@@ -28,6 +26,8 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Group\Infrastructure\Service\AutoGroupCreationService;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -410,7 +410,7 @@ DESCRIPTION;
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('jyp-entertainment'),
             Language::KOREAN,
-            new AgencyName($agencyName),
+            new Name($agencyName),
             'jyp entertainment',
             new CEO(''),
             '',

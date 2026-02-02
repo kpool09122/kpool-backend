@@ -7,11 +7,11 @@ namespace Tests\Wiki\Agency\Application\UseCase\Command\EditAgency;
 use DateTimeImmutable;
 use Source\Wiki\Agency\Application\UseCase\Command\EditAgency\EditAgencyInput;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ class EditAgencyInputTest extends TestCase
     public function test__construct(): void
     {
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $CEO = new CEO('J.Y. Park');
         $foundedIn = new FoundedIn(new DateTimeImmutable('1997-04-25'));
         $description = new Description('### JYP엔터테인먼트 (JYP Entertainment)

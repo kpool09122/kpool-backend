@@ -23,10 +23,7 @@ use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -35,6 +32,9 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -591,7 +591,7 @@ class TranslateAgencyTest extends TestCase
             ->with(
                 null,
                 Language::JAPANESE,
-                Mockery::type(AgencyName::class),
+                Mockery::type(Name::class),
                 $dummyTranslateAgency->agency->slug(),
                 $dummyTranslateAgency->agency->translationSetIdentifier(),
             )
@@ -601,7 +601,7 @@ class TranslateAgencyTest extends TestCase
             ->with(
                 null,
                 Language::ENGLISH,
-                Mockery::type(AgencyName::class),
+                Mockery::type(Name::class),
                 $dummyTranslateAgency->agency->slug(),
                 $dummyTranslateAgency->agency->translationSetIdentifier(),
             )
@@ -625,7 +625,7 @@ class TranslateAgencyTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
         $normalizedCEO = 'j.y. park';
@@ -658,7 +658,7 @@ DESC);
             new Slug('test-slug'),
             null,
             Language::JAPANESE,
-            new AgencyName('JYPエンターテインメント'),
+            new Name('JYPエンターテインメント'),
             'jypえんたーていんめんと',
             new CEO(''),
             '',
@@ -674,7 +674,7 @@ DESC);
             new Slug('test-slug'),
             null,
             Language::ENGLISH,
-            new AgencyName('JYP Entertainment'),
+            new Name('JYP Entertainment'),
             'jyp entertainment',
             new CEO(''),
             '',
@@ -721,21 +721,21 @@ DESC);
 readonly class TranslateAgencyTestData
 {
     public function __construct(
-        public AgencyIdentifier $agencyIdentifier,
-        public AgencyIdentifier $publishedAgencyIdentifier,
+        public AgencyIdentifier         $agencyIdentifier,
+        public AgencyIdentifier         $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public PrincipalIdentifier $editorIdentifier,
-        public Language $language,
-        public AgencyName $name,
-        public CEO $CEO,
-        public FoundedIn $foundedIn,
-        public Description $description,
-        public Version $version,
-        public Agency $agency,
-        public DraftAgency $jaAgency,
-        public DraftAgency $enAgency,
-        public TranslatedAgencyData $jaTranslatedData,
-        public TranslatedAgencyData $enTranslatedData,
+        public PrincipalIdentifier      $editorIdentifier,
+        public Language                 $language,
+        public Name                     $name,
+        public CEO                      $CEO,
+        public FoundedIn                $foundedIn,
+        public Description              $description,
+        public Version                  $version,
+        public Agency                   $agency,
+        public DraftAgency              $jaAgency,
+        public DraftAgency              $enAgency,
+        public TranslatedAgencyData     $jaTranslatedData,
+        public TranslatedAgencyData     $enTranslatedData,
     ) {
     }
 }

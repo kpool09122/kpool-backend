@@ -7,8 +7,8 @@ namespace Source\Wiki\Agency\Domain\Factory;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 interface AgencyFactoryInterface
 {
@@ -16,6 +16,6 @@ interface AgencyFactoryInterface
         TranslationSetIdentifier $translationSetIdentifier,
         Slug                     $slug,
         Language                 $language,
-        AgencyName               $agencyName,
+        Name                     $agencyName,
     ): Agency;
 }

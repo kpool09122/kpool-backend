@@ -11,11 +11,11 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Factory\SongFactoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
 
 readonly class SongFactory implements SongFactoryInterface
 {

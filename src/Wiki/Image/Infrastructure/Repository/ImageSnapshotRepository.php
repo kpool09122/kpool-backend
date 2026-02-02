@@ -8,9 +8,9 @@ use Application\Models\Wiki\WikiImageSnapshot;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 

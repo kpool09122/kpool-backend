@@ -18,8 +18,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier as AgencyDomainIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description as AgencyDescription;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
@@ -39,8 +37,10 @@ use Source\Wiki\Song\Infrastructure\Service\AutoSongCreationService;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -501,7 +501,7 @@ OVERVIEW;
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('hybe'),
             Language::KOREAN,
-            new AgencyName($agencyName),
+            new Name($agencyName),
             'hybe',
             new CEO(''),
             '',
@@ -991,7 +991,7 @@ OVERVIEW;
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('sm-entertainment'),
             Language::KOREAN,
-            new AgencyName($agencyName),
+            new Name($agencyName),
             'sm entertainment',
             new CEO(''),
             '',

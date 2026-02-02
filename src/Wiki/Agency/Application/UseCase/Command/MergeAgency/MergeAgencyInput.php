@@ -6,17 +6,17 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\MergeAgency;
 
 use DateTimeImmutable;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 readonly class MergeAgencyInput implements MergeAgencyInputPort
 {
     /**
      * @param AgencyIdentifier $agencyIdentifier
-     * @param AgencyName $name
+     * @param Name $name
      * @param CEO $CEO
      * @param ?FoundedIn $foundedIn
      * @param Description $description
@@ -25,7 +25,7 @@ readonly class MergeAgencyInput implements MergeAgencyInputPort
      */
     public function __construct(
         private AgencyIdentifier    $agencyIdentifier,
-        private AgencyName          $name,
+        private Name                $name,
         private CEO                 $CEO,
         private ?FoundedIn          $foundedIn,
         private Description         $description,
@@ -39,7 +39,7 @@ readonly class MergeAgencyInput implements MergeAgencyInputPort
         return $this->agencyIdentifier;
     }
 
-    public function name(): AgencyName
+    public function name(): Name
     {
         return $this->name;
     }

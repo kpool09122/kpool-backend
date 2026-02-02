@@ -22,15 +22,12 @@ use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
@@ -44,6 +41,9 @@ use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionSta
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\YouTubeVideoInfo;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

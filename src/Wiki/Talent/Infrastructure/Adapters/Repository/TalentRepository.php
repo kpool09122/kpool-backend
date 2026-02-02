@@ -16,11 +16,11 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Birthday;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 
 final class TalentRepository implements TalentRepositoryInterface
 {

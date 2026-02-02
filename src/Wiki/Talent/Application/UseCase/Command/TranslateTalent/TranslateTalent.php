@@ -20,8 +20,8 @@ use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 
 readonly class TranslateTalent implements TranslateTalentInterface
 {

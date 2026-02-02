@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\ImageHideRequest\Domain\Repository;
 
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 
 interface ImageHideRequestRepositoryInterface
 {

@@ -12,12 +12,12 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\CreateAgency;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -131,7 +131,7 @@ class AgencyRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('jyp-entertainment'),
             $language,
-            new AgencyName($name),
+            new Name($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
             'j.y. park',

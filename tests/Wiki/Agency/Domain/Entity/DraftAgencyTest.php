@@ -9,13 +9,13 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -74,7 +74,7 @@ class DraftAgencyTest extends TestCase
 
         $this->assertSame((string)$createDraftAgency->name, (string)$agency->name());
 
-        $newName = new AgencyName('HYBE');
+        $newName = new Name('HYBE');
         $agency->setName($newName);
         $this->assertNotSame((string)$createDraftAgency->name, (string)$agency->name());
         $this->assertSame((string)$newName, (string)$agency->name());
@@ -319,7 +319,7 @@ HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 
         $slug = new Slug('jyp-entertainment');
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $ceo = new CEO('J.Y. Park');
         $normalizedCEO = 'j.y. park';
@@ -383,20 +383,20 @@ readonly class DraftAgencyTestData
      * テストデータなので、すべてpublicで定義
      */
     public function __construct(
-        public AgencyIdentifier          $agencyIdentifier,
-        public AgencyIdentifier          $publishedAgencyIdentifier,
-        public TranslationSetIdentifier  $translationSetIdentifier,
-        public Slug                      $slug,
-        public PrincipalIdentifier       $editorIdentifier,
-        public Language                  $language,
-        public AgencyName                $name,
-        public string                    $normalizedName,
-        public CEO                       $ceo,
-        public string                    $normalizedCEO,
-        public FoundedIn                 $foundedIn,
-        public Description               $description,
-        public ApprovalStatus            $status,
-        public DraftAgency               $draftAgency,
+        public AgencyIdentifier         $agencyIdentifier,
+        public AgencyIdentifier         $publishedAgencyIdentifier,
+        public TranslationSetIdentifier $translationSetIdentifier,
+        public Slug                     $slug,
+        public PrincipalIdentifier      $editorIdentifier,
+        public Language                 $language,
+        public Name                     $name,
+        public string                   $normalizedName,
+        public CEO                      $ceo,
+        public string                   $normalizedCEO,
+        public FoundedIn                $foundedIn,
+        public Description              $description,
+        public ApprovalStatus           $status,
+        public DraftAgency              $draftAgency,
     ) {
     }
 }

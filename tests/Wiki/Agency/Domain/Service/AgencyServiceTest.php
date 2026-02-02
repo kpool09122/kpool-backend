@@ -13,13 +13,13 @@ use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyService;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -47,7 +47,7 @@ class AgencyServiceTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
-            new AgencyName('JYPエンターテインメント'),
+            new Name('JYPエンターテインメント'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
             'j.y. park',
@@ -87,7 +87,7 @@ class AgencyServiceTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new AgencyName('JYP엔터테인먼트'),
+            new Name('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
             'j.y. park',
@@ -126,7 +126,7 @@ class AgencyServiceTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::ENGLISH,
-            new AgencyName('JYP Entertainment'),
+            new Name('JYP Entertainment'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
             'j.y. park',
@@ -189,7 +189,7 @@ class AgencyServiceTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new AgencyName('JYP엔터테인먼트'),
+            new Name('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
             'j.y. park',
@@ -207,7 +207,7 @@ class AgencyServiceTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
-            new AgencyName('JYPエンターテインメント'),
+            new Name('JYPエンターテインメント'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
             'j.y. park',

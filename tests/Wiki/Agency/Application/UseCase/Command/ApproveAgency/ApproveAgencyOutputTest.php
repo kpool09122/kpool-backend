@@ -10,13 +10,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Application\UseCase\Command\ApproveAgency\ApproveAgencyOutput;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -38,7 +38,7 @@ class ApproveAgencyOutputTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
-            new AgencyName('JYPエンターテイメント'),
+            new Name('JYPエンターテイメント'),
             'JYPエンターテイメント',
             new CEO('J.Y. Park'),
             'j.y. park',
@@ -95,7 +95,7 @@ class ApproveAgencyOutputTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::KOREAN,
-            new AgencyName('HYBE'),
+            new Name('HYBE'),
             'HYBE',
             new CEO('パク・ジウォン'),
             'パク・ジウォン',

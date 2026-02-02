@@ -9,11 +9,11 @@ use InvalidArgumentException;
 use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -116,7 +116,7 @@ class AgencyHistoryTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $toStatus = ApprovalStatus::Pending;
-        $agencyName = new AgencyName('JYP엔터테인먼트');
+        $agencyName = new Name('JYP엔터테인먼트');
         $recordedAt = new DateTimeImmutable();
 
         $agencyHistory = new AgencyHistory(
@@ -151,7 +151,7 @@ class AgencyHistoryTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Rejected;
-        $agencyName = new AgencyName('JYP엔터테인먼트');
+        $agencyName = new Name('JYP엔터테인먼트');
         $recordedAt = new DateTimeImmutable();
 
         new AgencyHistory(
@@ -193,7 +193,7 @@ class AgencyHistoryTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
-        $agencyName = new AgencyName('JYP엔터테인먼트');
+        $agencyName = new Name('JYP엔터테인먼트');
         $recordedAt = new DateTimeImmutable();
 
         $agencyHistory = new AgencyHistory(

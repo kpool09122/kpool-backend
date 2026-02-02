@@ -21,10 +21,7 @@ use Source\Wiki\Agency\Domain\Repository\AgencyHistoryRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
@@ -34,6 +31,9 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -547,7 +547,7 @@ class SubmitAgencyTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $normalizedName = 'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
         $normalizedCEO = 'j.y. park';
@@ -624,19 +624,19 @@ DESC);
 readonly class SubmitAgencyTestData
 {
     public function __construct(
-        public AgencyIdentifier $agencyIdentifier,
-        public AgencyIdentifier $publishedAgencyIdentifier,
+        public AgencyIdentifier         $agencyIdentifier,
+        public AgencyIdentifier         $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public PrincipalIdentifier $editorIdentifier,
-        public Language $language,
-        public AgencyName $name,
-        public CEO $CEO,
-        public FoundedIn $foundedIn,
-        public Description $description,
-        public ApprovalStatus $status,
-        public DraftAgency $agency,
-        public AgencyHistoryIdentifier $historyIdentifier,
-        public AgencyHistory $history,
+        public PrincipalIdentifier      $editorIdentifier,
+        public Language                 $language,
+        public Name                     $name,
+        public CEO                      $CEO,
+        public FoundedIn                $foundedIn,
+        public Description              $description,
+        public ApprovalStatus           $status,
+        public DraftAgency              $agency,
+        public AgencyHistoryIdentifier  $historyIdentifier,
+        public AgencyHistory            $history,
     ) {
     }
 }

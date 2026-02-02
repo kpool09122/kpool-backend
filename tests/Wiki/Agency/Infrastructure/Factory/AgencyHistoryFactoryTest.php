@@ -8,12 +8,12 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyHistoryFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -45,7 +45,7 @@ class AgencyHistoryFactoryTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromStatus = ApprovalStatus::Pending;
         $toStatus = ApprovalStatus::Approved;
-        $agencyName = new AgencyName('JYP엔터테인먼트');
+        $agencyName = new Name('JYP엔터테인먼트');
 
         $agencyHistoryFactory = $this->app->make(AgencyHistoryFactoryInterface::class);
         $agencyHistory = $agencyHistoryFactory->create(
@@ -88,7 +88,7 @@ class AgencyHistoryFactoryTest extends TestCase
         $draftAgencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromStatus = null;
         $toStatus = ApprovalStatus::Pending;
-        $agencyName = new AgencyName('JYP엔터테인먼트');
+        $agencyName = new Name('JYP엔터테인먼트');
 
         $agencyHistoryFactory = $this->app->make(AgencyHistoryFactoryInterface::class);
         $agencyHistory = $agencyHistoryFactory->create(
@@ -130,7 +130,7 @@ class AgencyHistoryFactoryTest extends TestCase
         $agencyIdentifier = new AgencyIdentifier(StrTestHelper::generateUuid());
         $fromVersion = new Version(5);
         $toVersion = new Version(2);
-        $agencyName = new AgencyName('JYP엔터테인먼트');
+        $agencyName = new Name('JYP엔터테인먼트');
 
         $agencyHistoryFactory = $this->app->make(AgencyHistoryFactoryInterface::class);
         $agencyHistory = $agencyHistoryFactory->create(

@@ -6,8 +6,8 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use DateTimeImmutable;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;

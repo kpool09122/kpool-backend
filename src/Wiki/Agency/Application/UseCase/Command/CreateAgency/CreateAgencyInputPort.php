@@ -6,12 +6,12 @@ namespace Source\Wiki\Agency\Application\UseCase\Command\CreateAgency;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 interface CreateAgencyInputPort
 {
@@ -19,7 +19,7 @@ interface CreateAgencyInputPort
 
     public function language(): Language;
 
-    public function name(): AgencyName;
+    public function name(): Name;
 
     public function slug(): Slug;
 

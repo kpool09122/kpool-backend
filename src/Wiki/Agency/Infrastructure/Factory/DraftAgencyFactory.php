@@ -10,13 +10,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
 {
@@ -29,7 +29,7 @@ readonly class DraftAgencyFactory implements DraftAgencyFactoryInterface
     public function create(
         ?PrincipalIdentifier      $editorIdentifier,
         Language                  $language,
-        AgencyName                $agencyName,
+        Name                      $agencyName,
         Slug                      $slug,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftAgency {

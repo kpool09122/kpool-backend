@@ -15,10 +15,7 @@ use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description as AgencyDescription;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Group\Domain\Entity\DraftGroup;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
@@ -29,11 +26,11 @@ use Source\Wiki\Group\Domain\ValueObject\GroupName;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Infrastructure\Service\ImageAuthorizationResourceBuilder;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -45,8 +42,6 @@ use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
 use Source\Wiki\Song\Domain\ValueObject\AgencyIdentifier as SongAgencyIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
@@ -57,8 +52,13 @@ use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier as TalentAgencyIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier as TalentGroupIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -740,7 +740,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             new Slug('test-agency'),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             Language::JAPANESE,
-            new AgencyName('Test Agency'),
+            new Name('Test Agency'),
             'test agency',
             new CEO('Test CEO'),
             'test ceo',
@@ -861,7 +861,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('test-agency'),
             Language::JAPANESE,
-            new AgencyName('Test Agency'),
+            new Name('Test Agency'),
             'test agency',
             new CEO('Test CEO'),
             'test ceo',

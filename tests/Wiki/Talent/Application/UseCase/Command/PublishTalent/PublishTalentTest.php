@@ -41,13 +41,13 @@ use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Repository\TalentSnapshotRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\TalentServiceInterface;
 use Source\Wiki\Talent\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
 use Source\Wiki\Talent\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentHistoryIdentifier;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentSnapshotIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Birthday;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

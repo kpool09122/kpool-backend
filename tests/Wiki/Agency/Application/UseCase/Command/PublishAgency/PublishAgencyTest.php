@@ -29,11 +29,8 @@ use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AgencyServiceInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -46,6 +43,9 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -1362,7 +1362,7 @@ class PublishAgencyTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $slug = new Slug('test-slug');
         $language = Language::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $normalizedName = 'JYPㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
         $normalizedCEO = 'j.y. park';
@@ -1402,7 +1402,7 @@ DESC);
         );
 
         // 既存の公開済み事務所（更新時用）
-        $exName = new AgencyName('HYBE');
+        $exName = new Name('HYBE');
         $exCEO = new CEO('이재상');
         $exFoundedIn = new FoundedIn(new DateTimeImmutable('2005-02-01'));
         $exDescription = new Description('HYBE의 가장 큰 특징은 단순한 연예 기획사가 아니라 **\'음악 산업의 혁신\'**을 목표로 하는 라이프스타일 플랫폼 기업이라는 점입니다. BTS의 세계적인 성공을 기반으로 2021년에 현재의 사명으로 변경했습니다.');
@@ -1502,23 +1502,23 @@ DESC);
 readonly class PublishAgencyTestData
 {
     public function __construct(
-        public AgencyIdentifier $agencyIdentifier,
-        public AgencyIdentifier $publishedAgencyIdentifier,
+        public AgencyIdentifier         $agencyIdentifier,
+        public AgencyIdentifier         $publishedAgencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
-        public PrincipalIdentifier $editorIdentifier,
-        public Slug $slug,
-        public Language $language,
-        public AgencyName $name,
-        public string $normalizedName,
-        public CEO $CEO,
-        public string $normalizedCEO,
-        public FoundedIn $foundedIn,
-        public Description $description,
-        public ApprovalStatus $status,
-        public DraftAgency $agency,
-        public Agency $publishedAgency,
-        public Agency $createdAgency,
-        public Version $version,
+        public PrincipalIdentifier      $editorIdentifier,
+        public Slug                     $slug,
+        public Language                 $language,
+        public Name                     $name,
+        public string                   $normalizedName,
+        public CEO                      $CEO,
+        public string                   $normalizedCEO,
+        public FoundedIn                $foundedIn,
+        public Description              $description,
+        public ApprovalStatus           $status,
+        public DraftAgency              $agency,
+        public Agency                   $publishedAgency,
+        public Agency                   $createdAgency,
+        public Version                  $version,
         public Version $exVersion,
         public AgencyHistoryIdentifier $historyIdentifier,
         public AgencyHistory $history,

@@ -17,9 +17,9 @@ use Source\Wiki\Talent\Domain\Entity\DraftTalent;
 use Source\Wiki\Talent\Domain\Factory\DraftTalentFactoryInterface;
 use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\Service\AutoTalentCreationServiceInterface;
-use Source\Wiki\Talent\Domain\ValueObject\Birthday;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Birthday;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 
 readonly class AutoCreateTalent implements AutoCreateTalentInterface
 {

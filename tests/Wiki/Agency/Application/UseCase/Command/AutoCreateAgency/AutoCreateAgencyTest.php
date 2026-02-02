@@ -13,7 +13,6 @@ use Source\Wiki\Agency\Application\UseCase\Command\AutoCreateAgency\AutoCreateAg
 use Source\Wiki\Agency\Application\UseCase\Command\AutoCreateAgency\GeneratedAgencyData;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\Service\AutoAgencyCreationServiceInterface;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AutoAgencyCreationPayload;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -22,6 +21,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -268,7 +268,7 @@ class AutoCreateAgencyTest extends TestCase
     {
         return new AutoAgencyCreationPayload(
             Language::KOREAN,
-            new AgencyName('JYP엔터테인먼트'),
+            new Name('JYP엔터테인먼트'),
         );
     }
 

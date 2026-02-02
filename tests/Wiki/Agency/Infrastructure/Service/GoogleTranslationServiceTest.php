@@ -15,13 +15,13 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Agency\Infrastructure\Service\GoogleTranslationService;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 
 class GoogleTranslationServiceTest extends TestCase
@@ -152,7 +152,7 @@ class GoogleTranslationServiceTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('jyp-entertainment'),
             Language::KOREAN,
-            new AgencyName('JYP엔터테인먼트'),
+            new Name('JYP엔터테인먼트'),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO('박진영'),
             '박진영',

@@ -8,34 +8,34 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Domain\ValueObject\AgencySnapshotIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 readonly class AgencySnapshot
 {
     public function __construct(
-        private AgencySnapshotIdentifier  $snapshotIdentifier,
-        private AgencyIdentifier          $agencyIdentifier,
-        private TranslationSetIdentifier  $translationSetIdentifier,
-        private Slug                      $slug,
-        private Language                  $language,
-        private AgencyName                $name,
-        private string                    $normalizedName,
-        private CEO                       $CEO,
-        private string                    $normalizedCEO,
-        private ?FoundedIn                $foundedIn,
-        private Description               $description,
-        private Version                   $version,
-        private DateTimeImmutable         $createdAt,
-        private ?PrincipalIdentifier      $editorIdentifier = null,
-        private ?PrincipalIdentifier      $approverIdentifier = null,
-        private ?PrincipalIdentifier      $mergerIdentifier = null,
+        private AgencySnapshotIdentifier $snapshotIdentifier,
+        private AgencyIdentifier         $agencyIdentifier,
+        private TranslationSetIdentifier $translationSetIdentifier,
+        private Slug                     $slug,
+        private Language                 $language,
+        private Name                     $name,
+        private string                   $normalizedName,
+        private CEO                      $CEO,
+        private string                   $normalizedCEO,
+        private ?FoundedIn               $foundedIn,
+        private Description              $description,
+        private Version                  $version,
+        private DateTimeImmutable        $createdAt,
+        private ?PrincipalIdentifier     $editorIdentifier = null,
+        private ?PrincipalIdentifier     $approverIdentifier = null,
+        private ?PrincipalIdentifier     $mergerIdentifier = null,
         private ?DateTimeImmutable        $mergedAt = null,
         private ?PrincipalIdentifier      $sourceEditorIdentifier = null,
         private ?DateTimeImmutable        $translatedAt = null,
@@ -68,7 +68,7 @@ readonly class AgencySnapshot
         return $this->language;
     }
 
-    public function name(): AgencyName
+    public function name(): Name
     {
         return $this->name;
     }

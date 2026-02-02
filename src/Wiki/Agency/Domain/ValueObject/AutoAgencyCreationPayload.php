@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Source\Wiki\Agency\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 final readonly class AutoAgencyCreationPayload
 {
     public function __construct(
-        private Language                   $language,
-        private AgencyName                 $name,
+        private Language $language,
+        private Name     $name,
     ) {
     }
 
@@ -19,7 +20,7 @@ final readonly class AutoAgencyCreationPayload
         return $this->language;
     }
 
-    public function name(): AgencyName
+    public function name(): Name
     {
         return $this->name;
     }

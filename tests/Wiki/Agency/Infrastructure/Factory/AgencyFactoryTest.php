@@ -9,9 +9,9 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Factory\AgencyFactoryInterface;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Infrastructure\Factory\AgencyFactory;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -37,7 +37,7 @@ class AgencyFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $slug = new Slug('jyp-entertainment');
         $translation = Language::KOREAN;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());

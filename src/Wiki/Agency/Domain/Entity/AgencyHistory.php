@@ -8,11 +8,11 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 readonly class AgencyHistory
 {
@@ -27,7 +27,7 @@ readonly class AgencyHistory
         private ?ApprovalStatus         $toStatus,
         private ?Version                $fromVersion,
         private ?Version                $toVersion,
-        private AgencyName              $subjectName,
+        private Name                    $subjectName,
         private DateTimeImmutable       $recordedAt
     ) {
         $this->validate($agencyIdentifier, $draftAgencyIdentifier);
@@ -90,7 +90,7 @@ readonly class AgencyHistory
         return $this->toVersion;
     }
 
-    public function subjectName(): AgencyName
+    public function subjectName(): Name
     {
         return $this->subjectName;
     }

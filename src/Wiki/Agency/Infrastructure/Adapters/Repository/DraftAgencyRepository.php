@@ -10,13 +10,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 class DraftAgencyRepository implements DraftAgencyRepositoryInterface
 {
@@ -37,7 +37,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
             new Slug($agencyModel->slug),
             $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
             Language::from($agencyModel->language),
-            new AgencyName($agencyModel->name),
+            new Name($agencyModel->name),
             $agencyModel->normalized_name,
             new CEO($agencyModel->CEO),
             $agencyModel->normalized_CEO,
@@ -107,7 +107,7 @@ class DraftAgencyRepository implements DraftAgencyRepositoryInterface
                 new Slug($agencyModel->slug),
                 $agencyModel->editor_id ? new PrincipalIdentifier($agencyModel->editor_id) : null,
                 Language::from($agencyModel->language),
-                new AgencyName($agencyModel->name),
+                new Name($agencyModel->name),
                 $agencyModel->normalized_name,
                 new CEO($agencyModel->CEO),
                 $agencyModel->normalized_CEO,

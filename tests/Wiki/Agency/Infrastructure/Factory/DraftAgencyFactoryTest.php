@@ -9,11 +9,11 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Factory\DraftAgencyFactoryInterface;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Agency\Infrastructure\Factory\DraftAgencyFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,7 +40,7 @@ class DraftAgencyFactoryTest extends TestCase
     public function testCreate(): void
     {
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $slug = new Slug('jyp-entertainment');
         $translation = Language::KOREAN;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());

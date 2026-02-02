@@ -10,13 +10,13 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -67,7 +67,7 @@ class AgencyTest extends TestCase
 
         $this->assertSame((string)$createAgency->name, (string)$agency->name());
 
-        $newName = new AgencyName('HYBE');
+        $newName = new Name('HYBE');
         $agency->setName($newName);
         $this->assertNotSame((string)$createAgency->name, (string)$agency->name());
         $this->assertSame((string)$newName, (string)$agency->name());
@@ -222,7 +222,7 @@ DESCRIPTION
             $translationSetIdentifier,
             new Slug('jyp-entertainment'),
             Language::KOREAN,
-            new AgencyName('JYP엔터테인먼트'),
+            new Name('JYP엔터테인먼트'),
             'jypㅇㅌㅌㅇㅁㅌ',
             new CEO('J.Y. Park'),
             'j.y.park',
@@ -397,7 +397,7 @@ DESCRIPTION
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $slug = new Slug('jyp-entertainment');
         $translation = Language::KOREAN;
-        $name = new AgencyName('JYP엔터테인먼트');
+        $name = new Name('JYP엔터테인먼트');
         $normalizedName = 'jypㅇㅌㅌㅇㅁㅌ';
         $CEO = new CEO('J.Y. Park');
         $normalizedCEO = 'j.yp.park';
@@ -475,7 +475,7 @@ readonly class AgencyTestData
         public AgencyIdentifier         $agencyIdentifier,
         public TranslationSetIdentifier $translationSetIdentifier,
         public Language                 $translation,
-        public AgencyName               $name,
+        public Name                     $name,
         public string                   $normalizedName,
         public CEO                      $CEO,
         public string                   $normalizedCEO,

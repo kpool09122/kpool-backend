@@ -12,13 +12,13 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\DraftAgency;
 use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description;
-use Source\Wiki\Agency\Domain\ValueObject\FoundedIn;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\FoundedIn;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Tests\Helper\CreateDraftAgency;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -149,7 +149,7 @@ class DraftAgencyRepositoryTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier($editorId),
             $language,
-            new AgencyName($name),
+            new Name($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
             'j.y. park',
@@ -247,7 +247,7 @@ class DraftAgencyRepositoryTest extends TestCase
             new Slug('test-slug'),
             new PrincipalIdentifier($editorId),
             $language,
-            new AgencyName($name),
+            new Name($name),
             'ㅈㅇㅍㅇㅌㅌㅇㅁㅌ',
             new CEO($CEO),
             'j.y. park',

@@ -10,11 +10,11 @@ use Source\Wiki\Agency\Domain\Entity\AgencyHistory;
 use Source\Wiki\Agency\Domain\Factory\AgencyHistoryFactoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyHistoryIdentifier;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
 {
@@ -24,16 +24,16 @@ readonly class AgencyHistoryFactory implements AgencyHistoryFactoryInterface
     }
 
     public function create(
-        HistoryActionType $actionType,
-        PrincipalIdentifier $editorIdentifier,
+        HistoryActionType    $actionType,
+        PrincipalIdentifier  $editorIdentifier,
         ?PrincipalIdentifier $submitterIdentifier,
-        ?AgencyIdentifier $agencyIdentifier,
-        ?AgencyIdentifier $draftAgencyIdentifier,
-        ?ApprovalStatus $fromStatus,
-        ?ApprovalStatus $toStatus,
-        ?Version $fromVersion,
-        ?Version $toVersion,
-        AgencyName $subjectName,
+        ?AgencyIdentifier    $agencyIdentifier,
+        ?AgencyIdentifier    $draftAgencyIdentifier,
+        ?ApprovalStatus      $fromStatus,
+        ?ApprovalStatus      $toStatus,
+        ?Version             $fromVersion,
+        ?Version             $toVersion,
+        Name                 $subjectName,
     ): AgencyHistory {
         return new AgencyHistory(
             new AgencyHistoryIdentifier($this->generator->generate()),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Domain\Repository;
 
 use Source\Wiki\Image\Domain\Entity\DraftImage;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 

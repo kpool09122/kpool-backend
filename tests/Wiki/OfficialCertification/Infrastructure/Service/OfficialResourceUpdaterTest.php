@@ -13,8 +13,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Agency\Domain\Entity\Agency;
 use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
 use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyName;
-use Source\Wiki\Agency\Domain\ValueObject\CEO;
 use Source\Wiki\Agency\Domain\ValueObject\Description as AgencyDescription;
 use Source\Wiki\Group\Domain\Entity\Group;
 use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
@@ -29,17 +27,19 @@ use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Song\Domain\Entity\Song;
 use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
 use Source\Wiki\Song\Domain\ValueObject\Overview;
-use Source\Wiki\Song\Domain\ValueObject\ReleaseDate;
 use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
 use Source\Wiki\Song\Domain\ValueObject\SongName;
 use Source\Wiki\Talent\Domain\Entity\Talent;
 use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\Talent\Domain\ValueObject\Career;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
 use Source\Wiki\Talent\Domain\ValueObject\TalentName;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Composer;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Lyricist;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\ReleaseDate;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -341,7 +341,7 @@ class OfficialResourceUpdaterTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('test-agency'),
             Language::ENGLISH,
-            new AgencyName('Agency'),
+            new Name('Agency'),
             'agency',
             new CEO('CEO'),
             'ceo',
