@@ -127,6 +127,14 @@ final readonly class TalentBasic implements BasicInterface
         return $this->profileImageIdentifier;
     }
 
+    public function normalizableKeys(): array
+    {
+        return [
+            'name' => 'normalized_name',
+            'real_name' => 'normalized_real_name',
+        ];
+    }
+
     public function supportsResourceType(ResourceType $resourceType): bool
     {
         return $resourceType === ResourceType::TALENT;

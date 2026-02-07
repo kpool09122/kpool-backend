@@ -137,6 +137,26 @@ use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\SubmitTalent\SubmitTalentInterface;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalent;
 use Source\Wiki\Talent\Application\UseCase\Command\TranslateTalent\TranslateTalentInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -208,5 +228,15 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestImageHideInterface::class, RequestImageHide::class);
         $this->app->singleton(ApproveImageHideRequestInterface::class, ApproveImageHideRequest::class);
         $this->app->singleton(RejectImageHideRequestInterface::class, RejectImageHideRequest::class);
+        $this->app->singleton(CreateWikiInterface::class, CreateWiki::class);
+        $this->app->singleton(AutoCreateWikiInterface::class, AutoCreateWiki::class);
+        $this->app->singleton(EditWikiInterface::class, EditWiki::class);
+        $this->app->singleton(MergeWikiInterface::class, MergeWiki::class);
+        $this->app->singleton(SubmitWikiInterface::class, SubmitWiki::class);
+        $this->app->singleton(ApproveWikiInterface::class, ApproveWiki::class);
+        $this->app->singleton(RejectWikiInterface::class, RejectWiki::class);
+        $this->app->singleton(PublishWikiInterface::class, PublishWiki::class);
+        $this->app->singleton(RollbackWikiInterface::class, RollbackWiki::class);
+        $this->app->singleton(TranslateWikiInterface::class, TranslateWiki::class);
     }
 }

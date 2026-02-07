@@ -131,6 +131,16 @@ final readonly class SongBasic implements BasicInterface
         return $this->normalizedArranger;
     }
 
+    public function normalizableKeys(): array
+    {
+        return [
+            'name' => 'normalized_name',
+            'lyricist' => 'normalized_lyricist',
+            'composer' => 'normalized_composer',
+            'arranger' => 'normalized_arranger',
+        ];
+    }
+
     public function supportsResourceType(ResourceType $resourceType): bool
     {
         return $resourceType === ResourceType::SONG;

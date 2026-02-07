@@ -84,6 +84,14 @@ final readonly class AgencyBasic implements BasicInterface
         return $this->socialLinks;
     }
 
+    public function normalizableKeys(): array
+    {
+        return [
+            'name' => 'normalized_name',
+            'ceo' => 'normalized_ceo',
+        ];
+    }
+
     public function supportsResourceType(ResourceType $resourceType): bool
     {
         return $resourceType === ResourceType::AGENCY;

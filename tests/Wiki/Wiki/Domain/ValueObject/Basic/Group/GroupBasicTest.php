@@ -108,6 +108,20 @@ class GroupBasicTest extends TestCase
     }
 
     /**
+     * 正常系: normalizableKeysが正しいキーを返すこと
+     *
+     * @return void
+     */
+    public function testNormalizableKeys(): void
+    {
+        $testData = $this->createDummyGroupBasic();
+
+        $this->assertSame([
+            'name' => 'normalized_name',
+        ], $testData->groupBasic->normalizableKeys());
+    }
+
+    /**
      * 正常系: toArrayが正しい配列を返すこと
      *
      * @return void

@@ -14,8 +14,8 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class DraftWikiFactory implements DraftWikiFactoryInterface
 {
@@ -33,7 +33,7 @@ readonly class DraftWikiFactory implements DraftWikiFactoryInterface
         ?TranslationSetIdentifier $translationSetIdentifier = null,
     ): DraftWiki {
         return new DraftWiki(
-            new WikiIdentifier($this->generator->generate()),
+            new DraftWikiIdentifier($this->generator->generate()),
             null,
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
             $slug,

@@ -11,11 +11,12 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface DraftWikiRepositoryInterface
 {
-    public function findById(WikiIdentifier $wikiIdentifier): ?DraftWiki;
+    public function findById(DraftWikiIdentifier $wikiIdentifier): ?DraftWiki;
 
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?DraftWiki;
 

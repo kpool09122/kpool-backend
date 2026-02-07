@@ -105,6 +105,11 @@ final readonly class GroupBasic implements BasicInterface
         return $this->mainImageIdentifier;
     }
 
+    public function normalizableKeys(): array
+    {
+        return ['name' => 'normalized_name'];
+    }
+
     public function supportsResourceType(ResourceType $resourceType): bool
     {
         return $resourceType === ResourceType::GROUP;

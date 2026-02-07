@@ -108,6 +108,23 @@ class SongBasicTest extends TestCase
     }
 
     /**
+     * 正常系: normalizableKeysが正しいキーを返すこと
+     *
+     * @return void
+     */
+    public function testNormalizableKeys(): void
+    {
+        $testData = $this->createDummySongBasic();
+
+        $this->assertSame([
+            'name' => 'normalized_name',
+            'lyricist' => 'normalized_lyricist',
+            'composer' => 'normalized_composer',
+            'arranger' => 'normalized_arranger',
+        ], $testData->songBasic->normalizableKeys());
+    }
+
+    /**
      * 正常系: toArrayが正しい配列を返すこと
      *
      * @return void

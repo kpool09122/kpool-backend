@@ -15,6 +15,7 @@ use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -320,7 +321,7 @@ class DraftWikiTest extends TestCase
     private function createDummyDraftWiki(
         ?bool $hasPublishedWiki = null,
     ): DraftWikiTestData {
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $hasPublishedWiki ??= true;
         $publishedWikiIdentifier = $hasPublishedWiki ? new WikiIdentifier(StrTestHelper::generateUuid()) : null;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
@@ -384,7 +385,7 @@ class DraftWikiTest extends TestCase
 readonly class DraftWikiTestData
 {
     public function __construct(
-        public WikiIdentifier            $wikiIdentifier,
+        public DraftWikiIdentifier       $wikiIdentifier,
         public ?WikiIdentifier           $publishedWikiIdentifier,
         public TranslationSetIdentifier  $translationSetIdentifier,
         public Slug                      $slug,

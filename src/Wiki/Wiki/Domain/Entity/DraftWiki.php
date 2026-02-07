@@ -13,13 +13,14 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class DraftWiki
 {
     public function __construct(
-        private readonly WikiIdentifier $wikiIdentifier,
+        private readonly DraftWikiIdentifier $wikiIdentifier,
         private ?WikiIdentifier $publishedWikiIdentifier,
         private readonly TranslationSetIdentifier $translationSetIdentifier,
         private readonly Slug $slug,
@@ -39,7 +40,7 @@ class DraftWiki
     ) {
     }
 
-    public function wikiIdentifier(): WikiIdentifier
+    public function wikiIdentifier(): DraftWikiIdentifier
     {
         return $this->wikiIdentifier;
     }

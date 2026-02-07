@@ -17,6 +17,13 @@ interface BasicInterface
     public function normalizedName(): string;
 
     /**
+     * 正規化対象のキーマッピングを返す（元キー => 正規化キー）
+     *
+     * @return array<string, string>
+     */
+    public function normalizableKeys(): array;
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array;

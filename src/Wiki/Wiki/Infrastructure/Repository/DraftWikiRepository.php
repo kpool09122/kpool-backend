@@ -24,11 +24,12 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
 {
-    public function findById(WikiIdentifier $wikiIdentifier): ?DraftWiki
+    public function findById(DraftWikiIdentifier $wikiIdentifier): ?DraftWiki
     {
         $model = DraftWikiModel::query()
             ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
@@ -211,7 +212,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
         };
 
         return new DraftWiki(
-            new WikiIdentifier($model->id),
+            new DraftWikiIdentifier($model->id),
             $model->published_wiki_id ? new WikiIdentifier($model->published_wiki_id) : null,
             new TranslationSetIdentifier($model->translation_set_identifier),
             new Slug($model->slug),

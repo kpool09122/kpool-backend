@@ -173,6 +173,7 @@ use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInter
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Factory\VideoLinkCollectionStatusFactory;
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Repository\VideoLinkCollectionStatusRepository;
 use Source\Wiki\VideoLinkAutoCollection\Infrastructure\Service\YouTubeSearchService;
+use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface as WikiTranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -181,6 +182,9 @@ use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
+use Source\Wiki\Wiki\Domain\Service\WikiService;
+use Source\Wiki\Wiki\Domain\Service\WikiServiceInterface;
 use Source\Wiki\Wiki\Infrastructure\Factory\DraftWikiFactory;
 use Source\Wiki\Wiki\Infrastructure\Factory\WikiFactory;
 use Source\Wiki\Wiki\Infrastructure\Factory\WikiHistoryFactory;
@@ -189,6 +193,8 @@ use Source\Wiki\Wiki\Infrastructure\Repository\DraftWikiRepository;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiHistoryRepository;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiRepository;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiSnapshotRepository;
+use Source\Wiki\Wiki\Infrastructure\Service\AutoWikiCreationService;
+use Source\Wiki\Wiki\Infrastructure\Service\TranslationService as WikiTranslationService;
 
 class DomainServiceProvider extends ServiceProvider
 {
@@ -278,6 +284,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AutoGroupCreationServiceInterface::class, AutoGroupCreationService::class);
         $this->app->singleton(AutoTalentCreationServiceInterface::class, AutoTalentCreationService::class);
         $this->app->singleton(AutoSongCreationServiceInterface::class, AutoSongCreationService::class);
+        $this->app->singleton(AutoWikiCreationServiceInterface::class, AutoWikiCreationService::class);
+        $this->app->singleton(WikiServiceInterface::class, WikiService::class);
         $this->app->singleton(WikiRepositoryInterface::class, WikiRepository::class);
         $this->app->singleton(WikiSnapshotRepositoryInterface::class, WikiSnapshotRepository::class);
         $this->app->singleton(DraftWikiRepositoryInterface::class, DraftWikiRepository::class);
@@ -286,5 +294,6 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(WikiHistoryFactoryInterface::class, WikiHistoryFactory::class);
         $this->app->singleton(WikiHistoryRepositoryInterface::class, WikiHistoryRepository::class);
         $this->app->singleton(WikiSnapshotFactoryInterface::class, WikiSnapshotFactory::class);
+        $this->app->singleton(WikiTranslationServiceInterface::class, WikiTranslationService::class);
     }
 }

@@ -98,6 +98,21 @@ class AgencyBasicTest extends TestCase
     }
 
     /**
+     * 正常系: normalizableKeysが正しいキーを返すこと
+     *
+     * @return void
+     */
+    public function testNormalizableKeys(): void
+    {
+        $testData = $this->createDummyAgencyBasic();
+
+        $this->assertSame([
+            'name' => 'normalized_name',
+            'ceo' => 'normalized_ceo',
+        ], $testData->agencyBasic->normalizableKeys());
+    }
+
+    /**
      * 正常系: toArrayが正しい配列を返すこと
      *
      * @return void

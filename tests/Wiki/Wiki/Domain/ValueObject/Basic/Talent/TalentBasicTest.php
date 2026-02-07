@@ -115,6 +115,21 @@ class TalentBasicTest extends TestCase
     }
 
     /**
+     * 正常系: normalizableKeysが正しいキーを返すこと
+     *
+     * @return void
+     */
+    public function testNormalizableKeys(): void
+    {
+        $testData = $this->createDummyTalentBasic();
+
+        $this->assertSame([
+            'name' => 'normalized_name',
+            'real_name' => 'normalized_real_name',
+        ], $testData->talentBasic->normalizableKeys());
+    }
+
+    /**
      * 正常系: toArrayが正しい配列を返すこと
      *
      * @return void
