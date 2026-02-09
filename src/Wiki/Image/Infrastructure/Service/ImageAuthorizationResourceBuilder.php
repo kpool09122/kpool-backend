@@ -4,120 +4,48 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Infrastructure\Service;
 
-use Source\Wiki\Agency\Domain\Repository\AgencyRepositoryInterface;
-use Source\Wiki\Agency\Domain\Repository\DraftAgencyRepositoryInterface;
-use Source\Wiki\Agency\Domain\ValueObject\AgencyIdentifier;
-use Source\Wiki\Group\Domain\Repository\DraftGroupRepositoryInterface;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
-use Source\Wiki\Song\Domain\Repository\DraftSongRepositoryInterface;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Talent\Domain\Repository\DraftTalentRepositoryInterface;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationResourceBuilderInterface
 {
     public function __construct(
-        private DraftAgencyRepositoryInterface $draftAgencyRepository,
-        private DraftGroupRepositoryInterface $draftGroupRepository,
-        private DraftTalentRepositoryInterface $draftTalentRepository,
-        private DraftSongRepositoryInterface $draftSongRepository,
-        private AgencyRepositoryInterface $agencyRepository,
-        private GroupRepositoryInterface $groupRepository,
-        private TalentRepositoryInterface $talentRepository,
-        private SongRepositoryInterface $songRepository,
+        private WikiRepositoryInterface $wikiRepository,
+        private DraftWikiRepositoryInterface $draftWikiRepository,
     ) {
     }
 
     public function buildFromDraftResource(ResourceType $resourceType, ResourceIdentifier $draftResourceIdentifier): Resource
     {
-        if ($resourceType === ResourceType::AGENCY) {
-            $draftAgency = $this->draftAgencyRepository->findById(
-                new AgencyIdentifier((string) $draftResourceIdentifier)
-            );
+        $draftWiki = $this->draftWikiRepository->findById(
+            new DraftWikiIdentifier((string) $draftResourceIdentifier)
+        );
 
-            if ($draftAgency === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
-                type: ResourceType::IMAGE,
-                agencyId: (string) $draftAgency->agencyIdentifier(),
-            );
+        if ($draftWiki === null) {
+            return new Resource(type: ResourceType::IMAGE);
         }
 
-        if ($resourceType === ResourceType::GROUP) {
-            $draftGroup = $this->draftGroupRepository->findById(
-                new GroupIdentifier((string) $draftResourceIdentifier)
-            );
+        $selfIdentifier = $draftWiki->publishedWikiIdentifier() !== null
+            ? (string) $draftWiki->publishedWikiIdentifier()
+            : (string) $draftWiki->wikiIdentifier();
 
-            if ($draftGroup === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
-                type: ResourceType::IMAGE,
-                agencyId: $draftGroup->agencyIdentifier() !== null
-                    ? (string) $draftGroup->agencyIdentifier()
-                    : null,
-                groupIds: [(string) $draftGroup->groupIdentifier()],
-            );
-        }
-
-        if ($resourceType === ResourceType::TALENT) {
-            $draftTalent = $this->draftTalentRepository->findById(
-                new TalentIdentifier((string) $draftResourceIdentifier)
-            );
-
-            if ($draftTalent === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
-                type: ResourceType::IMAGE,
-                agencyId: $draftTalent->agencyIdentifier() !== null
-                    ? (string) $draftTalent->agencyIdentifier()
-                    : null,
-                groupIds: array_map(
-                    static fn ($groupIdentifier) => (string) $groupIdentifier,
-                    $draftTalent->groupIdentifiers()
-                ),
-                talentIds: [(string) $draftTalent->talentIdentifier()],
-            );
-        }
-
-        if ($resourceType === ResourceType::SONG) {
-            $draftSong = $this->draftSongRepository->findById(
-                new SongIdentifier((string) $draftResourceIdentifier)
-            );
-
-            if ($draftSong === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
-                type: ResourceType::IMAGE,
-                agencyId: $draftSong->agencyIdentifier() !== null
-                    ? (string) $draftSong->agencyIdentifier()
-                    : null,
-                groupIds: $draftSong->groupIdentifier() !== null
-                    ? [(string) $draftSong->groupIdentifier()]
-                    : [],
-                talentIds: $draftSong->talentIdentifier() !== null
-                    ? [(string) $draftSong->talentIdentifier()]
-                    : [],
-            );
-        }
-
-        return new Resource(type: ResourceType::IMAGE);
+        return $this->buildResourceFromBasic(
+            $draftWiki->resourceType(),
+            $selfIdentifier,
+            $draftWiki->basic(),
+        );
     }
 
     public function buildFromDraftImage(DraftImage $draftImage): Resource
@@ -130,87 +58,58 @@ readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationRe
 
     public function buildFromImage(Image $image): Resource
     {
-        $resourceType = $image->resourceType();
-        $resourceIdentifier = $image->resourceIdentifier();
+        $wiki = $this->wikiRepository->findById(
+            new WikiIdentifier((string) $image->resourceIdentifier())
+        );
 
-        if ($resourceType === ResourceType::AGENCY) {
-            $agency = $this->agencyRepository->findById(
-                new AgencyIdentifier((string) $resourceIdentifier)
-            );
-
-            if ($agency === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
-                type: ResourceType::IMAGE,
-                agencyId: (string) $agency->agencyIdentifier(),
-            );
+        if ($wiki === null) {
+            return new Resource(type: ResourceType::IMAGE);
         }
 
-        if ($resourceType === ResourceType::GROUP) {
-            $group = $this->groupRepository->findById(
-                new GroupIdentifier((string) $resourceIdentifier)
-            );
+        return $this->buildResourceFromBasic(
+            $wiki->resourceType(),
+            (string) $wiki->wikiIdentifier(),
+            $wiki->basic(),
+        );
+    }
 
-            if ($group === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
+    private function buildResourceFromBasic(ResourceType $resourceType, string $selfIdentifier, BasicInterface $basic): Resource
+    {
+        return match ($resourceType) {
+            ResourceType::AGENCY => new Resource(
                 type: ResourceType::IMAGE,
-                agencyId: $group->agencyIdentifier() !== null
-                    ? (string) $group->agencyIdentifier()
-                    : null,
-                groupIds: [(string) $group->groupIdentifier()],
-            );
-        }
-
-        if ($resourceType === ResourceType::TALENT) {
-            $talent = $this->talentRepository->findById(
-                new TalentIdentifier((string) $resourceIdentifier)
-            );
-
-            if ($talent === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
+                agencyId: $selfIdentifier,
+            ),
+            ResourceType::GROUP => new Resource(
                 type: ResourceType::IMAGE,
-                agencyId: $talent->agencyIdentifier() !== null
-                    ? (string) $talent->agencyIdentifier()
+                agencyId: $basic instanceof GroupBasic && $basic->agencyIdentifier() !== null
+                    ? (string) $basic->agencyIdentifier()
                     : null,
-                groupIds: array_map(
-                    static fn ($groupIdentifier) => (string) $groupIdentifier,
-                    $talent->groupIdentifiers()
-                ),
-                talentIds: [(string) $talent->talentIdentifier()],
-            );
-        }
-
-        if ($resourceType === ResourceType::SONG) {
-            $song = $this->songRepository->findById(
-                new SongIdentifier((string) $resourceIdentifier)
-            );
-
-            if ($song === null) {
-                return new Resource(type: ResourceType::IMAGE);
-            }
-
-            return new Resource(
+                groupIds: [$selfIdentifier],
+            ),
+            ResourceType::TALENT => new Resource(
                 type: ResourceType::IMAGE,
-                agencyId: $song->agencyIdentifier() !== null
-                    ? (string) $song->agencyIdentifier()
+                agencyId: $basic instanceof TalentBasic && $basic->agencyIdentifier() !== null
+                    ? (string) $basic->agencyIdentifier()
                     : null,
-                groupIds: $song->groupIdentifier() !== null
-                    ? [(string) $song->groupIdentifier()]
+                groupIds: $basic instanceof TalentBasic
+                    ? array_map(static fn ($id) => (string) $id, $basic->groupIdentifiers())
                     : [],
-                talentIds: $song->talentIdentifier() !== null
-                    ? [(string) $song->talentIdentifier()]
+                talentIds: [$selfIdentifier],
+            ),
+            ResourceType::SONG => new Resource(
+                type: ResourceType::IMAGE,
+                agencyId: $basic instanceof SongBasic && $basic->agencyIdentifier() !== null
+                    ? (string) $basic->agencyIdentifier()
+                    : null,
+                groupIds: $basic instanceof SongBasic
+                    ? array_map(static fn ($id) => (string) $id, $basic->groupIdentifiers())
                     : [],
-            );
-        }
-
-        return new Resource(type: ResourceType::IMAGE);
+                talentIds: $basic instanceof SongBasic
+                    ? array_map(static fn ($id) => (string) $id, $basic->talentIdentifiers())
+                    : [],
+            ),
+            default => new Resource(type: ResourceType::IMAGE),
+        };
     }
 }

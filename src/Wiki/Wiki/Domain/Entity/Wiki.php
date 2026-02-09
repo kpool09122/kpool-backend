@@ -125,6 +125,14 @@ class Wiki
         return $this->ownerAccountIdentifier !== null;
     }
 
+    public function markOfficial(AccountIdentifier $ownerAccountIdentifier): void
+    {
+        if ($this->isOfficial()) {
+            return;
+        }
+        $this->ownerAccountIdentifier = $ownerAccountIdentifier;
+    }
+
     public function editorIdentifier(): ?PrincipalIdentifier
     {
         return $this->editorIdentifier;

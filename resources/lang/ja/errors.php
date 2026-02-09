@@ -7,5 +7,8 @@ return [
     'exists_approved_but_not_translated_agency' => '翻訳されていない承認済みの、事務所の下書きWikiが存在します。',
     'disallowed' => 'この操作は許可されていません。',
     'allow_only_under_review_status' => '提出済みステータス以外の下書きWikiの承認はできません。',
+    'wiki_not_found' => '指定された下書きWikiが見つかりません。',
+    'duplicate_slug' => '指定されたSlugは既に存在します。',
+    'exists_approved_draft_wiki' => '公開されていない承認済みの下書きWikiが存在します。',
     'internal_server_error' => 'サーバーエラーが発生しました。',
 ];

@@ -370,6 +370,46 @@ class WikiTest extends TestCase
     }
 
     /**
+     * 正常系：非公式のWikiにmarkOfficialを呼ぶと公式になること.
+     *
+     * @return void
+     */
+    public function testMarkOfficial(): void
+    {
+        $data = $this->createDummyWiki(isOfficial: false);
+        $wiki = $data->wiki;
+
+        $this->assertFalse($wiki->isOfficial());
+        $this->assertNull($wiki->ownerAccountIdentifier());
+
+        $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wiki->markOfficial($ownerAccountIdentifier);
+
+        $this->assertTrue($wiki->isOfficial());
+        $this->assertSame($ownerAccountIdentifier, $wiki->ownerAccountIdentifier());
+    }
+
+    /**
+     * 正常系：既に公式のWikiにmarkOfficialを呼んでもownerAccountIdentifierが変更されないこと.
+     *
+     * @return void
+     */
+    public function testMarkOfficialWhenAlreadyOfficial(): void
+    {
+        $data = $this->createDummyWiki(isOfficial: true);
+        $wiki = $data->wiki;
+
+        $this->assertTrue($wiki->isOfficial());
+        $originalOwner = $wiki->ownerAccountIdentifier();
+
+        $newOwnerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $wiki->markOfficial($newOwnerAccountIdentifier);
+
+        $this->assertTrue($wiki->isOfficial());
+        $this->assertSame($originalOwner, $wiki->ownerAccountIdentifier());
+    }
+
+    /**
      * ダミーのWikiを作成するヘルパーメソッド
      *
      * @return WikiTestData

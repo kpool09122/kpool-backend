@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -659,6 +660,76 @@ class WikiRepositoryTest extends TestCase
         $wikis = $repository->findByResourceType(ResourceType::GROUP, limit: 2, offset: 0);
 
         $this->assertCount(2, $wikis);
+    }
+
+    /**
+     * 正常系：OwnerAccountIdとResourceTypeでWikiが取得できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByOwnerAccountId(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $ownerAccountId = StrTestHelper::generateUuid();
+
+        CreateWiki::create($wikiId, 'talent', [
+            'slug' => 'owner-talent',
+            'owner_account_id' => $ownerAccountId,
+        ]);
+
+        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $found = $repository->findByOwnerAccountId(
+            new AccountIdentifier($ownerAccountId),
+            ResourceType::TALENT,
+        );
+
+        $this->assertInstanceOf(Wiki::class, $found);
+        $this->assertSame($wikiId, (string) $found->wikiIdentifier());
+        $this->assertSame(ResourceType::TALENT, $found->resourceType());
+        $this->assertSame($ownerAccountId, (string) $found->ownerAccountIdentifier());
+    }
+
+    /**
+     * 正常系：存在しないOwnerAccountIdの場合、nullが返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByOwnerAccountIdWhenNotExist(): void
+    {
+        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $found = $repository->findByOwnerAccountId(
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+            ResourceType::TALENT,
+        );
+
+        $this->assertNull($found);
+    }
+
+    /**
+     * 正常系：OwnerAccountIdが一致してもResourceTypeが異なる場合、nullが返却されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByOwnerAccountIdWithDifferentResourceType(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $ownerAccountId = StrTestHelper::generateUuid();
+
+        CreateWiki::create($wikiId, 'group', [
+            'slug' => 'owner-group',
+            'owner_account_id' => $ownerAccountId,
+        ]);
+
+        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $found = $repository->findByOwnerAccountId(
+            new AccountIdentifier($ownerAccountId),
+            ResourceType::TALENT,
+        );
+
+        $this->assertNull($found);
     }
 
     /**

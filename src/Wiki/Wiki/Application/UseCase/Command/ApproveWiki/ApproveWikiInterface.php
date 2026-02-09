@@ -10,13 +10,13 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 
 interface ApproveWikiInterface
 {
     /**
      * @param ApproveWikiInputPort $input
-     * @return DraftWiki
+     * @param ApproveWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws ExistsApprovedDraftWikiException
      * @throws InvalidStatusException
@@ -24,5 +24,5 @@ interface ApproveWikiInterface
      * @throws DuplicateSlugException
      * @throws PrincipalNotFoundException
      */
-    public function process(ApproveWikiInputPort $input): DraftWiki;
+    public function process(ApproveWikiInputPort $input, ApproveWikiOutputPort $output): void;
 }

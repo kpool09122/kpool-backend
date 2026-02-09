@@ -24,7 +24,7 @@ use Source\Wiki\Principal\Domain\ValueObject\Effect;
 use Source\Wiki\Principal\Domain\ValueObject\Statement;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 
 readonly class AffiliationActivatedHandler
 {
@@ -38,7 +38,7 @@ readonly class AffiliationActivatedHandler
         private RoleFactoryInterface $roleFactory,
         private RoleRepositoryInterface $roleRepository,
         private AffiliationGrantFactoryInterface $affiliationGrantFactory,
-        private TalentRepositoryInterface $talentRepository,
+        private WikiRepositoryInterface $wikiRepository,
     ) {
     }
 
@@ -128,8 +128,11 @@ readonly class AffiliationActivatedHandler
         $this->principalGroupRepository->save($principalGroup);
 
         // TalentAccountIdentifierからWiki側のTalentIdentifierを取得
-        $talent = $this->talentRepository->findByOwnerAccountId($event->talentAccountIdentifier());
-        $talentId = $talent !== null ? (string) $talent->talentIdentifier() : null;
+        $wiki = $this->wikiRepository->findByOwnerAccountId(
+            $event->talentAccountIdentifier(),
+            ResourceType::TALENT,
+        );
+        $talentId = $wiki !== null ? (string) $wiki->wikiIdentifier() : null;
 
         // Policy 作成（Talent に対する権限）
         $policy = $this->policyFactory->create(

@@ -7,26 +7,18 @@ namespace Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\Collec
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
-use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class CollectVideoLinks implements CollectVideoLinksInterface
 {
     public function __construct(
         private VideoLinkCollectionStatusRepositoryInterface $collectionStatusRepository,
-        private TalentRepositoryInterface $talentRepository,
-        private GroupRepositoryInterface $groupRepository,
-        private SongRepositoryInterface $songRepository,
+        private WikiRepositoryInterface $wikiRepository,
         private YouTubeSearchServiceInterface $youTubeSearchService,
         private VideoLinkFactoryInterface $videoLinkFactory,
         private VideoLinkRepositoryInterface $videoLinkRepository,
@@ -60,12 +52,10 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             return;
         }
 
-        $resourceName = match ($status->resourceType()) {
-            ResourceType::TALENT => $this->getTalentName($status),
-            ResourceType::GROUP => $this->getGroupName($status),
-            ResourceType::SONG => $this->getSongName($status),
-            default => null,
-        };
+        $wiki = $this->wikiRepository->findById(
+            new WikiIdentifier((string) $status->resourceIdentifier()),
+        );
+        $resourceName = $wiki !== null ? (string) $wiki->basic()->name() : null;
 
         if ($resourceName === null) {
             $this->logger->warning('CollectVideoLinks: Resource not found', [
@@ -142,32 +132,5 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
             $status->resourceIdentifier(),
             count($videos),
         );
-    }
-
-    private function getTalentName(VideoLinkCollectionStatus $status): ?string
-    {
-        $talent = $this->talentRepository->findById(
-            new TalentIdentifier((string) $status->resourceIdentifier()),
-        );
-
-        return $talent !== null ? (string) $talent->name() : null;
-    }
-
-    private function getGroupName(VideoLinkCollectionStatus $status): ?string
-    {
-        $group = $this->groupRepository->findById(
-            new GroupIdentifier((string) $status->resourceIdentifier()),
-        );
-
-        return $group !== null ? (string) $group->name() : null;
-    }
-
-    private function getSongName(VideoLinkCollectionStatus $status): ?string
-    {
-        $song = $this->songRepository->findById(
-            new SongIdentifier((string) $status->resourceIdentifier()),
-        );
-
-        return $song !== null ? (string) $song->name() : null;
     }
 }

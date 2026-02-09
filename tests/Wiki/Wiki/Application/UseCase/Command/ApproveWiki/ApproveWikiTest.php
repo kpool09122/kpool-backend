@@ -27,6 +27,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -148,9 +149,10 @@ class ApproveWikiTest extends TestCase
         $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $wiki = $approveWiki->process($input);
-        $this->assertNotSame($dummyApproveWiki->status, $wiki->status());
-        $this->assertSame(ApprovalStatus::Approved, $wiki->status());
+        $output = new ApproveWikiOutput();
+        $approveWiki->process($input, $output);
+        $result = $output->toArray();
+        $this->assertSame(ApprovalStatus::Approved->value, $result['status']);
     }
 
     /**
@@ -200,7 +202,7 @@ class ApproveWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $approveWiki->process($input);
+        $approveWiki->process($input, new ApproveWikiOutput());
     }
 
     /**
@@ -253,7 +255,7 @@ class ApproveWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $approveWiki->process($input);
+        $approveWiki->process($input, new ApproveWikiOutput());
     }
 
     /**
@@ -303,7 +305,7 @@ class ApproveWikiTest extends TestCase
 
         $this->expectException(InvalidStatusException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $approveWiki->process($input);
+        $approveWiki->process($input, new ApproveWikiOutput());
     }
 
     /**
@@ -361,7 +363,7 @@ class ApproveWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $approveWiki->process($input);
+        $approveWiki->process($input, new ApproveWikiOutput());
     }
 
     /**
@@ -428,7 +430,7 @@ class ApproveWikiTest extends TestCase
 
         $this->expectException(DuplicateSlugException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $approveWiki->process($input);
+        $approveWiki->process($input, new ApproveWikiOutput());
     }
 
     /**
@@ -499,7 +501,7 @@ class ApproveWikiTest extends TestCase
 
         $this->expectException(ExistsApprovedDraftWikiException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
-        $approveWiki->process($input);
+        $approveWiki->process($input, new ApproveWikiOutput());
     }
 
     /**

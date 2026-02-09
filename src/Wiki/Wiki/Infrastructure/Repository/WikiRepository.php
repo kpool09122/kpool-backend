@@ -94,6 +94,23 @@ readonly class WikiRepository implements WikiRepositoryInterface
         return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
     }
 
+    public function findByOwnerAccountId(
+        AccountIdentifier $accountIdentifier,
+        ResourceType $resourceType,
+    ): ?Wiki {
+        $model = WikiModel::query()
+            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->where('owner_account_id', (string) $accountIdentifier)
+            ->where('resource_type', $resourceType->value)
+            ->first();
+
+        if ($model === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($model);
+    }
+
     public function save(Wiki $wiki): void
     {
         $wikiId = (string) $wiki->wikiIdentifier();

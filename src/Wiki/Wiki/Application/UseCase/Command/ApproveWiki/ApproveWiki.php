@@ -17,7 +17,6 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -41,7 +40,8 @@ readonly class ApproveWiki implements ApproveWikiInterface
 
     /**
      * @param ApproveWikiInputPort $input
-     * @return DraftWiki
+     * @param ApproveWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws ExistsApprovedDraftWikiException
      * @throws InvalidStatusException
@@ -49,7 +49,7 @@ readonly class ApproveWiki implements ApproveWikiInterface
      * @throws DuplicateSlugException
      * @throws PrincipalNotFoundException
      */
-    public function process(ApproveWikiInputPort $input): DraftWiki
+    public function process(ApproveWikiInputPort $input, ApproveWikiOutputPort $output): void
     {
         $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
 
@@ -113,6 +113,6 @@ readonly class ApproveWiki implements ApproveWikiInterface
         );
         $this->wikiHistoryRepository->save($history);
 
-        return $wiki;
+        $output->setDraftWiki($wiki);
     }
 }
