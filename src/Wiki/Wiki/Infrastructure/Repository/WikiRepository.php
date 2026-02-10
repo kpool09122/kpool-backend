@@ -32,7 +32,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
     public function findById(WikiIdentifier $wikiIdentifier): ?Wiki
     {
         $model = WikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('id', (string) $wikiIdentifier)
             ->first();
 
@@ -46,7 +46,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?Wiki
     {
         $model = WikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('slug', (string) $slug)
             ->where('language', $language->value)
             ->first();
@@ -71,7 +71,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
     public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array
     {
         $models = WikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->get();
 
@@ -84,7 +84,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
     public function findByResourceType(ResourceType $resourceType, int $limit = 20, int $offset = 0): array
     {
         $models = WikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('resource_type', $resourceType->value)
             ->orderBy('created_at', 'desc')
             ->skip($offset)
@@ -99,7 +99,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
         ResourceType $resourceType,
     ): ?Wiki {
         $model = WikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('owner_account_id', (string) $accountIdentifier)
             ->where('resource_type', $resourceType->value)
             ->first();
@@ -153,11 +153,17 @@ readonly class WikiRepository implements WikiRepositoryInterface
         $basicArray = $basic->toArray();
         unset($basicArray['type']);
 
+        $groupIdentifiers = $basicArray['group_identifiers'] ?? null;
+        unset($basicArray['group_identifiers']);
+        $talentIdentifiers = $basicArray['talent_identifiers'] ?? null;
+        unset($basicArray['talent_identifiers']);
+
         match ($resourceType) {
-            ResourceType::TALENT => WikiTalentBasic::query()->updateOrCreate(
-                ['wiki_id' => $wikiId],
-                $basicArray
-            ),
+            ResourceType::TALENT => (function () use ($wikiId, $basicArray, $groupIdentifiers) {
+                WikiTalentBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $talentBasic = WikiTalentBasic::query()->where('wiki_id', $wikiId)->first();
+                $talentBasic->groups()->sync($groupIdentifiers ?? []);
+            })(),
             ResourceType::GROUP => WikiGroupBasic::query()->updateOrCreate(
                 ['wiki_id' => $wikiId],
                 $basicArray
@@ -166,10 +172,12 @@ readonly class WikiRepository implements WikiRepositoryInterface
                 ['wiki_id' => $wikiId],
                 $basicArray
             ),
-            ResourceType::SONG => WikiSongBasic::query()->updateOrCreate(
-                ['wiki_id' => $wikiId],
-                $basicArray
-            ),
+            ResourceType::SONG => (function () use ($wikiId, $basicArray, $groupIdentifiers, $talentIdentifiers) {
+                WikiSongBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $songBasic = WikiSongBasic::query()->where('wiki_id', $wikiId)->first();
+                $songBasic->groups()->sync($groupIdentifiers ?? []);
+                $songBasic->talents()->sync($talentIdentifiers ?? []);
+            })(),
             ResourceType::IMAGE => throw new InvalidArgumentException('IMAGE resource type does not have a Basic.'),
         };
     }
@@ -225,7 +233,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             'normalized_real_name' => $basic->normalized_real_name,
             'birthday' => $basic->birthday,
             'agency_identifier' => $basic->agency_identifier,
-            'group_identifiers' => $basic->group_identifiers,
+            'group_identifiers' => $basic->groups->pluck('id')->toArray(),
             'emoji' => $basic->emoji,
             'representative_symbol' => $basic->representative_symbol,
             'position' => $basic->position,
@@ -297,8 +305,8 @@ readonly class WikiRepository implements WikiRepositoryInterface
             'song_type' => $basic->song_type,
             'genres' => $basic->genres,
             'agency_identifier' => $basic->agency_identifier,
-            'group_identifiers' => $basic->group_identifiers,
-            'talent_identifiers' => $basic->talent_identifiers,
+            'group_identifiers' => $basic->groups->pluck('id')->toArray(),
+            'talent_identifiers' => $basic->talents->pluck('id')->toArray(),
             'release_date' => $basic->release_date,
             'album_name' => $basic->album_name,
             'cover_image_identifier' => $basic->cover_image_identifier,

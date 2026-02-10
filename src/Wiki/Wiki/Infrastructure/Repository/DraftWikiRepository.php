@@ -32,7 +32,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findById(DraftWikiIdentifier $wikiIdentifier): ?DraftWiki
     {
         $model = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('id', (string) $wikiIdentifier)
             ->first();
 
@@ -46,7 +46,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?DraftWiki
     {
         $model = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('slug', (string) $slug)
             ->where('language', $language->value)
             ->first();
@@ -61,7 +61,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findByPublishedWikiIdentifier(WikiIdentifier $wikiIdentifier): ?DraftWiki
     {
         $model = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('published_wiki_id', (string) $wikiIdentifier)
             ->first();
 
@@ -78,7 +78,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array
     {
         $models = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->get();
 
@@ -91,7 +91,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findByEditorIdentifier(PrincipalIdentifier $editorIdentifier, int $limit = 20, int $offset = 0): array
     {
         $models = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('editor_id', (string) $editorIdentifier)
             ->orderBy('created_at', 'desc')
             ->skip($offset)
@@ -107,7 +107,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findByStatus(ApprovalStatus $status, int $limit = 20, int $offset = 0): array
     {
         $models = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('status', $status->value)
             ->orderBy('created_at', 'desc')
             ->skip($offset)
@@ -123,7 +123,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
     public function findByResourceType(ResourceType $resourceType, int $limit = 20, int $offset = 0): array
     {
         $models = DraftWikiModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('resource_type', $resourceType->value)
             ->orderBy('created_at', 'desc')
             ->skip($offset)
@@ -179,11 +179,17 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
         $basicArray = $basic->toArray();
         unset($basicArray['type']);
 
+        $groupIdentifiers = $basicArray['group_identifiers'] ?? null;
+        unset($basicArray['group_identifiers']);
+        $talentIdentifiers = $basicArray['talent_identifiers'] ?? null;
+        unset($basicArray['talent_identifiers']);
+
         match ($resourceType) {
-            ResourceType::TALENT => DraftWikiTalentBasic::query()->updateOrCreate(
-                ['wiki_id' => $wikiId],
-                $basicArray
-            ),
+            ResourceType::TALENT => (function () use ($wikiId, $basicArray, $groupIdentifiers) {
+                DraftWikiTalentBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $talentBasic = DraftWikiTalentBasic::query()->where('wiki_id', $wikiId)->first();
+                $talentBasic->groups()->sync($groupIdentifiers ?? []);
+            })(),
             ResourceType::GROUP => DraftWikiGroupBasic::query()->updateOrCreate(
                 ['wiki_id' => $wikiId],
                 $basicArray
@@ -192,10 +198,12 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 ['wiki_id' => $wikiId],
                 $basicArray
             ),
-            ResourceType::SONG => DraftWikiSongBasic::query()->updateOrCreate(
-                ['wiki_id' => $wikiId],
-                $basicArray
-            ),
+            ResourceType::SONG => (function () use ($wikiId, $basicArray, $groupIdentifiers, $talentIdentifiers) {
+                DraftWikiSongBasic::query()->updateOrCreate(['wiki_id' => $wikiId], $basicArray);
+                $songBasic = DraftWikiSongBasic::query()->where('wiki_id', $wikiId)->first();
+                $songBasic->groups()->sync($groupIdentifiers ?? []);
+                $songBasic->talents()->sync($talentIdentifiers ?? []);
+            })(),
             ResourceType::IMAGE => throw new InvalidArgumentException('IMAGE resource type does not have a Basic.'),
         };
     }
@@ -246,7 +254,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             'normalized_real_name' => $basic->normalized_real_name,
             'birthday' => $basic->birthday,
             'agency_identifier' => $basic->agency_identifier,
-            'group_identifiers' => $basic->group_identifiers,
+            'group_identifiers' => $basic->groups->pluck('id')->toArray(),
             'emoji' => $basic->emoji,
             'representative_symbol' => $basic->representative_symbol,
             'position' => $basic->position,
@@ -318,8 +326,8 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             'song_type' => $basic->song_type,
             'genres' => $basic->genres,
             'agency_identifier' => $basic->agency_identifier,
-            'group_identifiers' => $basic->group_identifiers,
-            'talent_identifiers' => $basic->talent_identifiers,
+            'group_identifiers' => $basic->groups->pluck('id')->toArray(),
+            'talent_identifiers' => $basic->talents->pluck('id')->toArray(),
             'release_date' => $basic->release_date,
             'album_name' => $basic->album_name,
             'cover_image_identifier' => $basic->cover_image_identifier,

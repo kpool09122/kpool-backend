@@ -97,6 +97,10 @@ class CreateWikiSnapshot
      */
     private static function createTalentBasic(string $snapshotId, array $overrides = []): void
     {
+        $groupIdentifiers = isset($overrides['group_identifiers'])
+            ? json_decode($overrides['group_identifiers'], true)
+            : [];
+
         DB::table('wiki_snapshot_talent_basics')->insert([
             'snapshot_id' => $snapshotId,
             'name' => $overrides['name'] ?? '채영',
@@ -105,7 +109,6 @@ class CreateWikiSnapshot
             'normalized_real_name' => $overrides['normalized_real_name'] ?? 'sonchaeyoung',
             'birthday' => $overrides['birthday'] ?? null,
             'agency_identifier' => $overrides['agency_identifier'] ?? null,
-            'group_identifiers' => $overrides['group_identifiers'] ?? json_encode([]),
             'emoji' => $overrides['emoji'] ?? '',
             'representative_symbol' => $overrides['representative_symbol'] ?? '',
             'position' => $overrides['position'] ?? '',
@@ -117,6 +120,13 @@ class CreateWikiSnapshot
             'fandom_name' => $overrides['fandom_name'] ?? '',
             'profile_image_identifier' => $overrides['profile_image_identifier'] ?? null,
         ]);
+
+        foreach ($groupIdentifiers as $groupId) {
+            DB::table('wiki_snapshot_talent_basic_groups')->insert([
+                'snapshot_id' => $snapshotId,
+                'group_identifier' => $groupId,
+            ]);
+        }
     }
 
     /**
@@ -144,6 +154,13 @@ class CreateWikiSnapshot
      */
     private static function createSongBasic(string $snapshotId, array $overrides = []): void
     {
+        $groupIdentifiers = isset($overrides['group_identifiers'])
+            ? json_decode($overrides['group_identifiers'], true)
+            : [];
+        $talentIdentifiers = isset($overrides['talent_identifiers'])
+            ? json_decode($overrides['talent_identifiers'], true)
+            : [];
+
         DB::table('wiki_snapshot_song_basics')->insert([
             'snapshot_id' => $snapshotId,
             'name' => $overrides['name'] ?? 'TT',
@@ -151,8 +168,6 @@ class CreateWikiSnapshot
             'song_type' => $overrides['song_type'] ?? null,
             'genres' => $overrides['genres'] ?? json_encode([]),
             'agency_identifier' => $overrides['agency_identifier'] ?? null,
-            'group_identifiers' => $overrides['group_identifiers'] ?? json_encode([]),
-            'talent_identifiers' => $overrides['talent_identifiers'] ?? json_encode([]),
             'release_date' => $overrides['release_date'] ?? null,
             'album_name' => $overrides['album_name'] ?? null,
             'cover_image_identifier' => $overrides['cover_image_identifier'] ?? null,
@@ -163,5 +178,19 @@ class CreateWikiSnapshot
             'arranger' => $overrides['arranger'] ?? 'Rado',
             'normalized_arranger' => $overrides['normalized_arranger'] ?? 'rado',
         ]);
+
+        foreach ($groupIdentifiers as $groupId) {
+            DB::table('wiki_snapshot_song_basic_groups')->insert([
+                'snapshot_id' => $snapshotId,
+                'group_identifier' => $groupId,
+            ]);
+        }
+
+        foreach ($talentIdentifiers as $talentId) {
+            DB::table('wiki_snapshot_song_basic_talents')->insert([
+                'snapshot_id' => $snapshotId,
+                'talent_identifier' => $talentId,
+            ]);
+        }
     }
 }

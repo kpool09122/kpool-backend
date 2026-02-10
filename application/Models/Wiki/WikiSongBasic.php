@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $wiki_id
@@ -14,8 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $song_type
  * @property array<string> $genres
  * @property ?string $agency_identifier
- * @property array<string> $group_identifiers
- * @property array<string> $talent_identifiers
  * @property ?string $release_date
  * @property ?string $album_name
  * @property ?string $cover_image_identifier
@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $normalized_composer
  * @property string $arranger
  * @property string $normalized_arranger
+ * @property-read Collection<int, Wiki> $groups
+ * @property-read Collection<int, Wiki> $talents
  */
 class WikiSongBasic extends Model
 {
@@ -43,8 +45,6 @@ class WikiSongBasic extends Model
         'song_type',
         'genres',
         'agency_identifier',
-        'group_identifiers',
-        'talent_identifiers',
         'release_date',
         'album_name',
         'cover_image_identifier',
@@ -58,8 +58,6 @@ class WikiSongBasic extends Model
 
     protected $casts = [
         'genres' => 'array',
-        'group_identifiers' => 'array',
-        'talent_identifiers' => 'array',
     ];
 
     /**
@@ -68,5 +66,21 @@ class WikiSongBasic extends Model
     public function wiki(): BelongsTo
     {
         return $this->belongsTo(Wiki::class, 'wiki_id', 'id');
+    }
+
+    /**
+     * @return BelongsToMany<Wiki>
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Wiki::class, 'wiki_song_basic_groups', 'wiki_id', 'group_identifier');
+    }
+
+    /**
+     * @return BelongsToMany<Wiki>
+     */
+    public function talents(): BelongsToMany
+    {
+        return $this->belongsToMany(Wiki::class, 'wiki_song_basic_talents', 'wiki_id', 'talent_identifier');
     }
 }

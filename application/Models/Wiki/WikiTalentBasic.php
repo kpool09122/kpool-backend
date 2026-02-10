@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Application\Models\Wiki;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $wiki_id
@@ -15,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $normalized_real_name
  * @property ?string $birthday
  * @property ?string $agency_identifier
- * @property array<string> $group_identifiers
  * @property ?string $emoji
  * @property ?string $representative_symbol
  * @property ?string $position
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $blood_type
  * @property ?string $fandom_name
  * @property ?string $profile_image_identifier
+ * @property-read Collection<int, Wiki> $groups
  */
 class WikiTalentBasic extends Model
 {
@@ -45,7 +47,6 @@ class WikiTalentBasic extends Model
         'normalized_real_name',
         'birthday',
         'agency_identifier',
-        'group_identifiers',
         'emoji',
         'representative_symbol',
         'position',
@@ -58,15 +59,19 @@ class WikiTalentBasic extends Model
         'profile_image_identifier',
     ];
 
-    protected $casts = [
-        'group_identifiers' => 'array',
-    ];
-
     /**
      * @return BelongsTo<Wiki, WikiTalentBasic>
      */
     public function wiki(): BelongsTo
     {
         return $this->belongsTo(Wiki::class, 'wiki_id', 'id');
+    }
+
+    /**
+     * @return BelongsToMany<Wiki>
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Wiki::class, 'wiki_talent_basic_groups', 'wiki_id', 'group_identifier');
     }
 }

@@ -65,7 +65,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
     public function findByWikiIdentifier(WikiIdentifier $wikiIdentifier): array
     {
         $models = WikiSnapshotModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('version', 'desc')
             ->get();
@@ -78,7 +78,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
         Version $version,
     ): ?WikiSnapshot {
         $model = WikiSnapshotModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('wiki_id', (string) $wikiIdentifier)
             ->where('version', $version->value())
             ->first();
@@ -98,7 +98,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
         Version $version,
     ): array {
         $models = WikiSnapshotModel::query()
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->where('version', $version->value())
             ->get();
@@ -111,11 +111,17 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
         $basicArray = $basic->toArray();
         unset($basicArray['type']);
 
+        $groupIdentifiers = $basicArray['group_identifiers'] ?? null;
+        unset($basicArray['group_identifiers']);
+        $talentIdentifiers = $basicArray['talent_identifiers'] ?? null;
+        unset($basicArray['talent_identifiers']);
+
         match ($resourceType) {
-            ResourceType::TALENT => WikiSnapshotTalentBasic::query()->updateOrCreate(
-                ['snapshot_id' => $snapshotId],
-                $basicArray
-            ),
+            ResourceType::TALENT => (function () use ($snapshotId, $basicArray, $groupIdentifiers) {
+                WikiSnapshotTalentBasic::query()->updateOrCreate(['snapshot_id' => $snapshotId], $basicArray);
+                $talentBasic = WikiSnapshotTalentBasic::query()->where('snapshot_id', $snapshotId)->first();
+                $talentBasic->groups()->sync($groupIdentifiers ?? []);
+            })(),
             ResourceType::GROUP => WikiSnapshotGroupBasic::query()->updateOrCreate(
                 ['snapshot_id' => $snapshotId],
                 $basicArray
@@ -124,10 +130,12 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 ['snapshot_id' => $snapshotId],
                 $basicArray
             ),
-            ResourceType::SONG => WikiSnapshotSongBasic::query()->updateOrCreate(
-                ['snapshot_id' => $snapshotId],
-                $basicArray
-            ),
+            ResourceType::SONG => (function () use ($snapshotId, $basicArray, $groupIdentifiers, $talentIdentifiers) {
+                WikiSnapshotSongBasic::query()->updateOrCreate(['snapshot_id' => $snapshotId], $basicArray);
+                $songBasic = WikiSnapshotSongBasic::query()->where('snapshot_id', $snapshotId)->first();
+                $songBasic->groups()->sync($groupIdentifiers ?? []);
+                $songBasic->talents()->sync($talentIdentifiers ?? []);
+            })(),
             ResourceType::IMAGE => throw new InvalidArgumentException('IMAGE resource type does not have a Basic.'),
         };
     }
@@ -184,7 +192,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             'normalized_real_name' => $basic->normalized_real_name,
             'birthday' => $basic->birthday,
             'agency_identifier' => $basic->agency_identifier,
-            'group_identifiers' => $basic->group_identifiers,
+            'group_identifiers' => $basic->groups->pluck('id')->toArray(),
             'emoji' => $basic->emoji,
             'representative_symbol' => $basic->representative_symbol,
             'position' => $basic->position,
@@ -256,8 +264,8 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             'song_type' => $basic->song_type,
             'genres' => $basic->genres,
             'agency_identifier' => $basic->agency_identifier,
-            'group_identifiers' => $basic->group_identifiers,
-            'talent_identifiers' => $basic->talent_identifiers,
+            'group_identifiers' => $basic->groups->pluck('id')->toArray(),
+            'talent_identifiers' => $basic->talents->pluck('id')->toArray(),
             'release_date' => $basic->release_date,
             'album_name' => $basic->album_name,
             'cover_image_identifier' => $basic->cover_image_identifier,

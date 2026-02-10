@@ -87,6 +87,10 @@ class CreateDraftWiki
      */
     private static function createTalentBasic(string $wikiId, array $overrides = []): void
     {
+        $groupIdentifiers = isset($overrides['group_identifiers'])
+            ? json_decode($overrides['group_identifiers'], true)
+            : [];
+
         DB::table('draft_wiki_talent_basics')->insert([
             'wiki_id' => $wikiId,
             'name' => $overrides['name'] ?? '채영',
@@ -95,7 +99,6 @@ class CreateDraftWiki
             'normalized_real_name' => $overrides['normalized_real_name'] ?? 'sonchaeyoung',
             'birthday' => $overrides['birthday'] ?? null,
             'agency_identifier' => $overrides['agency_identifier'] ?? null,
-            'group_identifiers' => $overrides['group_identifiers'] ?? json_encode([]),
             'emoji' => $overrides['emoji'] ?? '',
             'representative_symbol' => $overrides['representative_symbol'] ?? '',
             'position' => $overrides['position'] ?? '',
@@ -107,6 +110,13 @@ class CreateDraftWiki
             'fandom_name' => $overrides['fandom_name'] ?? '',
             'profile_image_identifier' => $overrides['profile_image_identifier'] ?? null,
         ]);
+
+        foreach ($groupIdentifiers as $groupId) {
+            DB::table('draft_wiki_talent_basic_groups')->insert([
+                'wiki_id' => $wikiId,
+                'group_identifier' => $groupId,
+            ]);
+        }
     }
 
     /**
@@ -134,6 +144,13 @@ class CreateDraftWiki
      */
     private static function createSongBasic(string $wikiId, array $overrides = []): void
     {
+        $groupIdentifiers = isset($overrides['group_identifiers'])
+            ? json_decode($overrides['group_identifiers'], true)
+            : [];
+        $talentIdentifiers = isset($overrides['talent_identifiers'])
+            ? json_decode($overrides['talent_identifiers'], true)
+            : [];
+
         DB::table('draft_wiki_song_basics')->insert([
             'wiki_id' => $wikiId,
             'name' => $overrides['name'] ?? 'TT',
@@ -141,8 +158,6 @@ class CreateDraftWiki
             'song_type' => $overrides['song_type'] ?? null,
             'genres' => $overrides['genres'] ?? json_encode([]),
             'agency_identifier' => $overrides['agency_identifier'] ?? null,
-            'group_identifiers' => $overrides['group_identifiers'] ?? json_encode([]),
-            'talent_identifiers' => $overrides['talent_identifiers'] ?? json_encode([]),
             'release_date' => $overrides['release_date'] ?? null,
             'album_name' => $overrides['album_name'] ?? null,
             'cover_image_identifier' => $overrides['cover_image_identifier'] ?? null,
@@ -153,5 +168,19 @@ class CreateDraftWiki
             'arranger' => $overrides['arranger'] ?? 'Rado',
             'normalized_arranger' => $overrides['normalized_arranger'] ?? 'rado',
         ]);
+
+        foreach ($groupIdentifiers as $groupId) {
+            DB::table('draft_wiki_song_basic_groups')->insert([
+                'wiki_id' => $wikiId,
+                'group_identifier' => $groupId,
+            ]);
+        }
+
+        foreach ($talentIdentifiers as $talentId) {
+            DB::table('draft_wiki_song_basic_talents')->insert([
+                'wiki_id' => $wikiId,
+                'talent_identifier' => $talentId,
+            ]);
+        }
     }
 }
