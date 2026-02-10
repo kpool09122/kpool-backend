@@ -17,7 +17,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findById(PrincipalIdentifier $principalIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()
-            ->with('groups')
             ->where('id', (string) $principalIdentifier)
             ->first();
 
@@ -44,7 +43,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
         );
 
         $eloquents = PrincipalEloquent::query()
-            ->with('groups')
             ->whereIn('id', $ids)
             ->get();
 
@@ -54,7 +52,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findByIdentityIdentifier(IdentityIdentifier $identityIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()
-            ->with('groups')
             ->where('identity_id', (string) $identityIdentifier)
             ->first();
 
@@ -68,7 +65,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findByDelegation(DelegationIdentifier $delegationIdentifier): ?Principal
     {
         $eloquent = PrincipalEloquent::query()
-            ->with('groups')
             ->where('delegation_identifier', (string) $delegationIdentifier)
             ->first();
 
@@ -85,7 +81,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function findByAccountId(AccountIdentifier $accountIdentifier): array
     {
         $eloquents = PrincipalEloquent::query()
-            ->with('groups')
             ->where('agency_id', (string) $accountIdentifier)
             ->get();
 
@@ -94,11 +89,12 @@ class PrincipalRepository implements PrincipalRepositoryInterface
 
     public function save(Principal $principal): void
     {
-        $eloquent = PrincipalEloquent::query()->updateOrCreate(
+        PrincipalEloquent::query()->updateOrCreate(
             ['id' => (string) $principal->principalIdentifier()],
             [
                 'identity_id' => (string) $principal->identityIdentifier(),
                 'agency_id' => $principal->agencyId(),
+                'group_ids' => $principal->groupIds(),
                 'talent_ids' => $principal->talentIds(),
                 'delegation_identifier' => $principal->delegationIdentifier() !== null
                     ? (string) $principal->delegationIdentifier()
@@ -106,8 +102,6 @@ class PrincipalRepository implements PrincipalRepositoryInterface
                 'enabled' => $principal->isEnabled(),
             ]
         );
-
-        $eloquent->groups()->sync($principal->groupIds());
     }
 
     public function deleteByDelegation(DelegationIdentifier $delegationIdentifier): void
@@ -123,7 +117,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
             new PrincipalIdentifier($eloquent->id),
             new IdentityIdentifier($eloquent->identity_id),
             $eloquent->agency_id,
-            $eloquent->groups->pluck('id')->all(),
+            $eloquent->group_ids,
             $eloquent->talent_ids,
             $eloquent->delegation_identifier !== null
                 ? new DelegationIdentifier($eloquent->delegation_identifier)
