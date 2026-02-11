@@ -6,27 +6,27 @@ namespace Source\Wiki\Image\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class Image
 {
     public function __construct(
-        private readonly ImageIdentifier $imageIdentifier,
-        private readonly ResourceType $resourceType,
-        private readonly ResourceIdentifier $resourceIdentifier,
-        private ImagePath $imagePath,
-        private ImageUsage $imageUsage,
-        private int $displayOrder,
-        private string $sourceUrl,
-        private string $sourceName,
-        private string $altText,
-        private bool $isHidden,
-        private ?PrincipalIdentifier $hiddenBy,
-        private ?DateTimeImmutable $hiddenAt,
+        private readonly ImageIdentifier     $imageIdentifier,
+        private readonly ResourceType        $resourceType,
+        private readonly WikiIdentifier      $wikiIdentifier,
+        private ImagePath                    $imagePath,
+        private ImageUsage                   $imageUsage,
+        private int                          $displayOrder,
+        private string                       $sourceUrl,
+        private string                       $sourceName,
+        private string                       $altText,
+        private bool                         $isHidden,
+        private ?PrincipalIdentifier         $hiddenBy,
+        private ?DateTimeImmutable           $hiddenAt,
         private readonly PrincipalIdentifier $uploaderIdentifier,
         private readonly DateTimeImmutable $uploadedAt,
         private ?PrincipalIdentifier $approverIdentifier,
@@ -46,9 +46,9 @@ class Image
         return $this->resourceType;
     }
 
-    public function resourceIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->resourceIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function imagePath(): ImagePath

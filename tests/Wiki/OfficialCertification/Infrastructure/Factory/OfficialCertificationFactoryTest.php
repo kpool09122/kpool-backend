@@ -10,8 +10,8 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\OfficialCertification\Infrastructure\Factory\OfficialCertificationFactory;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,19 +36,19 @@ class OfficialCertificationFactoryTest extends TestCase
     public function testCreate(): void
     {
         $resourceType = ResourceType::GROUP;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $factory = $this->app->make(OfficialCertificationFactoryInterface::class);
         $certification = $factory->create(
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $ownerAccountIdentifier,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $certification->certificationIdentifier()));
         $this->assertSame($resourceType, $certification->resourceType());
-        $this->assertSame((string) $resourceIdentifier, (string) $certification->resourceIdentifier());
+        $this->assertSame((string) $wikiIdentifier, (string) $certification->wikiIdentifier());
         $this->assertSame((string) $ownerAccountIdentifier, (string) $certification->ownerAccountIdentifier());
         $this->assertTrue($certification->status()->isPending());
         $this->assertSame(CertificationStatus::PENDING, $certification->status());

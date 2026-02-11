@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\ImageHideRequest\Domain\Factory;
 
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 
 interface ImageHideRequestFactoryInterface
 {

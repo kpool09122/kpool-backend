@@ -20,7 +20,6 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -28,10 +27,11 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -148,7 +148,7 @@ class UploadImageTest extends TestCase
         $this->assertTrue(UuidValidator::isValid((string)$result->imageIdentifier()));
         $this->assertSame((string)$testData->publishedImageIdentifier, (string)$result->publishedImageIdentifier());
         $this->assertSame($testData->resourceType, $result->resourceType());
-        $this->assertSame((string)$testData->draftResourceIdentifier, (string)$result->draftResourceIdentifier());
+        $this->assertSame((string)$testData->draftResourceIdentifier, (string)$result->wikiIdentifier());
         $this->assertSame((string)$testData->principalIdentifier, (string)$result->uploaderIdentifier());
         $this->assertSame((string)$testData->imagePath, (string)$result->imagePath());
         $this->assertSame($testData->imageUsage, $result->imageUsage());
@@ -275,7 +275,7 @@ class UploadImageTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -339,7 +339,7 @@ readonly class UploadImageTestData
         public PrincipalIdentifier $principalIdentifier,
         public ImageIdentifier $publishedImageIdentifier,
         public ResourceType $resourceType,
-        public ResourceIdentifier $draftResourceIdentifier,
+        public WikiIdentifier $draftResourceIdentifier,
         public string $base64EncodedImage,
         public ImageUsage $imageUsage,
         public int $displayOrder,

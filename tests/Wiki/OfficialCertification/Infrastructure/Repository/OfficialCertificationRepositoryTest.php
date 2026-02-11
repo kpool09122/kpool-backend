@@ -14,8 +14,8 @@ use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRep
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\OfficialCertification\Infrastructure\Repository\OfficialCertificationRepository;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,13 +41,13 @@ class OfficialCertificationRepositoryTest extends TestCase
     public function testSave(): void
     {
         $certificationId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
 
         $certification = new OfficialCertification(
             new CertificationIdentifier($certificationId),
             ResourceType::AGENCY,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($wikiId),
             new AccountIdentifier($ownerAccountId),
             CertificationStatus::PENDING,
             new DateTimeImmutable('2024-01-01 00:00:00'),
@@ -61,7 +61,7 @@ class OfficialCertificationRepositoryTest extends TestCase
         $this->assertDatabaseHas('official_certifications', [
             'id' => $certificationId,
             'resource_type' => ResourceType::AGENCY->value,
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::PENDING->value,
         ]);
@@ -76,14 +76,14 @@ class OfficialCertificationRepositoryTest extends TestCase
     public function testFindById(): void
     {
         $certificationId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
         $requestedAt = '2024-02-01 10:00:00';
 
         DB::table('official_certifications')->insert([
             'id' => $certificationId,
             'resource_type' => ResourceType::GROUP->value,
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::APPROVED->value,
             'requested_at' => $requestedAt,
@@ -99,7 +99,7 @@ class OfficialCertificationRepositoryTest extends TestCase
         $this->assertNotNull($result);
         $this->assertSame($certificationId, (string) $result->certificationIdentifier());
         $this->assertSame(ResourceType::GROUP, $result->resourceType());
-        $this->assertSame($resourceId, (string) $result->resourceIdentifier());
+        $this->assertSame($wikiId, (string) $result->wikiIdentifier());
         $this->assertSame($ownerAccountId, (string) $result->ownerAccountIdentifier());
         $this->assertTrue($result->status()->isApproved());
         $this->assertSame($requestedAt, $result->requestedAt()->format('Y-m-d H:i:s'));
@@ -129,14 +129,14 @@ class OfficialCertificationRepositoryTest extends TestCase
     public function testFindByResource(): void
     {
         $certificationId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
         $requestedAt = '2024-03-01 12:00:00';
 
         DB::table('official_certifications')->insert([
             'id' => $certificationId,
             'resource_type' => ResourceType::SONG->value,
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::PENDING->value,
             'requested_at' => $requestedAt,
@@ -147,12 +147,12 @@ class OfficialCertificationRepositoryTest extends TestCase
         ]);
 
         $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
-        $result = $repository->findByResource(ResourceType::SONG, new ResourceIdentifier($resourceId));
+        $result = $repository->findByResource(ResourceType::SONG, new WikiIdentifier($wikiId));
 
         $this->assertNotNull($result);
         $this->assertSame($certificationId, (string) $result->certificationIdentifier());
         $this->assertSame(ResourceType::SONG, $result->resourceType());
-        $this->assertSame($resourceId, (string) $result->resourceIdentifier());
+        $this->assertSame($wikiId, (string) $result->wikiIdentifier());
     }
 
     /**
@@ -166,7 +166,7 @@ class OfficialCertificationRepositoryTest extends TestCase
         $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
         $result = $repository->findByResource(
             ResourceType::GROUP,
-            new ResourceIdentifier(StrTestHelper::generateUuid())
+            new WikiIdentifier(StrTestHelper::generateUuid())
         );
 
         $this->assertNull($result);
@@ -181,7 +181,7 @@ class OfficialCertificationRepositoryTest extends TestCase
     public function testFindByIdWithRejectedAt(): void
     {
         $certificationId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
         $requestedAt = '2024-06-01 09:00:00';
         $rejectedAt = '2024-06-02 09:00:00';
@@ -189,7 +189,7 @@ class OfficialCertificationRepositoryTest extends TestCase
         DB::table('official_certifications')->insert([
             'id' => $certificationId,
             'resource_type' => ResourceType::AGENCY->value,
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::REJECTED->value,
             'requested_at' => $requestedAt,
@@ -215,14 +215,14 @@ class OfficialCertificationRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testExistsPending(): void
     {
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
         $requestedAt = '2024-04-01 08:00:00';
 
         DB::table('official_certifications')->insert([
             'id' => StrTestHelper::generateUuid(),
             'resource_type' => ResourceType::TALENT->value,
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::PENDING->value,
             'requested_at' => $requestedAt,
@@ -233,7 +233,7 @@ class OfficialCertificationRepositoryTest extends TestCase
         ]);
 
         $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
-        $this->assertTrue($repository->existsPending(ResourceType::TALENT, new ResourceIdentifier($resourceId)));
+        $this->assertTrue($repository->existsPending(ResourceType::TALENT, new WikiIdentifier($wikiId)));
     }
 
     /**
@@ -244,14 +244,14 @@ class OfficialCertificationRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testExistsPendingWhenNotPending(): void
     {
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $ownerAccountId = StrTestHelper::generateUuid();
         $requestedAt = '2024-05-01 08:00:00';
 
         DB::table('official_certifications')->insert([
             'id' => StrTestHelper::generateUuid(),
             'resource_type' => ResourceType::AGENCY->value,
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'owner_account_id' => $ownerAccountId,
             'status' => CertificationStatus::APPROVED->value,
             'requested_at' => $requestedAt,
@@ -262,6 +262,6 @@ class OfficialCertificationRepositoryTest extends TestCase
         ]);
 
         $repository = $this->app->make(OfficialCertificationRepositoryInterface::class);
-        $this->assertFalse($repository->existsPending(ResourceType::AGENCY, new ResourceIdentifier($resourceId)));
+        $this->assertFalse($repository->existsPending(ResourceType::AGENCY, new WikiIdentifier($wikiId)));
     }
 }

@@ -8,12 +8,12 @@ use Application\Models\Wiki\DraftWikiImage;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class DraftImageRepository implements DraftImageRepositoryInterface
 {
@@ -33,11 +33,11 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
     /**
      * @return DraftImage[]
      */
-    public function findByDraftResource(ResourceType $resourceType, ResourceIdentifier $draftResourceIdentifier): array
+    public function findByDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array
     {
         $models = DraftWikiImage::query()
             ->where('resource_type', $resourceType->value)
-            ->where('draft_resource_identifier', (string) $draftResourceIdentifier)
+            ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('display_order')
             ->get();
 
@@ -51,7 +51,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             [
                 'published_id' => $draftImage->publishedImageIdentifier() ? (string) $draftImage->publishedImageIdentifier() : null,
                 'resource_type' => $draftImage->resourceType()->value,
-                'draft_resource_identifier' => (string) $draftImage->draftResourceIdentifier(),
+                'wiki_id' => (string) $draftImage->wikiIdentifier(),
                 'uploader_id' => (string) $draftImage->uploaderIdentifier(),
                 'image_path' => (string) $draftImage->imagePath(),
                 'image_usage' => $draftImage->imageUsage()->value,
@@ -73,11 +73,11 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             ->delete();
     }
 
-    public function deleteByDraftResource(ResourceType $resourceType, ResourceIdentifier $draftResourceIdentifier): void
+    public function deleteByDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void
     {
         DraftWikiImage::query()
             ->where('resource_type', $resourceType->value)
-            ->where('draft_resource_identifier', (string) $draftResourceIdentifier)
+            ->where('wiki_id', (string) $wikiIdentifier)
             ->delete();
     }
 
@@ -87,7 +87,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             new ImageIdentifier($model->id),
             $model->published_id ? new ImageIdentifier($model->published_id) : null,
             ResourceType::from($model->resource_type),
-            new ResourceIdentifier($model->draft_resource_identifier),
+            new WikiIdentifier($model->wiki_id),
             new PrincipalIdentifier($model->uploader_id),
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),

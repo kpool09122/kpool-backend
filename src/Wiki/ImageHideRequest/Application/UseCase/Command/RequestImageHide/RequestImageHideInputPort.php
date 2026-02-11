@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide;
 
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 
 interface RequestImageHideInputPort
 {

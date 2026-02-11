@@ -9,7 +9,7 @@ use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ImageSnapshotFactory implements ImageSnapshotFactoryInterface
 {
@@ -19,13 +19,13 @@ readonly class ImageSnapshotFactory implements ImageSnapshotFactoryInterface
     }
 
     public function create(
-        Image $image,
-        ResourceIdentifier $resourceSnapshotIdentifier,
+        Image          $image,
+        WikiIdentifier $wikiIdentifier,
     ): ImageSnapshot {
         return new ImageSnapshot(
             new ImageSnapshotIdentifier($this->uuidGenerator->generate()),
             $image->imageIdentifier(),
-            $resourceSnapshotIdentifier,
+            $wikiIdentifier,
             $image->imagePath(),
             $image->imageUsage(),
             $image->displayOrder(),

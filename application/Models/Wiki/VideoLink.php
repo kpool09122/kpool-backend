@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $id
  * @property string $resource_type
- * @property string $resource_identifier
+ * @property string $wiki_id
  * @property string $url
  * @property string $video_usage
  * @property string $title
@@ -32,7 +32,7 @@ class VideoLink extends Model
     protected $fillable = [
         'id',
         'resource_type',
-        'resource_identifier',
+        'wiki_id',
         'url',
         'video_usage',
         'title',

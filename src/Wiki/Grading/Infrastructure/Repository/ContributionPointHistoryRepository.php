@@ -13,8 +13,8 @@ use Source\Wiki\Grading\Domain\ValueObject\ContributorType;
 use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class ContributionPointHistoryRepository implements ContributionPointHistoryRepositoryInterface
 {
@@ -26,7 +26,7 @@ class ContributionPointHistoryRepository implements ContributionPointHistoryRepo
             'year_month' => (string) $history->yearMonth(),
             'points' => $history->points()->value(),
             'resource_type' => $history->resourceType()->value,
-            'resource_id' => (string) $history->resourceIdentifier(),
+            'wiki_id' => (string) $history->wikiIdentifier(),
             'contributor_type' => $history->contributorType()->value,
             'is_new_creation' => $history->isNewCreation(),
             'created_at' => $history->createdAt(),
@@ -63,13 +63,13 @@ class ContributionPointHistoryRepository implements ContributionPointHistoryRepo
     public function findLastPublishDate(
         PrincipalIdentifier $principalIdentifier,
         ResourceType        $resourceType,
-        string              $resourceId,
+        WikiIdentifier      $wikiIdentifier,
         ContributorType     $contributorType,
     ): ?DateTimeImmutable {
         $eloquent = ContributionPointHistoryEloquent::query()
             ->where('principal_id', (string) $principalIdentifier)
             ->where('resource_type', $resourceType->value)
-            ->where('resource_id', $resourceId)
+            ->where('wiki_id', (string) $wikiIdentifier)
             ->where('contributor_type', $contributorType->value)
             ->orderBy('created_at', 'desc')
             ->first();
@@ -89,7 +89,7 @@ class ContributionPointHistoryRepository implements ContributionPointHistoryRepo
             new YearMonth($eloquent->year_month),
             new Point($eloquent->points),
             ResourceType::from($eloquent->resource_type),
-            new ResourceIdentifier($eloquent->resource_id),
+            new WikiIdentifier($eloquent->wiki_id),
             ContributorType::from($eloquent->contributor_type),
             $eloquent->is_new_creation,
             $eloquent->created_at?->toDateTimeImmutable() ?? new DateTimeImmutable(),

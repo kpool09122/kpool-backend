@@ -10,28 +10,9 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Group\Domain\Entity\Group;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
-use Source\Wiki\Group\Domain\ValueObject\Description;
-use Source\Wiki\Group\Domain\ValueObject\GroupName;
-use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
-use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
-use Source\Wiki\Song\Domain\Entity\Song;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\Composer;
-use Source\Wiki\Song\Domain\ValueObject\Lyricist;
-use Source\Wiki\Song\Domain\ValueObject\Overview;
-use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Song\Domain\ValueObject\SongName;
-use Source\Wiki\Talent\Domain\Entity\Talent;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
-use Source\Wiki\Talent\Domain\ValueObject\Career;
-use Source\Wiki\Talent\Domain\ValueObject\RealName;
-use Source\Wiki\Talent\Domain\ValueObject\TalentName;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
@@ -44,6 +25,12 @@ use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionSta
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\YouTubeVideoInfo;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -69,9 +56,7 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn(null);
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, Mockery::mock(TalentRepositoryInterface::class));
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
         $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
         $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
         $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
@@ -82,7 +67,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertNull($output->resourceType);
-        $this->assertNull($output->resourceIdentifier);
+        $this->assertNull($output->wikiIdentifier);
         $this->assertSame(0, $output->collectedCount);
     }
 
@@ -100,12 +85,12 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, '채영');
+        $wiki = $this->createDummyWiki($resourceId, ResourceType::TALENT, '채영');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -133,11 +118,11 @@ class CollectVideoLinksTest extends TestCase
         $collectionStatusRepository->shouldReceive('save')
             ->once();
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(static fn (TalentIdentifier $id): bool => (string) $id === $resourceId))
-            ->andReturn($talent);
+            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
+            ->andReturn($wiki);
 
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
@@ -150,13 +135,13 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once()
-            ->with(ResourceType::TALENT, Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId));
+            ->with(ResourceType::TALENT, Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId));
         $videoLinkRepository->shouldReceive('findByResourceAndUrls')
             ->once()
             ->andReturn([]);
         $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
             ->once()
-            ->with(ResourceType::TALENT, Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId))
+            ->with(ResourceType::TALENT, Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
             ->andReturn($existingVideoLink);
         $videoLinkRepository->shouldReceive('save')
             ->times(2);
@@ -166,7 +151,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 'Test Video 1',
@@ -177,7 +162,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 'Test Video 2',
@@ -186,12 +171,10 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($this->createDummyVideoLink($resourceId, 7));
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
         $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
         $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
 
         $useCase = $this->app->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
@@ -199,7 +182,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertTrue($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(2, $output->collectedCount);
     }
 
@@ -217,7 +200,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -227,15 +210,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn($status);
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
             ->once()
             ->andReturn(null);
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
         $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
         $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
@@ -246,7 +227,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame('Resource not found', $output->message);
     }
 
@@ -264,13 +245,13 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::GROUP,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
 
         $groupName = 'TWICE';
-        $group = $this->createDummyGroup($resourceId, $groupName, 'twice');
+        $wiki = $this->createDummyWiki($resourceId, ResourceType::GROUP, $groupName);
 
         $videos = [
             new YouTubeVideoInfo(
@@ -290,11 +271,11 @@ class CollectVideoLinksTest extends TestCase
         $collectionStatusRepository->shouldReceive('save')
             ->once();
 
-        $groupRepository = Mockery::mock(GroupRepositoryInterface::class);
-        $groupRepository->shouldReceive('findById')
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(static fn (GroupIdentifier $id): bool => (string) $id === $resourceId))
-            ->andReturn($group);
+            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
+            ->andReturn($wiki);
 
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
@@ -319,7 +300,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::GROUP,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 'Test Video 1',
@@ -328,12 +309,10 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(GroupRepositoryInterface::class, $groupRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
         $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
         $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(TalentRepositoryInterface::class, Mockery::mock(TalentRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
 
         $useCase = $this->app->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
@@ -358,12 +337,12 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::SONG,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
 
-        $song = $this->createDummySong($resourceId, 'テストソング');
+        $wiki = $this->createDummyWiki($resourceId, ResourceType::SONG, 'テストソング');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -383,11 +362,11 @@ class CollectVideoLinksTest extends TestCase
         $collectionStatusRepository->shouldReceive('save')
             ->once();
 
-        $songRepository = Mockery::mock(SongRepositoryInterface::class);
-        $songRepository->shouldReceive('findById')
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
             ->once()
-            ->with(Mockery::on(static fn (SongIdentifier $id): bool => (string) $id === $resourceId))
-            ->andReturn($song);
+            ->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
+            ->andReturn($wiki);
 
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
@@ -412,7 +391,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::SONG,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 'Test Song Video 1',
@@ -421,12 +400,10 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(SongRepositoryInterface::class, $songRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
         $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
         $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(TalentRepositoryInterface::class, Mockery::mock(TalentRepositoryInterface::class));
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
 
         $useCase = $this->app->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
@@ -434,7 +411,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertTrue($output->processed);
         $this->assertSame(ResourceType::SONG, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(1, $output->collectedCount);
     }
 
@@ -452,7 +429,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::AGENCY,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -462,10 +439,13 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->andReturn($status);
 
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
+            ->once()
+            ->andReturn(null);
+
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, Mockery::mock(TalentRepositoryInterface::class));
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
         $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
         $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
@@ -476,7 +456,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertSame(ResourceType::AGENCY, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame('Resource not found', $output->message);
     }
 
@@ -494,7 +474,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new DateTimeImmutable('-2 weeks'),
             new DateTimeImmutable(),
         );
@@ -505,9 +485,7 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($status);
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, Mockery::mock(TalentRepositoryInterface::class));
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
+        $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
         $this->app->instance(YouTubeSearchServiceInterface::class, Mockery::mock(YouTubeSearchServiceInterface::class));
         $this->app->instance(VideoLinkRepositoryInterface::class, Mockery::mock(VideoLinkRepositoryInterface::class));
         $this->app->instance(VideoLinkFactoryInterface::class, Mockery::mock(VideoLinkFactoryInterface::class));
@@ -518,7 +496,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame('Resource was collected within the last month', $output->message);
     }
 
@@ -536,12 +514,12 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new DateTimeImmutable('-2 months'),
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, '채영');
+        $wiki = $this->createDummyWiki($resourceId, ResourceType::TALENT, '채영');
 
         $videos = [
             new YouTubeVideoInfo(
@@ -561,10 +539,10 @@ class CollectVideoLinksTest extends TestCase
         $collectionStatusRepository->shouldReceive('save')
             ->once();
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
             ->once()
-            ->andReturn($talent);
+            ->andReturn($wiki);
 
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
@@ -589,12 +567,10 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
         $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
         $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
 
         $useCase = $this->app->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
@@ -602,7 +578,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertTrue($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(1, $output->collectedCount);
     }
 
@@ -620,12 +596,12 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
 
-        $talent = $this->createDummyTalent($resourceId, '채영');
+        $wiki = $this->createDummyWiki($resourceId, ResourceType::TALENT, '채영');
 
         $existingUrl = 'https://www.youtube.com/watch?v=existing';
         $newUrl = 'https://www.youtube.com/watch?v=new';
@@ -652,7 +628,7 @@ class CollectVideoLinksTest extends TestCase
         $existingVideoLink = new VideoLink(
             new VideoLinkIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new ExternalContentLink($existingUrl),
             VideoUsage::MUSIC_VIDEO,
             'Existing Video',
@@ -669,10 +645,10 @@ class CollectVideoLinksTest extends TestCase
         $collectionStatusRepository->shouldReceive('save')
             ->once();
 
-        $talentRepository = Mockery::mock(TalentRepositoryInterface::class);
-        $talentRepository->shouldReceive('findById')
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
             ->once()
-            ->andReturn($talent);
+            ->andReturn($wiki);
 
         $youtubeSearchService = Mockery::mock(YouTubeSearchServiceInterface::class);
         $youtubeSearchService->shouldReceive('searchVideos')
@@ -686,7 +662,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 [$existingUrl, $newUrl],
             )
             ->andReturn([$existingVideoLink]);
@@ -701,7 +677,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::on(static fn (ExternalContentLink $url): bool => (string) $url === $newUrl),
                 VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 'New Video',
@@ -710,12 +686,10 @@ class CollectVideoLinksTest extends TestCase
             ->andReturn($this->createDummyVideoLink($resourceId, 1));
 
         $this->app->instance(VideoLinkCollectionStatusRepositoryInterface::class, $collectionStatusRepository);
-        $this->app->instance(TalentRepositoryInterface::class, $talentRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(YouTubeSearchServiceInterface::class, $youtubeSearchService);
         $this->app->instance(VideoLinkRepositoryInterface::class, $videoLinkRepository);
         $this->app->instance(VideoLinkFactoryInterface::class, $videoLinkFactory);
-        $this->app->instance(GroupRepositoryInterface::class, Mockery::mock(GroupRepositoryInterface::class));
-        $this->app->instance(SongRepositoryInterface::class, Mockery::mock(SongRepositoryInterface::class));
 
         $useCase = $this->app->make(CollectVideoLinksInterface::class);
         $output = new CollectVideoLinksOutput();
@@ -726,53 +700,20 @@ class CollectVideoLinksTest extends TestCase
         $this->assertSame(2, $output->collectedCount);
     }
 
-    private function createDummyTalent(string $resourceId, string $name): Talent
+    private function createDummyWiki(string $resourceId, ResourceType $resourceType, string $name): Wiki
     {
-        return new Talent(
-            new TalentIdentifier($resourceId),
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('chaeyoung'),
-            Language::KOREAN,
-            new TalentName($name),
-            new RealName('손채영'),
-            null,
-            [],
-            null,
-            new Career(''),
-            new Version(1),
-        );
-    }
+        $basic = Mockery::mock(BasicInterface::class);
+        $basic->shouldReceive('name')->andReturn(new Name($name));
 
-    private function createDummyGroup(string $resourceId, string $name, string $slug): Group
-    {
-        return new Group(
-            new GroupIdentifier($resourceId),
+        return new Wiki(
+            new WikiIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug($slug),
-            Language::JAPANESE,
-            new GroupName($name),
-            $name,
-            null,
-            new Description(''),
-            new Version(1),
-        );
-    }
-
-    private function createDummySong(string $resourceId, string $name): Song
-    {
-        return new Song(
-            new SongIdentifier($resourceId),
-            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('ttt'),
+            new Slug('test-slug'),
             Language::KOREAN,
-            new SongName($name),
+            $resourceType,
+            $basic, /** @phpstan-ignore argument.type */
+            new SectionContentCollection(),
             null,
-            null,
-            null,
-            new Lyricist('블랙아이드필승'),
-            new Composer('Sam Lewis'),
-            null,
-            new Overview('"TT"는 처음으로 사랑에 빠진 소녀의 어쩔 줄 모르는 마음을 노래한 곡입니다.'),
             new Version(1),
         );
     }
@@ -782,7 +723,7 @@ class CollectVideoLinksTest extends TestCase
         return new VideoLink(
             new VideoLinkIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new ExternalContentLink('https://www.youtube.com/watch?v=test'),
             VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
             'Test Video',

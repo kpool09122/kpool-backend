@@ -7,11 +7,11 @@ namespace Tests\Wiki\VideoLinkAutoCollection\Infrastructure\Repository;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateVideoLinkCollectionStatus;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -27,24 +27,24 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
     public function testFindByResource(): void
     {
         $statusId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
 
         CreateVideoLinkCollectionStatus::create($statusId, [
             'resource_type' => ResourceType::TALENT->value,
-            'resource_identifier' => $resourceId,
+            'wiki_id' => $wikiId,
             'last_collected_at' => '2024-01-15 10:30:00',
         ]);
 
         $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findByResource(
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($wikiId),
         );
 
         $this->assertInstanceOf(VideoLinkCollectionStatus::class, $status);
         $this->assertSame($statusId, (string) $status->identifier());
         $this->assertSame(ResourceType::TALENT, $status->resourceType());
-        $this->assertSame($resourceId, (string) $status->resourceIdentifier());
+        $this->assertSame($wikiId, (string) $status->wikiIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $status->lastCollectedAt());
     }
 
@@ -59,7 +59,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
         $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findByResource(
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertNull($status);
@@ -145,12 +145,12 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
     public function testSaveNewStatus(): void
     {
         $statusId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
 
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::SONG,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($wikiId),
             null,
             new DateTimeImmutable(),
         );
@@ -161,7 +161,7 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
         $this->assertDatabaseHas('video_link_collection_statuses', [
             'id' => $statusId,
             'resource_type' => ResourceType::SONG->value,
-            'resource_identifier' => $resourceId,
+            'wiki_id' => $wikiId,
             'last_collected_at' => null,
         ]);
     }
@@ -175,18 +175,18 @@ class VideoLinkCollectionStatusRepositoryTest extends TestCase
     public function testSaveUpdateStatus(): void
     {
         $statusId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
 
         CreateVideoLinkCollectionStatus::create($statusId, [
             'resource_type' => ResourceType::TALENT->value,
-            'resource_identifier' => $resourceId,
+            'wiki_id' => $wikiId,
             'last_collected_at' => null,
         ]);
 
         $repository = $this->app->make(VideoLinkCollectionStatusRepositoryInterface::class);
         $status = $repository->findByResource(
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($wikiId),
         );
 
         $collectedAt = new DateTimeImmutable('2024-01-20 15:00:00');

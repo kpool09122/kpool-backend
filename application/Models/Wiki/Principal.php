@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
  * @property string $identity_id
  * @property ?string $agency_id
+ * @property array<string> $group_ids
  * @property array<string> $talent_ids
  * @property ?string $delegation_identifier
  * @property bool $enabled
@@ -30,6 +30,7 @@ class Principal extends Model
         'id',
         'identity_id',
         'agency_id',
+        'group_ids',
         'talent_ids',
         'delegation_identifier',
         'enabled',
@@ -38,21 +39,9 @@ class Principal extends Model
     protected function casts(): array
     {
         return [
+            'group_ids' => 'array',
             'talent_ids' => 'array',
             'enabled' => 'boolean',
         ];
-    }
-
-    /**
-     * @return BelongsToMany<Group, $this>
-     */
-    public function groups(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Group::class,
-            'wiki_principal_groups',
-            'wiki_principal_id',
-            'group_id',
-        );
     }
 }

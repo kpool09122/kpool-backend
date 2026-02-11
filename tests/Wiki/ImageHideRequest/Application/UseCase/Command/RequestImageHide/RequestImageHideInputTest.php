@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide;
 
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHideInput;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

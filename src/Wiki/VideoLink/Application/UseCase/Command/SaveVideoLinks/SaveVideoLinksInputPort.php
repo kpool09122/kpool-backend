@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface SaveVideoLinksInputPort
 {
@@ -14,7 +14,7 @@ interface SaveVideoLinksInputPort
 
     public function resourceType(): ResourceType;
 
-    public function resourceIdentifier(): ResourceIdentifier;
+    public function wikiIdentifier(): WikiIdentifier;
 
     /**
      * @return VideoLinkData[]

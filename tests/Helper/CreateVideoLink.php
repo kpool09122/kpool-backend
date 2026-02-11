@@ -13,7 +13,7 @@ class CreateVideoLink
     /**
      * @param array{
      *     resource_type?: string,
-     *     resource_identifier?: string,
+     *     wiki_id?: string,
      *     url?: string,
      *     video_usage?: string,
      *     title?: string,
@@ -27,7 +27,7 @@ class CreateVideoLink
         DB::table('video_links')->insert([
             'id' => $videoLinkId,
             'resource_type' => $overrides['resource_type'] ?? ResourceType::TALENT->value,
-            'resource_identifier' => $overrides['resource_identifier'] ?? StrTestHelper::generateUuid(),
+            'wiki_id' => $overrides['wiki_id'] ?? StrTestHelper::generateUuid(),
             'url' => $overrides['url'] ?? sprintf(
                 'https://www.youtube.com/watch?v=%s',
                 StrTestHelper::generateUuid()

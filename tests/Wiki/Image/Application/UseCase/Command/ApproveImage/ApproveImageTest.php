@@ -23,7 +23,6 @@ use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Principal\Domain\Entity\Principal;
@@ -33,10 +32,11 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -110,7 +110,7 @@ class ApproveImageTest extends TestCase
             ->once()
             ->with(
                 $testData->resourceType,
-                $testData->resourceIdentifier,
+                $testData->wikiIdentifier,
                 $testData->imagePath,
                 $testData->imageUsage,
                 $testData->displayOrder,
@@ -155,7 +155,7 @@ class ApproveImageTest extends TestCase
 
         $this->assertTrue(UuidValidator::isValid((string)$result->imageIdentifier()));
         $this->assertSame($testData->resourceType, $result->resourceType());
-        $this->assertSame((string)$testData->resourceIdentifier, (string)$result->resourceIdentifier());
+        $this->assertSame((string)$testData->wikiIdentifier, (string)$result->wikiIdentifier());
         $this->assertSame((string)$testData->imagePath, (string)$result->imagePath());
         $this->assertSame($testData->imageUsage, $result->imageUsage());
         $this->assertSame($testData->displayOrder, $result->displayOrder());
@@ -284,7 +284,7 @@ class ApproveImageTest extends TestCase
         $snapshot = new ImageSnapshot(
             new ImageSnapshotIdentifier(StrTestHelper::generateUuid()),
             $testData->existingImage->imageIdentifier(),
-            $testData->existingImage->resourceIdentifier(),
+            $testData->existingImage->wikiIdentifier(),
             $testData->existingImage->imagePath(),
             $testData->existingImage->imageUsage(),
             $testData->existingImage->displayOrder(),
@@ -324,7 +324,7 @@ class ApproveImageTest extends TestCase
         $imageSnapshotFactory = Mockery::mock(ImageSnapshotFactoryInterface::class);
         $imageSnapshotFactory->shouldReceive('create')
             ->once()
-            ->with($testData->existingImage, $testData->existingImage->resourceIdentifier())
+            ->with($testData->existingImage, $testData->existingImage->wikiIdentifier())
             ->andReturn($snapshot);
 
         $imageSnapshotRepository = Mockery::mock(ImageSnapshotRepositoryInterface::class);
@@ -483,7 +483,7 @@ class ApproveImageTest extends TestCase
     {
         $draftImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -498,7 +498,7 @@ class ApproveImageTest extends TestCase
             $draftImageIdentifier,
             null, // publishedImageIdentifier - 新規作成
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $uploaderIdentifier,
             $imagePath,
             $imageUsage,
@@ -517,7 +517,7 @@ class ApproveImageTest extends TestCase
         $image = new Image(
             $imageIdentifier,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -538,7 +538,7 @@ class ApproveImageTest extends TestCase
         return new ApproveImageTestData(
             $draftImageIdentifier,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -557,7 +557,7 @@ class ApproveImageTest extends TestCase
     {
         $draftImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -572,7 +572,7 @@ class ApproveImageTest extends TestCase
             $draftImageIdentifier,
             null,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $uploaderIdentifier,
             $imagePath,
             $imageUsage,
@@ -588,7 +588,7 @@ class ApproveImageTest extends TestCase
         return new ApproveImageTestData(
             $draftImageIdentifier,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,
@@ -608,7 +608,7 @@ class ApproveImageTest extends TestCase
         $draftImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
         $uploadedAt = new DateTimeImmutable();
@@ -634,7 +634,7 @@ class ApproveImageTest extends TestCase
         $existingImage = new Image(
             $publishedImageIdentifier,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $existingImagePath,
             $existingImageUsage,
             $existingDisplayOrder,
@@ -656,7 +656,7 @@ class ApproveImageTest extends TestCase
             $draftImageIdentifier,
             $publishedImageIdentifier, // 既存Imageを参照
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $uploaderIdentifier,
             $newImagePath,
             $newImageUsage,
@@ -691,16 +691,16 @@ readonly class ApproveImageTestData
 {
     public function __construct(
         public ImageIdentifier $draftImageIdentifier,
-        public ResourceType $resourceType,
-        public ResourceIdentifier $resourceIdentifier,
-        public ImagePath $imagePath,
-        public ImageUsage $imageUsage,
-        public int $displayOrder,
-        public string $sourceUrl,
-        public string $sourceName,
-        public string $altText,
-        public DraftImage $draftImage,
-        public ?Image $image,
+        public ResourceType    $resourceType,
+        public WikiIdentifier  $wikiIdentifier,
+        public ImagePath       $imagePath,
+        public ImageUsage      $imageUsage,
+        public int             $displayOrder,
+        public string          $sourceUrl,
+        public string          $sourceName,
+        public string          $altText,
+        public DraftImage      $draftImage,
+        public ?Image          $image,
     ) {
     }
 }

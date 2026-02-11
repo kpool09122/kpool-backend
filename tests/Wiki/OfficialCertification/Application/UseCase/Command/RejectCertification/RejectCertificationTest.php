@@ -17,8 +17,8 @@ use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,7 +43,7 @@ class RejectCertificationTest extends TestCase
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::PENDING,
             new DateTimeImmutable(),
@@ -100,7 +100,7 @@ class RejectCertificationTest extends TestCase
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::REJECTED,
             new DateTimeImmutable(),

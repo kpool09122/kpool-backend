@@ -6,18 +6,18 @@ namespace Source\Wiki\Image\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ImageSnapshot
 {
     public function __construct(
         private ImageSnapshotIdentifier $snapshotIdentifier,
         private ImageIdentifier         $imageIdentifier,
-        private ResourceIdentifier      $resourceSnapshotIdentifier,
+        private WikiIdentifier          $wikiIdentifier,
         private ImagePath               $imagePath,
         private ImageUsage              $imageUsage,
         private int                     $displayOrder,
@@ -43,9 +43,9 @@ readonly class ImageSnapshot
         return $this->imageIdentifier;
     }
 
-    public function resourceSnapshotIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->resourceSnapshotIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function imagePath(): ImagePath

@@ -6,24 +6,24 @@ namespace Source\Wiki\VideoLink\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class VideoLink
 {
     public function __construct(
         private readonly VideoLinkIdentifier $videoLinkIdentifier,
-        private readonly ResourceType $resourceType,
-        private readonly ResourceIdentifier $resourceIdentifier,
-        private ExternalContentLink $url,
-        private VideoUsage $videoUsage,
-        private string $title,
-        private ?string $thumbnailUrl,
-        private ?DateTimeImmutable $publishedAt,
-        private int $displayOrder,
-        private readonly DateTimeImmutable $createdAt,
+        private readonly ResourceType        $resourceType,
+        private readonly WikiIdentifier      $wikiIdentifier,
+        private ExternalContentLink          $url,
+        private VideoUsage                   $videoUsage,
+        private string                       $title,
+        private ?string                      $thumbnailUrl,
+        private ?DateTimeImmutable           $publishedAt,
+        private int                          $displayOrder,
+        private readonly DateTimeImmutable   $createdAt,
     ) {
     }
 
@@ -37,9 +37,9 @@ class VideoLink
         return $this->resourceType;
     }
 
-    public function resourceIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->resourceIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function url(): ExternalContentLink

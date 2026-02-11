@@ -13,7 +13,6 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Tests\Helper\CreateGroup;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
 use Tests\Helper\StrTestHelper;
@@ -114,7 +113,6 @@ class PrincipalRepositoryTest extends TestCase
         $principalId = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
         $groupId = StrTestHelper::generateUuid();
-        CreateGroup::create($groupId);
         $groupIds = [$groupId];
         $talentIds = [StrTestHelper::generateUuid()];
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
@@ -138,10 +136,9 @@ class PrincipalRepositoryTest extends TestCase
             'delegation_identifier' => (string) $delegationIdentifier,
         ]);
 
-        $this->assertDatabaseHas('wiki_principal_groups', [
-            'wiki_principal_id' => $principalId,
-            'group_id' => $groupId,
-        ]);
+        $saved = $repository->findById(new PrincipalIdentifier($principalId));
+        $this->assertNotNull($saved);
+        $this->assertSame($groupIds, $saved->groupIds());
     }
 
     /**

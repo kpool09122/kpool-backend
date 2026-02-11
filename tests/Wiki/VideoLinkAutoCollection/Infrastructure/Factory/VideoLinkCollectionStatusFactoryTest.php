@@ -7,9 +7,9 @@ namespace Tests\Wiki\VideoLinkAutoCollection\Infrastructure\Factory;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -29,12 +29,12 @@ class VideoLinkCollectionStatusFactoryTest extends TestCase
 
         $status = $factory->create(
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $status->identifier()));
         $this->assertSame(ResourceType::TALENT, $status->resourceType());
-        $this->assertSame($resourceId, (string) $status->resourceIdentifier());
+        $this->assertSame($resourceId, (string) $status->wikiIdentifier());
         $this->assertNull($status->lastCollectedAt());
         $this->assertInstanceOf(DateTimeImmutable::class, $status->createdAt());
     }
@@ -51,15 +51,15 @@ class VideoLinkCollectionStatusFactoryTest extends TestCase
 
         $talentStatus = $factory->create(
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
         );
         $groupStatus = $factory->create(
             ResourceType::GROUP,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
         );
         $songStatus = $factory->create(
             ResourceType::SONG,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertSame(ResourceType::TALENT, $talentStatus->resourceType());

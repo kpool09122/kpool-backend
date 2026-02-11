@@ -11,6 +11,7 @@ use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface ContributionPointHistoryFactoryInterface
 {
@@ -19,7 +20,7 @@ interface ContributionPointHistoryFactoryInterface
         YearMonth           $yearMonth,
         Point               $points,
         ResourceType        $resourceType,
-        string              $resourceId,
+        WikiIdentifier      $wikiIdentifier,
         ContributorType     $roleType,
         bool                $isNewCreation,
         DateTimeImmutable   $createdAt,

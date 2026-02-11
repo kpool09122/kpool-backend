@@ -12,8 +12,8 @@ use Source\Wiki\Grading\Domain\ValueObject\ContributorType;
 use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ContributionPointHistoryTest extends TestCase
@@ -28,7 +28,7 @@ class ContributionPointHistoryTest extends TestCase
         $yearMonth = YearMonth::fromDateTime(new DateTimeImmutable('2025-01-15'));
         $points = new Point(Point::NEW_EDITOR);
         $resourceType = ResourceType::AGENCY;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $roleType = ContributorType::EDITOR;
         $isNewCreation = true;
         $createdAt = new DateTimeImmutable();
@@ -39,7 +39,7 @@ class ContributionPointHistoryTest extends TestCase
             $yearMonth,
             $points,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $roleType,
             $isNewCreation,
             $createdAt,
@@ -50,7 +50,7 @@ class ContributionPointHistoryTest extends TestCase
         $this->assertSame($yearMonth, $history->yearMonth());
         $this->assertEquals($points, $history->points());
         $this->assertSame($resourceType, $history->resourceType());
-        $this->assertSame($resourceIdentifier, $history->resourceIdentifier());
+        $this->assertSame($wikiIdentifier, $history->wikiIdentifier());
         $this->assertSame($roleType, $history->contributorType());
         $this->assertTrue($history->isNewCreation());
         $this->assertSame($createdAt, $history->createdAt());
@@ -66,7 +66,7 @@ class ContributionPointHistoryTest extends TestCase
         $yearMonth = YearMonth::fromDateTime(new DateTimeImmutable('2025-02-20'));
         $points = new Point(Point::UPDATE_APPROVER);
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $roleType = ContributorType::APPROVER;
         $isNewCreation = false;
         $createdAt = new DateTimeImmutable();
@@ -77,7 +77,7 @@ class ContributionPointHistoryTest extends TestCase
             $yearMonth,
             $points,
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $roleType,
             $isNewCreation,
             $createdAt,
@@ -88,7 +88,7 @@ class ContributionPointHistoryTest extends TestCase
         $this->assertSame($yearMonth, $history->yearMonth());
         $this->assertEquals($points, $history->points());
         $this->assertSame($resourceType, $history->resourceType());
-        $this->assertSame($resourceIdentifier, $history->resourceIdentifier());
+        $this->assertSame($wikiIdentifier, $history->wikiIdentifier());
         $this->assertSame($roleType, $history->contributorType());
         $this->assertFalse($history->isNewCreation());
         $this->assertSame($createdAt, $history->createdAt());

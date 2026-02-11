@@ -36,7 +36,7 @@ readonly class ApproveCertification implements ApproveCertificationInterface
 
         $this->resourceUpdater->markOfficial(
             $certification->resourceType(),
-            $certification->resourceIdentifier(),
+            $certification->wikiIdentifier(),
             $certification->ownerAccountIdentifier(),
         );
 

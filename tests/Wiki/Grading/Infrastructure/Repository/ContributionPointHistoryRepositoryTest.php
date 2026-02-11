@@ -16,8 +16,8 @@ use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Grading\Infrastructure\Repository\ContributionPointHistoryRepository;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateContributionPointHistory;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\CreatePrincipal;
@@ -48,7 +48,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $historyId = StrTestHelper::generateUuid();
         $principalId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $yearMonth = '2024-01';
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
@@ -64,7 +64,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             new YearMonth($yearMonth),
             new Point(10),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($wikiId),
             ContributorType::EDITOR,
             true,
             $createdAt,
@@ -79,7 +79,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
             'year_month' => $yearMonth,
             'points' => 10,
             'resource_type' => 'talent',
-            'resource_id' => $resourceId,
+            'wiki_id' => $wikiId,
             'contributor_type' => 'editor',
             'is_new_creation' => true,
         ]);
@@ -96,7 +96,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $historyId = StrTestHelper::generateUuid();
         $principalId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $yearMonth = '2024-02';
 
         CreateIdentity::create(new IdentityIdentifier($identityId));
@@ -111,7 +111,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
                 'year_month' => $yearMonth,
                 'points' => 5,
                 'resource_type' => 'song',
-                'resource_id' => $resourceId,
+                'wiki_id' => $wikiId,
                 'contributor_type' => 'approver',
                 'is_new_creation' => false,
             ]
@@ -129,7 +129,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $this->assertSame($yearMonth, (string) $results[0]->yearMonth());
         $this->assertSame(5, $results[0]->points()->value());
         $this->assertSame(ResourceType::SONG, $results[0]->resourceType());
-        $this->assertSame($resourceId, (string) $results[0]->resourceIdentifier());
+        $this->assertSame($wikiId, (string) $results[0]->wikiIdentifier());
         $this->assertSame(ContributorType::APPROVER, $results[0]->contributorType());
         $this->assertFalse($results[0]->isNewCreation());
     }
@@ -283,7 +283,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
     {
         $principalId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $createdAt1 = new DateTimeImmutable('2024-01-10 10:00:00');
         $createdAt2 = new DateTimeImmutable('2024-01-20 15:00:00');
 
@@ -301,7 +301,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
                 'year_month' => '2024-01',
                 'points' => 10,
                 'resource_type' => 'talent',
-                'resource_id' => $resourceId,
+                'wiki_id' => $wikiId,
                 'contributor_type' => 'editor',
                 'is_new_creation' => true,
                 'created_at' => $createdAt1,
@@ -314,7 +314,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
                 'year_month' => '2024-01',
                 'points' => 5,
                 'resource_type' => 'talent',
-                'resource_id' => $resourceId,
+                'wiki_id' => $wikiId,
                 'contributor_type' => 'editor',
                 'is_new_creation' => false,
                 'created_at' => $createdAt2,
@@ -325,7 +325,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $result = $repository->findLastPublishDate(
             new PrincipalIdentifier($principalId),
             ResourceType::TALENT,
-            $resourceId,
+            new WikiIdentifier($wikiId),
             ContributorType::EDITOR,
         );
 
@@ -346,7 +346,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $result = $repository->findLastPublishDate(
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            StrTestHelper::generateUuid(),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             ContributorType::EDITOR,
         );
 
@@ -363,7 +363,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
     {
         $principalId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = StrTestHelper::generateUuid();
         $editorCreatedAt = new DateTimeImmutable('2024-01-10 10:00:00');
         $approverCreatedAt = new DateTimeImmutable('2024-01-15 12:00:00');
 
@@ -381,7 +381,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
                 'year_month' => '2024-01',
                 'points' => 10,
                 'resource_type' => 'talent',
-                'resource_id' => $resourceId,
+                'wiki_id' => $wikiId,
                 'contributor_type' => 'editor',
                 'created_at' => $editorCreatedAt,
             ]
@@ -393,7 +393,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
                 'year_month' => '2024-01',
                 'points' => 2,
                 'resource_type' => 'talent',
-                'resource_id' => $resourceId,
+                'wiki_id' => $wikiId,
                 'contributor_type' => 'approver',
                 'created_at' => $approverCreatedAt,
             ]
@@ -405,7 +405,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $editorResult = $repository->findLastPublishDate(
             new PrincipalIdentifier($principalId),
             ResourceType::TALENT,
-            $resourceId,
+            new WikiIdentifier($wikiId),
             ContributorType::EDITOR,
         );
 
@@ -413,7 +413,7 @@ class ContributionPointHistoryRepositoryTest extends TestCase
         $approverResult = $repository->findLastPublishDate(
             new PrincipalIdentifier($principalId),
             ResourceType::TALENT,
-            $resourceId,
+            new WikiIdentifier($wikiId),
             ContributorType::APPROVER,
         );
 

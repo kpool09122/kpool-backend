@@ -6,10 +6,10 @@ namespace Tests\Wiki\ImageHideRequest\Infrastructure\Factory;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\Factory\ImageHideRequestFactoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\ImageHideRequest\Infrastructure\Factory\ImageHideRequestFactory;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

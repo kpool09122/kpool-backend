@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('official_certifications', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('Official certification ID');
             $table->string('resource_type', 32)->comment('Resource type');
-            $table->uuid('resource_id')->comment('Resource ID');
+            $table->uuid('wiki_id')->comment('Wiki ID');
             $table->uuid('owner_account_id')->comment('Owner account ID');
             $table->string('status', 32)->comment('Certification status');
             $table->timestamp('requested_at')->comment('Requested at');
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamp('rejected_at')->nullable()->comment('Rejected at');
             $table->timestamps();
 
-            $table->unique(['resource_type', 'resource_id']);
+            $table->unique(['resource_type', 'wiki_id']);
         });
     }
 

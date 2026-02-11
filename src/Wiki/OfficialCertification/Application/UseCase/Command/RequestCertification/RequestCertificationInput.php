@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification;
 
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class RequestCertificationInput implements RequestCertificationInputPort
 {
     public function __construct(
-        private ResourceType $resourceType,
-        private ResourceIdentifier $resourceIdentifier,
+        private ResourceType      $resourceType,
+        private WikiIdentifier    $wikiIdentifier,
         private AccountIdentifier $ownerAccountIdentifier,
     ) {
     }
@@ -22,9 +22,9 @@ readonly class RequestCertificationInput implements RequestCertificationInputPor
         return $this->resourceType;
     }
 
-    public function resourceIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->resourceIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function ownerAccountIdentifier(): AccountIdentifier

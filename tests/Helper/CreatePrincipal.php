@@ -30,19 +30,12 @@ class CreatePrincipal
             'id' => (string) $principalIdentifier,
             'identity_id' => (string) $identityIdentifier,
             'agency_id' => $overrides['agency_id'] ?? null,
+            'group_ids' => json_encode($overrides['group_ids'] ?? [], JSON_THROW_ON_ERROR),
             'talent_ids' => json_encode($overrides['talent_ids'] ?? [], JSON_THROW_ON_ERROR),
             'delegation_identifier' => $overrides['delegation_identifier'] ?? null,
             'enabled' => $overrides['enabled'] ?? true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        $groupIds = $overrides['group_ids'] ?? [];
-        foreach ($groupIds as $groupId) {
-            DB::table('wiki_principal_groups')->insert([
-                'wiki_principal_id' => (string) $principalIdentifier,
-                'group_id' => $groupId,
-            ]);
-        }
     }
 }

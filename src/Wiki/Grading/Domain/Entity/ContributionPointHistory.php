@@ -10,8 +10,8 @@ use Source\Wiki\Grading\Domain\ValueObject\ContributorType;
 use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ContributionPointHistory
 {
@@ -21,7 +21,7 @@ readonly class ContributionPointHistory
         private YearMonth                          $yearMonth,
         private Point                              $points,
         private ResourceType                       $resourceType,
-        private ResourceIdentifier                 $resourceIdentifier,
+        private WikiIdentifier                     $wikiIdentifier,
         private ContributorType                    $contributorType,
         private bool                               $isNewCreation,
         private DateTimeImmutable                  $createdAt,
@@ -53,9 +53,9 @@ readonly class ContributionPointHistory
         return $this->resourceType;
     }
 
-    public function resourceIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->resourceIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function contributorType(): ContributorType

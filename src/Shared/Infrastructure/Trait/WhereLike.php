@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Source\Shared\Infrastructure\Trait;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
 trait WhereLike
 {
     /**
-     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @template TModel of Model
      * @param EloquentBuilder<TModel>|QueryBuilder $query
      * @param string $column
      * @param string $value

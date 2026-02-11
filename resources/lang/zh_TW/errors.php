@@ -7,5 +7,8 @@ return [
     'exists_approved_but_not_translated_agency' => '存在尚未翻譯的已核准事務所草稿維基。',
     'disallowed' => '不允許此操作。',
     'allow_only_under_review_status' => '只能核准已提交狀態的草稿維基。',
+    'wiki_not_found' => '找不到指定的草稿維基。',
+    'duplicate_slug' => '指定的Slug已存在。',
+    'exists_approved_draft_wiki' => '存在尚未發布的已核准草稿維基。',
     'internal_server_error' => '伺服器發生錯誤。',
 ];

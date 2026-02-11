@@ -7,26 +7,17 @@ namespace Source\Wiki\VideoLinkAutoCollection\Application\UseCase\Command\Collec
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Group\Domain\Repository\GroupRepositoryInterface;
-use Source\Wiki\Shared\Domain\ValueObject\GroupIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Shared\Domain\ValueObject\TalentIdentifier;
-use Source\Wiki\Song\Domain\Repository\SongRepositoryInterface;
-use Source\Wiki\Song\Domain\ValueObject\SongIdentifier;
-use Source\Wiki\Talent\Domain\Repository\TalentRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
-use Source\Wiki\VideoLinkAutoCollection\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 
 readonly class CollectVideoLinks implements CollectVideoLinksInterface
 {
     public function __construct(
         private VideoLinkCollectionStatusRepositoryInterface $collectionStatusRepository,
-        private TalentRepositoryInterface $talentRepository,
-        private GroupRepositoryInterface $groupRepository,
-        private SongRepositoryInterface $songRepository,
+        private WikiRepositoryInterface $wikiRepository,
         private YouTubeSearchServiceInterface $youTubeSearchService,
         private VideoLinkFactoryInterface $videoLinkFactory,
         private VideoLinkRepositoryInterface $videoLinkRepository,
@@ -49,32 +40,30 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         if ($status->lastCollectedAt() !== null && $status->lastCollectedAt() > $oneMonthAgo) {
             $this->logger->info('CollectVideoLinks: Resource was collected within the last month', [
                 'resource_type' => $status->resourceType()->value,
-                'resource_identifier' => (string) $status->resourceIdentifier(),
+                'wiki_id' => (string) $status->wikiIdentifier(),
                 'last_collected_at' => $status->lastCollectedAt()->format('Y-m-d H:i:s'),
             ]);
             $output->recentlyCollected(
                 $status->resourceType(),
-                $status->resourceIdentifier(),
+                $status->wikiIdentifier(),
             );
 
             return;
         }
 
-        $resourceName = match ($status->resourceType()) {
-            ResourceType::TALENT => $this->getTalentName($status),
-            ResourceType::GROUP => $this->getGroupName($status),
-            ResourceType::SONG => $this->getSongName($status),
-            default => null,
-        };
+        $wiki = $this->wikiRepository->findById(
+            $status->wikiIdentifier(),
+        );
+        $resourceName = $wiki !== null ? (string) $wiki->basic()->name() : null;
 
         if ($resourceName === null) {
             $this->logger->warning('CollectVideoLinks: Resource not found', [
                 'resource_type' => $status->resourceType()->value,
-                'resource_identifier' => (string) $status->resourceIdentifier(),
+                'wiki_id' => (string) $status->wikiIdentifier(),
             ]);
             $output->resourceNotFound(
                 $status->resourceType(),
-                $status->resourceIdentifier(),
+                $status->wikiIdentifier(),
             );
 
             return;
@@ -82,7 +71,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $this->logger->info('CollectVideoLinks: Starting collection', [
             'resource_type' => $status->resourceType()->value,
-            'resource_identifier' => (string) $status->resourceIdentifier(),
+            'wiki_id' => (string) $status->wikiIdentifier(),
             'resource_name' => $resourceName,
         ]);
 
@@ -90,20 +79,20 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $this->videoLinkRepository->deleteAutoCollectedByResource(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
         );
 
         $videoUrls = array_map(static fn ($video) => $video->url(), $videos);
         $existingVideoLinks = $this->videoLinkRepository->findByResourceAndUrls(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
             $videoUrls,
         );
         $existingUrls = array_map(static fn ($videoLink) => (string) $videoLink->url(), $existingVideoLinks);
 
         $lastVideoLink = $this->videoLinkRepository->findByResourceWithMaxDisplayOrder(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
         );
         $maxDisplayOrder = $lastVideoLink?->displayOrder() ?? 0;
 
@@ -115,7 +104,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
             $videoLink = $this->videoLinkFactory->create(
                 $status->resourceType(),
-                $status->resourceIdentifier(),
+                $status->wikiIdentifier(),
                 new ExternalContentLink($video->url()),
                 $video->videoUsage(),
                 $video->title(),
@@ -133,41 +122,14 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $this->logger->info('CollectVideoLinks: Collection completed', [
             'resource_type' => $status->resourceType()->value,
-            'resource_identifier' => (string) $status->resourceIdentifier(),
+            'wiki_id' => (string) $status->wikiIdentifier(),
             'collected_count' => count($videos),
         ]);
 
         $output->success(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
             count($videos),
         );
-    }
-
-    private function getTalentName(VideoLinkCollectionStatus $status): ?string
-    {
-        $talent = $this->talentRepository->findById(
-            new TalentIdentifier((string) $status->resourceIdentifier()),
-        );
-
-        return $talent !== null ? (string) $talent->name() : null;
-    }
-
-    private function getGroupName(VideoLinkCollectionStatus $status): ?string
-    {
-        $group = $this->groupRepository->findById(
-            new GroupIdentifier((string) $status->resourceIdentifier()),
-        );
-
-        return $group !== null ? (string) $group->name() : null;
-    }
-
-    private function getSongName(VideoLinkCollectionStatus $status): ?string
-    {
-        $song = $this->songRepository->findById(
-            new SongIdentifier((string) $status->resourceIdentifier()),
-        );
-
-        return $song !== null ? (string) $song->name() : null;
     }
 }

@@ -8,11 +8,11 @@ use Application\Models\Wiki\WikiImage;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class ImageRepository implements ImageRepositoryInterface
 {
@@ -32,11 +32,11 @@ final class ImageRepository implements ImageRepositoryInterface
     /**
      * @return Image[]
      */
-    public function findByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): array
+    public function findByResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array
     {
         $models = WikiImage::query()
             ->where('resource_type', $resourceType->value)
-            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('display_order')
             ->get();
 
@@ -49,7 +49,7 @@ final class ImageRepository implements ImageRepositoryInterface
             ['id' => (string) $image->imageIdentifier()],
             [
                 'resource_type' => $image->resourceType()->value,
-                'resource_identifier' => (string) $image->resourceIdentifier(),
+                'wiki_id' => (string) $image->wikiIdentifier(),
                 'image_path' => (string) $image->imagePath(),
                 'image_usage' => $image->imageUsage()->value,
                 'display_order' => $image->displayOrder(),
@@ -81,7 +81,7 @@ final class ImageRepository implements ImageRepositoryInterface
         return new Image(
             new ImageIdentifier($model->id),
             ResourceType::from($model->resource_type),
-            new ResourceIdentifier($model->resource_identifier),
+            new WikiIdentifier($model->wiki_id),
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,

@@ -68,6 +68,10 @@ final readonly class GenerateAgencyRequest
                         'ceo_name' => ['type' => 'string', 'nullable' => true],
                         'founded_year' => ['type' => 'integer', 'nullable' => true],
                         'description' => ['type' => 'string', 'nullable' => true],
+                        'instagram_url' => ['type' => 'string', 'nullable' => true],
+                        'tiktok_url' => ['type' => 'string', 'nullable' => true],
+                        'youtube_url' => ['type' => 'string', 'nullable' => true],
+                        'x_url' => ['type' => 'string', 'nullable' => true],
                     ],
                 ],
             ],
@@ -84,7 +88,7 @@ final readonly class GenerateAgencyRequest
 
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following agency using Wikipedia and official homepage, then collect information.
+Research the following agency using Wikipedia, Namuwiki, and official homepage, then collect information.
 
 ## Target
 - Agency Name: {$this->agencyName}
@@ -98,12 +102,22 @@ Research the following agency using Wikipedia and official homepage, then collec
 2. CEO name (representative director, CEO, etc.)
 3. Founded year (year only, e.g., 2005)
 4. Detailed description of the agency (history, major artists, characteristics, etc. approximately 2000 characters)
+5. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
+   - instagram_url: Official Instagram URL (e.g., "https://www.instagram.com/jaboritory/")
+   - tiktok_url: Official TikTok URL (e.g., "https://www.tiktok.com/@jypentertainment")
+   - youtube_url: Official YouTube channel URL (e.g., "https://www.youtube.com/@JYPEntertainment")
+   - x_url: Official X(Twitter) URL (e.g., "https://x.com/jypentertainment" or "https://twitter.com/jypentertainment")
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
-- Prioritize Korean language sources: search Korean Wikipedia (ko.wikipedia.org) and Korean official websites first
+- Prioritize Korean language sources in this order:
+  1. Korean Wikipedia: Convert the name to Korean, URL-encode it, and access https://ko.wikipedia.org/wiki/{encoded_korean_name}
+  2. Namuwiki: Convert the name to Korean, URL-encode it, and access https://namu.wiki/w/{encoded_korean_name}
+  3. Korean official websites
+- If direct URL access fails (page not found), use a search query to find the correct page
+- Extract official SNS URLs from the external links section of Wikipedia or Namuwiki pages
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
-- Use reliable sources (Wikipedia, official websites)
+- Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
 PROMPT;
     }

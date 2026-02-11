@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('wiki_images', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('画像ID');
             $table->string('resource_type', 16)->comment('リソースタイプ (talent, song, group)');
-            $table->uuid('resource_identifier')->comment('リソースID');
+            $table->uuid('wiki_id')->comment('Wiki ID');
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
             $table->integer('display_order')->default(0)->comment('表示順');
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->uuid('updater_id')->nullable()->comment('更新者ID');
             $table->timestamp('updated_at')->nullable()->comment('更新日時');
 
-            $table->index(['resource_type', 'resource_identifier'], 'idx_resource');
+            $table->index(['resource_type', 'wiki_id'], 'idx_resource');
             $table->index('image_usage', 'idx_usage');
         });
 
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('画像ID');
             $table->uuid('published_id')->nullable()->comment('公開済み画像ID');
             $table->string('resource_type', 16)->comment('リソースタイプ (talent, song, group)');
-            $table->uuid('draft_resource_identifier')->comment('下書きリソースID');
+            $table->uuid('wiki_id')->comment('Wiki ID');
             $table->uuid('uploader_id')->comment('アップロード者ID');
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
@@ -51,13 +51,13 @@ return new class extends Migration
             $table->timestamp('agreed_to_terms_at')->comment('規約同意日時');
             $table->timestamp('uploaded_at')->comment('アップロード日時');
 
-            $table->index(['resource_type', 'draft_resource_identifier'], 'idx_draft_resource');
+            $table->index(['resource_type', 'wiki_id'], 'idx_draft_resource');
         });
 
         Schema::create('wiki_image_snapshots', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('スナップショットID');
             $table->uuid('image_id')->comment('画像ID');
-            $table->uuid('resource_snapshot_identifier')->comment('リソーススナップショットID');
+            $table->uuid('wiki_id')->comment('Wiki ID');
             $table->string('image_path', 255)->comment('画像パス');
             $table->string('image_usage', 16)->comment('画像用途');
             $table->integer('display_order')->comment('表示順');
@@ -71,7 +71,7 @@ return new class extends Migration
             $table->uuid('updater_id')->nullable()->comment('更新者ID');
             $table->timestamp('updated_at')->nullable()->comment('更新日時');
 
-            $table->index('resource_snapshot_identifier', 'idx_resource_snapshot');
+            $table->index('wiki_id', 'idx_resource_snapshot');
         });
     }
 

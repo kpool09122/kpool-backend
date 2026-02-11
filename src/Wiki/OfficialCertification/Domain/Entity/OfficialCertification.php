@@ -9,20 +9,20 @@ use DomainException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class OfficialCertification
 {
     public function __construct(
         private readonly CertificationIdentifier $certificationIdentifier,
-        private readonly ResourceType $resourceType,
-        private readonly ResourceIdentifier $resourceIdentifier,
-        private readonly AccountIdentifier $ownerAccountIdentifier,
-        private CertificationStatus $status,
-        private readonly DateTimeImmutable $requestedAt,
-        private ?DateTimeImmutable $approvedAt,
-        private ?DateTimeImmutable $rejectedAt,
+        private readonly ResourceType            $resourceType,
+        private readonly WikiIdentifier          $wikiIdentifier,
+        private readonly AccountIdentifier       $ownerAccountIdentifier,
+        private CertificationStatus              $status,
+        private readonly DateTimeImmutable       $requestedAt,
+        private ?DateTimeImmutable               $approvedAt,
+        private ?DateTimeImmutable               $rejectedAt,
     ) {
     }
 
@@ -36,9 +36,9 @@ class OfficialCertification
         return $this->resourceType;
     }
 
-    public function resourceIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->resourceIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function ownerAccountIdentifier(): AccountIdentifier

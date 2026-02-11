@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $year_month
  * @property int $points
  * @property string $resource_type
- * @property string $resource_id
+ * @property string $wiki_id
  * @property string $contributor_type
  * @property bool $is_new_creation
  * @property ?Carbon $created_at
@@ -34,7 +34,7 @@ class ContributionPointHistory extends Model
         'year_month',
         'points',
         'resource_type',
-        'resource_id',
+        'wiki_id',
         'contributor_type',
         'is_new_creation',
         'created_at',

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property ?string $published_id
  * @property string $resource_type
- * @property string $draft_resource_identifier
+ * @property string $wiki_id
  * @property string $uploader_id
  * @property string $image_path
  * @property string $image_usage
@@ -37,7 +37,7 @@ class DraftWikiImage extends Model
         'id',
         'published_id',
         'resource_type',
-        'draft_resource_identifier',
+        'wiki_id',
         'uploader_id',
         'image_path',
         'image_usage',

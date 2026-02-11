@@ -86,6 +86,12 @@ final readonly class GenerateTalentRequest
                         'real_name' => ['type' => 'string', 'nullable' => true],
                         'birthday' => ['type' => 'string', 'nullable' => true],
                         'description' => ['type' => 'string', 'nullable' => true],
+                        'english_level' => ['type' => 'string', 'nullable' => true],
+                        'english_background' => ['type' => 'string', 'nullable' => true],
+                        'instagram_url' => ['type' => 'string', 'nullable' => true],
+                        'tiktok_url' => ['type' => 'string', 'nullable' => true],
+                        'youtube_url' => ['type' => 'string', 'nullable' => true],
+                        'x_url' => ['type' => 'string', 'nullable' => true],
                     ],
                 ],
             ],
@@ -104,7 +110,7 @@ final readonly class GenerateTalentRequest
 
         return <<<PROMPT
 You are an expert in the K-POP industry.
-Research the following K-POP idol/talent{$affiliationContext} using Wikipedia and official homepage, then collect information.
+Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, Namuwiki, and official homepage, then collect information.
 
 ## Target
 - Talent Name: {$this->talentName}
@@ -118,12 +124,25 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia an
 2. real_name: Real name (birth name) of the talent in the original language (e.g., "박지민", "김제니"). If unknown, set to null.
 3. birthday: Birth date in ISO 8601 format (YYYY-MM-DD, e.g., "1995-10-13"). If unknown, set to null.
 4. Detailed description of the talent (group affiliation, debut date, position in group, major achievements, characteristics, etc. approximately 2000 characters)
+5. English proficiency:
+   - english_level: Level of English proficiency (e.g., "Native", "Fluent", "Conversational", "Basic", "None"). If unknown, set to null.
+   - english_background: Background of English ability (e.g., "Born and raised in Australia", "Studied abroad in the US for 3 years", "Self-taught"). If unknown, set to null.
+6. Personal SNS URLs (extract from external links section of Wikipedia/Namuwiki):
+   - instagram_url: Personal Instagram URL (e.g., "https://www.instagram.com/j.m/")
+   - tiktok_url: Personal TikTok URL (e.g., "https://www.tiktok.com/@j.m")
+   - youtube_url: Personal YouTube channel URL (e.g., "https://www.youtube.com/@jimin")
+   - x_url: Personal X(Twitter) URL (e.g., "https://x.com/jikiE_twt" or "https://twitter.com/jikiE_twt")
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
-- Prioritize Korean language sources: search Korean Wikipedia (ko.wikipedia.org) and Korean official websites first
+- Prioritize Korean language sources in this order:
+  1. Korean Wikipedia: Convert the name to Korean, URL-encode it, and access https://ko.wikipedia.org/wiki/{encoded_korean_name}
+  2. Namuwiki: Convert the name to Korean, URL-encode it, and access https://namu.wiki/w/{encoded_korean_name}
+  3. Korean official websites
+- If direct URL access fails (page not found), use a search query to find the correct page
+- Extract personal SNS URLs from the external links section of Wikipedia or Namuwiki pages
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
-- Use reliable sources (Wikipedia, official websites)
+- Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
 PROMPT;
     }

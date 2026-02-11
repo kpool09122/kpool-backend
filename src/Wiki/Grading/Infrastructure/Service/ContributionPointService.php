@@ -15,6 +15,7 @@ use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ContributionPointService implements ContributionPointServiceInterface
 {
@@ -28,11 +29,11 @@ readonly class ContributionPointService implements ContributionPointServiceInter
 
     public function grantPoints(
         ?PrincipalIdentifier $editorIdentifier,
-        PrincipalIdentifier $approverIdentifier,
+        PrincipalIdentifier  $approverIdentifier,
         ?PrincipalIdentifier $mergerIdentifier,
-        ResourceType $resourceType,
-        string $resourceId,
-        bool $isNewCreation,
+        ResourceType         $resourceType,
+        WikiIdentifier       $wikiIdentifier,
+        bool                 $isNewCreation,
     ): void {
         $now = new DateTimeImmutable();
         $yearMonth = YearMonth::fromDateTime($now);
@@ -42,7 +43,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
             $editorPoints = $this->calculateEditorPoints(
                 $editorIdentifier,
                 $resourceType,
-                $resourceId,
+                $wikiIdentifier,
                 $isNewCreation,
             );
 
@@ -52,7 +53,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
                     $yearMonth,
                     $editorPoints,
                     $resourceType,
-                    $resourceId,
+                    $wikiIdentifier,
                     ContributorType::EDITOR,
                     $isNewCreation,
                     $now,
@@ -71,7 +72,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
                 $yearMonth,
                 $approverPoints,
                 $resourceType,
-                $resourceId,
+                $wikiIdentifier,
                 ContributorType::APPROVER,
                 $isNewCreation,
                 $now,
@@ -90,7 +91,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
                 $yearMonth,
                 $mergerPoints,
                 $resourceType,
-                $resourceId,
+                $wikiIdentifier,
                 ContributorType::MERGER,
                 $isNewCreation,
                 $now,
@@ -102,15 +103,15 @@ readonly class ContributionPointService implements ContributionPointServiceInter
 
     private function calculateEditorPoints(
         PrincipalIdentifier $editorIdentifier,
-        ResourceType $resourceType,
-        string $resourceId,
-        bool $isNewCreation,
+        ResourceType        $resourceType,
+        WikiIdentifier      $wikiIdentifier,
+        bool                $isNewCreation,
     ): Point {
         // Check cooldown for editor only
         $lastPublishDate = $this->historyRepository->findLastPublishDate(
             $editorIdentifier,
             $resourceType,
-            $resourceId,
+            $wikiIdentifier,
             ContributorType::EDITOR,
         );
 
@@ -129,7 +130,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
         YearMonth           $yearMonth,
         Point               $points,
         ResourceType        $resourceType,
-        string              $resourceId,
+        WikiIdentifier      $wikiIdentifier,
         ContributorType     $roleType,
         bool                $isNewCreation,
         DateTimeImmutable   $createdAt,
@@ -139,7 +140,7 @@ readonly class ContributionPointService implements ContributionPointServiceInter
             $yearMonth,
             $points,
             $resourceType,
-            $resourceId,
+            $wikiIdentifier,
             $roleType,
             $isNewCreation,
             $createdAt,

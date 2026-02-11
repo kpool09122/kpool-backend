@@ -20,8 +20,8 @@ use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -35,7 +35,7 @@ class ContributionPointServiceTest extends TestCase
             YearMonth::fromDateTime(new DateTimeImmutable()),
             new Point(Point::NEW_EDITOR),
             ResourceType::AGENCY,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             ContributorType::EDITOR,
             true,
             new DateTimeImmutable(),
@@ -67,11 +67,11 @@ class ContributionPointServiceTest extends TestCase
         $editorId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
-            ->with($editorId, ResourceType::AGENCY, $resourceId, ContributorType::EDITOR)
+            ->with($editorId, ResourceType::AGENCY, $wikiId, ContributorType::EDITOR)
             ->andReturn(null);
         $historyRepository->shouldReceive('save')
             ->times(3);
@@ -101,7 +101,7 @@ class ContributionPointServiceTest extends TestCase
             $approverId,
             $mergerId,
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             true,
         );
     }
@@ -117,11 +117,11 @@ class ContributionPointServiceTest extends TestCase
         $editorId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
-            ->with($editorId, ResourceType::AGENCY, $resourceId, ContributorType::EDITOR)
+            ->with($editorId, ResourceType::AGENCY, $wikiId, ContributorType::EDITOR)
             ->andReturn(null);
         $historyRepository->shouldReceive('save')
             ->times(3);
@@ -151,7 +151,7 @@ class ContributionPointServiceTest extends TestCase
             $approverId,
             $mergerId,
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             false,
         );
     }
@@ -166,7 +166,7 @@ class ContributionPointServiceTest extends TestCase
     {
         $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('save')
@@ -197,7 +197,7 @@ class ContributionPointServiceTest extends TestCase
             $approverId,
             $mergerId,
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             true,
         );
     }
@@ -213,13 +213,13 @@ class ContributionPointServiceTest extends TestCase
         $editorId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $recentPublishDate = (new DateTimeImmutable())->modify('-3 days');
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
-            ->with($editorId, ResourceType::AGENCY, $resourceId, ContributorType::EDITOR)
+            ->with($editorId, ResourceType::AGENCY, $wikiId, ContributorType::EDITOR)
             ->andReturn($recentPublishDate);
         $historyRepository->shouldReceive('save')
             ->times(2);
@@ -249,7 +249,7 @@ class ContributionPointServiceTest extends TestCase
             $approverId,
             $mergerId,
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             true,
         );
     }
@@ -265,13 +265,13 @@ class ContributionPointServiceTest extends TestCase
         $editorId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $oldPublishDate = (new DateTimeImmutable())->modify('-10 days');
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
-            ->with($editorId, ResourceType::AGENCY, $resourceId, ContributorType::EDITOR)
+            ->with($editorId, ResourceType::AGENCY, $wikiId, ContributorType::EDITOR)
             ->andReturn($oldPublishDate);
         $historyRepository->shouldReceive('save')
             ->times(3);
@@ -301,7 +301,7 @@ class ContributionPointServiceTest extends TestCase
             $approverId,
             $mergerId,
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             false,
         );
     }
@@ -317,14 +317,14 @@ class ContributionPointServiceTest extends TestCase
         $editorId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceId = StrTestHelper::generateUuid();
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $existingSummary = $this->createSummary();
         $initialPoints = $existingSummary->points()->value();
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
-            ->with($editorId, ResourceType::AGENCY, $resourceId, ContributorType::EDITOR)
+            ->with($editorId, ResourceType::AGENCY, $wikiId, ContributorType::EDITOR)
             ->andReturn(null);
         $historyRepository->shouldReceive('save')
             ->times(3);
@@ -357,7 +357,7 @@ class ContributionPointServiceTest extends TestCase
             $approverId,
             $mergerId,
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             true,
         );
 
