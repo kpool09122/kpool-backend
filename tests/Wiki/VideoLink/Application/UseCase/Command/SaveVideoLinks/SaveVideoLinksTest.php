@@ -9,7 +9,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinks;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinksInput;
@@ -20,6 +19,7 @@ use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -51,7 +51,7 @@ class SaveVideoLinksTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $videoLinkData1 = new VideoLinkData(
             new ExternalContentLink('https://www.youtube.com/watch?v=video1'),
@@ -153,7 +153,7 @@ class SaveVideoLinksTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $input = new SaveVideoLinksInput(
             $principalIdentifier,

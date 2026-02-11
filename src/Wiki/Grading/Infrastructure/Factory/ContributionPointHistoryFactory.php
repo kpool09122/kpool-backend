@@ -13,8 +13,8 @@ use Source\Wiki\Grading\Domain\ValueObject\ContributorType;
 use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ContributionPointHistoryFactory implements ContributionPointHistoryFactoryInterface
 {
@@ -28,7 +28,7 @@ readonly class ContributionPointHistoryFactory implements ContributionPointHisto
         YearMonth           $yearMonth,
         Point               $points,
         ResourceType        $resourceType,
-        string              $resourceId,
+        WikiIdentifier      $wikiIdentifier,
         ContributorType     $roleType,
         bool                $isNewCreation,
         DateTimeImmutable   $createdAt,
@@ -39,7 +39,7 @@ readonly class ContributionPointHistoryFactory implements ContributionPointHisto
             $yearMonth,
             $points,
             $resourceType,
-            new ResourceIdentifier($resourceId),
+            $wikiIdentifier,
             $roleType,
             $isNewCreation,
             $createdAt,

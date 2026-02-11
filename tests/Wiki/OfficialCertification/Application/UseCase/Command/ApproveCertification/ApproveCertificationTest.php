@@ -18,8 +18,8 @@ use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,13 +43,13 @@ class ApproveCertificationTest extends TestCase
     public function testProcess(): void
     {
         $certificationId = new CertificationIdentifier(StrTestHelper::generateUuid());
-        $resourceId = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::SONG,
-            $resourceId,
+            $wikiId,
             $ownerAccountIdentifier,
             CertificationStatus::PENDING,
             new DateTimeImmutable(),
@@ -70,7 +70,7 @@ class ApproveCertificationTest extends TestCase
         $resourceUpdater = Mockery::mock(OfficialResourceUpdaterInterface::class);
         $resourceUpdater->shouldReceive('markOfficial')
             ->once()
-            ->with(ResourceType::SONG, $resourceId, $ownerAccountIdentifier)
+            ->with(ResourceType::SONG, $wikiId, $ownerAccountIdentifier)
             ->andReturnNull();
 
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
@@ -116,7 +116,7 @@ class ApproveCertificationTest extends TestCase
         $certification = new OfficialCertification(
             $certificationId,
             ResourceType::GROUP,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::APPROVED,
             new DateTimeImmutable(),

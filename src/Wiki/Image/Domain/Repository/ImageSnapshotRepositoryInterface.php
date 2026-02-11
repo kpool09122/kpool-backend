@@ -6,7 +6,7 @@ namespace Source\Wiki\Image\Domain\Repository;
 
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface ImageSnapshotRepositoryInterface
 {
@@ -15,7 +15,7 @@ interface ImageSnapshotRepositoryInterface
     /**
      * @return ImageSnapshot[]
      */
-    public function findByResourceSnapshot(ResourceIdentifier $resourceSnapshotIdentifier): array;
+    public function findByResourceSnapshot(WikiIdentifier $wikiIdentifier): array;
 
     public function save(ImageSnapshot $imageSnapshot): void;
 }

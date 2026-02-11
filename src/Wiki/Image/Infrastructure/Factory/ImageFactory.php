@@ -12,8 +12,8 @@ use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ImageFactory implements ImageFactoryInterface
 {
@@ -23,22 +23,22 @@ readonly class ImageFactory implements ImageFactoryInterface
     }
 
     public function create(
-        ResourceType $resourceType,
-        ResourceIdentifier $resourceIdentifier,
-        ImagePath $imagePath,
-        ImageUsage $imageUsage,
-        int $displayOrder,
-        string $sourceUrl,
-        string $sourceName,
-        string $altText,
+        ResourceType        $resourceType,
+        WikiIdentifier      $wikiIdentifier,
+        ImagePath           $imagePath,
+        ImageUsage          $imageUsage,
+        int                 $displayOrder,
+        string              $sourceUrl,
+        string              $sourceName,
+        string              $altText,
         PrincipalIdentifier $uploaderIdentifier,
         PrincipalIdentifier $approverIdentifier,
-        DateTimeImmutable $approvedAt,
+        DateTimeImmutable   $approvedAt,
     ): Image {
         return new Image(
             new ImageIdentifier($this->uuidGenerator->generate()),
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,

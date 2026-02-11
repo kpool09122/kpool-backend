@@ -10,7 +10,6 @@ use Mockery;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -68,7 +67,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertNull($output->resourceType);
-        $this->assertNull($output->resourceIdentifier);
+        $this->assertNull($output->wikiIdentifier);
         $this->assertSame(0, $output->collectedCount);
     }
 
@@ -86,7 +85,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -136,13 +135,13 @@ class CollectVideoLinksTest extends TestCase
         $videoLinkRepository = Mockery::mock(VideoLinkRepositoryInterface::class);
         $videoLinkRepository->shouldReceive('deleteAutoCollectedByResource')
             ->once()
-            ->with(ResourceType::TALENT, Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId));
+            ->with(ResourceType::TALENT, Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId));
         $videoLinkRepository->shouldReceive('findByResourceAndUrls')
             ->once()
             ->andReturn([]);
         $videoLinkRepository->shouldReceive('findByResourceWithMaxDisplayOrder')
             ->once()
-            ->with(ResourceType::TALENT, Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId))
+            ->with(ResourceType::TALENT, Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId))
             ->andReturn($existingVideoLink);
         $videoLinkRepository->shouldReceive('save')
             ->times(2);
@@ -152,7 +151,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 'Test Video 1',
@@ -163,7 +162,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 'Test Video 2',
@@ -183,7 +182,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertTrue($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(2, $output->collectedCount);
     }
 
@@ -201,7 +200,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -228,7 +227,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame('Resource not found', $output->message);
     }
 
@@ -246,7 +245,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::GROUP,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -301,7 +300,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::GROUP,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 'Test Video 1',
@@ -338,7 +337,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::SONG,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -392,7 +391,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::SONG,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::type(ExternalContentLink::class),
                 VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
                 'Test Song Video 1',
@@ -412,7 +411,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertTrue($output->processed);
         $this->assertSame(ResourceType::SONG, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(1, $output->collectedCount);
     }
 
@@ -430,7 +429,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::AGENCY,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -457,7 +456,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertSame(ResourceType::AGENCY, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame('Resource not found', $output->message);
     }
 
@@ -475,7 +474,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new DateTimeImmutable('-2 weeks'),
             new DateTimeImmutable(),
         );
@@ -497,7 +496,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertFalse($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame('Resource was collected within the last month', $output->message);
     }
 
@@ -515,7 +514,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new DateTimeImmutable('-2 months'),
             new DateTimeImmutable(),
         );
@@ -579,7 +578,7 @@ class CollectVideoLinksTest extends TestCase
 
         $this->assertTrue($output->processed);
         $this->assertSame(ResourceType::TALENT, $output->resourceType);
-        $this->assertSame($resourceId, (string) $output->resourceIdentifier);
+        $this->assertSame($resourceId, (string) $output->wikiIdentifier);
         $this->assertSame(1, $output->collectedCount);
     }
 
@@ -597,7 +596,7 @@ class CollectVideoLinksTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($statusId),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             null,
             new DateTimeImmutable(),
         );
@@ -629,7 +628,7 @@ class CollectVideoLinksTest extends TestCase
         $existingVideoLink = new VideoLink(
             new VideoLinkIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new ExternalContentLink($existingUrl),
             VideoUsage::MUSIC_VIDEO,
             'Existing Video',
@@ -663,7 +662,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 [$existingUrl, $newUrl],
             )
             ->andReturn([$existingVideoLink]);
@@ -678,7 +677,7 @@ class CollectVideoLinksTest extends TestCase
             ->once()
             ->with(
                 ResourceType::TALENT,
-                Mockery::on(static fn (ResourceIdentifier $id): bool => (string) $id === $resourceId),
+                Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === $resourceId),
                 Mockery::on(static fn (ExternalContentLink $url): bool => (string) $url === $newUrl),
                 VideoUsage::YOUTUBE_AUTO_LIKE_COUNT,
                 'New Video',
@@ -724,7 +723,7 @@ class CollectVideoLinksTest extends TestCase
         return new VideoLink(
             new VideoLinkIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new ExternalContentLink('https://www.youtube.com/watch?v=test'),
             VideoUsage::YOUTUBE_AUTO_VIEW_COUNT,
             'Test Video',

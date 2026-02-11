@@ -9,8 +9,8 @@ use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -26,7 +26,7 @@ class UploadImageInputTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -52,7 +52,7 @@ class UploadImageInputTest extends TestCase
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame((string) $publishedImageIdentifier, (string) $input->publishedImageIdentifier());
         $this->assertSame($resourceType, $input->resourceType());
-        $this->assertSame((string) $draftResourceIdentifier, (string) $input->draftResourceIdentifier());
+        $this->assertSame((string) $draftResourceIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
         $this->assertSame($imageUsage, $input->imageUsage());
         $this->assertSame($displayOrder, $input->displayOrder());
@@ -71,7 +71,7 @@ class UploadImageInputTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;

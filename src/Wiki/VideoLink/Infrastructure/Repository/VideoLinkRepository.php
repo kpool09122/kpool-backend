@@ -6,12 +6,12 @@ namespace Source\Wiki\VideoLink\Infrastructure\Repository;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Entity\VideoLink;
 use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoLinkIdentifier;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class VideoLinkRepository implements VideoLinkRepositoryInterface
 {
@@ -31,11 +31,11 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
     /**
      * @return VideoLink[]
      */
-    public function findByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): array
+    public function findByResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array
     {
         $models = VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
-            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('display_order')
             ->get();
 
@@ -48,7 +48,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ['id' => (string) $videoLink->videoLinkIdentifier()],
             [
                 'resource_type' => $videoLink->resourceType()->value,
-                'resource_identifier' => (string) $videoLink->resourceIdentifier(),
+                'wiki_id' => (string) $videoLink->wikiIdentifier(),
                 'url' => (string) $videoLink->url(),
                 'video_usage' => $videoLink->videoUsage()->value,
                 'title' => $videoLink->title(),
@@ -67,15 +67,15 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
             ->delete();
     }
 
-    public function deleteByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void
+    public function deleteByResource(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): void
     {
         VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
-            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->where('wiki_id', (string) $resourceIdentifier)
             ->delete();
     }
 
-    public function deleteAutoCollectedByResource(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): void
+    public function deleteAutoCollectedByResource(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): void
     {
         $autoCollectedUsages = [
             VideoUsage::YOUTUBE_AUTO_VIEW_COUNT->value,
@@ -85,16 +85,16 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
 
         VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
-            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->where('wiki_id', (string) $resourceIdentifier)
             ->whereIn('video_usage', $autoCollectedUsages)
             ->delete();
     }
 
-    public function findByResourceWithMaxDisplayOrder(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier): ?VideoLink
+    public function findByResourceWithMaxDisplayOrder(ResourceType $resourceType, WikiIdentifier $resourceIdentifier): ?VideoLink
     {
         $model = VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
-            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->where('wiki_id', (string) $resourceIdentifier)
             ->orderByDesc('display_order')
             ->first();
 
@@ -106,7 +106,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
      *
      * @return VideoLink[]
      */
-    public function findByResourceAndUrls(ResourceType $resourceType, ResourceIdentifier $resourceIdentifier, array $urls): array
+    public function findByResourceAndUrls(ResourceType $resourceType, WikiIdentifier $resourceIdentifier, array $urls): array
     {
         if ($urls === []) {
             return [];
@@ -114,7 +114,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
 
         $models = VideoLinkModel::query()
             ->where('resource_type', $resourceType->value)
-            ->where('resource_identifier', (string) $resourceIdentifier)
+            ->where('wiki_id', (string) $resourceIdentifier)
             ->whereIn('url', $urls)
             ->get();
 
@@ -126,7 +126,7 @@ final class VideoLinkRepository implements VideoLinkRepositoryInterface
         return new VideoLink(
             new VideoLinkIdentifier($model->id),
             ResourceType::from($model->resource_type),
-            new ResourceIdentifier($model->resource_identifier),
+            new WikiIdentifier($model->wiki_id),
             new ExternalContentLink($model->url),
             VideoUsage::from($model->video_usage),
             $model->title,

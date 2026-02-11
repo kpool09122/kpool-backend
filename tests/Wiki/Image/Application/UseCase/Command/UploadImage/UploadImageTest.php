@@ -30,8 +30,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -148,7 +148,7 @@ class UploadImageTest extends TestCase
         $this->assertTrue(UuidValidator::isValid((string)$result->imageIdentifier()));
         $this->assertSame((string)$testData->publishedImageIdentifier, (string)$result->publishedImageIdentifier());
         $this->assertSame($testData->resourceType, $result->resourceType());
-        $this->assertSame((string)$testData->draftResourceIdentifier, (string)$result->draftResourceIdentifier());
+        $this->assertSame((string)$testData->draftResourceIdentifier, (string)$result->wikiIdentifier());
         $this->assertSame((string)$testData->principalIdentifier, (string)$result->uploaderIdentifier());
         $this->assertSame((string)$testData->imagePath, (string)$result->imagePath());
         $this->assertSame($testData->imageUsage, $result->imageUsage());
@@ -275,7 +275,7 @@ class UploadImageTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -339,7 +339,7 @@ readonly class UploadImageTestData
         public PrincipalIdentifier $principalIdentifier,
         public ImageIdentifier $publishedImageIdentifier,
         public ResourceType $resourceType,
-        public ResourceIdentifier $draftResourceIdentifier,
+        public WikiIdentifier $draftResourceIdentifier,
         public string $base64EncodedImage,
         public ImageUsage $imageUsage,
         public int $displayOrder,

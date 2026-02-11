@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $id
  * @property string $image_id
- * @property string $resource_snapshot_identifier
+ * @property string $wiki_id
  * @property string $image_path
  * @property string $image_usage
  * @property int $display_order
@@ -37,7 +37,7 @@ class WikiImageSnapshot extends Model
     protected $fillable = [
         'id',
         'image_id',
-        'resource_snapshot_identifier',
+        'wiki_id',
         'image_path',
         'image_usage',
         'display_order',

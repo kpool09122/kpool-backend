@@ -7,11 +7,11 @@ namespace Tests\Wiki\VideoLink\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
 use Source\Wiki\VideoLink\Infrastructure\Factory\VideoLinkFactory;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -36,7 +36,7 @@ class VideoLinkFactoryTest extends TestCase
     public function testCreate(): void
     {
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $url = new ExternalContentLink('https://www.youtube.com/watch?v=test123');
         $videoUsage = VideoUsage::MUSIC_VIDEO;
         $title = 'Test Music Video';
@@ -54,7 +54,7 @@ class VideoLinkFactoryTest extends TestCase
 
         $this->assertTrue(UuidValidator::isValid((string) $videoLink->videoLinkIdentifier()));
         $this->assertSame($resourceType, $videoLink->resourceType());
-        $this->assertSame((string) $resourceIdentifier, (string) $videoLink->resourceIdentifier());
+        $this->assertSame((string) $resourceIdentifier, (string) $videoLink->wikiIdentifier());
         $this->assertSame((string) $url, (string) $videoLink->url());
         $this->assertSame($videoUsage, $videoLink->videoUsage());
         $this->assertSame($title, $videoLink->title());

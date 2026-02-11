@@ -10,22 +10,22 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface DraftImageFactoryInterface
 {
     public function create(
-        ?ImageIdentifier $publishedImageIdentifier,
-        ResourceType $resourceType,
-        ResourceIdentifier $draftResourceIdentifier,
+        ?ImageIdentifier    $publishedImageIdentifier,
+        ResourceType        $resourceType,
+        WikiIdentifier      $wikiIdentifier,
         PrincipalIdentifier $uploaderIdentifier,
-        ImagePath $imagePath,
-        ImageUsage $imageUsage,
-        int $displayOrder,
-        string $sourceUrl,
-        string $sourceName,
-        string $altText,
-        DateTimeImmutable $agreedToTermsAt,
+        ImagePath           $imagePath,
+        ImageUsage          $imageUsage,
+        int                 $displayOrder,
+        string              $sourceUrl,
+        string              $sourceName,
+        string              $altText,
+        DateTimeImmutable   $agreedToTermsAt,
     ): DraftImage;
 }

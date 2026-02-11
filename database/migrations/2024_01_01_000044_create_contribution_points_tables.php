@@ -16,7 +16,7 @@ return new class () extends Migration {
             $table->string('year_month', 7)->comment('年月（YYYY-MM）');
             $table->integer('points')->comment('付与ポイント');
             $table->string('resource_type', 50)->comment('リソースタイプ（agency, talent, group, song）');
-            $table->uuid('resource_id')->comment('リソースID');
+            $table->uuid('wiki_id')->comment('Wiki ID');
             $table->string('contributor_type', 50)->comment('貢献タイプ（editor, approver, merger）');
             $table->boolean('is_new_creation')->comment('新規作成かどうか');
             $table->timestamp('created_at')->nullable();
@@ -27,7 +27,7 @@ return new class () extends Migration {
                 ->cascadeOnDelete();
 
             $table->index(['principal_id', 'year_month']);
-            $table->index(['resource_type', 'resource_id', 'contributor_type', 'principal_id'], 'cooldown_check_index');
+            $table->index(['resource_type', 'wiki_id', 'contributor_type', 'principal_id'], 'cooldown_check_index');
         });
 
         // contribution_point_summaries: 月別集計サマリー（月次バッチで更新、昇格降格判定に使用）

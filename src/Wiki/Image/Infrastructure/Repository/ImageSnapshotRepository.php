@@ -12,7 +12,7 @@ use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
 {
@@ -32,10 +32,10 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
     /**
      * @return ImageSnapshot[]
      */
-    public function findByResourceSnapshot(ResourceIdentifier $resourceSnapshotIdentifier): array
+    public function findByResourceSnapshot(WikiIdentifier $wikiIdentifier): array
     {
         $models = WikiImageSnapshot::query()
-            ->where('resource_snapshot_identifier', (string) $resourceSnapshotIdentifier)
+            ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('display_order')
             ->get();
 
@@ -47,7 +47,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
         WikiImageSnapshot::query()->create([
             'id' => (string) $imageSnapshot->snapshotIdentifier(),
             'image_id' => (string) $imageSnapshot->imageIdentifier(),
-            'resource_snapshot_identifier' => (string) $imageSnapshot->resourceSnapshotIdentifier(),
+            'wiki_id' => (string) $imageSnapshot->wikiIdentifier(),
             'image_path' => (string) $imageSnapshot->imagePath(),
             'image_usage' => $imageSnapshot->imageUsage()->value,
             'display_order' => $imageSnapshot->displayOrder(),
@@ -68,7 +68,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
         return new ImageSnapshot(
             new ImageSnapshotIdentifier($model->id),
             new ImageIdentifier($model->image_id),
-            new ResourceIdentifier($model->resource_snapshot_identifier),
+            new WikiIdentifier($model->wiki_id),
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,

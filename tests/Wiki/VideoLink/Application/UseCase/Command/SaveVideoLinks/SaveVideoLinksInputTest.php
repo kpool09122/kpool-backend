@@ -6,11 +6,11 @@ namespace Tests\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks;
 
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinksInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\VideoLinkData;
 use Source\Wiki\VideoLink\Domain\ValueObject\VideoUsage;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ class SaveVideoLinksInputTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $videoLinks = [
             new VideoLinkData(
                 url: new ExternalContentLink('https://www.youtube.com/watch?v=test1'),
@@ -50,7 +50,7 @@ class SaveVideoLinksInputTest extends TestCase
 
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType, $input->resourceType());
-        $this->assertSame((string) $resourceIdentifier, (string) $input->resourceIdentifier());
+        $this->assertSame((string) $resourceIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($videoLinks, $input->videoLinks());
     }
 
@@ -63,7 +63,7 @@ class SaveVideoLinksInputTest extends TestCase
     {
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::SONG;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $videoLinks = [];
 
         $input = new SaveVideoLinksInput(
@@ -75,7 +75,7 @@ class SaveVideoLinksInputTest extends TestCase
 
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType, $input->resourceType());
-        $this->assertSame((string) $resourceIdentifier, (string) $input->resourceIdentifier());
+        $this->assertSame((string) $resourceIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame([], $input->videoLinks());
     }
 }

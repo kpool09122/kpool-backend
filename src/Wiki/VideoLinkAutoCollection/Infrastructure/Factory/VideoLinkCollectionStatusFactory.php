@@ -6,11 +6,11 @@ namespace Source\Wiki\VideoLinkAutoCollection\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Factory\VideoLinkCollectionStatusFactoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class VideoLinkCollectionStatusFactory implements VideoLinkCollectionStatusFactoryInterface
 {
@@ -20,13 +20,13 @@ readonly class VideoLinkCollectionStatusFactory implements VideoLinkCollectionSt
     }
 
     public function create(
-        ResourceType $resourceType,
-        ResourceIdentifier $resourceIdentifier,
+        ResourceType   $resourceType,
+        WikiIdentifier $wikiIdentifier,
     ): VideoLinkCollectionStatus {
         return new VideoLinkCollectionStatus(
             new VideoLinkCollectionStatusIdentifier($this->uuidGenerator->generate()),
             $resourceType,
-            $resourceIdentifier,
+            $wikiIdentifier,
             null,
             new DateTimeImmutable(),
         );

@@ -6,10 +6,10 @@ namespace Tests\Wiki\VideoLinkAutoCollection\Domain\Entity;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Entity\VideoLinkCollectionStatus;
 use Source\Wiki\VideoLinkAutoCollection\Domain\ValueObject\VideoLinkCollectionStatusIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class VideoLinkCollectionStatusTest extends TestCase
@@ -21,7 +21,7 @@ class VideoLinkCollectionStatusTest extends TestCase
     {
         $identifier = new VideoLinkCollectionStatusIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $createdAt = new DateTimeImmutable();
 
         $status = new VideoLinkCollectionStatus(
@@ -34,7 +34,7 @@ class VideoLinkCollectionStatusTest extends TestCase
 
         $this->assertSame($identifier, $status->identifier());
         $this->assertSame($resourceType, $status->resourceType());
-        $this->assertSame($resourceIdentifier, $status->resourceIdentifier());
+        $this->assertSame($resourceIdentifier, $status->wikiIdentifier());
         $this->assertNull($status->lastCollectedAt());
         $this->assertSame($createdAt, $status->createdAt());
     }
@@ -51,7 +51,7 @@ class VideoLinkCollectionStatusTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             $identifier,
             ResourceType::GROUP,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             $lastCollectedAt,
             $createdAt,
         );
@@ -70,7 +70,7 @@ class VideoLinkCollectionStatusTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             $identifier,
             ResourceType::SONG,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             null,
             $createdAt,
         );
@@ -93,7 +93,7 @@ class VideoLinkCollectionStatusTest extends TestCase
         $status = new VideoLinkCollectionStatus(
             $identifier,
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             null,
             new DateTimeImmutable(),
         );

@@ -12,7 +12,7 @@ use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ImageSnapshotTest extends TestCase
@@ -24,7 +24,7 @@ class ImageSnapshotTest extends TestCase
     {
         $snapshotIdentifier = new ImageSnapshotIdentifier(StrTestHelper::generateUuid());
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
-        $resourceSnapshotIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $resourceSnapshotIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -58,7 +58,7 @@ class ImageSnapshotTest extends TestCase
 
         $this->assertSame((string) $snapshotIdentifier, (string) $imageSnapshot->snapshotIdentifier());
         $this->assertSame((string) $imageIdentifier, (string) $imageSnapshot->imageIdentifier());
-        $this->assertSame((string) $resourceSnapshotIdentifier, (string) $imageSnapshot->resourceSnapshotIdentifier());
+        $this->assertSame((string) $resourceSnapshotIdentifier, (string) $imageSnapshot->wikiIdentifier());
         $this->assertSame((string) $imagePath, (string) $imageSnapshot->imagePath());
         $this->assertSame($imageUsage, $imageSnapshot->imageUsage());
         $this->assertSame($displayOrder, $imageSnapshot->displayOrder());

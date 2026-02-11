@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $id
  * @property string $resource_type
- * @property string $resource_identifier
+ * @property string $wiki_id
  * @property Carbon|null $last_collected_at
  * @property Carbon $created_at
  */
@@ -27,7 +27,7 @@ class VideoLinkCollectionStatus extends Model
     protected $fillable = [
         'id',
         'resource_type',
-        'resource_identifier',
+        'wiki_id',
         'last_collected_at',
         'created_at',
     ];

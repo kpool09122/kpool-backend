@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -50,7 +49,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::AGENCY, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::AGENCY, new WikiIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -82,7 +81,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::GROUP, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::GROUP, new WikiIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -114,7 +113,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::TALENT, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::TALENT, new WikiIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -146,7 +145,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::SONG, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::SONG, new WikiIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
         $this->assertSame((string) $owner, (string) $wiki->ownerAccountIdentifier());
@@ -175,7 +174,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::GROUP, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::GROUP, new WikiIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
     }
@@ -202,7 +201,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::AGENCY, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::AGENCY, new WikiIdentifier($wikiId), $owner);
     }
 
     /**
@@ -227,7 +226,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::TALENT, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::TALENT, new WikiIdentifier($wikiId), $owner);
     }
 
     /**
@@ -253,7 +252,7 @@ class OfficialResourceUpdaterTest extends TestCase
 
         $service = $this->app->make(OfficialResourceUpdaterInterface::class);
 
-        $service->markOfficial(ResourceType::SONG, new ResourceIdentifier($wikiId), $owner);
+        $service->markOfficial(ResourceType::SONG, new WikiIdentifier($wikiId), $owner);
 
         $this->assertTrue($wiki->isOfficial());
     }

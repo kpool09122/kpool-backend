@@ -150,7 +150,7 @@ readonly class PublishWiki implements PublishWikiInterface
                 approverIdentifier: $wiki->approverIdentifier(),
                 mergerIdentifier: $wiki->mergerIdentifier(),
                 resourceType: $wiki->resourceType(),
-                resourceId: (string) $publishedWiki->wikiIdentifier(),
+                wikiIdentifier: $publishedWiki->wikiIdentifier(),
                 isNewCreation: $isNewCreation,
             );
         }

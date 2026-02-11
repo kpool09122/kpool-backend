@@ -20,14 +20,14 @@ readonly class SaveVideoLinks implements SaveVideoLinksInterface
         // 既存のVideoLinksを削除
         $this->videoLinkRepository->deleteByResource(
             $input->resourceType(),
-            $input->resourceIdentifier(),
+            $input->wikiIdentifier(),
         );
 
         // 新しいVideoLinksを保存
         foreach ($input->videoLinks() as $videoLinkData) {
             $videoLink = $this->videoLinkFactory->create(
                 $input->resourceType(),
-                $input->resourceIdentifier(),
+                $input->wikiIdentifier(),
                 $videoLinkData->url,
                 $videoLinkData->videoUsage,
                 $videoLinkData->title,

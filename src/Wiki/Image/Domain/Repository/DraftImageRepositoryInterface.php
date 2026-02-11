@@ -6,8 +6,8 @@ namespace Source\Wiki\Image\Domain\Repository;
 
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface DraftImageRepositoryInterface
 {
@@ -16,7 +16,7 @@ interface DraftImageRepositoryInterface
     /**
      * @return DraftImage[]
      */
-    public function findByDraftResource(ResourceType $resourceType, ResourceIdentifier $draftResourceIdentifier): array;
+    public function findByDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array;
 
     public function save(DraftImage $draftImage): void;
 
@@ -24,7 +24,7 @@ interface DraftImageRepositoryInterface
 
     /**
      * @param ResourceType $resourceType
-     * @param ResourceIdentifier $draftResourceIdentifier
+     * @param WikiIdentifier $wikiIdentifier
      */
-    public function deleteByDraftResource(ResourceType $resourceType, ResourceIdentifier $draftResourceIdentifier): void;
+    public function deleteByDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void;
 }

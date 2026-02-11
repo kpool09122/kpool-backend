@@ -12,7 +12,7 @@ class CreateVideoLinkCollectionStatus
     /**
      * @param array{
      *     resource_type?: string,
-     *     resource_identifier?: string,
+     *     wiki_id?: string,
      *     last_collected_at?: string|null,
      * } $overrides
      */
@@ -21,7 +21,7 @@ class CreateVideoLinkCollectionStatus
         DB::table('video_link_collection_statuses')->insert([
             'id' => $id,
             'resource_type' => $overrides['resource_type'] ?? ResourceType::TALENT->value,
-            'resource_identifier' => $overrides['resource_identifier'] ?? StrTestHelper::generateUuid(),
+            'wiki_id' => $overrides['wiki_id'] ?? StrTestHelper::generateUuid(),
             'last_collected_at' => $overrides['last_collected_at'] ?? null,
             'created_at' => now(),
         ]);

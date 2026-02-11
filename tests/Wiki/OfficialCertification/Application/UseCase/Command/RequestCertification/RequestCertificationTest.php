@@ -17,8 +17,8 @@ use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactor
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -42,12 +42,12 @@ class RequestCertificationTest extends TestCase
     public function testProcess(): void
     {
         $certificationId = StrTestHelper::generateUuid();
-        $resourceId = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
         $ownerAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $certification = new OfficialCertification(
             new CertificationIdentifier($certificationId),
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             $ownerAccountIdentifier,
             CertificationStatus::PENDING,
             new DateTimeImmutable(),
@@ -58,7 +58,7 @@ class RequestCertificationTest extends TestCase
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $repository->shouldReceive('findByResource')
             ->once()
-            ->with(ResourceType::AGENCY, $resourceId)
+            ->with(ResourceType::AGENCY, $wikiId)
             ->andReturnNull();
         $repository->shouldReceive('save')
             ->once()
@@ -68,7 +68,7 @@ class RequestCertificationTest extends TestCase
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
         $factory->shouldReceive('create')
             ->once()
-            ->with(ResourceType::AGENCY, $resourceId, $ownerAccountIdentifier)
+            ->with(ResourceType::AGENCY, $wikiId, $ownerAccountIdentifier)
             ->andReturn($certification);
 
         $this->app->instance(OfficialCertificationRepositoryInterface::class, $repository);
@@ -78,7 +78,7 @@ class RequestCertificationTest extends TestCase
 
         $input = new RequestCertificationInput(
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             $ownerAccountIdentifier,
         );
 
@@ -90,11 +90,11 @@ class RequestCertificationTest extends TestCase
 
     public function testProcessWhenAlreadyRequested(): void
     {
-        $resourceId = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
         $existing = new OfficialCertification(
             new CertificationIdentifier(StrTestHelper::generateUuid()),
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             new AccountIdentifier(StrTestHelper::generateUuid()),
             CertificationStatus::PENDING,
             new DateTimeImmutable(),
@@ -105,7 +105,7 @@ class RequestCertificationTest extends TestCase
         $repository = Mockery::mock(OfficialCertificationRepositoryInterface::class);
         $repository->shouldReceive('findByResource')
             ->once()
-            ->with(ResourceType::AGENCY, $resourceId)
+            ->with(ResourceType::AGENCY, $wikiId)
             ->andReturn($existing);
 
         $factory = Mockery::mock(OfficialCertificationFactoryInterface::class);
@@ -117,7 +117,7 @@ class RequestCertificationTest extends TestCase
 
         $input = new RequestCertificationInput(
             ResourceType::AGENCY,
-            $resourceId,
+            $wikiId,
             new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 

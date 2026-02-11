@@ -10,26 +10,26 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class DraftImage
 {
     public function __construct(
-        private readonly ImageIdentifier $imageIdentifier,
-        private readonly ?ImageIdentifier $publishedImageIdentifier,
-        private readonly ResourceType $resourceType,
-        private readonly ResourceIdentifier $draftResourceIdentifier,
+        private readonly ImageIdentifier     $imageIdentifier,
+        private readonly ?ImageIdentifier    $publishedImageIdentifier,
+        private readonly ResourceType        $resourceType,
+        private readonly WikiIdentifier      $wikiIdentifier,
         private readonly PrincipalIdentifier $uploaderIdentifier,
-        private ImagePath $imagePath,
-        private ImageUsage $imageUsage,
-        private int $displayOrder,
-        private string $sourceUrl,
-        private string $sourceName,
-        private string $altText,
-        private ApprovalStatus $status,
-        private readonly DateTimeImmutable $agreedToTermsAt,
-        private readonly DateTimeImmutable $uploadedAt,
+        private ImagePath                    $imagePath,
+        private ImageUsage                   $imageUsage,
+        private int                          $displayOrder,
+        private string                       $sourceUrl,
+        private string                       $sourceName,
+        private string                       $altText,
+        private ApprovalStatus               $status,
+        private readonly DateTimeImmutable   $agreedToTermsAt,
+        private readonly DateTimeImmutable   $uploadedAt,
     ) {
     }
 
@@ -48,9 +48,9 @@ class DraftImage
         return $this->resourceType;
     }
 
-    public function draftResourceIdentifier(): ResourceIdentifier
+    public function wikiIdentifier(): WikiIdentifier
     {
-        return $this->draftResourceIdentifier;
+        return $this->wikiIdentifier;
     }
 
     public function uploaderIdentifier(): PrincipalIdentifier

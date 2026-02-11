@@ -32,7 +32,7 @@ class CreateImageSnapshot
         DB::table('wiki_image_snapshots')->insert([
             'id' => $snapshotId,
             'image_id' => $overrides['image_id'] ?? StrTestHelper::generateUuid(),
-            'resource_snapshot_identifier' => $overrides['resource_snapshot_identifier'] ?? StrTestHelper::generateUuid(),
+            'wiki_id' => $overrides['wiki_id'] ?? StrTestHelper::generateUuid(),
             'image_path' => $overrides['image_path'] ?? '/images/test/snapshot.jpg',
             'image_usage' => $overrides['image_usage'] ?? ImageUsage::PROFILE->value,
             'display_order' => $overrides['display_order'] ?? 1,

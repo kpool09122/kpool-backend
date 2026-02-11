@@ -10,6 +10,7 @@ use Source\Wiki\Grading\Domain\ValueObject\ContributorType;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface ContributionPointHistoryRepositoryInterface
 {
@@ -35,7 +36,7 @@ interface ContributionPointHistoryRepositoryInterface
     public function findLastPublishDate(
         PrincipalIdentifier $principalIdentifier,
         ResourceType        $resourceType,
-        string              $resourceId,
+        WikiIdentifier      $wikiIdentifier,
         ContributorType     $contributorType,
     ): ?DateTimeImmutable;
 }

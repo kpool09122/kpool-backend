@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $resource_type
- * @property string $resource_id
+ * @property string $wiki_id
  * @property string $owner_account_id
  * @property string $status
  * @property Carbon $requested_at
@@ -30,7 +30,7 @@ class OfficialCertification extends Model
     protected $fillable = [
         'id',
         'resource_type',
-        'resource_id',
+        'wiki_id',
         'owner_account_id',
         'status',
         'requested_at',

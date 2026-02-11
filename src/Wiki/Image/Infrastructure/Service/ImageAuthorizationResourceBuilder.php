@@ -8,7 +8,6 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -27,10 +26,10 @@ readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationRe
     ) {
     }
 
-    public function buildFromDraftResource(ResourceType $resourceType, ResourceIdentifier $draftResourceIdentifier): Resource
+    public function buildFromDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): Resource
     {
         $draftWiki = $this->draftWikiRepository->findById(
-            new DraftWikiIdentifier((string) $draftResourceIdentifier)
+            new DraftWikiIdentifier((string) $wikiIdentifier)
         );
 
         if ($draftWiki === null) {
@@ -52,14 +51,14 @@ readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationRe
     {
         return $this->buildFromDraftResource(
             $draftImage->resourceType(),
-            $draftImage->draftResourceIdentifier(),
+            $draftImage->wikiIdentifier(),
         );
     }
 
     public function buildFromImage(Image $image): Resource
     {
         $wiki = $this->wikiRepository->findById(
-            new WikiIdentifier((string) $image->resourceIdentifier())
+            $image->wikiIdentifier()
         );
 
         if ($wiki === null) {

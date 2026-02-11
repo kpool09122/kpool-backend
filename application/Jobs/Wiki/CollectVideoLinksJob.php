@@ -36,7 +36,7 @@ class CollectVideoLinksJob implements ShouldQueue, ShouldBeUnique
         if ($output->processed) {
             Log::info('CollectVideoLinksJob completed', [
                 'resource_type' => $output->resourceType?->value,
-                'resource_identifier' => $output->resourceIdentifier !== null ? (string) $output->resourceIdentifier : null,
+                'wiki_id' => $output->wikiIdentifier !== null ? (string) $output->wikiIdentifier : null,
                 'collected_count' => $output->collectedCount,
             ]);
         } else {

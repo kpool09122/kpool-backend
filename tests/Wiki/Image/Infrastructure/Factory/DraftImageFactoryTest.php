@@ -14,8 +14,8 @@ use Source\Wiki\Image\Infrastructure\Factory\DraftImageFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -40,7 +40,7 @@ class DraftImageFactoryTest extends TestCase
     public function testCreateNew(): void
     {
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
@@ -68,7 +68,7 @@ class DraftImageFactoryTest extends TestCase
         $this->assertTrue(UuidValidator::isValid((string) $draftImage->imageIdentifier()));
         $this->assertNull($draftImage->publishedImageIdentifier());
         $this->assertSame($resourceType, $draftImage->resourceType());
-        $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->draftResourceIdentifier());
+        $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->wikiIdentifier());
         $this->assertSame((string) $uploaderIdentifier, (string) $draftImage->uploaderIdentifier());
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
         $this->assertSame($imageUsage, $draftImage->imageUsage());
@@ -89,7 +89,7 @@ class DraftImageFactoryTest extends TestCase
     {
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::SONG;
-        $draftResourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
         $imageUsage = ImageUsage::COVER;

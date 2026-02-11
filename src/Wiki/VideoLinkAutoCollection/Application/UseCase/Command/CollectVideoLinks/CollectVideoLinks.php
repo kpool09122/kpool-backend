@@ -12,7 +12,6 @@ use Source\Wiki\VideoLink\Domain\Repository\VideoLinkRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Repository\VideoLinkCollectionStatusRepositoryInterface;
 use Source\Wiki\VideoLinkAutoCollection\Domain\Service\YouTubeSearchServiceInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class CollectVideoLinks implements CollectVideoLinksInterface
 {
@@ -41,30 +40,30 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
         if ($status->lastCollectedAt() !== null && $status->lastCollectedAt() > $oneMonthAgo) {
             $this->logger->info('CollectVideoLinks: Resource was collected within the last month', [
                 'resource_type' => $status->resourceType()->value,
-                'resource_identifier' => (string) $status->resourceIdentifier(),
+                'wiki_id' => (string) $status->wikiIdentifier(),
                 'last_collected_at' => $status->lastCollectedAt()->format('Y-m-d H:i:s'),
             ]);
             $output->recentlyCollected(
                 $status->resourceType(),
-                $status->resourceIdentifier(),
+                $status->wikiIdentifier(),
             );
 
             return;
         }
 
         $wiki = $this->wikiRepository->findById(
-            new WikiIdentifier((string) $status->resourceIdentifier()),
+            $status->wikiIdentifier(),
         );
         $resourceName = $wiki !== null ? (string) $wiki->basic()->name() : null;
 
         if ($resourceName === null) {
             $this->logger->warning('CollectVideoLinks: Resource not found', [
                 'resource_type' => $status->resourceType()->value,
-                'resource_identifier' => (string) $status->resourceIdentifier(),
+                'wiki_id' => (string) $status->wikiIdentifier(),
             ]);
             $output->resourceNotFound(
                 $status->resourceType(),
-                $status->resourceIdentifier(),
+                $status->wikiIdentifier(),
             );
 
             return;
@@ -72,7 +71,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $this->logger->info('CollectVideoLinks: Starting collection', [
             'resource_type' => $status->resourceType()->value,
-            'resource_identifier' => (string) $status->resourceIdentifier(),
+            'wiki_id' => (string) $status->wikiIdentifier(),
             'resource_name' => $resourceName,
         ]);
 
@@ -80,20 +79,20 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $this->videoLinkRepository->deleteAutoCollectedByResource(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
         );
 
         $videoUrls = array_map(static fn ($video) => $video->url(), $videos);
         $existingVideoLinks = $this->videoLinkRepository->findByResourceAndUrls(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
             $videoUrls,
         );
         $existingUrls = array_map(static fn ($videoLink) => (string) $videoLink->url(), $existingVideoLinks);
 
         $lastVideoLink = $this->videoLinkRepository->findByResourceWithMaxDisplayOrder(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
         );
         $maxDisplayOrder = $lastVideoLink?->displayOrder() ?? 0;
 
@@ -105,7 +104,7 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
             $videoLink = $this->videoLinkFactory->create(
                 $status->resourceType(),
-                $status->resourceIdentifier(),
+                $status->wikiIdentifier(),
                 new ExternalContentLink($video->url()),
                 $video->videoUsage(),
                 $video->title(),
@@ -123,13 +122,13 @@ readonly class CollectVideoLinks implements CollectVideoLinksInterface
 
         $this->logger->info('CollectVideoLinks: Collection completed', [
             'resource_type' => $status->resourceType()->value,
-            'resource_identifier' => (string) $status->resourceIdentifier(),
+            'wiki_id' => (string) $status->wikiIdentifier(),
             'collected_count' => count($videos),
         ]);
 
         $output->success(
             $status->resourceType(),
-            $status->resourceIdentifier(),
+            $status->wikiIdentifier(),
             count($videos),
         );
     }

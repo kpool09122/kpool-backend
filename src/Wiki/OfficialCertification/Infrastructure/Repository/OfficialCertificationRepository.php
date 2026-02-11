@@ -10,8 +10,8 @@ use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class OfficialCertificationRepository implements OfficialCertificationRepositoryInterface
 {
@@ -21,7 +21,7 @@ class OfficialCertificationRepository implements OfficialCertificationRepository
             ['id' => (string) $entity->certificationIdentifier()],
             [
                 'resource_type' => $entity->resourceType()->value,
-                'resource_id' => (string) $entity->resourceIdentifier(),
+                'wiki_id' => (string) $entity->wikiIdentifier(),
                 'owner_account_id' => (string) $entity->ownerAccountIdentifier(),
                 'status' => $entity->status()->value,
                 'requested_at' => $entity->requestedAt(),
@@ -44,11 +44,11 @@ class OfficialCertificationRepository implements OfficialCertificationRepository
         return $this->toEntity($model);
     }
 
-    public function findByResource(ResourceType $type, ResourceIdentifier $id): ?OfficialCertification
+    public function findByResource(ResourceType $type, WikiIdentifier $id): ?OfficialCertification
     {
         $model = OfficialCertificationModel::query()
             ->where('resource_type', $type->value)
-            ->where('resource_id', (string) $id)
+            ->where('wiki_id', (string) $id)
             ->first();
 
         if ($model === null) {
@@ -58,11 +58,11 @@ class OfficialCertificationRepository implements OfficialCertificationRepository
         return $this->toEntity($model);
     }
 
-    public function existsPending(ResourceType $type, ResourceIdentifier $id): bool
+    public function existsPending(ResourceType $type, WikiIdentifier $id): bool
     {
         return OfficialCertificationModel::query()
             ->where('resource_type', $type->value)
-            ->where('resource_id', (string) $id)
+            ->where('wiki_id', (string) $id)
             ->where('status', CertificationStatus::PENDING->value)
             ->exists();
     }
@@ -80,7 +80,7 @@ class OfficialCertificationRepository implements OfficialCertificationRepository
         return new OfficialCertification(
             new CertificationIdentifier($model->id),
             ResourceType::from($model->resource_type),
-            new ResourceIdentifier($model->resource_id),
+            new WikiIdentifier($model->wiki_id),
             new AccountIdentifier($model->owner_account_id),
             CertificationStatus::from($model->status),
             $requestedAt,

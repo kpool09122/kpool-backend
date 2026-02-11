@@ -25,7 +25,7 @@ readonly class RequestCertification implements RequestCertificationInterface
     {
         $existing = $this->repository->findByResource(
             $input->resourceType(),
-            $input->resourceIdentifier(),
+            $input->wikiIdentifier(),
         );
 
         if ($existing !== null) {
@@ -34,7 +34,7 @@ readonly class RequestCertification implements RequestCertificationInterface
 
         $certification = $this->factory->create(
             $input->resourceType(),
-            $input->resourceIdentifier(),
+            $input->wikiIdentifier(),
             $input->ownerAccountIdentifier(),
         );
 

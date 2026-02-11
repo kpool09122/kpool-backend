@@ -18,7 +18,6 @@ use Source\Wiki\Image\Infrastructure\Service\ImageAuthorizationResourceBuilder;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
@@ -62,7 +61,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithAgency(): void
     {
         $agencyId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($agencyId);
+        $wikiIdentifier = new WikiIdentifier($agencyId);
         $draftWiki = $this->createDraftWiki($agencyId, ResourceType::AGENCY, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
@@ -74,7 +73,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertSame($agencyId, $resource->agencyId());
@@ -90,7 +89,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithAgencyNotFound(): void
     {
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -101,7 +100,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -117,7 +116,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     {
         $groupId = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($groupId);
+        $wikiIdentifier = new WikiIdentifier($groupId);
 
         $basic = GroupBasic::fromArray([
             'name' => 'test',
@@ -135,7 +134,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertSame($agencyId, $resource->agencyId());
@@ -152,7 +151,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithGroupWithoutAgency(): void
     {
         $groupId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($groupId);
+        $wikiIdentifier = new WikiIdentifier($groupId);
 
         $basic = GroupBasic::fromArray([
             'name' => 'test',
@@ -170,7 +169,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -185,7 +184,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithGroupNotFound(): void
     {
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -196,7 +195,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::GROUP, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -215,7 +214,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $agencyId = StrTestHelper::generateUuid();
         $groupId1 = StrTestHelper::generateUuid();
         $groupId2 = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($talentId);
+        $wikiIdentifier = new WikiIdentifier($talentId);
 
         $basic = TalentBasic::fromArray([
             'name' => 'test',
@@ -234,7 +233,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertSame($agencyId, $resource->agencyId());
@@ -251,7 +250,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithTalentWithoutOptionalFields(): void
     {
         $talentId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($talentId);
+        $wikiIdentifier = new WikiIdentifier($talentId);
 
         $basic = TalentBasic::fromArray([
             'name' => 'test',
@@ -270,7 +269,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -286,7 +285,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithTalentNotFound(): void
     {
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -297,7 +296,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::TALENT, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertSame([], $resource->talentIds());
@@ -315,7 +314,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $agencyId = StrTestHelper::generateUuid();
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($songId);
+        $wikiIdentifier = new WikiIdentifier($songId);
 
         $basic = SongBasic::fromArray([
             'name' => 'test',
@@ -335,7 +334,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::SONG, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::SONG, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertSame($agencyId, $resource->agencyId());
@@ -352,7 +351,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithSongWithoutOptionalFields(): void
     {
         $songId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($songId);
+        $wikiIdentifier = new WikiIdentifier($songId);
 
         $basic = SongBasic::fromArray([
             'name' => 'test',
@@ -372,7 +371,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::SONG, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::SONG, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -388,7 +387,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithSongNotFound(): void
     {
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -399,7 +398,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::SONG, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::SONG, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -415,7 +414,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     {
         $draftWikiId = StrTestHelper::generateUuid();
         $publishedWikiId = StrTestHelper::generateUuid();
-        $resourceIdentifier = new ResourceIdentifier($draftWikiId);
+        $wikiIdentifier = new WikiIdentifier($draftWikiId);
         $draftWiki = $this->createDraftWiki($draftWikiId, ResourceType::AGENCY, $publishedWikiId);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
@@ -427,7 +426,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::AGENCY, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertSame($publishedWikiId, $resource->agencyId());
@@ -441,7 +440,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithImage(): void
     {
-        $resourceIdentifier = new ResourceIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('findById')
@@ -452,7 +451,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
 
         $builder = $this->app->make(ImageAuthorizationResourceBuilderInterface::class);
-        $resource = $builder->buildFromDraftResource(ResourceType::IMAGE, $resourceIdentifier);
+        $resource = $builder->buildFromDraftResource(ResourceType::IMAGE, $wikiIdentifier);
 
         $this->assertSame(ResourceType::IMAGE, $resource->type());
         $this->assertNull($resource->agencyId());
@@ -851,7 +850,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             new ImageIdentifier(StrTestHelper::generateUuid()),
             null,
             $resourceType,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.webp'),
             ImageUsage::PROFILE,
@@ -870,7 +869,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         return new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             $resourceType,
-            new ResourceIdentifier($resourceId),
+            new WikiIdentifier($resourceId),
             new ImagePath('images/test.webp'),
             ImageUsage::PROFILE,
             1,

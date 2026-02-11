@@ -6,6 +6,7 @@ namespace Source\Wiki\Principal\Application\Service;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface ContributionPointServiceInterface
 {
@@ -16,15 +17,15 @@ interface ContributionPointServiceInterface
      * @param PrincipalIdentifier $approverIdentifier the user who approved
      * @param PrincipalIdentifier|null $mergerIdentifier the user who merged
      * @param ResourceType $resourceType agency, talent, group, or song
-     * @param string $resourceId the ID of the wiki resource
+     * @param WikiIdentifier $wikiIdentifier the ID of the wiki resource
      * @param bool $isNewCreation true for new creation, false for update
      */
     public function grantPoints(
         ?PrincipalIdentifier $editorIdentifier,
-        PrincipalIdentifier $approverIdentifier,
+        PrincipalIdentifier  $approverIdentifier,
         ?PrincipalIdentifier $mergerIdentifier,
-        ResourceType $resourceType,
-        string $resourceId,
-        bool $isNewCreation,
+        ResourceType         $resourceType,
+        WikiIdentifier       $wikiIdentifier,
+        bool                 $isNewCreation,
     ): void;
 }

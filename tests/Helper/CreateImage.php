@@ -13,7 +13,7 @@ class CreateImage
     /**
      * @param array{
      *     resource_type?: string,
-     *     resource_identifier?: string,
+     *     wiki_id?: string,
      *     image_path?: string,
      *     image_usage?: string,
      *     display_order?: int,
@@ -33,7 +33,7 @@ class CreateImage
         DB::table('wiki_images')->insert([
             'id' => $imageId,
             'resource_type' => $overrides['resource_type'] ?? ResourceType::TALENT->value,
-            'resource_identifier' => $overrides['resource_identifier'] ?? StrTestHelper::generateUuid(),
+            'wiki_id' => $overrides['wiki_id'] ?? StrTestHelper::generateUuid(),
             'image_path' => $overrides['image_path'] ?? '/images/test/sample.jpg',
             'image_usage' => $overrides['image_usage'] ?? ImageUsage::PROFILE->value,
             'display_order' => $overrides['display_order'] ?? 1,

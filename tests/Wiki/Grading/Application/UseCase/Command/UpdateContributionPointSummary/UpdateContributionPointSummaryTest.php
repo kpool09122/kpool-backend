@@ -21,8 +21,8 @@ use Source\Wiki\Grading\Domain\ValueObject\ContributorType;
 use Source\Wiki\Grading\Domain\ValueObject\Point;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -46,7 +46,7 @@ class UpdateContributionPointSummaryTest extends TestCase
             $yearMonth,
             new Point(100),
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             ContributorType::EDITOR,
             false,
             new DateTimeImmutable(),
@@ -57,7 +57,7 @@ class UpdateContributionPointSummaryTest extends TestCase
             $yearMonth,
             new Point(50),
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             ContributorType::EDITOR,
             false,
             new DateTimeImmutable(),
@@ -120,7 +120,7 @@ class UpdateContributionPointSummaryTest extends TestCase
             $yearMonth,
             new Point(100),
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             ContributorType::EDITOR,
             false,
             new DateTimeImmutable(),

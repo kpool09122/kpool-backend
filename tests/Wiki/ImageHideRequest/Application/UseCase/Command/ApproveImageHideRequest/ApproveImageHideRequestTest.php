@@ -31,8 +31,8 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -398,7 +398,7 @@ class ApproveImageHideRequestTest extends TestCase
         $image = new Image(
             $imageIdentifier,
             ResourceType::TALENT,
-            new ResourceIdentifier(StrTestHelper::generateUuid()),
+            new WikiIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
             ImageUsage::PROFILE,
             1,

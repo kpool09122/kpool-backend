@@ -6,8 +6,8 @@ namespace Source\Wiki\OfficialCertification\Domain\Repository;
 
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface OfficialCertificationRepositoryInterface
 {
@@ -15,7 +15,7 @@ interface OfficialCertificationRepositoryInterface
 
     public function findById(CertificationIdentifier $id): ?OfficialCertification;
 
-    public function findByResource(ResourceType $type, ResourceIdentifier $id): ?OfficialCertification;
+    public function findByResource(ResourceType $type, WikiIdentifier $id): ?OfficialCertification;
 
-    public function existsPending(ResourceType $type, ResourceIdentifier $id): bool;
+    public function existsPending(ResourceType $type, WikiIdentifier $id): bool;
 }
