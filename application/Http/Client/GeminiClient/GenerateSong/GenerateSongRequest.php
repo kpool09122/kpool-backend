@@ -87,6 +87,9 @@ final readonly class GenerateSongRequest
                         'composer' => ['type' => 'string', 'nullable' => true],
                         'release_date' => ['type' => 'string', 'nullable' => true],
                         'overview' => ['type' => 'string', 'nullable' => true],
+                        'chart_performance' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
                     ],
                 ],
             ],
@@ -119,7 +122,8 @@ Research the following K-POP song{$affiliationContext} using Wikipedia, Namuwiki
 2. lyricist: Name of the lyricist(s) who wrote the song lyrics. If multiple writers, separate with commas. If unknown, set to null.
 3. composer: Name of the composer(s) who created the music. If multiple composers, separate with commas. If unknown, set to null.
 4. release_date: Release date in ISO 8601 format (YYYY-MM-DD, e.g., "2020-08-21"). If unknown, set to null.
-5. overview: Detailed description of the song (artist/group who performed it, album it belongs to, music style, chart performance, notable achievements, etc. approximately 2000 characters)
+5. overview: Background, production, music style, and characteristics of the song, approximately 800 characters.
+6. chart_performance: Array of chart performance records (max 10). Format: "Chart Name - Ranking/Certification". Example: "Billboard Hot 100 - #1"
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries

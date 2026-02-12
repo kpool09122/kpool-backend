@@ -9,13 +9,16 @@ use Source\Wiki\Shared\Application\DTO\SourceReference;
 final readonly class GenerateAgencyParams
 {
     /**
+     * @param string[] $artists
      * @param SourceReference[] $sources
      */
     public function __construct(
         private ?string $alphabetName,
         private ?string $ceoName,
         private ?int $foundedYear,
-        private ?string $description,
+        private ?string $overview,
+        private ?string $history,
+        private array $artists,
         private array $sources,
     ) {
     }
@@ -29,8 +32,10 @@ final readonly class GenerateAgencyParams
         return new self(
             alphabetName: $data['alphabet_name'] ?? null,
             ceoName: $data['ceo_name'] ?? null,
-            foundedYear: isset($data['founded_year']) ? (int)$data['founded_year'] : null,
-            description: $data['description'] ?? null,
+            foundedYear: isset($data['founded_year']) ? (int) $data['founded_year'] : null,
+            overview: $data['overview'] ?? null,
+            history: $data['history'] ?? null,
+            artists: $data['artists'] ?? [],
             sources: $sources,
         );
     }
@@ -41,7 +46,9 @@ final readonly class GenerateAgencyParams
             alphabetName: null,
             ceoName: null,
             foundedYear: null,
-            description: null,
+            overview: null,
+            history: null,
+            artists: [],
             sources: [],
         );
     }
@@ -61,9 +68,22 @@ final readonly class GenerateAgencyParams
         return $this->foundedYear;
     }
 
-    public function description(): ?string
+    public function overview(): ?string
     {
-        return $this->description;
+        return $this->overview;
+    }
+
+    public function history(): ?string
+    {
+        return $this->history;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function artists(): array
+    {
+        return $this->artists;
     }
 
     /**

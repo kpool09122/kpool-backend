@@ -67,7 +67,11 @@ final readonly class GenerateAgencyRequest
                         'alphabet_name' => ['type' => 'string', 'nullable' => true],
                         'ceo_name' => ['type' => 'string', 'nullable' => true],
                         'founded_year' => ['type' => 'integer', 'nullable' => true],
-                        'description' => ['type' => 'string', 'nullable' => true],
+                        'overview' => ['type' => 'string', 'nullable' => true],
+                        'history' => ['type' => 'string', 'nullable' => true],
+                        'artists' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
                         'instagram_url' => ['type' => 'string', 'nullable' => true],
                         'tiktok_url' => ['type' => 'string', 'nullable' => true],
                         'youtube_url' => ['type' => 'string', 'nullable' => true],
@@ -101,8 +105,10 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 1. alphabet_name: Agency name in English alphabet only (e.g., "JYP Entertainment", "SM Entertainment"). Use official English name if available, otherwise romanize the name.
 2. CEO name (representative director, CEO, etc.)
 3. Founded year (year only, e.g., 2005)
-4. Detailed description of the agency (history, major artists, characteristics, etc. approximately 2000 characters)
-5. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
+4. overview: Company overview (characteristics, business areas, market position) approximately 800 characters.
+5. history: Chronological description of founding, growth, and major events, approximately 1200 characters.
+6. artists: Array of currently affiliated artist/group names (max 20).
+7. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
    - instagram_url: Official Instagram URL (e.g., "https://www.instagram.com/jaboritory/")
    - tiktok_url: Official TikTok URL (e.g., "https://www.tiktok.com/@jypentertainment")
    - youtube_url: Official YouTube channel URL (e.g., "https://www.youtube.com/@JYPEntertainment")

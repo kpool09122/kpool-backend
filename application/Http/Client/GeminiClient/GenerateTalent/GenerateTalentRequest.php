@@ -85,7 +85,14 @@ final readonly class GenerateTalentRequest
                         'alphabet_name' => ['type' => 'string', 'nullable' => true],
                         'real_name' => ['type' => 'string', 'nullable' => true],
                         'birthday' => ['type' => 'string', 'nullable' => true],
-                        'description' => ['type' => 'string', 'nullable' => true],
+                        'overview' => ['type' => 'string', 'nullable' => true],
+                        'history' => ['type' => 'string', 'nullable' => true],
+                        'appearances' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
+                        'awards' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
                         'english_level' => ['type' => 'string', 'nullable' => true],
                         'english_background' => ['type' => 'string', 'nullable' => true],
                         'instagram_url' => ['type' => 'string', 'nullable' => true],
@@ -123,8 +130,11 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, N
 1. alphabet_name: Talent name in English alphabet only (e.g., "Jimin", "Lisa", "Karina"). Use official English name if available, otherwise romanize the name.
 2. real_name: Real name (birth name) of the talent in the original language (e.g., "박지민", "김제니"). If unknown, set to null.
 3. birthday: Birth date in ISO 8601 format (YYYY-MM-DD, e.g., "1995-10-13"). If unknown, set to null.
-4. Detailed description of the talent (group affiliation, debut date, position in group, major achievements, characteristics, etc. approximately 2000 characters)
-5. English proficiency:
+4. overview: Introduction of the person (group affiliation, agency, position, main characteristics) approximately 800 characters.
+5. history: Chronological description of upbringing, debut, and career milestones, approximately 1200 characters.
+6. appearances: Array of appearances in works (max 10). Format: "Title (Type, Year)". Example: "Hwarang (Drama, 2016)"
+7. awards: Array of major individual awards (max 10).
+8. English proficiency:
    - english_level: Level of English proficiency (e.g., "Native", "Fluent", "Conversational", "Basic", "None"). If unknown, set to null.
    - english_background: Background of English ability (e.g., "Born and raised in Australia", "Studied abroad in the US for 3 years", "Self-taught"). If unknown, set to null.
 6. Personal SNS URLs (extract from external links section of Wikipedia/Namuwiki):
