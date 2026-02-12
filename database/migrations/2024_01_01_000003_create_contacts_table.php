@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('contacts', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('問い合わせID');
             $table->unsignedTinyInteger('category')->comment('カテゴリ（1:要望, 2:バグ報告, 3:コンテンツ修正依頼, 99:その他）');
-            $table->string('identity_identifier')->nullable()->comment('identity_identifier');
+            $table->uuid('identity_identifier')->nullable()->comment('identity_identifier');
             $table->string('name', 32)->comment('氏名');
             $table->text('email')->comment('メールアドレス（暗号化）');
             $table->string('content', 512)->comment('問い合わせ内容');
