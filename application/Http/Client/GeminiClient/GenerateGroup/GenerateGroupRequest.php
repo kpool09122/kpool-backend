@@ -71,7 +71,17 @@ final readonly class GenerateGroupRequest
                     'type' => 'object',
                     'properties' => [
                         'alphabet_name' => ['type' => 'string', 'nullable' => true],
-                        'description' => ['type' => 'string', 'nullable' => true],
+                        'overview' => ['type' => 'string', 'nullable' => true],
+                        'history' => ['type' => 'string', 'nullable' => true],
+                        'representative_songs' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
+                        'awards' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
+                        'members' => [
+                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
+                        ],
                         'fandom_name' => ['type' => 'string', 'nullable' => true],
                         'instagram_url' => ['type' => 'string', 'nullable' => true],
                         'tiktok_url' => ['type' => 'string', 'nullable' => true],
@@ -108,9 +118,13 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 
 ## Required Information
 1. alphabet_name: Group/Artist name in English alphabet only (e.g., "BTS", "BLACKPINK", "NewJeans"). Use official English name if available, otherwise romanize the name.
-2. Detailed description of the group/artist (debut date, members, major achievements, characteristics, etc. approximately 2000 characters)
-3. fandom_name: Official name for the fan community (e.g., "ARMY" for BTS, "BLINK" for BLACKPINK, "Bunnies" for NewJeans). If unknown, set to null.
-4. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
+2. overview: Overview of the group (concept, characteristics, agency, etc.) approximately 800 characters.
+3. history: Chronological description of formation, debut, and career milestones, approximately 1200 characters.
+4. representative_songs: Array of representative songs (max 10). Format: "Song Title (Year)". Example: "Dynamite (2020)"
+5. awards: Array of major awards (max 10). Include award name and year.
+6. members: Array of current member names (stage names).
+7. fandom_name: Official name for the fan community (e.g., "ARMY" for BTS, "BLINK" for BLACKPINK, "Bunnies" for NewJeans). If unknown, set to null.
+8. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
    - instagram_url: Official Instagram URL (e.g., "https://www.instagram.com/newjeans_official/")
    - tiktok_url: Official TikTok URL (e.g., "https://www.tiktok.com/@newjeans_official")
    - youtube_url: Official YouTube channel URL (e.g., "https://www.youtube.com/@NewJeans_official")

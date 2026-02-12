@@ -9,6 +9,7 @@ use Source\Wiki\Shared\Application\DTO\SourceReference;
 final readonly class GenerateSongParams
 {
     /**
+     * @param string[] $chartPerformance
      * @param SourceReference[] $sources
      */
     public function __construct(
@@ -17,6 +18,7 @@ final readonly class GenerateSongParams
         private ?string $composer,
         private ?string $releaseDate,
         private ?string $overview,
+        private array $chartPerformance,
         private array $sources,
     ) {
     }
@@ -44,6 +46,7 @@ final readonly class GenerateSongParams
             composer: $composer,
             releaseDate: $releaseDate,
             overview: $overview,
+            chartPerformance: $data['chart_performance'] ?? [],
             sources: $sources,
         );
     }
@@ -56,6 +59,7 @@ final readonly class GenerateSongParams
             composer: null,
             releaseDate: null,
             overview: null,
+            chartPerformance: [],
             sources: [],
         );
     }
@@ -83,6 +87,14 @@ final readonly class GenerateSongParams
     public function overview(): ?string
     {
         return $this->overview;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function chartPerformance(): array
+    {
+        return $this->chartPerformance;
     }
 
     /**

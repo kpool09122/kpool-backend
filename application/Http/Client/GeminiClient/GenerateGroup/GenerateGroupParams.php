@@ -9,11 +9,18 @@ use Source\Wiki\Shared\Application\DTO\SourceReference;
 final readonly class GenerateGroupParams
 {
     /**
+     * @param string[] $representativeSongs
+     * @param string[] $awards
+     * @param string[] $members
      * @param SourceReference[] $sources
      */
     public function __construct(
         private ?string $alphabetName,
-        private ?string $description,
+        private ?string $overview,
+        private ?string $history,
+        private array $representativeSongs,
+        private array $awards,
+        private array $members,
         private array $sources,
     ) {
     }
@@ -26,7 +33,11 @@ final readonly class GenerateGroupParams
     {
         return new self(
             alphabetName: $data['alphabet_name'] ?? null,
-            description: $data['description'] ?? null,
+            overview: $data['overview'] ?? null,
+            history: $data['history'] ?? null,
+            representativeSongs: $data['representative_songs'] ?? [],
+            awards: $data['awards'] ?? [],
+            members: $data['members'] ?? [],
             sources: $sources,
         );
     }
@@ -35,7 +46,11 @@ final readonly class GenerateGroupParams
     {
         return new self(
             alphabetName: null,
-            description: null,
+            overview: null,
+            history: null,
+            representativeSongs: [],
+            awards: [],
+            members: [],
             sources: [],
         );
     }
@@ -45,9 +60,38 @@ final readonly class GenerateGroupParams
         return $this->alphabetName;
     }
 
-    public function description(): ?string
+    public function overview(): ?string
     {
-        return $this->description;
+        return $this->overview;
+    }
+
+    public function history(): ?string
+    {
+        return $this->history;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function representativeSongs(): array
+    {
+        return $this->representativeSongs;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function awards(): array
+    {
+        return $this->awards;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function members(): array
+    {
+        return $this->members;
     }
 
     /**

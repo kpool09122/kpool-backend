@@ -8,3 +8,10 @@ if (! function_exists('error_message')) {
         return __("errors.{$key}", [], $language);
     }
 }
+
+if (! function_exists('section_title')) {
+    function section_title(string $key, string $language): string
+    {
+        return __("section_titles.{$key}", [], $language);
+    }
+}

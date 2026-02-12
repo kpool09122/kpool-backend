@@ -14,6 +14,11 @@ use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 
 class SharedServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->useLangPath(dirname(__DIR__, 2) . '/resources/lang');
+    }
+
     public function boot(): void
     {
         $this->app->singleton(UuidGeneratorInterface::class, UuidGenerator::class);

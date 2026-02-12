@@ -9,13 +9,18 @@ use Source\Wiki\Shared\Application\DTO\SourceReference;
 final readonly class GenerateTalentParams
 {
     /**
+     * @param string[] $appearances
+     * @param string[] $awards
      * @param SourceReference[] $sources
      */
     public function __construct(
         private ?string $alphabetName,
         private ?string $realName,
         private ?string $birthday,
-        private ?string $description,
+        private ?string $overview,
+        private ?string $history,
+        private array $appearances,
+        private array $awards,
         private array $sources,
     ) {
     }
@@ -30,7 +35,10 @@ final readonly class GenerateTalentParams
             alphabetName: $data['alphabet_name'] ?? null,
             realName: $data['real_name'] ?? null,
             birthday: $data['birthday'] ?? null,
-            description: $data['description'] ?? null,
+            overview: $data['overview'] ?? null,
+            history: $data['history'] ?? null,
+            appearances: $data['appearances'] ?? [],
+            awards: $data['awards'] ?? [],
             sources: $sources,
         );
     }
@@ -41,7 +49,10 @@ final readonly class GenerateTalentParams
             alphabetName: null,
             realName: null,
             birthday: null,
-            description: null,
+            overview: null,
+            history: null,
+            appearances: [],
+            awards: [],
             sources: [],
         );
     }
@@ -61,9 +72,30 @@ final readonly class GenerateTalentParams
         return $this->birthday;
     }
 
-    public function description(): ?string
+    public function overview(): ?string
     {
-        return $this->description;
+        return $this->overview;
+    }
+
+    public function history(): ?string
+    {
+        return $this->history;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function appearances(): array
+    {
+        return $this->appearances;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function awards(): array
+    {
+        return $this->awards;
     }
 
     /**

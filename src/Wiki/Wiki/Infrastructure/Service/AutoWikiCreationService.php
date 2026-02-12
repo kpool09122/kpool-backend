@@ -16,6 +16,7 @@ use Application\Http\Client\GeminiClient\GenerateTalent\GenerateTalentRequest;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Wiki\Shared\Application\DTO\SourceReference;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\GeneratedWikiData;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -26,7 +27,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Birthday;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Throwable;
@@ -79,7 +83,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildSections($params->description()),
+            sections: $this->buildAgencySections($params, $payload->language()->value),
             sources: $params->sources(),
         );
     }
@@ -113,7 +117,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildSections($params->description()),
+            sections: $this->buildGroupSections($params, $payload->language()->value),
             sources: $params->sources(),
         );
     }
@@ -164,7 +168,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildSections($params->description()),
+            sections: $this->buildTalentSections($params, $payload->language()->value),
             sources: $params->sources(),
         );
     }
@@ -224,7 +228,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildSections($params->overview()),
+            sections: $this->buildSongSections($params, $payload->language()->value),
             sources: $params->sources(),
         );
     }
@@ -270,14 +274,188 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return (string) $wiki->basic()->name();
     }
 
-    private function buildSections(?string $description): SectionContentCollection
+    private function buildGroupSections(GenerateGroupParams $params, string $language): SectionContentCollection
     {
-        if ($description === null || $description === '') {
-            return new SectionContentCollection();
+        $sections = [];
+        $order = 0;
+
+        if ($params->overview() !== null && $params->overview() !== '') {
+            $sections[] = new Section(
+                title: section_title('overview', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->overview())]),
+            );
         }
 
-        return new SectionContentCollection([
-            new TextBlock(displayOrder: 0, content: $description),
-        ]);
+        if ($params->history() !== null && $params->history() !== '') {
+            $sections[] = new Section(
+                title: section_title('history', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->history())]),
+            );
+        }
+
+        if ($params->representativeSongs() !== []) {
+            $sections[] = new Section(
+                title: section_title('representative_songs', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->representativeSongs())]),
+            );
+        }
+
+        if ($params->awards() !== []) {
+            $sections[] = new Section(
+                title: section_title('awards', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->awards())]),
+            );
+        }
+
+        if ($params->members() !== []) {
+            $sections[] = new Section(
+                title: section_title('members', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->members())]),
+            );
+        }
+
+        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        if ($sourcesSection !== null) {
+            $sections[] = $sourcesSection;
+        }
+
+        return new SectionContentCollection($sections);
+    }
+
+    private function buildAgencySections(GenerateAgencyParams $params, string $language): SectionContentCollection
+    {
+        $sections = [];
+        $order = 0;
+
+        if ($params->overview() !== null && $params->overview() !== '') {
+            $sections[] = new Section(
+                title: section_title('overview', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->overview())]),
+            );
+        }
+
+        if ($params->history() !== null && $params->history() !== '') {
+            $sections[] = new Section(
+                title: section_title('agency_history', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->history())]),
+            );
+        }
+
+        if ($params->artists() !== []) {
+            $sections[] = new Section(
+                title: section_title('artists', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->artists())]),
+            );
+        }
+
+        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        if ($sourcesSection !== null) {
+            $sections[] = $sourcesSection;
+        }
+
+        return new SectionContentCollection($sections);
+    }
+
+    private function buildTalentSections(GenerateTalentParams $params, string $language): SectionContentCollection
+    {
+        $sections = [];
+        $order = 0;
+
+        if ($params->overview() !== null && $params->overview() !== '') {
+            $sections[] = new Section(
+                title: section_title('overview', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->overview())]),
+            );
+        }
+
+        if ($params->history() !== null && $params->history() !== '') {
+            $sections[] = new Section(
+                title: section_title('history', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->history())]),
+            );
+        }
+
+        if ($params->appearances() !== []) {
+            $sections[] = new Section(
+                title: section_title('appearances', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->appearances())]),
+            );
+        }
+
+        if ($params->awards() !== []) {
+            $sections[] = new Section(
+                title: section_title('awards', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->awards())]),
+            );
+        }
+
+        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        if ($sourcesSection !== null) {
+            $sections[] = $sourcesSection;
+        }
+
+        return new SectionContentCollection($sections);
+    }
+
+    private function buildSongSections(GenerateSongParams $params, string $language): SectionContentCollection
+    {
+        $sections = [];
+        $order = 0;
+
+        if ($params->overview() !== null && $params->overview() !== '') {
+            $sections[] = new Section(
+                title: section_title('overview', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new TextBlock(displayOrder: 0, content: $params->overview())]),
+            );
+        }
+
+        if ($params->chartPerformance() !== []) {
+            $sections[] = new Section(
+                title: section_title('chart_performance', $language),
+                displayOrder: $order++,
+                contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $params->chartPerformance())]),
+            );
+        }
+
+        $sourcesSection = $this->buildSourcesSection($params->sources(), $language, $order);
+        if ($sourcesSection !== null) {
+            $sections[] = $sourcesSection;
+        }
+
+        return new SectionContentCollection($sections);
+    }
+
+    /**
+     * @param SourceReference[] $sources
+     */
+    private function buildSourcesSection(array $sources, string $language, int $displayOrder): ?Section
+    {
+        if ($sources === []) {
+            return null;
+        }
+
+        $items = array_map(
+            static fn (SourceReference $source) => "{$source->title()} ({$source->uri()})",
+            $sources,
+        );
+
+        return new Section(
+            title: section_title('sources', $language),
+            displayOrder: $displayOrder,
+            contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $items)]),
+        );
     }
 }

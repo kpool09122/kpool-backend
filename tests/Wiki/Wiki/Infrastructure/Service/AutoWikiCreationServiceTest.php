@@ -32,6 +32,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Service\AutoWikiCreationService;
@@ -64,7 +65,9 @@ class AutoWikiCreationServiceTest extends TestCase
      */
     public function testGenerateAgencyWithFullData(): void
     {
-        $description = 'JYP Entertainmentは韓国の大手エンターテインメント企業です。';
+        $overview = 'JYP Entertainmentは韓国の大手エンターテインメント企業です。';
+        $history = '1997年にJ.Y. Parkによって設立されました。';
+        $artists = ['TWICE', 'Stray Kids', 'ITZY'];
 
         $responseJson = json_encode([
             'candidates' => [
@@ -76,7 +79,9 @@ class AutoWikiCreationServiceTest extends TestCase
                                     'alphabet_name' => 'JYP Entertainment',
                                     'ceo_name' => 'J.Y. Park',
                                     'founded_year' => 1997,
-                                    'description' => $description,
+                                    'overview' => $overview,
+                                    'history' => $history,
+                                    'artists' => $artists,
                                 ], JSON_THROW_ON_ERROR),
                             ],
                         ],
@@ -125,12 +130,27 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertNotNull($basic->foundedIn());
 
         $this->assertFalse($result->sections()->isEmpty());
-        $blocks = $result->sections()->blocks();
-        $this->assertCount(1, $blocks);
-        $this->assertInstanceOf(TextBlock::class, $blocks[0]);
-        /** @var TextBlock $textBlock */
-        $textBlock = $blocks[0];
-        $this->assertSame($description, $textBlock->content());
+        $sections = $result->sections()->sections();
+        $this->assertCount(4, $sections);
+
+        $this->assertSame('概要', $sections[0]->title());
+        $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
+        $this->assertSame($overview, $sections[0]->contents()->blocks()[0]->content());
+
+        $this->assertSame('沿革', $sections[1]->title());
+        $this->assertInstanceOf(TextBlock::class, $sections[1]->contents()->blocks()[0]);
+        $this->assertSame($history, $sections[1]->contents()->blocks()[0]->content());
+
+        $this->assertSame('所属アーティスト', $sections[2]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
+        $this->assertSame($artists, $sections[2]->contents()->blocks()[0]->items());
+
+        $this->assertSame('出典', $sections[3]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[3]->contents()->blocks()[0]);
+        $this->assertSame(
+            ['JYP Entertainment 公式サイト (https://www.jypentertainment.com/)'],
+            $sections[3]->contents()->blocks()[0]->items(),
+        );
 
         $this->assertCount(1, $result->sources());
         $this->assertSame('https://www.jypentertainment.com/', $result->sources()[0]->uri());
@@ -169,7 +189,7 @@ class AutoWikiCreationServiceTest extends TestCase
     }
 
     /**
-     * 正常系: Agencyのdescriptionがnullの場合、セクションが空であること.
+     * 正常系: Agencyのoverviewがnullの場合、セクションが空であること.
      *
      * @throws JsonException
      * @throws BindingResolutionException
@@ -216,7 +236,11 @@ class AutoWikiCreationServiceTest extends TestCase
     public function testGenerateGroupWithAgencyNameResolution(): void
     {
         $agencyId = new WikiIdentifier(StrTestHelper::generateUuid());
-        $description = 'TWICEは韓国の9人組ガールズグループです。';
+        $overview = 'TWICEは韓国の9人組ガールズグループです。';
+        $history = '2015年にサバイバルオーディション番組「SIXTEEN」を通じて結成されました。';
+        $representativeSongs = ['Cheer Up (2016)', 'TT (2016)'];
+        $awards = ['Mnet Asian Music Awards - Song of the Year (2016)'];
+        $members = ['ナヨン', 'ジョンヨン', 'モモ'];
 
         $agencyWiki = $this->createWikiMock('JYP Entertainment');
 
@@ -230,7 +254,13 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'TWICE',
-            'description' => $description,
+            'overview' => $overview,
+            'history' => $history,
+            'representative_songs' => $representativeSongs,
+            'awards' => $awards,
+            'members' => $members,
+        ], [
+            ['uri' => 'https://ko.wikipedia.org/wiki/트와이스', 'title' => '트와이스 - 위키백과'],
         ]);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -265,11 +295,31 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame((string) $agencyId, (string) $basic->agencyIdentifier());
 
         $this->assertFalse($result->sections()->isEmpty());
-        $blocks = $result->sections()->blocks();
-        $this->assertInstanceOf(TextBlock::class, $blocks[0]);
-        /** @var TextBlock $textBlock */
-        $textBlock = $blocks[0];
-        $this->assertSame($description, $textBlock->content());
+        $sections = $result->sections()->sections();
+        $this->assertCount(6, $sections);
+
+        $this->assertSame('개요', $sections[0]->title());
+        $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
+        $this->assertSame($overview, $sections[0]->contents()->blocks()[0]->content());
+
+        $this->assertSame('경력', $sections[1]->title());
+        $this->assertInstanceOf(TextBlock::class, $sections[1]->contents()->blocks()[0]);
+
+        $this->assertSame('대표곡', $sections[2]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
+        $this->assertSame($representativeSongs, $sections[2]->contents()->blocks()[0]->items());
+
+        $this->assertSame('수상 이력', $sections[3]->title());
+        $this->assertSame('멤버', $sections[4]->title());
+
+        $this->assertSame('출처', $sections[5]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
+        $this->assertSame(
+            ['트와이스 - 위키백과 (https://ko.wikipedia.org/wiki/트와이스)'],
+            $sections[5]->contents()->blocks()[0]->items(),
+        );
+
+        $this->assertCount(1, $result->sources());
     }
 
     /**
@@ -319,7 +369,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'BTS',
-            'description' => 'BTSは世界的に有名なK-POPグループです。',
+            'overview' => 'BTSは世界的に有名なK-POPグループです。',
         ]);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -404,7 +454,10 @@ class AutoWikiCreationServiceTest extends TestCase
     {
         $agencyId = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupId = new WikiIdentifier(StrTestHelper::generateUuid());
-        $description = 'ジミンはBTSのメンバーです。';
+        $overview = 'ジミンはBTSのメンバーです。';
+        $history = '1995年10月13日生まれ。2013年にBTSとしてデビュー。';
+        $appearances = ['Hwarang (Drama, 2016)'];
+        $awards = ['Billboard Music Awards - Top Social Artist (2017)'];
 
         $agencyWiki = $this->createWikiMock('HYBE');
         $groupWiki = $this->createWikiMock('BTS');
@@ -425,7 +478,10 @@ class AutoWikiCreationServiceTest extends TestCase
             'alphabet_name' => 'Jimin',
             'real_name' => '박지민',
             'birthday' => '1995-10-13',
-            'description' => $description,
+            'overview' => $overview,
+            'history' => $history,
+            'appearances' => $appearances,
+            'awards' => $awards,
         ], [
             ['uri' => 'https://example.com/', 'title' => 'Example'],
         ]);
@@ -467,6 +523,27 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame((string) $groupId, (string) $basic->groupIdentifiers()[0]);
 
         $this->assertFalse($result->sections()->isEmpty());
+        $sections = $result->sections()->sections();
+        $this->assertCount(5, $sections);
+
+        $this->assertSame('概要', $sections[0]->title());
+        $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
+        $this->assertSame($overview, $sections[0]->contents()->blocks()[0]->content());
+
+        $this->assertSame('経歴', $sections[1]->title());
+        $this->assertSame('出演作品', $sections[2]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
+        $this->assertSame($appearances, $sections[2]->contents()->blocks()[0]->items());
+
+        $this->assertSame('受賞歴', $sections[3]->title());
+
+        $this->assertSame('出典', $sections[4]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
+        $this->assertSame(
+            ['Example (https://example.com/)'],
+            $sections[4]->contents()->blocks()[0]->items(),
+        );
+
         $this->assertCount(1, $result->sources());
     }
 
@@ -514,7 +591,7 @@ class AutoWikiCreationServiceTest extends TestCase
             'alphabet_name' => 'Karina',
             'real_name' => '유지민',
             'birthday' => 'invalid-date',
-            'description' => 'カリナはaespaのメンバーです。',
+            'overview' => 'カリナはaespaのメンバーです。',
         ]);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -567,7 +644,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Test',
-            'description' => 'Test description.',
+            'overview' => 'Test overview.',
         ]);
 
         $geminiClient = Mockery::mock(GeminiClient::class);
@@ -659,6 +736,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $groupId = new WikiIdentifier(StrTestHelper::generateUuid());
         $talentId = new WikiIdentifier(StrTestHelper::generateUuid());
         $overview = 'Dynamiteは2020年にリリースされたBTSの楽曲です。';
+        $chartPerformance = ['Billboard Hot 100 - #1', 'Oricon Weekly Singles - #1'];
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
         $wikiRepository->shouldReceive('findById')
@@ -682,6 +760,7 @@ class AutoWikiCreationServiceTest extends TestCase
             'composer' => 'Jessica Agombar',
             'release_date' => '2020-08-21',
             'overview' => $overview,
+            'chart_performance' => $chartPerformance,
         ], [
             ['uri' => 'https://example.com/dynamite', 'title' => 'Dynamite - Wikipedia'],
         ]);
@@ -724,11 +803,23 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertCount(1, $basic->talentIdentifiers());
 
         $this->assertFalse($result->sections()->isEmpty());
-        $blocks = $result->sections()->blocks();
-        $this->assertInstanceOf(TextBlock::class, $blocks[0]);
-        /** @var TextBlock $textBlock */
-        $textBlock = $blocks[0];
-        $this->assertSame($overview, $textBlock->content());
+        $sections = $result->sections()->sections();
+        $this->assertCount(3, $sections);
+
+        $this->assertSame('概要', $sections[0]->title());
+        $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
+        $this->assertSame($overview, $sections[0]->contents()->blocks()[0]->content());
+
+        $this->assertSame('チャート成績', $sections[1]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[1]->contents()->blocks()[0]);
+        $this->assertSame($chartPerformance, $sections[1]->contents()->blocks()[0]->items());
+
+        $this->assertSame('出典', $sections[2]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
+        $this->assertSame(
+            ['Dynamite - Wikipedia (https://example.com/dynamite)'],
+            $sections[2]->contents()->blocks()[0]->items(),
+        );
 
         $this->assertCount(1, $result->sources());
     }
