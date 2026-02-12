@@ -10,6 +10,7 @@ use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInterface;
+use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentOutput;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Exception\PaymentNotFoundException;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
@@ -63,13 +64,14 @@ class RefundPaymentTest extends TestCase
 
         $useCase = $this->app->make(RefundPaymentInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new RefundPaymentOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($capturedPayment, $result);
-        $this->assertSame(PaymentStatus::PARTIALLY_REFUNDED, $result->status());
-        $this->assertSame($refundAmount->amount(), $result->refundedMoney()->amount());
-        $this->assertSame($refundAmount->currency(), $result->refundedMoney()->currency());
-        $this->assertSame($reason, $result->lastRefundReason());
+        $this->assertSame(PaymentStatus::PARTIALLY_REFUNDED, $capturedPayment->status());
+        $this->assertSame($refundAmount->amount(), $capturedPayment->refundedMoney()->amount());
+        $this->assertSame($refundAmount->currency(), $capturedPayment->refundedMoney()->currency());
+        $this->assertSame($reason, $capturedPayment->lastRefundReason());
+        $this->assertNotEmpty($output->toArray());
     }
 
     /**
@@ -108,13 +110,14 @@ class RefundPaymentTest extends TestCase
 
         $useCase = $this->app->make(RefundPaymentInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new RefundPaymentOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($capturedPayment, $result);
-        $this->assertSame(PaymentStatus::REFUNDED, $result->status());
-        $this->assertSame($refundAmount->amount(), $result->refundedMoney()->amount());
-        $this->assertSame($refundAmount->currency(), $result->refundedMoney()->currency());
-        $this->assertSame($reason, $result->lastRefundReason());
+        $this->assertSame(PaymentStatus::REFUNDED, $capturedPayment->status());
+        $this->assertSame($refundAmount->amount(), $capturedPayment->refundedMoney()->amount());
+        $this->assertSame($refundAmount->currency(), $capturedPayment->refundedMoney()->currency());
+        $this->assertSame($reason, $capturedPayment->lastRefundReason());
+        $this->assertNotEmpty($output->toArray());
     }
 
     /**
@@ -147,7 +150,8 @@ class RefundPaymentTest extends TestCase
 
         $this->expectException(PaymentNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new RefundPaymentOutput();
+        $useCase->process($input, $output);
     }
 
     private function createCapturedPayment(PaymentIdentifier $paymentIdentifier): Payment

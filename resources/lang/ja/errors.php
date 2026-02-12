@@ -11,4 +11,9 @@ return [
     'duplicate_slug' => '指定されたSlugは既に存在します。',
     'exists_approved_draft_wiki' => '公開されていない承認済みの下書きWikiが存在します。',
     'internal_server_error' => 'サーバーエラーが発生しました。',
+    'payment_not_found' => '指定された決済が見つかりません。',
+    'invalid_payment_status' => 'この操作に対して決済のステータスが無効です。',
+    'refund_exceeds_captured_amount' => '返金額が決済額を超過しています。',
+    'refund_currency_mismatch' => '返金通貨が決済通貨と一致しません。',
+    'payment_gateway_error' => '決済ゲートウェイエラーが発生しました。',
 ];

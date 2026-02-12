@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment;
 
 use DateTimeImmutable;
-use Source\Monetization\Payment\Domain\Entity\Payment;
+use Source\Monetization\Payment\Application\Exception\ApiException;
+use Source\Monetization\Payment\Domain\Exception\InvalidPaymentStatusException;
+use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
@@ -19,7 +21,15 @@ readonly class AuthorizePayment implements AuthorizePaymentInterface
     ) {
     }
 
-    public function process(AuthorizePaymentInputPort $input): Payment
+    /**
+     * @param AuthorizePaymentInputPort $input
+     * @param AuthorizePaymentOutputPort $output
+     * @return void
+     * @throws PaymentGatewayException
+     * @throws ApiException
+     * @throws InvalidPaymentStatusException
+     */
+    public function process(AuthorizePaymentInputPort $input, AuthorizePaymentOutputPort $output): void
     {
         $now = new DateTimeImmutable();
 
@@ -37,6 +47,6 @@ readonly class AuthorizePayment implements AuthorizePaymentInterface
 
         $this->paymentRepository->save($payment);
 
-        return $payment;
+        $output->setPayment($payment);
     }
 }

@@ -11,4 +11,9 @@ return [
     'duplicate_slug' => 'The specified slug already exists.',
     'exists_approved_draft_wiki' => 'There is an approved draft wiki that has not yet been published.',
     'internal_server_error' => 'A server error has occurred.',
+    'payment_not_found' => 'The specified payment was not found.',
+    'invalid_payment_status' => 'The payment is in an invalid status for this operation.',
+    'refund_exceeds_captured_amount' => 'The refund amount exceeds the captured amount.',
+    'refund_currency_mismatch' => 'The refund currency does not match the payment currency.',
+    'payment_gateway_error' => 'A payment gateway error has occurred.',
 ];

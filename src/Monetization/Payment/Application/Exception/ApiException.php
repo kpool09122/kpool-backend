@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Source\Monetization\Payment\Infrastructure\Exception;
+namespace Source\Monetization\Payment\Application\Exception;
 
 use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
 use Stripe\Exception\ApiErrorException;
 
-class StripeApiException extends PaymentGatewayException
+class ApiException extends PaymentGatewayException
 {
-    public static function fromStripeException(ApiErrorException $e): self
+    public static function from(ApiErrorException $e): self
     {
         return new self(
             $e->getMessage(),

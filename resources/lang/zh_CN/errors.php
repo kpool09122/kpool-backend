@@ -11,4 +11,9 @@ return [
     'duplicate_slug' => '指定的Slug已存在。',
     'exists_approved_draft_wiki' => '存在尚未发布的已批准草稿维基。',
     'internal_server_error' => '服务器发生错误。',
+    'payment_not_found' => '找不到指定的付款。',
+    'invalid_payment_status' => '付款状态对此操作无效。',
+    'refund_exceeds_captured_amount' => '退款金额超过已收款金额。',
+    'refund_currency_mismatch' => '退款货币与付款货币不匹配。',
+    'payment_gateway_error' => '支付网关发生错误。',
 ];
