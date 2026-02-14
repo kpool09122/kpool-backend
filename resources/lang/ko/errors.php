@@ -16,4 +16,8 @@ return [
     'refund_exceeds_captured_amount' => '환불 금액이 결제 금액을 초과합니다.',
     'refund_currency_mismatch' => '환불 통화가 결제 통화와 일치하지 않습니다.',
     'payment_gateway_error' => '결제 게이트웨이 오류가 발생했습니다.',
+    'monetization_account_not_found' => '지정된 수익화 계정을 찾을 수 없습니다.',
+    'monetization_account_already_exists' => '수익화 계정이 이미 존재합니다.',
+    'capability_already_granted' => '지정된 권한은 이미 부여되었습니다.',
+    'stripe_connect_error' => 'Stripe Connect 오류가 발생했습니다.',
 ];

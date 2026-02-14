@@ -26,8 +26,8 @@ use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier
 use Source\Monetization\Account\Domain\ValueObject\Phone;
 use Source\Monetization\Account\Domain\ValueObject\PostalCode;
 use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
-use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
 use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
@@ -76,7 +76,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             new MonetizationAccountIdentifier($monetizationAccountId),
             $accountIdentifier,
             [Capability::PURCHASE],
-            new StripeCustomerId('cus_1234567890abcdef'),
+            new PaymentCustomerId('cus_1234567890abcdef'),
             null,
         );
 
@@ -125,7 +125,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             $accountIdentifier,
             [Capability::SELL, Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
         $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
@@ -172,8 +172,8 @@ class MonetizationAccountRepositoryTest extends TestCase
             new MonetizationAccountIdentifier($monetizationAccountId),
             $accountIdentifier,
             [Capability::PURCHASE, Capability::SELL],
-            new StripeCustomerId('cus_1234567890abcdef'),
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new PaymentCustomerId('cus_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
         $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
@@ -213,7 +213,7 @@ class MonetizationAccountRepositoryTest extends TestCase
 
         // 更新
         $account->grantCapability(Capability::PURCHASE);
-        $account->linkStripeCustomer(new StripeCustomerId('cus_updated1234567'));
+        $account->linkStripeCustomer(new PaymentCustomerId('cus_updated1234567'));
         $repository->save($account);
 
         $this->assertDatabaseHas('monetization_accounts', [
@@ -296,7 +296,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             new MonetizationAccountIdentifier($monetizationAccountId),
             $accountIdentifier,
             [Capability::PURCHASE],
-            new StripeCustomerId('cus_billing_test'),
+            new PaymentCustomerId('cus_billing_test'),
             null,
             $billingAddress,
             $billingContact,
@@ -433,7 +433,7 @@ class MonetizationAccountRepositoryTest extends TestCase
             $accountIdentifier,
             [Capability::SELL],
             null,
-            new StripeConnectedAccountId('acct_partial_test'),
+            new ConnectedAccountId('acct_partial_test'),
             $billingAddress,
             null,
             BillingMethod::BANK_TRANSFER,

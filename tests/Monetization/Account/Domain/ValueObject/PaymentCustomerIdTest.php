@@ -6,9 +6,9 @@ namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 
-class StripeCustomerIdTest extends TestCase
+class PaymentCustomerIdTest extends TestCase
 {
     /**
      * 正常系: 有効なStripe Customer IDでインスタンスが生成されること
@@ -16,7 +16,7 @@ class StripeCustomerIdTest extends TestCase
     public function test__construct(): void
     {
         $id = 'cus_1234567890abcdef';
-        $stripeCustomerId = new StripeCustomerId($id);
+        $stripeCustomerId = new PaymentCustomerId($id);
         $this->assertSame($id, (string) $stripeCustomerId);
     }
 
@@ -27,7 +27,7 @@ class StripeCustomerIdTest extends TestCase
     {
         $id = 'invalid_1234567890';
         $this->expectException(InvalidArgumentException::class);
-        new StripeCustomerId($id);
+        new PaymentCustomerId($id);
     }
 
     /**
@@ -37,6 +37,6 @@ class StripeCustomerIdTest extends TestCase
     {
         $id = 'cus_123';
         $this->expectException(InvalidArgumentException::class);
-        new StripeCustomerId($id);
+        new PaymentCustomerId($id);
     }
 }

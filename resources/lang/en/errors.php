@@ -16,4 +16,8 @@ return [
     'refund_exceeds_captured_amount' => 'The refund amount exceeds the captured amount.',
     'refund_currency_mismatch' => 'The refund currency does not match the payment currency.',
     'payment_gateway_error' => 'A payment gateway error has occurred.',
+    'monetization_account_not_found' => 'The specified monetization account was not found.',
+    'monetization_account_already_exists' => 'The monetization account already exists.',
+    'capability_already_granted' => 'The specified capability has already been granted.',
+    'stripe_connect_error' => 'A Stripe Connect error has occurred.',
 ];

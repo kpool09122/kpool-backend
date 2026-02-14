@@ -16,4 +16,8 @@ return [
     'refund_exceeds_captured_amount' => '返金額が決済額を超過しています。',
     'refund_currency_mismatch' => '返金通貨が決済通貨と一致しません。',
     'payment_gateway_error' => '決済ゲートウェイエラーが発生しました。',
+    'monetization_account_not_found' => '指定されたマネタイズアカウントが見つかりません。',
+    'monetization_account_already_exists' => 'マネタイズアカウントは既に存在します。',
+    'capability_already_granted' => '指定された権限は既に付与されています。',
+    'stripe_connect_error' => 'Stripe Connectエラーが発生しました。',
 ];

@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerInput;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerInterface;
+use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerOutput;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Exception\CapabilityAlreadyGrantedException;
 use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundException;
@@ -15,7 +16,8 @@ use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryI
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Infrastructure\Exception\StripeConnectException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
@@ -30,11 +32,12 @@ class OnboardSellerTest extends TestCase
      * @throws BindingResolutionException
      * @throws MonetizationAccountNotFoundException
      * @throws CapabilityAlreadyGrantedException
+     * @throws StripeConnectException
      */
     public function testProcessCreatesConnectedAccountAndReturnsOnboardingUrl(): void
     {
         $monetizationAccountId = StrTestHelper::generateUuid();
-        $stripeConnectedAccountId = new StripeConnectedAccountId('acct_1234567890');
+        $stripeConnectedAccountId = new ConnectedAccountId('acct_1234567890');
         $expectedUrl = 'https://connect.stripe.com/setup/onboarding/1234';
         $email = new Email('seller@example.com');
         $countryCode = CountryCode::JAPAN;
@@ -87,10 +90,12 @@ class OnboardSellerTest extends TestCase
             'https://example.com/refresh',
             'https://example.com/return'
         );
+        $output = new OnboardSellerOutput();
 
-        $result = $useCase->process($input);
+        $useCase->process($input, $output);
 
-        $this->assertSame($expectedUrl, $result);
+        $result = $output->toArray();
+        $this->assertSame($expectedUrl, $result['onboardingUrl']);
     }
 
     /**
@@ -99,11 +104,12 @@ class OnboardSellerTest extends TestCase
      * @throws BindingResolutionException
      * @throws MonetizationAccountNotFoundException
      * @throws CapabilityAlreadyGrantedException
+     * @throws StripeConnectException
      */
     public function testProcessReturnsOnboardingUrlWhenConnectedAccountExists(): void
     {
         $monetizationAccountId = StrTestHelper::generateUuid();
-        $existingStripeConnectedAccountId = new StripeConnectedAccountId('acct_existing');
+        $existingStripeConnectedAccountId = new ConnectedAccountId('acct_existing');
         $expectedUrl = 'https://connect.stripe.com/setup/onboarding/existing';
 
         $account = new MonetizationAccount(
@@ -142,10 +148,12 @@ class OnboardSellerTest extends TestCase
             'https://example.com/refresh',
             'https://example.com/return'
         );
+        $output = new OnboardSellerOutput();
 
-        $result = $useCase->process($input);
+        $useCase->process($input, $output);
 
-        $this->assertSame($expectedUrl, $result);
+        $result = $output->toArray();
+        $this->assertSame($expectedUrl, $result['onboardingUrl']);
     }
 
     /**
@@ -154,6 +162,7 @@ class OnboardSellerTest extends TestCase
      * @throws BindingResolutionException
      * @throws MonetizationAccountNotFoundException
      * @throws CapabilityAlreadyGrantedException
+     * @throws StripeConnectException
      */
     public function testProcessThrowsExceptionWhenAccountNotFound(): void
     {
@@ -182,7 +191,8 @@ class OnboardSellerTest extends TestCase
             'https://example.com/refresh',
             'https://example.com/return'
         );
+        $output = new OnboardSellerOutput();
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 }

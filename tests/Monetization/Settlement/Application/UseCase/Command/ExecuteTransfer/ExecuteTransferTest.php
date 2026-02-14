@@ -11,7 +11,7 @@ use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundExce
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInput;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInterface;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
@@ -192,7 +192,7 @@ class ExecuteTransferTest extends TestCase
             new AccountIdentifier(StrTestHelper::generateUuid()),
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId('acct_1234567890')
+            new ConnectedAccountId('acct_1234567890')
         );
     }
 }

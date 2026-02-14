@@ -7,7 +7,7 @@ namespace Source\Monetization\Account\Domain\ValueObject;
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class StripeConnectedAccountId extends StringBaseValue
+class ConnectedAccountId extends StringBaseValue
 {
     public function __construct(string $id)
     {

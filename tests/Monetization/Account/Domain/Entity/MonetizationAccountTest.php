@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Monetization\Account\Domain\Entity;
 
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Exception\CapabilityAlreadyGrantedException;
 use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
+use Source\Monetization\Account\Domain\Exception\ConnectedAccountAlreadyLinkedException;
+use Source\Monetization\Account\Domain\Exception\ConnectedAccountNotLinkedException;
+use Source\Monetization\Account\Domain\Exception\PaymentCustomerAlreadyLinkedException;
+use Source\Monetization\Account\Domain\Exception\PaymentCustomerNotLinkedException;
 use Source\Monetization\Account\Domain\ValueObject\AddressLine;
 use Source\Monetization\Account\Domain\ValueObject\BillingAddress;
 use Source\Monetization\Account\Domain\ValueObject\BillingContact;
@@ -20,8 +23,8 @@ use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier
 use Source\Monetization\Account\Domain\ValueObject\Phone;
 use Source\Monetization\Account\Domain\ValueObject\PostalCode;
 use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
-use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
 use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
@@ -36,9 +39,9 @@ class MonetizationAccountTest extends TestCase
      * @param Capability[] $capabilities
      */
     private function createAccount(
-        array $capabilities = [],
-        ?StripeCustomerId $stripeCustomerId = null,
-        ?StripeConnectedAccountId $stripeConnectedAccountId = null,
+        array               $capabilities = [],
+        ?PaymentCustomerId  $stripeCustomerId = null,
+        ?ConnectedAccountId $stripeConnectedAccountId = null,
     ): MonetizationAccount {
         return new MonetizationAccount(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
@@ -172,7 +175,7 @@ class MonetizationAccountTest extends TestCase
     public function testLinkStripeCustomer(): void
     {
         $account = $this->createAccount([]);
-        $stripeCustomerId = new StripeCustomerId('cus_1234567890abcdef');
+        $stripeCustomerId = new PaymentCustomerId('cus_1234567890abcdef');
 
         $account->linkStripeCustomer($stripeCustomerId);
 
@@ -186,11 +189,11 @@ class MonetizationAccountTest extends TestCase
     {
         $account = $this->createAccount(
             [],
-            new StripeCustomerId('cus_1234567890abcdef'),
+            new PaymentCustomerId('cus_1234567890abcdef'),
         );
 
-        $this->expectException(DomainException::class);
-        $account->linkStripeCustomer(new StripeCustomerId('cus_another1234567'));
+        $this->expectException(PaymentCustomerAlreadyLinkedException::class);
+        $account->linkStripeCustomer(new PaymentCustomerId('cus_another1234567'));
     }
 
     /**
@@ -199,7 +202,7 @@ class MonetizationAccountTest extends TestCase
     public function testLinkStripeConnectedAccount(): void
     {
         $account = $this->createAccount([]);
-        $stripeConnectedAccountId = new StripeConnectedAccountId('acct_1234567890abcdef');
+        $stripeConnectedAccountId = new ConnectedAccountId('acct_1234567890abcdef');
 
         $account->linkStripeConnectedAccount($stripeConnectedAccountId);
 
@@ -214,11 +217,11 @@ class MonetizationAccountTest extends TestCase
         $account = $this->createAccount(
             [],
             null,
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
-        $this->expectException(DomainException::class);
-        $account->linkStripeConnectedAccount(new StripeConnectedAccountId('acct_another1234567'));
+        $this->expectException(ConnectedAccountAlreadyLinkedException::class);
+        $account->linkStripeConnectedAccount(new ConnectedAccountId('acct_another1234567'));
     }
 
     /**
@@ -228,7 +231,7 @@ class MonetizationAccountTest extends TestCase
     {
         $account = $this->createAccount(
             [Capability::PURCHASE],
-            new StripeCustomerId('cus_1234567890abcdef'),
+            new PaymentCustomerId('cus_1234567890abcdef'),
         );
 
         $account->assertCanMakePurchase();
@@ -242,11 +245,10 @@ class MonetizationAccountTest extends TestCase
     {
         $account = $this->createAccount(
             [],
-            new StripeCustomerId('cus_1234567890abcdef'),
+            new PaymentCustomerId('cus_1234567890abcdef'),
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Account does not have purchase capability.');
+        $this->expectException(CapabilityNotGrantedException::class);
         $account->assertCanMakePurchase();
     }
 
@@ -257,8 +259,7 @@ class MonetizationAccountTest extends TestCase
     {
         $account = $this->createAccount([Capability::PURCHASE]);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Stripe Customer is not linked.');
+        $this->expectException(PaymentCustomerNotLinkedException::class);
         $account->assertCanMakePurchase();
     }
 
@@ -270,7 +271,7 @@ class MonetizationAccountTest extends TestCase
         $account = $this->createAccount(
             [Capability::SELL],
             null,
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
         $account->assertCanSell();
@@ -285,11 +286,10 @@ class MonetizationAccountTest extends TestCase
         $account = $this->createAccount(
             [],
             null,
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Account does not have sell capability.');
+        $this->expectException(CapabilityNotGrantedException::class);
         $account->assertCanSell();
     }
 
@@ -300,8 +300,7 @@ class MonetizationAccountTest extends TestCase
     {
         $account = $this->createAccount([Capability::SELL]);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Stripe Connected Account is not linked.');
+        $this->expectException(ConnectedAccountNotLinkedException::class);
         $account->assertCanSell();
     }
 
@@ -313,7 +312,7 @@ class MonetizationAccountTest extends TestCase
         $account = $this->createAccount(
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
         $account->assertCanReceivePayout();
@@ -328,11 +327,10 @@ class MonetizationAccountTest extends TestCase
         $account = $this->createAccount(
             [],
             null,
-            new StripeConnectedAccountId('acct_1234567890abcdef'),
+            new ConnectedAccountId('acct_1234567890abcdef'),
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Account does not have payout capability.');
+        $this->expectException(CapabilityNotGrantedException::class);
         $account->assertCanReceivePayout();
     }
 
@@ -343,8 +341,7 @@ class MonetizationAccountTest extends TestCase
     {
         $account = $this->createAccount([Capability::RECEIVE_PAYOUT]);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Stripe Connected Account is not linked.');
+        $this->expectException(ConnectedAccountNotLinkedException::class);
         $account->assertCanReceivePayout();
     }
 

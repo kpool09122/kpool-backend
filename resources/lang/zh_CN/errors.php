@@ -16,4 +16,8 @@ return [
     'refund_exceeds_captured_amount' => '退款金额超过已收款金额。',
     'refund_currency_mismatch' => '退款货币与付款货币不匹配。',
     'payment_gateway_error' => '支付网关发生错误。',
+    'monetization_account_not_found' => '找不到指定的收益化账户。',
+    'monetization_account_already_exists' => '收益化账户已存在。',
+    'capability_already_granted' => '指定的权限已被授予。',
+    'stripe_connect_error' => 'Stripe Connect发生错误。',
 ];

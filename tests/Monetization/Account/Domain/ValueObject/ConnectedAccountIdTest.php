@@ -6,9 +6,9 @@ namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 
-class StripeConnectedAccountIdTest extends TestCase
+class ConnectedAccountIdTest extends TestCase
 {
     /**
      * 正常系: 有効なStripe Connected Account IDでインスタンスが生成されること
@@ -16,7 +16,7 @@ class StripeConnectedAccountIdTest extends TestCase
     public function test__construct(): void
     {
         $id = 'acct_1234567890abcdef';
-        $stripeConnectedAccountId = new StripeConnectedAccountId($id);
+        $stripeConnectedAccountId = new ConnectedAccountId($id);
         $this->assertSame($id, (string) $stripeConnectedAccountId);
     }
 
@@ -27,7 +27,7 @@ class StripeConnectedAccountIdTest extends TestCase
     {
         $id = 'invalid_1234567890';
         $this->expectException(InvalidArgumentException::class);
-        new StripeConnectedAccountId($id);
+        new ConnectedAccountId($id);
     }
 
     /**
@@ -37,6 +37,6 @@ class StripeConnectedAccountIdTest extends TestCase
     {
         $id = 'acct_123';
         $this->expectException(InvalidArgumentException::class);
-        new StripeConnectedAccountId($id);
+        new ConnectedAccountId($id);
     }
 }

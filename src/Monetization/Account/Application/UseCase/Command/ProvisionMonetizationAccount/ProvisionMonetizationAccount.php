@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount;
 
 use Source\Monetization\Account\Application\Exception\MonetizationAccountAlreadyExistsException;
-use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 
@@ -18,9 +17,12 @@ readonly class ProvisionMonetizationAccount implements ProvisionMonetizationAcco
     }
 
     /**
+     * @param ProvisionMonetizationAccountInputPort $input
+     * @param ProvisionMonetizationAccountOutputPort $output
+     * @return void
      * @throws MonetizationAccountAlreadyExistsException
      */
-    public function process(ProvisionMonetizationAccountInputPort $input): MonetizationAccount
+    public function process(ProvisionMonetizationAccountInputPort $input, ProvisionMonetizationAccountOutputPort $output): void
     {
         $existing = $this->repository->findByAccountIdentifier($input->accountIdentifier());
 
@@ -31,6 +33,6 @@ readonly class ProvisionMonetizationAccount implements ProvisionMonetizationAcco
         $account = $this->factory->create($input->accountIdentifier());
         $this->repository->save($account);
 
-        return $account;
+        $output->setMonetizationAccount($account);
     }
 }

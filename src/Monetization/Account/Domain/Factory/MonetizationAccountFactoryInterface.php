@@ -9,5 +9,9 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface MonetizationAccountFactoryInterface
 {
+    /**
+     * @param AccountIdentifier $accountIdentifier
+     * @return MonetizationAccount
+     */
     public function create(AccountIdentifier $accountIdentifier): MonetizationAccount;
 }

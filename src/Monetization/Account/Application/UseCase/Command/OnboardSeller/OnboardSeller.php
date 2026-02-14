@@ -9,6 +9,7 @@ use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundExce
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
+use Source\Monetization\Account\Infrastructure\Exception\StripeConnectException;
 
 readonly class OnboardSeller implements OnboardSellerInterface
 {
@@ -20,11 +21,13 @@ readonly class OnboardSeller implements OnboardSellerInterface
 
     /**
      * @param OnboardSellerInputPort $input
-     * @return string
+     * @param OnboardSellerOutputPort $output
+     * @return void
      * @throws MonetizationAccountNotFoundException
      * @throws CapabilityAlreadyGrantedException
+     * @throws StripeConnectException
      */
-    public function process(OnboardSellerInputPort $input): string
+    public function process(OnboardSellerInputPort $input, OnboardSellerOutputPort $output): void
     {
         $account = $this->monetizationAccountRepository->findById(
             $input->monetizationAccountIdentifier()
@@ -49,10 +52,12 @@ readonly class OnboardSeller implements OnboardSellerInterface
             $this->monetizationAccountRepository->save($account);
         }
 
-        return $this->connectGateway->createAccountLink(
+        $onboardingUrl = $this->connectGateway->createAccountLink(
             $stripeConnectedAccountId,
             $input->refreshUrl(),
             $input->returnUrl()
         );
+
+        $output->setOnboardingUrl($onboardingUrl);
     }
 }

@@ -10,9 +10,21 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface MonetizationAccountRepositoryInterface
 {
+    /**
+     * @param MonetizationAccountIdentifier $identifier
+     * @return MonetizationAccount|null
+     */
     public function findById(MonetizationAccountIdentifier $identifier): ?MonetizationAccount;
 
+    /**
+     * @param AccountIdentifier $accountIdentifier
+     * @return MonetizationAccount|null
+     */
     public function findByAccountIdentifier(AccountIdentifier $accountIdentifier): ?MonetizationAccount;
 
+    /**
+     * @param MonetizationAccount $monetizationAccount
+     * @return void
+     */
     public function save(MonetizationAccount $monetizationAccount): void;
 }

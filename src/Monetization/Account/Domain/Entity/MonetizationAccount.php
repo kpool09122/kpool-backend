@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Account\Domain\Entity;
 
-use DomainException;
 use Source\Monetization\Account\Domain\Exception\CapabilityAlreadyGrantedException;
 use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
+use Source\Monetization\Account\Domain\Exception\ConnectedAccountAlreadyLinkedException;
+use Source\Monetization\Account\Domain\Exception\ConnectedAccountNotLinkedException;
+use Source\Monetization\Account\Domain\Exception\PaymentCustomerAlreadyLinkedException;
+use Source\Monetization\Account\Domain\Exception\PaymentCustomerNotLinkedException;
 use Source\Monetization\Account\Domain\ValueObject\BillingAddress;
 use Source\Monetization\Account\Domain\ValueObject\BillingContact;
 use Source\Monetization\Account\Domain\ValueObject\BillingMethod;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
-use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
@@ -23,8 +26,8 @@ class MonetizationAccount
      * @param MonetizationAccountIdentifier $monetizationAccountIdentifier
      * @param AccountIdentifier $accountIdentifier
      * @param Capability[] $capabilities
-     * @param StripeCustomerId|null $stripeCustomerId
-     * @param StripeConnectedAccountId|null $stripeConnectedAccountId
+     * @param PaymentCustomerId|null $stripeCustomerId
+     * @param ConnectedAccountId|null $stripeConnectedAccountId
      * @param BillingAddress|null $billingAddress
      * @param BillingContact|null $billingContact
      * @param BillingMethod|null $billingMethod
@@ -32,14 +35,14 @@ class MonetizationAccount
      */
     public function __construct(
         private readonly MonetizationAccountIdentifier $monetizationAccountIdentifier,
-        private readonly AccountIdentifier $accountIdentifier,
-        private array $capabilities,
-        private ?StripeCustomerId $stripeCustomerId,
-        private ?StripeConnectedAccountId $stripeConnectedAccountId,
-        private ?BillingAddress $billingAddress = null,
-        private ?BillingContact $billingContact = null,
-        private ?BillingMethod $billingMethod = null,
-        private ?TaxInfo $taxInfo = null,
+        private readonly AccountIdentifier             $accountIdentifier,
+        private array                                  $capabilities,
+        private ?PaymentCustomerId                     $stripeCustomerId,
+        private ?ConnectedAccountId                    $stripeConnectedAccountId,
+        private ?BillingAddress                        $billingAddress = null,
+        private ?BillingContact                        $billingContact = null,
+        private ?BillingMethod                         $billingMethod = null,
+        private ?TaxInfo                               $taxInfo = null,
     ) {
     }
 
@@ -61,12 +64,12 @@ class MonetizationAccount
         return $this->capabilities;
     }
 
-    public function stripeCustomerId(): ?StripeCustomerId
+    public function stripeCustomerId(): ?PaymentCustomerId
     {
         return $this->stripeCustomerId;
     }
 
-    public function stripeConnectedAccountId(): ?StripeConnectedAccountId
+    public function stripeConnectedAccountId(): ?ConnectedAccountId
     {
         return $this->stripeConnectedAccountId;
     }
@@ -121,24 +124,24 @@ class MonetizationAccount
     }
 
     /**
-     * @throws DomainException
+     * @throws PaymentCustomerAlreadyLinkedException
      */
-    public function linkStripeCustomer(StripeCustomerId $stripeCustomerId): void
+    public function linkStripeCustomer(PaymentCustomerId $stripeCustomerId): void
     {
         if ($this->stripeCustomerId !== null) {
-            throw new DomainException('Stripe Customer already linked.');
+            throw new PaymentCustomerAlreadyLinkedException();
         }
 
         $this->stripeCustomerId = $stripeCustomerId;
     }
 
     /**
-     * @throws DomainException
+     * @throws ConnectedAccountAlreadyLinkedException
      */
-    public function linkStripeConnectedAccount(StripeConnectedAccountId $stripeConnectedAccountId): void
+    public function linkStripeConnectedAccount(ConnectedAccountId $stripeConnectedAccountId): void
     {
         if ($this->stripeConnectedAccountId !== null) {
-            throw new DomainException('Stripe Connected Account already linked.');
+            throw new ConnectedAccountAlreadyLinkedException();
         }
 
         $this->stripeConnectedAccountId = $stripeConnectedAccountId;
@@ -147,48 +150,51 @@ class MonetizationAccount
     /**
      * 購入操作を実行可能か検証
      *
-     * @throws DomainException
+     * @throws CapabilityNotGrantedException
+     * @throws PaymentCustomerNotLinkedException
      */
     public function assertCanMakePurchase(): void
     {
         if (! $this->canPurchase()) {
-            throw new DomainException('Account does not have purchase capability.');
+            throw new CapabilityNotGrantedException(Capability::PURCHASE);
         }
 
         if ($this->stripeCustomerId === null) {
-            throw new DomainException('Stripe Customer is not linked.');
+            throw new PaymentCustomerNotLinkedException();
         }
     }
 
     /**
      * 販売操作を実行可能か検証
      *
-     * @throws DomainException
+     * @throws CapabilityNotGrantedException
+     * @throws ConnectedAccountNotLinkedException
      */
     public function assertCanSell(): void
     {
         if (! $this->canSell()) {
-            throw new DomainException('Account does not have sell capability.');
+            throw new CapabilityNotGrantedException(Capability::SELL);
         }
 
         if ($this->stripeConnectedAccountId === null) {
-            throw new DomainException('Stripe Connected Account is not linked.');
+            throw new ConnectedAccountNotLinkedException();
         }
     }
 
     /**
      * 出金受取が可能か検証
      *
-     * @throws DomainException
+     * @throws CapabilityNotGrantedException
+     * @throws ConnectedAccountNotLinkedException
      */
     public function assertCanReceivePayout(): void
     {
         if (! $this->canReceivePayout()) {
-            throw new DomainException('Account does not have payout capability.');
+            throw new CapabilityNotGrantedException(Capability::RECEIVE_PAYOUT);
         }
 
         if ($this->stripeConnectedAccountId === null) {
-            throw new DomainException('Stripe Connected Account is not linked.');
+            throw new ConnectedAccountNotLinkedException();
         }
     }
 

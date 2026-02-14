@@ -16,4 +16,8 @@ return [
     'refund_exceeds_captured_amount' => 'El monto del reembolso excede el monto capturado.',
     'refund_currency_mismatch' => 'La moneda del reembolso no coincide con la moneda del pago.',
     'payment_gateway_error' => 'Se ha producido un error en la pasarela de pago.',
+    'monetization_account_not_found' => 'No se encontró la cuenta de monetización especificada.',
+    'monetization_account_already_exists' => 'La cuenta de monetización ya existe.',
+    'capability_already_granted' => 'La capacidad especificada ya ha sido otorgada.',
+    'stripe_connect_error' => 'Se ha producido un error en Stripe Connect.',
 ];

@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
 use Source\Monetization\Settlement\Domain\Exception\TransferGatewayException;
 use Source\Monetization\Settlement\Domain\Service\TransferGatewayInterface;
@@ -56,7 +56,7 @@ class TransferGatewayTest extends TestCase
             new AccountIdentifier($accountId),
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId($stripeConnectedAccountId),
+            new ConnectedAccountId($stripeConnectedAccountId),
         );
 
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -107,7 +107,7 @@ class TransferGatewayTest extends TestCase
             new AccountIdentifier($accountId),
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId($stripeConnectedAccountId),
+            new ConnectedAccountId($stripeConnectedAccountId),
         );
 
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -158,7 +158,7 @@ class TransferGatewayTest extends TestCase
             new AccountIdentifier($accountId),
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId($stripeConnectedAccountId),
+            new ConnectedAccountId($stripeConnectedAccountId),
         );
 
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -209,7 +209,7 @@ class TransferGatewayTest extends TestCase
             new AccountIdentifier($accountId),
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId($stripeConnectedAccountId),
+            new ConnectedAccountId($stripeConnectedAccountId),
         );
 
         $mockStripeClient = Mockery::mock(StripeClient::class);
@@ -261,7 +261,7 @@ class TransferGatewayTest extends TestCase
             new AccountIdentifier($accountId),
             [Capability::RECEIVE_PAYOUT],
             null,
-            new StripeConnectedAccountId($stripeConnectedAccountId),
+            new ConnectedAccountId($stripeConnectedAccountId),
         );
 
         $mockStripeClient = Mockery::mock(StripeClient::class);

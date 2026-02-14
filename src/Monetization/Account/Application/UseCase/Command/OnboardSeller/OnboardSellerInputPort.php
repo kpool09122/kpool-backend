@@ -10,13 +10,28 @@ use Source\Shared\Domain\ValueObject\Email;
 
 interface OnboardSellerInputPort
 {
+    /**
+     * @return MonetizationAccountIdentifier
+     */
     public function monetizationAccountIdentifier(): MonetizationAccountIdentifier;
 
+    /**
+     * @return Email
+     */
     public function email(): Email;
 
+    /**
+     * @return CountryCode
+     */
     public function countryCode(): CountryCode;
 
+    /**
+     * @return string
+     */
     public function refreshUrl(): string;
 
+    /**
+     * @return string
+     */
     public function returnUrl(): string;
 }
