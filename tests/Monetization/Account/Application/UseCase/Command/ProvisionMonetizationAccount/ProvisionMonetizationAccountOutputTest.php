@@ -7,8 +7,8 @@ namespace Tests\Monetization\Account\Application\UseCase\Command\ProvisionMoneti
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountOutput;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
-use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;

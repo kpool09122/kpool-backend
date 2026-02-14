@@ -14,8 +14,8 @@ use Source\Monetization\Account\Domain\ValueObject\BillingAddress;
 use Source\Monetization\Account\Domain\ValueObject\BillingContact;
 use Source\Monetization\Account\Domain\ValueObject\BillingMethod;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
-use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -26,8 +26,8 @@ class MonetizationAccount
      * @param MonetizationAccountIdentifier $monetizationAccountIdentifier
      * @param AccountIdentifier $accountIdentifier
      * @param Capability[] $capabilities
-     * @param PaymentCustomerId|null $stripeCustomerId
-     * @param ConnectedAccountId|null $stripeConnectedAccountId
+     * @param PaymentCustomerId|null $paymentCustomerId
+     * @param ConnectedAccountId|null $connectedAccountId
      * @param BillingAddress|null $billingAddress
      * @param BillingContact|null $billingContact
      * @param BillingMethod|null $billingMethod
@@ -37,8 +37,8 @@ class MonetizationAccount
         private readonly MonetizationAccountIdentifier $monetizationAccountIdentifier,
         private readonly AccountIdentifier             $accountIdentifier,
         private array                                  $capabilities,
-        private ?PaymentCustomerId                     $stripeCustomerId,
-        private ?ConnectedAccountId                    $stripeConnectedAccountId,
+        private ?PaymentCustomerId                     $paymentCustomerId,
+        private ?ConnectedAccountId                    $connectedAccountId,
         private ?BillingAddress                        $billingAddress = null,
         private ?BillingContact                        $billingContact = null,
         private ?BillingMethod                         $billingMethod = null,
@@ -66,12 +66,12 @@ class MonetizationAccount
 
     public function stripeCustomerId(): ?PaymentCustomerId
     {
-        return $this->stripeCustomerId;
+        return $this->paymentCustomerId;
     }
 
     public function stripeConnectedAccountId(): ?ConnectedAccountId
     {
-        return $this->stripeConnectedAccountId;
+        return $this->connectedAccountId;
     }
 
     public function hasCapability(Capability $capability): bool
@@ -128,11 +128,11 @@ class MonetizationAccount
      */
     public function linkStripeCustomer(PaymentCustomerId $stripeCustomerId): void
     {
-        if ($this->stripeCustomerId !== null) {
+        if ($this->paymentCustomerId !== null) {
             throw new PaymentCustomerAlreadyLinkedException();
         }
 
-        $this->stripeCustomerId = $stripeCustomerId;
+        $this->paymentCustomerId = $stripeCustomerId;
     }
 
     /**
@@ -140,11 +140,11 @@ class MonetizationAccount
      */
     public function linkStripeConnectedAccount(ConnectedAccountId $stripeConnectedAccountId): void
     {
-        if ($this->stripeConnectedAccountId !== null) {
+        if ($this->connectedAccountId !== null) {
             throw new ConnectedAccountAlreadyLinkedException();
         }
 
-        $this->stripeConnectedAccountId = $stripeConnectedAccountId;
+        $this->connectedAccountId = $stripeConnectedAccountId;
     }
 
     /**
@@ -159,7 +159,7 @@ class MonetizationAccount
             throw new CapabilityNotGrantedException(Capability::PURCHASE);
         }
 
-        if ($this->stripeCustomerId === null) {
+        if ($this->paymentCustomerId === null) {
             throw new PaymentCustomerNotLinkedException();
         }
     }
@@ -176,7 +176,7 @@ class MonetizationAccount
             throw new CapabilityNotGrantedException(Capability::SELL);
         }
 
-        if ($this->stripeConnectedAccountId === null) {
+        if ($this->connectedAccountId === null) {
             throw new ConnectedAccountNotLinkedException();
         }
     }
@@ -193,7 +193,7 @@ class MonetizationAccount
             throw new CapabilityNotGrantedException(Capability::RECEIVE_PAYOUT);
         }
 
-        if ($this->stripeConnectedAccountId === null) {
+        if ($this->connectedAccountId === null) {
             throw new ConnectedAccountNotLinkedException();
         }
     }

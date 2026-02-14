@@ -15,8 +15,8 @@ use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundExce
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
-use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Infrastructure\Exception\StripeConnectException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\CountryCode;
