@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Monetization;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -55,5 +56,21 @@ class MonetizationAccount extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return HasMany<MonetizationPaymentMethod, $this>
+     */
+    public function paymentMethods(): HasMany
+    {
+        return $this->hasMany(MonetizationPaymentMethod::class, 'monetization_account_id');
+    }
+
+    /**
+     * @return HasMany<MonetizationPayoutAccount, $this>
+     */
+    public function payoutAccounts(): HasMany
+    {
+        return $this->hasMany(MonetizationPayoutAccount::class, 'monetization_account_id');
     }
 }

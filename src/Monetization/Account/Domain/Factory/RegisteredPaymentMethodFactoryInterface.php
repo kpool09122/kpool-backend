@@ -9,7 +9,7 @@ use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
 
-interface PaymentMethodFactoryInterface
+interface RegisteredPaymentMethodFactoryInterface
 {
     public function create(
         MonetizationAccountIdentifier $monetizationAccountIdentifier,

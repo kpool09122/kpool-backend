@@ -9,7 +9,7 @@ use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
 
-interface PaymentMethodRepositoryInterface
+interface RegisteredPaymentMethodRepositoryInterface
 {
     public function findById(RegisteredPaymentMethodIdentifier $identifier): ?RegisteredPaymentMethod;
 
