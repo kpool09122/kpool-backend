@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
@@ -29,8 +30,10 @@ class ContactRepositoryTest extends TestCase
     #[Group('useDb')]
     public function testSave(): void
     {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             new ContactIdentifier(StrTestHelper::generateUuid()),
+            $identityIdentifier,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
@@ -46,6 +49,7 @@ class ContactRepositoryTest extends TestCase
 
         $this->assertNotNull($record);
         $this->assertSame($contact->category()->value, (int)$record->category);
+        $this->assertSame((string)$identityIdentifier, $record->identity_identifier);
         $this->assertSame((string)$contact->name(), $record->name);
         // 保存時は暗号化されていること（平文と一致しない）
         $this->assertNotSame((string)$contact->email(), $record->email);

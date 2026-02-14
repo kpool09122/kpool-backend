@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact;
 
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
@@ -12,11 +13,17 @@ use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 readonly class SubmitContactInput implements SubmitContactInputPort
 {
     public function __construct(
+        private ?IdentityIdentifier $identityIdentifier,
         private Category $category,
         private ContactName $name,
         private Email $email,
         private Content $content,
     ) {
+    }
+
+    public function identityIdentifier(): ?IdentityIdentifier
+    {
+        return $this->identityIdentifier;
     }
 
     public function category(): Category

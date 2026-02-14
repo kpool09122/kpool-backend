@@ -20,6 +20,7 @@ class Contact extends Model
     protected $fillable = [
         'id',
         'category',
+        'identity_identifier',
         'name',
         'email',
         'content',

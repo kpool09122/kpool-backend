@@ -24,6 +24,7 @@ final class ContactRepository implements ContactRepositoryInterface
             ],
             [
                 'category' => $contact->category()->value,
+                'identity_identifier' => $contact->identityIdentifier() !== null ? (string)$contact->identityIdentifier() : null,
                 'name' => (string)$contact->name(),
                 'email' => $this->encryptionService->encrypt((string)$contact->email()),
                 'content' => (string)$contact->content(),
