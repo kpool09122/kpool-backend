@@ -125,6 +125,50 @@ class MonetizationAccountRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系: 指定したConnectedAccountIdでMonetizationAccountを取得できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByConnectedAccountId(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $monetizationAccountId = StrTestHelper::generateUuid();
+
+        CreateAccount::create($accountId);
+        CreateMonetizationAccount::create($monetizationAccountId, [
+            'account_id' => $accountId,
+            'capabilities' => '["sell","receive_payout"]',
+            'stripe_connected_account_id' => 'acct_findtest1234567',
+        ]);
+
+        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $result = $repository->findByConnectedAccountId(new ConnectedAccountId('acct_findtest1234567'));
+
+        $this->assertNotNull($result);
+        $this->assertSame($monetizationAccountId, (string) $result->monetizationAccountIdentifier());
+        $this->assertSame($accountId, (string) $result->accountIdentifier());
+        $this->assertTrue($result->hasCapability(Capability::SELL));
+        $this->assertTrue($result->hasCapability(Capability::RECEIVE_PAYOUT));
+        $this->assertNull($result->stripeCustomerId());
+        $this->assertSame('acct_findtest1234567', (string) $result->stripeConnectedAccountId());
+    }
+
+    /**
+     * 正常系: 指定したConnectedAccountIdでMonetizationAccountが取得できない場合、NULLが返却されること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByConnectedAccountIdWhenNotFound(): void
+    {
+        $repository = $this->app->make(MonetizationAccountRepositoryInterface::class);
+        $result = $repository->findByConnectedAccountId(new ConnectedAccountId('acct_nonexistent12345'));
+
+        $this->assertNull($result);
+    }
+
+    /**
      * 正常系: Capabilitiesが空のMonetizationAccountを取得できること
      *
      * @throws BindingResolutionException

@@ -55,6 +55,19 @@ class MonetizationAccountRepository implements MonetizationAccountRepositoryInte
         return $this->toDomainEntity($eloquent);
     }
 
+    public function findByConnectedAccountId(ConnectedAccountId $connectedAccountId): ?MonetizationAccount
+    {
+        $eloquent = MonetizationAccountEloquent::query()
+            ->where('stripe_connected_account_id', (string) $connectedAccountId)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
     public function save(MonetizationAccount $monetizationAccount): void
     {
         $billingAddress = $monetizationAccount->billingAddress();

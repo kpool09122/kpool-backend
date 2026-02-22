@@ -26,7 +26,7 @@ class MonetizationPaymentMethod extends Model
 {
     public $incrementing = false;
 
-    protected $table = 'monetization_payment_methods';
+    protected $table = 'monetization_registered_payment_methods';
 
     protected $keyType = 'string';
 

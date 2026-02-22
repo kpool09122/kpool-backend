@@ -277,7 +277,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_payment_methods', [
+        $this->assertDatabaseHas('monetization_registered_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'monetization_account_id' => $this->monetizationAccountId,
             'stripe_payment_method_id' => $stripePaymentMethodId,
@@ -321,7 +321,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $repository = $this->app->make(RegisteredPaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_payment_methods', [
+        $this->assertDatabaseHas('monetization_registered_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'stripe_payment_method_id' => $stripePaymentMethodId,
             'type' => 'card',
@@ -365,7 +365,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethod->markAsDefault();
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_payment_methods', [
+        $this->assertDatabaseHas('monetization_registered_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'brand' => 'visa',
             'last4' => '4242',
@@ -406,7 +406,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethod->deactivate();
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_payment_methods', [
+        $this->assertDatabaseHas('monetization_registered_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'status' => 'inactive',
         ]);

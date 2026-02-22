@@ -11,7 +11,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethodInput;
+use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethodInterface;
+use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethodOutput;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType as RegisteredPaymentMethodType;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentOutput;
@@ -30,6 +35,7 @@ readonly class AuthorizePaymentAction
 {
     public function __construct(
         private AuthorizePaymentInterface $authorizePayment,
+        private RegisterPaymentMethodInterface $registerPaymentMethod,
         private LoggerInterface $logger,
     ) {
     }
@@ -65,6 +71,15 @@ readonly class AuthorizePaymentAction
 
             try {
                 $this->authorizePayment->process($input, $output);
+
+                $registerInput = new RegisterPaymentMethodInput(
+                    new MonetizationAccountIdentifier($request->buyerMonetizationAccountId()),
+                    new PaymentMethodId($request->stripePaymentMethodId()),
+                    RegisteredPaymentMethodType::CARD,
+                );
+                $registerOutput = new RegisterPaymentMethodOutput();
+                $this->registerPaymentMethod->process($registerInput, $registerOutput);
+
                 DB::commit();
             } catch (InvalidPaymentStatusException $e) {
                 DB::rollBack();

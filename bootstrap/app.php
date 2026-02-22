@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
@@ -13,6 +14,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         api: __DIR__ . '/../routes/wiki_private_api.php',
         apiPrefix: 'api/wiki',
+        then: function () {
+            Route::prefix('webhook')
+                ->group(base_path('routes/webhook.php'));
+        },
     )
     ->withCommands([
         __DIR__ . '/../application/Console/Commands',
@@ -52,7 +57,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         \Application\Providers\Wiki\EventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->validateCsrfTokens(except: [
+            'webhook/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(app(\Application\Http\Exceptions\Handler::class));

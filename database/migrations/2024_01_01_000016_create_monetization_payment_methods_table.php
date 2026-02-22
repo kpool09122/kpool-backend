@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('monetization_payment_methods');
+        Schema::dropIfExists('monetization_registered_payment_methods');
     }
 };
