@@ -18,6 +18,7 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
+use Tests\Helper\CreateReplyContact;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -167,38 +168,31 @@ class ReplyContactRepositoryTest extends TestCase
             'updated_at' => $now->format('Y-m-d H:i:s'),
         ]);
 
-        $replyIdentifier = new ContactReplyIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $contentText = '返信内容です';
-        $sentAt = new DateTimeImmutable('2026-01-02 12:34:56');
-        $createdAt = new DateTimeImmutable('2026-01-02 00:00:00');
-
-        DB::table('contact_replies')->insert([
-            'id' => (string)$replyIdentifier,
-            'contact_id' => (string)$contactIdentifier,
-            'identity_identifier' => (string)$identityIdentifier,
-            'to_email' => $encryptionService->encrypt((string)$toEmail),
-            'content' => $contentText,
-            'status' => ReplyStatus::SENT->value,
-            'sent_at' => $sentAt->format('Y-m-d H:i:s'),
-            'created_at' => $createdAt->format('Y-m-d H:i:s'),
-            'updated_at' => $createdAt->format('Y-m-d H:i:s'),
-        ]);
+        $reply = CreateReplyContact::create(
+            $contactIdentifier,
+            $toEmail,
+            ReplyStatus::SENT,
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new DateTimeImmutable('2026-01-02 12:34:56'),
+            new DateTimeImmutable('2026-01-02 00:00:00'),
+            '返信内容です',
+            $encryptionService,
+        );
 
         $repository = $this->app->make(ReplyContactRepositoryInterface::class);
-        $reply = $repository->findById($replyIdentifier);
+        $savedReply = $repository->findById($reply->replyIdentifier());
 
-        $this->assertNotNull($reply);
-        $this->assertSame((string)$replyIdentifier, (string)$reply->replyIdentifier());
-        $this->assertSame((string)$contactIdentifier, (string)$reply->contactIdentifier());
-        $this->assertNotNull($reply->identityIdentifier());
-        $this->assertSame((string)$identityIdentifier, (string)$reply->identityIdentifier());
-        $this->assertSame((string)$toEmail, (string)$reply->toEmail());
-        $this->assertSame($contentText, (string)$reply->content());
-        $this->assertSame(ReplyStatus::SENT->value, $reply->status()->value);
-        $this->assertNotNull($reply->sentAt());
-        $this->assertSame($sentAt->format('Y-m-d H:i:s'), $reply->sentAt()->format('Y-m-d H:i:s'));
-        $this->assertSame($createdAt->format('Y-m-d H:i:s'), $reply->createdAt()->format('Y-m-d H:i:s'));
+        $this->assertNotNull($savedReply);
+        $this->assertSame((string)$reply->replyIdentifier(), (string)$savedReply->replyIdentifier());
+        $this->assertSame((string)$contactIdentifier, (string)$savedReply->contactIdentifier());
+        $this->assertNotNull($savedReply->identityIdentifier());
+        $this->assertSame((string)$reply->identityIdentifier(), (string)$savedReply->identityIdentifier());
+        $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
+        $this->assertSame((string)$reply->content(), (string)$savedReply->content());
+        $this->assertSame($reply->status()->value, $savedReply->status()->value);
+        $this->assertNotNull($savedReply->sentAt());
+        $this->assertSame($reply->sentAt()?->format('Y-m-d H:i:s'), $savedReply->sentAt()->format('Y-m-d H:i:s'));
+        $this->assertSame($reply->createdAt()->format('Y-m-d H:i:s'), $savedReply->createdAt()->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -225,31 +219,26 @@ class ReplyContactRepositoryTest extends TestCase
             'updated_at' => $now->format('Y-m-d H:i:s'),
         ]);
 
-        $replyIdentifier = new ContactReplyIdentifier(StrTestHelper::generateUuid());
-        $contentText = '返信内容です（nullケース）';
-        $createdAt = new DateTimeImmutable('2026-01-03 00:00:00');
-
-        DB::table('contact_replies')->insert([
-            'id' => (string)$replyIdentifier,
-            'contact_id' => (string)$contactIdentifier,
-            'identity_identifier' => null,
-            'to_email' => $encryptionService->encrypt((string)$toEmail),
-            'content' => $contentText,
-            'status' => ReplyStatus::FAILED->value,
-            'sent_at' => null,
-            'created_at' => $createdAt->format('Y-m-d H:i:s'),
-            'updated_at' => $createdAt->format('Y-m-d H:i:s'),
-        ]);
+        $reply = CreateReplyContact::create(
+            $contactIdentifier,
+            $toEmail,
+            ReplyStatus::FAILED,
+            null,
+            null,
+            new DateTimeImmutable('2026-01-03 00:00:00'),
+            '返信内容です（nullケース）',
+            $encryptionService,
+        );
 
         $repository = $this->app->make(ReplyContactRepositoryInterface::class);
-        $reply = $repository->findById($replyIdentifier);
+        $savedReply = $repository->findById($reply->replyIdentifier());
 
-        $this->assertNotNull($reply);
-        $this->assertNull($reply->identityIdentifier());
-        $this->assertNull($reply->sentAt());
-        $this->assertSame(ReplyStatus::FAILED->value, $reply->status()->value);
-        $this->assertSame((string)$toEmail, (string)$reply->toEmail());
-        $this->assertSame($createdAt->format('Y-m-d H:i:s'), $reply->createdAt()->format('Y-m-d H:i:s'));
+        $this->assertNotNull($savedReply);
+        $this->assertNull($savedReply->identityIdentifier());
+        $this->assertNull($savedReply->sentAt());
+        $this->assertSame($reply->status()->value, $savedReply->status()->value);
+        $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
+        $this->assertSame($reply->createdAt()->format('Y-m-d H:i:s'), $savedReply->createdAt()->format('Y-m-d H:i:s'));
     }
 
     /**
