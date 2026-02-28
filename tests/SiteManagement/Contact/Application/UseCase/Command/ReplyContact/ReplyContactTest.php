@@ -58,6 +58,7 @@ class ReplyContactTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
+            $identityIdentifier,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
@@ -208,6 +209,7 @@ class ReplyContactTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $contact = new Contact(
             $contactIdentifier,
+            $identityIdentifier,
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
