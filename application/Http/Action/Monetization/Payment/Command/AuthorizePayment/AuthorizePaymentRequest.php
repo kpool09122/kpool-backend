@@ -22,7 +22,6 @@ class AuthorizePaymentRequest extends FormRequest
             'paymentMethodType' => ['required', 'string', 'in:card,bank_transfer,wallet'],
             'paymentMethodLabel' => ['required', 'string'],
             'paymentMethodRecurringEnabled' => ['required', 'boolean'],
-            'stripePaymentMethodId' => ['required', 'string', 'regex:/^pm_/'],
         ];
     }
 
@@ -64,11 +63,6 @@ class AuthorizePaymentRequest extends FormRequest
     public function paymentMethodRecurringEnabled(): bool
     {
         return (bool) $this->input('paymentMethodRecurringEnabled');
-    }
-
-    public function stripePaymentMethodId(): string
-    {
-        return (string) $this->input('stripePaymentMethodId');
     }
 
     public function language(): string

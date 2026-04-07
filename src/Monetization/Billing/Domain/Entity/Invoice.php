@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use InvalidArgumentException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Billing\Domain\Exception\InvalidInvoiceAmountsException;
+use Source\Monetization\Billing\Domain\Exception\InvoiceNotPayableException;
+use Source\Monetization\Billing\Domain\Exception\InvoiceNotVoidableException;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
@@ -140,56 +142,56 @@ class Invoice
         Money $total
     ): void {
         if ($lines === []) {
-            throw new DomainException('Invoice must have at least one line.');
+            throw new InvalidInvoiceAmountsException('Invoice must have at least one line.');
         }
 
         $currency = $subtotal->currency();
         $calculatedSubtotal = new Money(0, $currency);
         foreach ($lines as $line) {
             if ($line->unitPrice()->currency() !== $currency) {
-                throw new DomainException('Invoice lines must use the same currency as the invoice.');
+                throw new InvalidInvoiceAmountsException('Invoice lines must use the same currency as the invoice.');
             }
             $calculatedSubtotal = $calculatedSubtotal->add($line->lineTotal());
         }
 
         if ($calculatedSubtotal->amount() !== $subtotal->amount()) {
-            throw new DomainException('Subtotal does not match sum of invoice lines.');
+            throw new InvalidInvoiceAmountsException('Subtotal does not match sum of invoice lines.');
         }
 
         if (! $discountAmount->isSameCurrency($subtotal)) {
-            throw new DomainException('Discount currency must match invoice currency.');
+            throw new InvalidInvoiceAmountsException('Discount currency must match invoice currency.');
         }
         if ($discountAmount->amount() > $subtotal->amount()) {
-            throw new DomainException('Discount exceeds subtotal.');
+            throw new InvalidInvoiceAmountsException('Discount exceeds subtotal.');
         }
 
         $net = $subtotal->subtract($discountAmount);
 
         if (! $taxAmount->isSameCurrency($subtotal)) {
-            throw new DomainException('Tax currency must match invoice currency.');
+            throw new InvalidInvoiceAmountsException('Tax currency must match invoice currency.');
         }
         if (! $total->isSameCurrency($subtotal)) {
-            throw new DomainException('Total currency must match invoice currency.');
+            throw new InvalidInvoiceAmountsException('Total currency must match invoice currency.');
         }
 
         $totalAmount = $total->amount();
         $minTotal = $net->amount();
         $maxTotal = $net->amount() + $taxAmount->amount();
         if ($totalAmount < $minTotal || $totalAmount > $maxTotal) {
-            throw new DomainException('Total must be between net amount and net plus tax.');
+            throw new InvalidInvoiceAmountsException('Total must be between net amount and net plus tax.');
         }
     }
 
     public function recordPayment(Money $paidAmount, DateTimeImmutable $paidAt): void
     {
         if ($this->status !== InvoiceStatus::ISSUED) {
-            throw new DomainException('Invoice is not payable.');
+            throw new InvoiceNotPayableException();
         }
         if (! $paidAmount->isSameCurrency($this->total)) {
-            throw new DomainException('Payment currency must match invoice currency.');
+            throw new InvalidInvoiceAmountsException('Payment currency must match invoice currency.');
         }
         if ($paidAmount->amount() !== $this->total->amount()) {
-            throw new DomainException('Payment amount must match invoice total.');
+            throw new InvalidInvoiceAmountsException('Payment amount must match invoice total.');
         }
 
         $this->paidAt = $paidAt;
@@ -199,7 +201,7 @@ class Invoice
     public function void(string $reason, DateTimeImmutable $voidedAt): void
     {
         if ($this->status !== InvoiceStatus::ISSUED) {
-            throw new DomainException('Only issued invoices can be voided.');
+            throw new InvoiceNotVoidableException();
         }
         if (trim($reason) === '') {
             throw new InvalidArgumentException('Void reason must not be empty.');

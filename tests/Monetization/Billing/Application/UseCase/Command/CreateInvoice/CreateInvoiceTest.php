@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests\Monetization\Billing\Application\UseCase\Command\CreateInvoice;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInput;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInterface;
+use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceOutput;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
+use Source\Monetization\Billing\Domain\Exception\EmptyInvoiceLinesException;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
@@ -162,9 +163,8 @@ class CreateInvoiceTest extends TestCase
         $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
         $useCase = $this->app->make(CreateInvoiceInterface::class);
 
-        $result = $useCase->process($input);
-
-        $this->assertSame($expectedInvoice, $result);
+        $output = new CreateInvoiceOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -240,9 +240,8 @@ class CreateInvoiceTest extends TestCase
         $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
         $useCase = $this->app->make(CreateInvoiceInterface::class);
 
-        $result = $useCase->process($input);
-
-        $this->assertSame($expectedInvoice, $result);
+        $output = new CreateInvoiceOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -325,9 +324,8 @@ class CreateInvoiceTest extends TestCase
         $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
         $useCase = $this->app->make(CreateInvoiceInterface::class);
 
-        $result = $useCase->process($input);
-
-        $this->assertSame($expectedInvoice, $result);
+        $output = new CreateInvoiceOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -373,10 +371,11 @@ class CreateInvoiceTest extends TestCase
         $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
         $useCase = $this->app->make(CreateInvoiceInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(EmptyInvoiceLinesException::class);
         $this->expectExceptionMessage('At least one product line is required.');
 
-        $useCase->process($input);
+        $output = new CreateInvoiceOutput();
+        $useCase->process($input, $output);
     }
 
     private function createDummyInvoice(MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier, Currency $currency): Invoice

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Application\UseCase\Command\RecordPayment;
 
 use DateTimeImmutable;
-use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\Exception\InvoiceNotFoundException;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Payment\Domain\Exception\PaymentNotFoundException;
@@ -21,7 +20,7 @@ readonly class RecordPayment implements RecordPaymentInterface
     ) {
     }
 
-    public function process(RecordPaymentInputPort $input): Invoice
+    public function process(RecordPaymentInputPort $input, RecordPaymentOutputPort $output): void
     {
         $invoice = $this->invoiceRepository->findById($input->invoiceIdentifier());
 
@@ -39,6 +38,6 @@ readonly class RecordPayment implements RecordPaymentInterface
 
         $this->invoiceRepository->save($invoice);
 
-        return $invoice;
+        $output->setInvoice($invoice);
     }
 }

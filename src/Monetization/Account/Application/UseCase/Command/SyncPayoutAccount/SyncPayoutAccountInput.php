@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount;
 
+use Source\Monetization\Account\Domain\ValueObject\AccountHolderType;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ExternalAccountId;
+
 readonly class SyncPayoutAccountInput implements SyncPayoutAccountInputPort
 {
     public function __construct(
-        private string $connectedAccountId,
-        private string $externalAccountId,
+        private ConnectedAccountId $connectedAccountId,
+        private ExternalAccountId $externalAccountId,
         private string $eventType,
         private ?string $bankName = null,
         private ?string $last4 = null,
         private ?string $country = null,
         private ?string $currency = null,
-        private ?string $accountHolderType = null,
+        private ?AccountHolderType $accountHolderType = null,
         private bool $isDefault = false,
     ) {
     }
 
-    public function connectedAccountId(): string
+    public function connectedAccountId(): ConnectedAccountId
     {
         return $this->connectedAccountId;
     }
 
-    public function externalAccountId(): string
+    public function externalAccountId(): ExternalAccountId
     {
         return $this->externalAccountId;
     }
@@ -54,7 +58,7 @@ readonly class SyncPayoutAccountInput implements SyncPayoutAccountInputPort
         return $this->currency;
     }
 
-    public function accountHolderType(): ?string
+    public function accountHolderType(): ?AccountHolderType
     {
         return $this->accountHolderType;
     }

@@ -15,6 +15,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         api: __DIR__ . '/../routes/wiki_private_api.php',
         apiPrefix: 'api/wiki',
         then: function () {
+            Route::middleware('api')
+                ->prefix('api/monetization')
+                ->group(base_path('routes/monetization_api.php'));
             Route::prefix('webhook')
                 ->group(base_path('routes/webhook.php'));
         },

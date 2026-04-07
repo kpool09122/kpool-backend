@@ -6,6 +6,7 @@ namespace Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTran
 
 use DateTimeImmutable;
 use DomainException;
+use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
 use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundException;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Settlement\Domain\Exception\TransferGatewayException;
@@ -27,6 +28,7 @@ readonly class ExecuteTransfer implements ExecuteTransferInterface
      * @return void
      * @throws TransferNotFoundException
      * @throws MonetizationAccountNotFoundException
+     * @throws CapabilityNotGrantedException
      */
     public function process(ExecuteTransferInputPort $input): void
     {

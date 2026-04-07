@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Monetization\Billing\Application\UseCase\Command\RecordPayment;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentInput;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentInterface;
+use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentOutput;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\Exception\InvoiceNotFoundException;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
@@ -25,6 +25,7 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Shared\Exception\PaymentAmountMismatchForMatchingException;
 use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
@@ -84,9 +85,8 @@ class RecordPaymentTest extends TestCase
 
         $useCase = $this->app->make(RecordPaymentInterface::class);
 
-        $result = $useCase->process($input);
-
-        $this->assertSame($invoice, $result);
+        $output = new RecordPaymentOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -123,7 +123,8 @@ class RecordPaymentTest extends TestCase
 
         $this->expectException(InvoiceNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new RecordPaymentOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -166,7 +167,8 @@ class RecordPaymentTest extends TestCase
 
         $this->expectException(PaymentNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new RecordPaymentOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -202,7 +204,7 @@ class RecordPaymentTest extends TestCase
         $paymentMatcherService = Mockery::mock(PaymentMatcherServiceInterface::class);
         $paymentMatcherService->shouldReceive('match')
             ->once()
-            ->andThrow(new DomainException('Payment amount does not match invoice total.'));
+            ->andThrow(new PaymentAmountMismatchForMatchingException());
 
         $this->app->instance(InvoiceRepositoryInterface::class, $invoiceRepository);
         $this->app->instance(PaymentRepositoryInterface::class, $paymentRepository);
@@ -210,10 +212,11 @@ class RecordPaymentTest extends TestCase
 
         $useCase = $this->app->make(RecordPaymentInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(PaymentAmountMismatchForMatchingException::class);
         $this->expectExceptionMessage('Payment amount does not match invoice total.');
 
-        $useCase->process($input);
+        $output = new RecordPaymentOutput();
+        $useCase->process($input, $output);
     }
 
     private function createIssuedInvoice(InvoiceIdentifier $invoiceIdentifier, Money $total): Invoice

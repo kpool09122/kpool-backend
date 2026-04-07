@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount\SyncPayoutAccountInput;
 use Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount\SyncPayoutAccountInterface;
+use Source\Monetization\Account\Domain\ValueObject\AccountHolderType;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ExternalAccountId;
 use Throwable;
 
 class SyncPayoutAccountJob implements ShouldQueue
@@ -49,14 +52,16 @@ class SyncPayoutAccountJob implements ShouldQueue
         ]);
 
         $input = new SyncPayoutAccountInput(
-            connectedAccountId: $this->connectedAccountId,
-            externalAccountId: $this->externalAccountId,
+            connectedAccountId: new ConnectedAccountId($this->connectedAccountId),
+            externalAccountId: new ExternalAccountId($this->externalAccountId),
             eventType: $this->eventType,
             bankName: $this->bankName,
             last4: $this->last4,
             country: $this->country,
             currency: $this->currency,
-            accountHolderType: $this->accountHolderType,
+            accountHolderType: $this->accountHolderType !== null
+                ? AccountHolderType::from($this->accountHolderType)
+                : null,
             isDefault: $this->isDefault,
         );
 

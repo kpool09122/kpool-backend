@@ -7,6 +7,7 @@ namespace Tests\Monetization\Settlement\Application\UseCase\Command\ExecuteTrans
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
+use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
 use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundException;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
@@ -38,6 +39,7 @@ class ExecuteTransferTest extends TestCase
      * @throws BindingResolutionException
      * @throws MonetizationAccountNotFoundException
      * @throws TransferNotFoundException
+     * @throws CapabilityNotGrantedException
      */
     public function testExecuteTransferSuccessfully(): void
     {
@@ -90,6 +92,7 @@ class ExecuteTransferTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws MonetizationAccountNotFoundException
+     * @throws CapabilityNotGrantedException
      */
     public function testThrowsExceptionWhenTransferNotFound(): void
     {
@@ -120,12 +123,56 @@ class ExecuteTransferTest extends TestCase
     }
 
     /**
+     * 異常系: MonetizationAccountが見つからない場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws TransferNotFoundException
+     * @throws CapabilityNotGrantedException
+     */
+    public function testThrowsExceptionWhenMonetizationAccountNotFound(): void
+    {
+        $transferIdentifier = new TransferIdentifier(StrTestHelper::generateUuid());
+        $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
+
+        $transfer = $this->createTransfer($transferIdentifier, $monetizationAccountIdentifier);
+
+        $transferRepository = Mockery::mock(TransferRepositoryInterface::class);
+        $transferRepository->shouldReceive('findById')
+            ->once()
+            ->with($transferIdentifier)
+            ->andReturn($transfer);
+        $transferRepository->shouldNotReceive('save');
+
+        $monetizationAccountRepository = Mockery::mock(MonetizationAccountRepositoryInterface::class);
+        $monetizationAccountRepository->shouldReceive('findById')
+            ->once()
+            ->with($monetizationAccountIdentifier)
+            ->andReturnNull();
+
+        $transferGateway = Mockery::mock(TransferGatewayInterface::class);
+        $transferGateway->shouldNotReceive('execute');
+
+        $this->app->instance(TransferRepositoryInterface::class, $transferRepository);
+        $this->app->instance(MonetizationAccountRepositoryInterface::class, $monetizationAccountRepository);
+        $this->app->instance(TransferGatewayInterface::class, $transferGateway);
+
+        $this->expectException(MonetizationAccountNotFoundException::class);
+
+        $useCase = $this->app->make(ExecuteTransferInterface::class);
+
+        $input = new ExecuteTransferInput($transferIdentifier);
+        $useCase->process($input);
+    }
+
+    /**
      * 異常系: ゲートウェイエラー時に送金が失敗状態になること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws MonetizationAccountNotFoundException
      * @throws TransferNotFoundException
+     * @throws CapabilityNotGrantedException
      */
     public function testMarkTransferAsFailedOnGatewayError(): void
     {

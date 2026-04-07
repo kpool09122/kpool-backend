@@ -8,10 +8,6 @@ use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundExce
 use Source\Monetization\Account\Domain\Factory\PayoutAccountFactoryInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\Repository\PayoutAccountRepositoryInterface;
-use Source\Monetization\Account\Domain\ValueObject\AccountHolderType;
-use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
-use Source\Monetization\Account\Domain\ValueObject\ExternalAccountId;
-use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PayoutAccountMeta;
 
 readonly class SyncPayoutAccount implements SyncPayoutAccountInterface
@@ -30,17 +26,13 @@ readonly class SyncPayoutAccount implements SyncPayoutAccountInterface
      */
     public function process(SyncPayoutAccountInputPort $input): void
     {
-        $connectedAccountId = new ConnectedAccountId($input->connectedAccountId());
-        $monetizationAccount = $this->monetizationAccountRepository->findByConnectedAccountId($connectedAccountId);
+        $monetizationAccount = $this->monetizationAccountRepository->findByConnectedAccountId($input->connectedAccountId());
 
         if ($monetizationAccount === null) {
-            throw new MonetizationAccountNotFoundException(
-                new MonetizationAccountIdentifier($input->connectedAccountId())
-            );
+            throw new MonetizationAccountNotFoundException($input->connectedAccountId());
         }
 
-        $externalAccountId = new ExternalAccountId($input->externalAccountId());
-        $existing = $this->payoutAccountRepository->findByExternalAccountId($externalAccountId);
+        $existing = $this->payoutAccountRepository->findByExternalAccountId($input->externalAccountId());
 
         if ($input->eventType() === self::EVENT_DELETED) {
             if ($existing !== null) {
@@ -53,7 +45,7 @@ readonly class SyncPayoutAccount implements SyncPayoutAccountInterface
 
         $payoutAccount = $existing ?? $this->payoutAccountFactory->create(
             $monetizationAccount->monetizationAccountIdentifier(),
-            $externalAccountId,
+            $input->externalAccountId(),
         );
 
         $meta = new PayoutAccountMeta(
@@ -61,9 +53,7 @@ readonly class SyncPayoutAccount implements SyncPayoutAccountInterface
             last4: $input->last4(),
             country: $input->country(),
             currency: $input->currency(),
-            accountHolderType: $input->accountHolderType() !== null
-                ? AccountHolderType::from($input->accountHolderType())
-                : null,
+            accountHolderType: $input->accountHolderType(),
         );
         $payoutAccount->updateMeta($meta);
 
