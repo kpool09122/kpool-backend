@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice;
 
 use DateTimeImmutable;
-use DomainException;
-use Source\Monetization\Billing\Domain\Entity\Invoice;
+use Source\Monetization\Billing\Domain\Exception\EmptyInvoiceLinesException;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyServiceInterface;
@@ -24,10 +23,10 @@ readonly class CreateInvoice implements CreateInvoiceInterface
     ) {
     }
 
-    public function process(CreateInvoiceInputPort $input): Invoice
+    public function process(CreateInvoiceInputPort $input, CreateInvoiceOutputPort $output): void
     {
         if ($input->lines() === []) {
-            throw new DomainException('At least one product line is required.');
+            throw new EmptyInvoiceLinesException();
         }
 
         $invoiceLines = $this->buildInvoiceLines($input);
@@ -60,7 +59,7 @@ readonly class CreateInvoice implements CreateInvoiceInterface
         $invoice->setTaxDocument($taxDocument);
         $this->invoiceRepository->save($invoice);
 
-        return $invoice;
+        $output->setInvoice($invoice);
     }
 
     /**
@@ -70,7 +69,6 @@ readonly class CreateInvoice implements CreateInvoiceInterface
     {
         $invoiceLines = $input->lines();
 
-        // 送料が0より大きい場合のみ送料明細を追加
         if ($input->shippingCost()->amount() > 0) {
             $invoiceLines[] = new InvoiceLine(
                 self::SHIPPING_DESCRIPTION,

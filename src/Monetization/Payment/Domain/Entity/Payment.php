@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Payment\Domain\Exception\InvalidPaymentStatusException;
+use Source\Monetization\Payment\Domain\Exception\RefundCurrencyMismatchException;
+use Source\Monetization\Payment\Domain\Exception\RefundExceedsCapturedAmountException;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
@@ -103,20 +105,26 @@ class Payment
         return $this->lastRefundReason;
     }
 
+    /**
+     * @throws InvalidPaymentStatusException
+     */
     public function authorize(DateTimeImmutable $authorizedAt): void
     {
         if ($this->status !== PaymentStatus::PENDING) {
-            throw new DomainException('Payment is not pending.');
+            throw new InvalidPaymentStatusException('Payment is not pending.');
         }
 
         $this->authorizedAt = $authorizedAt;
         $this->status = PaymentStatus::AUTHORIZED;
     }
 
+    /**
+     * @throws InvalidPaymentStatusException
+     */
     public function capture(DateTimeImmutable $capturedAt): void
     {
         if ($this->status !== PaymentStatus::AUTHORIZED) {
-            throw new DomainException('Payment must be authorized before capture.');
+            throw new InvalidPaymentStatusException('Payment must be authorized before capture.');
         }
 
         $this->capturedAt = $capturedAt;
@@ -126,7 +134,7 @@ class Payment
     public function fail(string $reason, DateTimeImmutable $failedAt): void
     {
         if (! in_array($this->status, [PaymentStatus::PENDING, PaymentStatus::AUTHORIZED], true)) {
-            throw new DomainException('Only pending or authorized payment can be marked as failed.');
+            throw new InvalidPaymentStatusException('Only pending or authorized payment can be marked as failed.');
         }
 
         $this->failureReason = $reason;
@@ -134,19 +142,24 @@ class Payment
         $this->status = PaymentStatus::FAILED;
     }
 
+    /**
+     * @throws InvalidPaymentStatusException
+     * @throws RefundCurrencyMismatchException
+     * @throws RefundExceedsCapturedAmountException
+     */
     public function refund(Money $refundAmount, DateTimeImmutable $refundedAt, string $reason): void
     {
         if (! in_array($this->status, [PaymentStatus::CAPTURED, PaymentStatus::PARTIALLY_REFUNDED], true)) {
-            throw new DomainException('Refund is allowed only for captured payments.');
+            throw new InvalidPaymentStatusException('Refund is allowed only for captured payments.');
         }
         if (! $refundAmount->isSameCurrency($this->money)) {
-            throw new DomainException('Refund currency must match payment currency.');
+            throw new RefundCurrencyMismatchException();
         }
 
         $newRefundedAmount = $this->refundedMoney->add($refundAmount);
 
         if ($newRefundedAmount->amount() > $this->money->amount()) {
-            throw new DomainException('Refund exceeds captured amount.');
+            throw new RefundExceedsCapturedAmountException();
         }
 
         $this->refundedMoney = $newRefundedAmount;

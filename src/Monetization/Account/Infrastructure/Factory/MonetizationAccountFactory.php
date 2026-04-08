@@ -25,10 +25,6 @@ readonly class MonetizationAccountFactory implements MonetizationAccountFactoryI
             [],
             null,
             null,
-            null,
-            null,
-            null,
-            null,
         );
     }
 }

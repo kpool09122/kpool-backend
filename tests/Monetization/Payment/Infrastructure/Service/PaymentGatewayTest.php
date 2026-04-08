@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Payment\Application\Exception\ApiException;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
 use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
@@ -25,7 +26,6 @@ use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
-use Source\Monetization\Payment\Infrastructure\Exception\StripeApiException;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -314,7 +314,7 @@ class PaymentGatewayTest extends TestCase
 
         $gateway = $this->app->make(PaymentGatewayInterface::class);
 
-        $this->expectException(StripeApiException::class);
+        $this->expectException(ApiException::class);
 
         $gateway->authorize($payment);
     }
@@ -654,7 +654,7 @@ class PaymentGatewayTest extends TestCase
      * 異常系: Stripe API エラー時に StripeApiException がスローされること (capture).
      *
      * @return void
-     * @throws StripeApiException
+     * @throws ApiException
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
@@ -686,7 +686,7 @@ class PaymentGatewayTest extends TestCase
 
         $gateway = $this->app->make(PaymentGatewayInterface::class);
 
-        $this->expectException(StripeApiException::class);
+        $this->expectException(ApiException::class);
 
         $gateway->capture($payment);
     }
@@ -695,7 +695,7 @@ class PaymentGatewayTest extends TestCase
      * 異常系: Stripe API エラー時に StripeApiException がスローされること (refund).
      *
      * @return void
-     * @throws StripeApiException
+     * @throws ApiException
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
@@ -727,7 +727,7 @@ class PaymentGatewayTest extends TestCase
 
         $gateway = $this->app->make(PaymentGatewayInterface::class);
 
-        $this->expectException(StripeApiException::class);
+        $this->expectException(ApiException::class);
 
         $gateway->refund($payment, new Money(500, Currency::JPY), 'Test refund');
     }

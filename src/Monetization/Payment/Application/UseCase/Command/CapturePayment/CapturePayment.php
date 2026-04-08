@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Application\UseCase\Command\CapturePayment;
 
 use DateTimeImmutable;
-use Source\Monetization\Payment\Domain\Entity\Payment;
+use Source\Monetization\Payment\Application\Exception\ApiException;
+use Source\Monetization\Payment\Domain\Exception\InvalidPaymentStatusException;
+use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
 use Source\Monetization\Payment\Domain\Exception\PaymentNotFoundException;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
@@ -18,7 +20,16 @@ readonly class CapturePayment implements CapturePaymentInterface
     ) {
     }
 
-    public function process(CapturePaymentInputPort $input): Payment
+    /**
+     * @param CapturePaymentInputPort $input
+     * @param CapturePaymentOutputPort $output
+     * @return void
+     * @throws PaymentNotFoundException
+     * @throws PaymentGatewayException
+     * @throws ApiException
+     * @throws InvalidPaymentStatusException
+     */
+    public function process(CapturePaymentInputPort $input, CapturePaymentOutputPort $output): void
     {
         $payment = $this->paymentRepository->findById($input->paymentIdentifier());
 
@@ -32,6 +43,6 @@ readonly class CapturePayment implements CapturePaymentInterface
 
         $this->paymentRepository->save($payment);
 
-        return $payment;
+        $output->setPayment($payment);
     }
 }

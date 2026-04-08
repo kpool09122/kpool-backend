@@ -11,7 +11,7 @@ use Application\Http\Client\StripeClient\StripeClient;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\ConnectAccountStatus;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 use Source\Monetization\Account\Infrastructure\Exception\StripeConnectException;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
@@ -28,7 +28,7 @@ readonly class ConnectGateway implements ConnectGatewayInterface
     /**
      * @throws StripeConnectException
      */
-    public function createConnectedAccount(Email $email, CountryCode $countryCode): StripeConnectedAccountId
+    public function createConnectedAccount(Email $email, CountryCode $countryCode): ConnectedAccountId
     {
         try {
             $request = new CreateConnectedAccountRequest(
@@ -44,7 +44,7 @@ readonly class ConnectGateway implements ConnectGatewayInterface
                 'country' => $countryCode->value,
             ]);
 
-            return new StripeConnectedAccountId($response->id());
+            return new ConnectedAccountId($response->id());
         } catch (ApiErrorException $e) {
             $this->logger->error('Failed to create Stripe Connected Account', [
                 'email' => (string) $email,
@@ -64,9 +64,9 @@ readonly class ConnectGateway implements ConnectGatewayInterface
      * @throws StripeConnectException
      */
     public function createAccountLink(
-        StripeConnectedAccountId $accountId,
-        string $refreshUrl,
-        string $returnUrl
+        ConnectedAccountId $accountId,
+        string             $refreshUrl,
+        string             $returnUrl
     ): string {
         try {
             $request = new CreateAccountLinkRequest(
@@ -100,7 +100,7 @@ readonly class ConnectGateway implements ConnectGatewayInterface
     /**
      * @throws StripeConnectException
      */
-    public function getAccountStatus(StripeConnectedAccountId $accountId): ConnectAccountStatus
+    public function getAccountStatus(ConnectedAccountId $accountId): ConnectAccountStatus
     {
         try {
             $request = new RetrieveAccountRequest(

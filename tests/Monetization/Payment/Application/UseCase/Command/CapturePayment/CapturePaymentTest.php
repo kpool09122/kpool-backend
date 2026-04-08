@@ -11,6 +11,7 @@ use RuntimeException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInterface;
+use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentOutput;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Exception\PaymentNotFoundException;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
@@ -62,11 +63,12 @@ class CapturePaymentTest extends TestCase
 
         $useCase = $this->app->make(CapturePaymentInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new CapturePaymentOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($authorizedPayment, $result);
-        $this->assertSame(PaymentStatus::CAPTURED, $result->status());
-        $this->assertNotNull($result->capturedAt());
+        $this->assertSame(PaymentStatus::CAPTURED, $authorizedPayment->status());
+        $this->assertNotNull($authorizedPayment->capturedAt());
+        $this->assertNotEmpty($output->toArray());
     }
 
     /**
@@ -98,7 +100,8 @@ class CapturePaymentTest extends TestCase
 
         $this->expectException(PaymentNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new CapturePaymentOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -134,7 +137,8 @@ class CapturePaymentTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Gateway error: Capture failed');
 
-        $useCase->process($input);
+        $output = new CapturePaymentOutput();
+        $useCase->process($input, $output);
     }
 
     private function createAuthorizedPayment(PaymentIdentifier $paymentIdentifier): Payment

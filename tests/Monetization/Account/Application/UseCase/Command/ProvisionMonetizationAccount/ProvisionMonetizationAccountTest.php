@@ -9,6 +9,7 @@ use Mockery;
 use Source\Monetization\Account\Application\Exception\MonetizationAccountAlreadyExistsException;
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountInput;
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountInterface;
+use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountOutput;
 use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
@@ -31,6 +32,7 @@ class ProvisionMonetizationAccountTest extends TestCase
         $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
 
         $input = new ProvisionMonetizationAccountInput($accountIdentifier);
+        $output = new ProvisionMonetizationAccountOutput();
 
         $expectedAccount = new MonetizationAccount(
             $monetizationAccountIdentifier,
@@ -59,11 +61,12 @@ class ProvisionMonetizationAccountTest extends TestCase
         $this->app->instance(MonetizationAccountFactoryInterface::class, $factory);
         $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
         $useCase = $this->app->make(ProvisionMonetizationAccountInterface::class);
-        $result = $useCase->process($input);
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $monetizationAccountIdentifier, (string) $result->monetizationAccountIdentifier());
-        $this->assertSame((string) $accountIdentifier, (string) $result->accountIdentifier());
-        $this->assertEmpty($result->capabilities());
+        $result = $output->toArray();
+        $this->assertSame((string) $monetizationAccountIdentifier, $result['monetizationAccountIdentifier']);
+        $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
+        $this->assertEmpty($result['capabilities']);
     }
 
     /**
@@ -77,6 +80,7 @@ class ProvisionMonetizationAccountTest extends TestCase
         $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
 
         $input = new ProvisionMonetizationAccountInput($accountIdentifier);
+        $output = new ProvisionMonetizationAccountOutput();
 
         $existingAccount = new MonetizationAccount(
             $monetizationAccountIdentifier,
@@ -100,6 +104,6 @@ class ProvisionMonetizationAccountTest extends TestCase
 
         $this->app->instance(MonetizationAccountRepositoryInterface::class, $repository);
         $useCase = $this->app->make(ProvisionMonetizationAccountInterface::class);
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 }

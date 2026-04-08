@@ -7,7 +7,6 @@ namespace Source\Monetization\Settlement\Application\UseCase\Command\SettleReven
 use DateTimeImmutable;
 use Source\Monetization\Settlement\Domain\Repository\SettlementBatchRepositoryInterface;
 use Source\Monetization\Settlement\Domain\Repository\TransferRepositoryInterface;
-use Source\Monetization\Settlement\Domain\Service\SettlementResult;
 use Source\Monetization\Settlement\Domain\Service\SettlementServiceInterface;
 
 readonly class SettleRevenue implements SettleRevenueInterface
@@ -19,7 +18,7 @@ readonly class SettleRevenue implements SettleRevenueInterface
     ) {
     }
 
-    public function process(SettleRevenueInputPort $input): SettlementResult
+    public function process(SettleRevenueInputPort $input, SettleRevenueOutputPort $output): void
     {
         $result = $this->settlementService->settle(
             $input->settlementSchedule(),
@@ -35,6 +34,6 @@ readonly class SettleRevenue implements SettleRevenueInterface
         $this->settlementBatchRepository->save($result->batch());
         $this->transferRepository->save($result->transfer());
 
-        return $result;
+        $output->setResult($result);
     }
 }

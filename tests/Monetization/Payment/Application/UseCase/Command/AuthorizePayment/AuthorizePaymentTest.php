@@ -10,6 +10,7 @@ use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
+use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentOutput;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
@@ -75,11 +76,12 @@ class AuthorizePaymentTest extends TestCase
 
         $useCase = $this->app->make(AuthorizePaymentInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new AuthorizePaymentOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($pendingPayment, $result);
-        $this->assertSame(PaymentStatus::AUTHORIZED, $result->status());
-        $this->assertNotNull($result->authorizedAt());
+        $this->assertSame(PaymentStatus::AUTHORIZED, $pendingPayment->status());
+        $this->assertNotNull($pendingPayment->authorizedAt());
+        $this->assertNotEmpty($output->toArray());
     }
 
     private function createPendingPayment(OrderIdentifier $orderIdentifier, MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier, Money $money, PaymentMethod $paymentMethod): Payment

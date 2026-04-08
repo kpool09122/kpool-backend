@@ -36,6 +36,8 @@ return new class extends Migration
             $table->json('billing_contact')->nullable()->comment('Billing Contact (JSON)');
             $table->string('billing_method', 32)->nullable()->comment('Billing Method (invoice, credit_card, bank_transfer)');
             $table->json('tax_info')->nullable()->comment('Tax Information (JSON)');
+            $table->json('card_meta')->nullable()->comment('Card Meta (JSON)');
+            $table->json('payout_bank_meta')->nullable()->comment('Payout Bank Meta (JSON)');
             $table->timestamps();
 
             $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');

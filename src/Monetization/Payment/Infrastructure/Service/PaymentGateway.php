@@ -11,11 +11,11 @@ use Application\Http\Client\StripeClient\StripeClient;
 use Application\Models\Monetization\Payment as PaymentEloquent;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
+use Source\Monetization\Payment\Application\Exception\ApiException;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
 use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
-use Source\Monetization\Payment\Infrastructure\Exception\StripeApiException;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Stripe\Exception\ApiErrorException;
@@ -32,6 +32,7 @@ readonly class PaymentGateway implements PaymentGatewayInterface
 
     /**
      * @throws PaymentGatewayException
+     * @throws ApiException
      */
     public function authorize(Payment $payment): void
     {
@@ -106,12 +107,13 @@ readonly class PaymentGateway implements PaymentGatewayInterface
                 'code' => $e->getError()?->code,
             ]);
 
-            throw StripeApiException::fromStripeException($e);
+            throw ApiException::from($e);
         }
     }
 
     /**
      * @throws PaymentGatewayException
+     * @throws ApiException
      */
     public function capture(Payment $payment): void
     {
@@ -151,12 +153,13 @@ readonly class PaymentGateway implements PaymentGatewayInterface
                 'code' => $e->getError()?->code,
             ]);
 
-            throw StripeApiException::fromStripeException($e);
+            throw ApiException::from($e);
         }
     }
 
     /**
      * @throws PaymentGatewayException
+     * @throws ApiException
      */
     public function refund(Payment $payment, Money $amount, string $reason): void
     {
@@ -203,7 +206,7 @@ readonly class PaymentGateway implements PaymentGatewayInterface
                 'code' => $e->getError()?->code,
             ]);
 
-            throw StripeApiException::fromStripeException($e);
+            throw ApiException::from($e);
         }
     }
 

@@ -7,6 +7,10 @@ namespace Application\Providers\Monetization;
 use Illuminate\Support\ServiceProvider;
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccount;
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountInterface;
+use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethod;
+use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethodInterface;
+use Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount\SyncPayoutAccount;
+use Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount\SyncPayoutAccountInterface;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoice;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInterface;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPayment;
@@ -26,6 +30,8 @@ class UseCaseServiceProvider extends ServiceProvider
     {
         // Account
         $this->app->singleton(ProvisionMonetizationAccountInterface::class, ProvisionMonetizationAccount::class);
+        $this->app->singleton(RegisterPaymentMethodInterface::class, RegisterPaymentMethod::class);
+        $this->app->singleton(SyncPayoutAccountInterface::class, SyncPayoutAccount::class);
 
         // Billing
         $this->app->singleton(CreateInvoiceInterface::class, CreateInvoice::class);

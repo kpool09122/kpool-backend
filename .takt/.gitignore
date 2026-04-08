@@ -1,0 +1,26 @@
+# Ignore everything by default
+*
+
+# Explicitly ignore runs (generated data)
+runs/
+
+# This file itself
+!.gitignore
+
+# Project configuration
+!config.yaml
+
+# Facets and pieces (version-controlled)
+!pieces/
+!pieces/**
+!facets/
+!facets/personas/
+!facets/personas/**
+!facets/policies/
+!facets/policies/**
+!facets/knowledge/
+!facets/knowledge/**
+!facets/instructions/
+!facets/instructions/**
+!facets/output-contracts/
+!facets/output-contracts/**

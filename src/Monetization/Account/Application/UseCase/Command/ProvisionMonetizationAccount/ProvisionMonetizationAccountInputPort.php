@@ -8,5 +8,8 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface ProvisionMonetizationAccountInputPort
 {
+    /**
+     * @return AccountIdentifier
+     */
     public function accountIdentifier(): AccountIdentifier;
 }

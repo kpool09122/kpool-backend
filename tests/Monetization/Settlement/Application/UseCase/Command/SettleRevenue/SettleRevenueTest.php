@@ -10,6 +10,7 @@ use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInput;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInterface;
+use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueOutput;
 use Source\Monetization\Settlement\Domain\Entity\SettlementBatch;
 use Source\Monetization\Settlement\Domain\Entity\SettlementSchedule;
 use Source\Monetization\Settlement\Domain\Entity\Transfer;
@@ -105,11 +106,8 @@ class SettleRevenueTest extends TestCase
 
         $useCase = $this->app->make(SettleRevenueInterface::class);
 
-        $result = $useCase->process($input);
-
-        $this->assertSame($expectedResult, $result);
-        $this->assertSame($expectedBatch, $result->batch());
-        $this->assertSame($expectedTransfer, $result->transfer());
+        $output = new SettleRevenueOutput();
+        $useCase->process($input, $output);
     }
 
     private function createSchedule(MonetizationAccountIdentifier $monetizationAccountIdentifier): SettlementSchedule

@@ -13,7 +13,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\ValueObject\ConnectAccountStatus;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 use Source\Monetization\Account\Infrastructure\Exception\StripeConnectException;
 use Source\Shared\Domain\ValueObject\CountryCode;
 use Source\Shared\Domain\ValueObject\Email;
@@ -87,7 +87,7 @@ class ConnectGatewayTest extends TestCase
 
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $refreshUrl = 'https://example.com/refresh';
         $returnUrl = 'https://example.com/return';
 
@@ -117,7 +117,7 @@ class ConnectGatewayTest extends TestCase
         $this->expectException(StripeConnectException::class);
         $this->expectExceptionMessage('Failed to create account link:');
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $gateway->createAccountLink($accountId, 'https://example.com/refresh', 'https://example.com/return');
     }
 
@@ -144,7 +144,7 @@ class ConnectGatewayTest extends TestCase
 
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
 
         $this->assertSame(ConnectAccountStatus::PENDING, $status);
@@ -173,7 +173,7 @@ class ConnectGatewayTest extends TestCase
 
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
 
         $this->assertSame(ConnectAccountStatus::RESTRICTED, $status);
@@ -202,7 +202,7 @@ class ConnectGatewayTest extends TestCase
 
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
 
         $this->assertSame(ConnectAccountStatus::ENABLED, $status);
@@ -231,7 +231,7 @@ class ConnectGatewayTest extends TestCase
 
         $gateway = $this->app->make(ConnectGatewayInterface::class);
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $status = $gateway->getAccountStatus($accountId);
 
         $this->assertSame(ConnectAccountStatus::RESTRICTED, $status);
@@ -257,7 +257,7 @@ class ConnectGatewayTest extends TestCase
         $this->expectException(StripeConnectException::class);
         $this->expectExceptionMessage('Failed to get account status:');
 
-        $accountId = new StripeConnectedAccountId('acct_test123456');
+        $accountId = new ConnectedAccountId('acct_test123456');
         $gateway->getAccountStatus($accountId);
     }
 }

@@ -13,13 +13,13 @@ use Source\Monetization\Account\Domain\ValueObject\BillingContact;
 use Source\Monetization\Account\Domain\ValueObject\BillingMethod;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\City;
+use Source\Monetization\Account\Domain\ValueObject\ConnectedAccountId;
 use Source\Monetization\Account\Domain\ValueObject\ContractName;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentCustomerId;
 use Source\Monetization\Account\Domain\ValueObject\Phone;
 use Source\Monetization\Account\Domain\ValueObject\PostalCode;
 use Source\Monetization\Account\Domain\ValueObject\StateOrProvince;
-use Source\Monetization\Account\Domain\ValueObject\StripeConnectedAccountId;
-use Source\Monetization\Account\Domain\ValueObject\StripeCustomerId;
 use Source\Monetization\Account\Domain\ValueObject\TaxCategory;
 use Source\Monetization\Account\Domain\ValueObject\TaxInfo;
 use Source\Monetization\Account\Domain\ValueObject\TaxRegion;
@@ -46,6 +46,19 @@ class MonetizationAccountRepository implements MonetizationAccountRepositoryInte
     {
         $eloquent = MonetizationAccountEloquent::query()
             ->where('account_id', (string) $accountIdentifier)
+            ->first();
+
+        if ($eloquent === null) {
+            return null;
+        }
+
+        return $this->toDomainEntity($eloquent);
+    }
+
+    public function findByConnectedAccountId(ConnectedAccountId $connectedAccountId): ?MonetizationAccount
+    {
+        $eloquent = MonetizationAccountEloquent::query()
+            ->where('stripe_connected_account_id', (string) $connectedAccountId)
             ->first();
 
         if ($eloquent === null) {
@@ -115,10 +128,10 @@ class MonetizationAccountRepository implements MonetizationAccountRepositoryInte
             new AccountIdentifier($eloquent->account_id),
             $capabilities,
             $eloquent->stripe_customer_id !== null
-                ? new StripeCustomerId($eloquent->stripe_customer_id)
+                ? new PaymentCustomerId($eloquent->stripe_customer_id)
                 : null,
             $eloquent->stripe_connected_account_id !== null
-                ? new StripeConnectedAccountId($eloquent->stripe_connected_account_id)
+                ? new ConnectedAccountId($eloquent->stripe_connected_account_id)
                 : null,
             $billingAddressData !== null ? new BillingAddress(
                 CountryCode::from($billingAddressData['country_code']),

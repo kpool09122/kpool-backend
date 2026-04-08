@@ -8,11 +8,21 @@ use Illuminate\Support\ServiceProvider;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSeller;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerInterface;
 use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
+use Source\Monetization\Account\Domain\Factory\PayoutAccountFactoryInterface;
+use Source\Monetization\Account\Domain\Factory\RegisteredPaymentMethodFactoryInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
+use Source\Monetization\Account\Domain\Repository\PayoutAccountRepositoryInterface;
+use Source\Monetization\Account\Domain\Repository\RegisteredPaymentMethodRepositoryInterface;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
+use Source\Monetization\Account\Domain\Service\PaymentMethodMetaResolverInterface;
 use Source\Monetization\Account\Infrastructure\Factory\MonetizationAccountFactory;
+use Source\Monetization\Account\Infrastructure\Factory\PayoutAccountFactory;
+use Source\Monetization\Account\Infrastructure\Factory\RegisteredPaymentMethodFactory;
 use Source\Monetization\Account\Infrastructure\Repository\MonetizationAccountRepository;
+use Source\Monetization\Account\Infrastructure\Repository\PayoutAccountRepository;
+use Source\Monetization\Account\Infrastructure\Repository\RegisteredPaymentMethodRepository;
 use Source\Monetization\Account\Infrastructure\Service\ConnectGateway;
+use Source\Monetization\Account\Infrastructure\Service\PaymentMethodMetaResolver;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
 use Source\Monetization\Billing\Domain\Repository\InvoiceRepositoryInterface;
 use Source\Monetization\Billing\Domain\Service\TaxDocumentPolicyService;
@@ -53,7 +63,12 @@ class DomainServiceProvider extends ServiceProvider
         // Account
         $this->app->singleton(MonetizationAccountFactoryInterface::class, MonetizationAccountFactory::class);
         $this->app->singleton(MonetizationAccountRepositoryInterface::class, MonetizationAccountRepository::class);
+        $this->app->singleton(PayoutAccountFactoryInterface::class, PayoutAccountFactory::class);
+        $this->app->singleton(PayoutAccountRepositoryInterface::class, PayoutAccountRepository::class);
+        $this->app->singleton(RegisteredPaymentMethodFactoryInterface::class, RegisteredPaymentMethodFactory::class);
+        $this->app->singleton(RegisteredPaymentMethodRepositoryInterface::class, RegisteredPaymentMethodRepository::class);
         $this->app->singleton(ConnectGatewayInterface::class, ConnectGateway::class);
+        $this->app->singleton(PaymentMethodMetaResolverInterface::class, PaymentMethodMetaResolver::class);
         $this->app->singleton(OnboardSellerInterface::class, OnboardSeller::class);
 
         // Payment

@@ -18,6 +18,8 @@ use Application\Http\Client\StripeClient\CreateTransfer\CreateTransferRequest;
 use Application\Http\Client\StripeClient\CreateTransfer\CreateTransferResponse;
 use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountRequest;
 use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountResponse;
+use Application\Http\Client\StripeClient\RetrievePaymentMethod\RetrievePaymentMethodRequest;
+use Application\Http\Client\StripeClient\RetrievePaymentMethod\RetrievePaymentMethodResponse;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient as BaseStripeClient;
 
@@ -156,6 +158,23 @@ class StripeClient
         return new CreateRefundResponse(
             id: $refund->id,
             status: $refund->status,
+        );
+    }
+
+    /**
+     * @throws ApiErrorException
+     */
+    public function retrievePaymentMethod(RetrievePaymentMethodRequest $request): RetrievePaymentMethodResponse
+    {
+        $paymentMethod = $this->client()->paymentMethods->retrieve($request->paymentMethodId());
+
+        return new RetrievePaymentMethodResponse(
+            id: $paymentMethod->id,
+            type: $paymentMethod->type,
+            brand: $paymentMethod->card?->brand,
+            last4: $paymentMethod->card?->last4,
+            expMonth: $paymentMethod->card?->exp_month,
+            expYear: $paymentMethod->card?->exp_year,
         );
     }
 
