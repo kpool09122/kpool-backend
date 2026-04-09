@@ -58,9 +58,7 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (PrincipalGroup $savedGroup) use ($roleIdentifier) {
-                return ! $savedGroup->hasRole($roleIdentifier);
-            }))
+            ->with(Mockery::on(fn (PrincipalGroup $savedGroup) => ! $savedGroup->hasRole($roleIdentifier)))
             ->andReturnNull();
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
@@ -123,9 +121,7 @@ class DetachRoleFromPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (PrincipalGroup $savedGroup) {
-                return count($savedGroup->roles()) === 0;
-            }))
+            ->with(Mockery::on(fn (PrincipalGroup $savedGroup) => count($savedGroup->roles()) === 0))
             ->andReturnNull();
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);

@@ -12,12 +12,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PrincipalGroupRoleAttachment extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'principal_group_role_attachments';
 
+    #[\Override]
     protected $fillable = [
         'principal_group_id',
         'role_id',

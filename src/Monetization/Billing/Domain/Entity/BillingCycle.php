@@ -11,9 +11,9 @@ use Source\Monetization\Billing\Domain\ValueObject\BillingPeriod;
 class BillingCycle
 {
     public function __construct(
-        private BillingCycleIdentifier $billingCycleIdentifier,
-        private DateTimeImmutable  $anchorDate,
-        private BillingPeriod      $billingPeriod,
+        private readonly BillingCycleIdentifier $billingCycleIdentifier,
+        private readonly DateTimeImmutable  $anchorDate,
+        private readonly BillingPeriod      $billingPeriod,
         private ?DateTimeImmutable $nextBillingDate = null,
     ) {
     }

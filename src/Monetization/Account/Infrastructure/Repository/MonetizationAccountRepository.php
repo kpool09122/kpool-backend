@@ -115,7 +115,7 @@ class MonetizationAccountRepository implements MonetizationAccountRepositoryInte
     private function toDomainEntity(MonetizationAccountEloquent $eloquent): MonetizationAccount
     {
         $capabilities = array_map(
-            static fn (string $value) => Capability::from($value),
+            Capability::from(...),
             json_decode($eloquent->capabilities, true, 512, JSON_THROW_ON_ERROR) ?? []
         );
 

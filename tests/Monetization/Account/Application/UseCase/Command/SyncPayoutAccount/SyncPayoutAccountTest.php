@@ -42,9 +42,7 @@ class SyncPayoutAccountTest extends TestCase
         $monetizationAccountRepository = Mockery::mock(MonetizationAccountRepositoryInterface::class);
         $monetizationAccountRepository->shouldReceive('findByConnectedAccountId')
             ->once()
-            ->withArgs(function (ConnectedAccountId $id) use ($connectedAccountId) {
-                return (string) $id === $connectedAccountId;
-            })
+            ->withArgs(fn (ConnectedAccountId $id) => (string) $id === $connectedAccountId)
             ->andReturnNull();
 
         $payoutAccountRepository = Mockery::mock(PayoutAccountRepositoryInterface::class);
@@ -93,9 +91,7 @@ class SyncPayoutAccountTest extends TestCase
             ->andReturn($existingPayoutAccount);
         $payoutAccountRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (PayoutAccount $pa) {
-                return $pa->status()->value === 'inactive';
-            });
+            ->withArgs(fn (PayoutAccount $pa) => $pa->status()->value === 'inactive');
         $payoutAccountRepository->shouldNotReceive('findDefaultByMonetizationAccountId');
 
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
@@ -238,9 +234,7 @@ class SyncPayoutAccountTest extends TestCase
             ->andReturnNull();
         $payoutAccountRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (PayoutAccount $pa) {
-                return $pa->isDefault() === true;
-            });
+            ->withArgs(fn (PayoutAccount $pa) => $pa->isDefault() === true);
 
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldReceive('create')->once()->andReturn($newPayoutAccount);
@@ -299,10 +293,8 @@ class SyncPayoutAccountTest extends TestCase
             ->andReturn($existingDefault);
         $payoutAccountRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (PayoutAccount $pa) use ($externalAccountId) {
-                return (string) $pa->externalAccountId() === $externalAccountId
-                    && $pa->isDefault() === true;
-            });
+            ->withArgs(fn (PayoutAccount $pa) => (string) $pa->externalAccountId() === $externalAccountId
+                && $pa->isDefault() === true);
 
         $factory = Mockery::mock(PayoutAccountFactoryInterface::class);
         $factory->shouldReceive('create')->once()->andReturn($newPayoutAccount);

@@ -18,12 +18,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Account extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'accounts';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'email',
@@ -33,6 +37,7 @@ class Account extends Model
         'category',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -24,12 +24,16 @@ use Illuminate\Support\Carbon;
  */
 class MonetizationPayoutAccount extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'monetization_payout_accounts';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'monetization_account_id',
@@ -43,6 +47,7 @@ class MonetizationPayoutAccount extends Model
         'status',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

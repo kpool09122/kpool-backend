@@ -59,10 +59,8 @@ class DelegationRevokedHandlerTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
             ->once()
-            ->with(Mockery::on(function ($dispatchedEvent) use ($delegationId) {
-                return $dispatchedEvent instanceof DelegatedIdentityDeleted
-                    && (string) $dispatchedEvent->delegationIdentifier() === (string) $delegationId;
-            }))
+            ->with(Mockery::on(fn ($dispatchedEvent) => $dispatchedEvent instanceof DelegatedIdentityDeleted
+                && (string) $dispatchedEvent->delegationIdentifier() === (string) $delegationId))
             ->andReturnNull();
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);

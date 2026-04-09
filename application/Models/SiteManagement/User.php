@@ -16,12 +16,16 @@ use Illuminate\Support\Carbon;
  */
 class User extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'site_management_users';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'identity_id',

@@ -141,14 +141,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             return true;
         }
 
-        // 全ての Clause が AND で評価される
-        foreach ($condition->clauses() as $clause) {
-            if (! $this->evaluateClause($clause, $resource, $principal)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($condition->clauses(), fn ($clause) => $this->evaluateClause($clause, $resource, $principal));
     }
 
     /**

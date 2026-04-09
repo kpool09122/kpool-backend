@@ -95,7 +95,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     private function serializeStatements(array $statements): array
     {
         return array_map(
-            fn (Statement $statement) => $this->serializeStatement($statement),
+            $this->serializeStatement(...),
             $statements
         );
     }
@@ -150,7 +150,7 @@ class PolicyRepository implements PolicyRepositoryInterface
     private function deserializeStatements(array $statementsData): array
     {
         return array_map(
-            fn (array $statementData) => $this->deserializeStatement($statementData),
+            $this->deserializeStatement(...),
             $statementsData
         );
     }
@@ -162,8 +162,8 @@ class PolicyRepository implements PolicyRepositoryInterface
     {
         return new Statement(
             Effect::from($data['effect']),
-            array_map(static fn (string $action) => Action::from($action), $data['actions']),
-            array_map(static fn (string $resourceType) => ResourceType::from($resourceType), $data['resource_types']),
+            array_map(Action::from(...), $data['actions']),
+            array_map(ResourceType::from(...), $data['resource_types']),
             $data['condition'] !== null
                 ? $this->deserializeCondition($data['condition'])
                 : null,

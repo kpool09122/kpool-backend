@@ -109,7 +109,7 @@ class SocialOAuthServiceTest extends TestCase
 
         $this->assertStringStartsWith($expectedEndpoint, $url);
         $this->assertStringContainsString('client_id=' . $config[$provider->value]['client_id'], $url);
-        $this->assertStringContainsString('redirect_uri=' . urlencode($config[$provider->value]['redirect_uri']), $url);
+        $this->assertStringContainsString('redirect_uri=' . urlencode((string) $config[$provider->value]['redirect_uri']), $url);
         $this->assertStringContainsString('response_type=code', $url);
         $this->assertStringContainsString('state=test-state-value', $url);
         $this->assertStringContainsString('scope=' . urlencode($expectedScope), $url);

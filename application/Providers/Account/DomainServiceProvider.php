@@ -57,12 +57,10 @@ class DomainServiceProvider extends ServiceProvider
         // Invitation
         $this->app->singleton(InvitationFactoryInterface::class, InvitationFactory::class);
         $this->app->singleton(InvitationRepositoryInterface::class, InvitationRepository::class);
-        $this->app->singleton(InvitationMailServiceInterface::class, function ($app) {
-            return new InvitationMailService(
-                $app->make(AccountRepositoryInterface::class),
-                $app->make(IdentityRepositoryInterface::class),
-                config('app.frontend_url', 'http://localhost:3000'),
-            );
-        });
+        $this->app->singleton(InvitationMailServiceInterface::class, fn ($app) => new InvitationMailService(
+            $app->make(AccountRepositoryInterface::class),
+            $app->make(IdentityRepositoryInterface::class),
+            config('app.frontend_url', 'http://localhost:3000'),
+        ));
     }
 }

@@ -12,12 +12,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 class RolePolicyAttachment extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'role_policy_attachments';
 
+    #[\Override]
     protected $fillable = [
         'role_id',
         'policy_id',

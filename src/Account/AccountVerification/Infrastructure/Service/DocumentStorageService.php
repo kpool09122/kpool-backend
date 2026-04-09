@@ -82,9 +82,9 @@ class DocumentStorageService implements DocumentStorageServiceInterface
 
         $fileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileName);
 
-        if (strlen($fileName) > self::MAX_FILE_NAME_LENGTH) {
-            $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-            $name = pathinfo($fileName, PATHINFO_FILENAME);
+        if (strlen((string) $fileName) > self::MAX_FILE_NAME_LENGTH) {
+            $extension = pathinfo((string) $fileName, PATHINFO_EXTENSION);
+            $name = pathinfo((string) $fileName, PATHINFO_FILENAME);
             $extensionLength = $extension !== '' ? strlen($extension) + 1 : 0;
             $maxNameLength = self::MAX_FILE_NAME_LENGTH - $extensionLength;
             $fileName = substr($name, 0, $maxNameLength) . ($extension !== '' ? '.' . $extension : '');

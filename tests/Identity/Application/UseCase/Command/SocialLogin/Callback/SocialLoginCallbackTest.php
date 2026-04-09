@@ -179,9 +179,7 @@ class SocialLoginCallbackTest extends TestCase
             ->andReturn($existingUser);
         $identityRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static function (Identity $identity) use ($provider, $profile): bool {
-                return $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()));
-            }))
+            ->with(Mockery::on(static fn (Identity $identity): bool => $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()))))
             ->andReturnNull();
 
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
@@ -256,10 +254,8 @@ class SocialLoginCallbackTest extends TestCase
             ->andReturnNull();
         $identityRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static function (Identity $identity) use ($provider, $profile, $newUser): bool {
-                return (string)$identity->identityIdentifier() === (string)$newUser->identityIdentifier()
-                    && $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()));
-            }))
+            ->with(Mockery::on(static fn (Identity $identity): bool => (string)$identity->identityIdentifier() === (string)$newUser->identityIdentifier()
+                && $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()))))
             ->andReturnNull();
 
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
@@ -296,12 +292,10 @@ class SocialLoginCallbackTest extends TestCase
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertDispatched(IdentityCreated::class, function (IdentityCreated $event) use ($newUser, $email, $profile) {
-            return (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-                && (string) $event->email === (string) $email
-                && $event->accountType === AccountType::CORPORATION
-                && $event->name === $profile->name();
-        });
+        Event::assertDispatched(IdentityCreated::class, fn (IdentityCreated $event) => (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+            && (string) $event->email === (string) $email
+            && $event->accountType === AccountType::CORPORATION
+            && $event->name === $profile->name());
     }
 
     /**
@@ -349,10 +343,8 @@ class SocialLoginCallbackTest extends TestCase
             ->andReturnNull();
         $identityRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static function (Identity $identity) use ($provider, $profile, $newUser): bool {
-                return (string) $identity->identityIdentifier() === (string) $newUser->identityIdentifier()
-                    && $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()));
-            }))
+            ->with(Mockery::on(static fn (Identity $identity): bool => (string) $identity->identityIdentifier() === (string) $newUser->identityIdentifier()
+                && $identity->hasSocialConnection(new SocialConnection($provider, $profile->providerUserId()))))
             ->andReturnNull();
 
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
@@ -389,10 +381,8 @@ class SocialLoginCallbackTest extends TestCase
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertDispatched(IdentityCreatedViaInvitation::class, function (IdentityCreatedViaInvitation $event) use ($newUser, $invitationToken) {
-            return (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-                && (string) $event->invitationToken === (string) $invitationToken;
-        });
+        Event::assertDispatched(IdentityCreatedViaInvitation::class, fn (IdentityCreatedViaInvitation $event) => (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+            && (string) $event->invitationToken === (string) $invitationToken);
         Event::assertNotDispatched(IdentityCreated::class);
     }
 
@@ -472,12 +462,10 @@ class SocialLoginCallbackTest extends TestCase
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertDispatched(IdentityCreated::class, function (IdentityCreated $event) use ($newUser, $email, $profile) {
-            return (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-                && (string) $event->email === (string) $email
-                && $event->accountType === AccountType::INDIVIDUAL
-                && $event->name === $profile->name();
-        });
+        Event::assertDispatched(IdentityCreated::class, fn (IdentityCreated $event) => (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+            && (string) $event->email === (string) $email
+            && $event->accountType === AccountType::INDIVIDUAL
+            && $event->name === $profile->name());
     }
 
     /**
@@ -530,7 +518,7 @@ class SocialLoginCallbackTest extends TestCase
      */
     private function createIdentity(Email $email, ?IdentityIdentifier $identityIdentifier = null, array $connections = []): Identity
     {
-        $identityIdentifier = $identityIdentifier ?? new IdentityIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier ??= new IdentityIdentifier(StrTestHelper::generateUuid());
         $username = new UserName('test-user');
         $hashedPassword = HashedPassword::fromPlain(new PlainPassword('PlainPass1!'));
         $language = Language::ENGLISH;

@@ -69,9 +69,7 @@ class AttachRoleToPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (PrincipalGroup $savedGroup) use ($roleIdentifier) {
-                return $savedGroup->hasRole($roleIdentifier);
-            }))
+            ->with(Mockery::on(fn (PrincipalGroup $savedGroup) => $savedGroup->hasRole($roleIdentifier)))
             ->andReturnNull();
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
@@ -195,10 +193,10 @@ class AttachRoleToPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (PrincipalGroup $savedGroup) use ($roleIdentifier) {
+            ->with(Mockery::on(
                 // 重複追加されていないことを確認
-                return count($savedGroup->roles()) === 1 && $savedGroup->hasRole($roleIdentifier);
-            }))
+                fn (PrincipalGroup $savedGroup) => count($savedGroup->roles()) === 1 && $savedGroup->hasRole($roleIdentifier)
+            ))
             ->andReturnNull();
 
         $roleRepository = Mockery::mock(RoleRepositoryInterface::class);

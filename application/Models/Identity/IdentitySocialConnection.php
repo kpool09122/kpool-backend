@@ -19,12 +19,16 @@ use Illuminate\Support\Carbon;
  */
 class IdentitySocialConnection extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'identity_social_connections';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'identity_id',

@@ -79,13 +79,11 @@ class InvoiceRepository implements InvoiceRepositoryInterface
     {
         $currency = Currency::from($eloquent->currency);
 
-        $lines = $eloquent->lines->map(function ($line) {
-            return new InvoiceLine(
-                $line->description,
-                new Money($line->unit_price, Currency::from($line->currency)),
-                $line->quantity
-            );
-        })->all();
+        $lines = $eloquent->lines->map(fn ($line) => new InvoiceLine(
+            $line->description,
+            new Money($line->unit_price, Currency::from($line->currency)),
+            $line->quantity
+        ))->all();
 
         $taxDocument = null;
         if ($eloquent->tax_document_type !== null) {

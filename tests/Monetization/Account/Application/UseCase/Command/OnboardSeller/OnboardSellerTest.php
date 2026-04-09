@@ -57,11 +57,9 @@ class OnboardSellerTest extends TestCase
 
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static function (MonetizationAccount $savedAccount) use ($stripeConnectedAccountId) {
-                return $savedAccount->stripeConnectedAccountId() === $stripeConnectedAccountId
-                    && $savedAccount->hasCapability(Capability::SELL)
-                    && $savedAccount->hasCapability(Capability::RECEIVE_PAYOUT);
-            }))
+            ->with(Mockery::on(static fn (MonetizationAccount $savedAccount) => $savedAccount->stripeConnectedAccountId() === $stripeConnectedAccountId
+                && $savedAccount->hasCapability(Capability::SELL)
+                && $savedAccount->hasCapability(Capability::RECEIVE_PAYOUT)))
             ->andReturnNull();
 
         $connectGateway = Mockery::mock(ConnectGatewayInterface::class);

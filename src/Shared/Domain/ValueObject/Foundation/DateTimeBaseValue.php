@@ -7,7 +7,7 @@ namespace Source\Shared\Domain\ValueObject\Foundation;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
-abstract class DateTimeBaseValue
+abstract class DateTimeBaseValue implements \Stringable
 {
     public function __construct(
         protected readonly DateTimeImmutable $value,

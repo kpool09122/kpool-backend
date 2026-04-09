@@ -134,23 +134,13 @@ class CreateInvoiceTest extends TestCase
         $taxDocumentPolicyService = Mockery::mock(TaxDocumentPolicyServiceInterface::class);
         $taxDocumentPolicyService->shouldReceive('decide')
             ->once()
-            ->withArgs(function (
-                CountryCode $sellerC,
-                bool $sellerReg,
-                bool $qualifiedReq,
-                CountryCode $buyerC,
-                bool $buyerBiz,
-                bool $paidCard,
-                ?string $regNum,
-            ) use ($sellerCountry, $buyerCountry, $registrationNumber) {
-                return $sellerC === $sellerCountry &&
-                    $sellerReg === true &&
-                    $qualifiedReq === true &&
-                    $buyerC === $buyerCountry &&
-                    $buyerBiz === false &&
-                    $paidCard === true &&
-                    $regNum === $registrationNumber;
-            })
+            ->withArgs(fn (CountryCode $sellerC, bool $sellerReg, bool $qualifiedReq, CountryCode $buyerC, bool $buyerBiz, bool $paidCard, ?string $regNum) => $sellerC === $sellerCountry &&
+                $sellerReg === true &&
+                $qualifiedReq === true &&
+                $buyerC === $buyerCountry &&
+                $buyerBiz === false &&
+                $paidCard === true &&
+                $regNum === $registrationNumber)
             ->andReturn($taxDocument);
 
         $invoiceRepository = Mockery::mock(InvoiceRepositoryInterface::class);
@@ -208,15 +198,11 @@ class CreateInvoiceTest extends TestCase
         $invoiceFactory = Mockery::mock(InvoiceFactoryInterface::class);
         $invoiceFactory->shouldReceive('create')
             ->once()
-            ->withArgs(function (
-                OrderIdentifier $orderId,
-                MonetizationAccountIdentifier $buyerAccountId,
-                array $invoiceLines,
-            ) {
+            ->withArgs(
                 // 送料0円の場合、商品明細のみ（1件）
-                return count($invoiceLines) === 1 &&
-                    $invoiceLines[0]->description() === 'Test Product';
-            })
+                fn (OrderIdentifier $orderId, MonetizationAccountIdentifier $buyerAccountId, array $invoiceLines) => count($invoiceLines) === 1 &&
+                $invoiceLines[0]->description() === 'Test Product'
+            )
             ->andReturn($expectedInvoice);
 
         $taxDocumentPolicyService = Mockery::mock(TaxDocumentPolicyServiceInterface::class);
@@ -290,17 +276,13 @@ class CreateInvoiceTest extends TestCase
         $invoiceFactory = Mockery::mock(InvoiceFactoryInterface::class);
         $invoiceFactory->shouldReceive('create')
             ->once()
-            ->withArgs(function (
-                OrderIdentifier $orderId,
-                MonetizationAccountIdentifier $buyerAccountId,
-                array $invoiceLines,
-            ) {
+            ->withArgs(
                 // 2つの商品明細 + 送料 = 3件
-                return count($invoiceLines) === 3 &&
-                    $invoiceLines[0]->description() === 'Product A' &&
-                    $invoiceLines[1]->description() === 'Product B' &&
-                    $invoiceLines[2]->description() === 'Shipping';
-            })
+                fn (OrderIdentifier $orderId, MonetizationAccountIdentifier $buyerAccountId, array $invoiceLines) => count($invoiceLines) === 3 &&
+                $invoiceLines[0]->description() === 'Product A' &&
+                $invoiceLines[1]->description() === 'Product B' &&
+                $invoiceLines[2]->description() === 'Shipping'
+            )
             ->andReturn($expectedInvoice);
 
         $taxDocumentPolicyService = Mockery::mock(TaxDocumentPolicyServiceInterface::class);

@@ -30,14 +30,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Payment extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'payments';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'order_id',
@@ -61,6 +66,7 @@ class Payment extends Model
         'stripe_payment_method_id',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

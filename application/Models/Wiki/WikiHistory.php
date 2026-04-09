@@ -23,14 +23,19 @@ use Illuminate\Support\Carbon;
  */
 class WikiHistory extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'wiki_histories';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'action_type',
@@ -46,6 +51,7 @@ class WikiHistory extends Model
         'recorded_at',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

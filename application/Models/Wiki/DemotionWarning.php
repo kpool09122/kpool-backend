@@ -17,12 +17,16 @@ use Illuminate\Support\Carbon;
  */
 class DemotionWarning extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'demotion_warnings';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'principal_id',
@@ -30,6 +34,7 @@ class DemotionWarning extends Model
         'last_warning_month',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -93,11 +93,9 @@ class CreateInvitationTest extends TestCase
         $this->assertCount(1, $result);
         $this->assertSame($data->invitation, $result[0]);
 
-        Event::assertDispatched(InvitationCreated::class, static function (InvitationCreated $event) use ($data) {
-            return (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
-                && (string) $event->accountIdentifier === (string) $data->accountIdentifier
-                && (string) $event->email === (string) $data->email;
-        });
+        Event::assertDispatched(InvitationCreated::class, static fn (InvitationCreated $event) => (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
+            && (string) $event->accountIdentifier === (string) $data->accountIdentifier
+            && (string) $event->email === (string) $data->email);
     }
 
     /**

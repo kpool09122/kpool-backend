@@ -23,12 +23,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Transfer extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'transfers';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'settlement_batch_id',
@@ -42,6 +46,7 @@ class Transfer extends Model
         'stripe_transfer_id',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -94,11 +94,9 @@ class AuthCodeServiceTest extends TestCase
 
         $authCodeService->send($email, $language, $authCodeSession);
 
-        Mail::assertSent(AuthCodeMail::class, function (AuthCodeMail $mail) use ($email, $authCodeSession, $language) {
-            return $mail->hasTo((string) $email)
-                && $mail->session === $authCodeSession
-                && $mail->language === $language;
-        });
+        Mail::assertSent(AuthCodeMail::class, fn (AuthCodeMail $mail) => $mail->hasTo((string) $email)
+            && $mail->session === $authCodeSession
+            && $mail->language === $language);
     }
 
     /**
@@ -126,9 +124,7 @@ class AuthCodeServiceTest extends TestCase
 
         $authCodeService->notifyConflict($email, $language);
 
-        Mail::assertSent(ConflictNotificationMail::class, function (ConflictNotificationMail $mail) use ($email, $language) {
-            return $mail->hasTo((string) $email)
-                && $mail->language === $language;
-        });
+        Mail::assertSent(ConflictNotificationMail::class, fn (ConflictNotificationMail $mail) => $mail->hasTo((string) $email)
+            && $mail->language === $language);
     }
 }

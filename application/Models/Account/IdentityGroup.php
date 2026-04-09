@@ -21,12 +21,16 @@ use Illuminate\Support\Carbon;
  */
 class IdentityGroup extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'identity_groups';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'account_id',
@@ -35,6 +39,7 @@ class IdentityGroup extends Model
         'is_default',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

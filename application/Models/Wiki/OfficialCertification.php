@@ -21,12 +21,16 @@ use Illuminate\Support\Carbon;
  */
 class OfficialCertification extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'official_certifications';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'resource_type',
@@ -38,6 +42,7 @@ class OfficialCertification extends Model
         'rejected_at',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

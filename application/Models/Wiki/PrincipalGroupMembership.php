@@ -15,24 +15,31 @@ use Illuminate\Support\Carbon;
  */
 class PrincipalGroupMembership extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'principal_group_memberships';
 
+    #[\Override]
     protected $primaryKey = ['principal_group_id', 'principal_id'];
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'principal_group_id',
         'principal_id',
     ];
 
+    #[\Override]
     public function getKey(): string
     {
         return $this->principal_group_id . '_' . $this->principal_id;
     }
 
+    #[\Override]
     protected function setKeysForSaveQuery($query): mixed
     {
         return $query->where('principal_group_id', $this->principal_group_id)

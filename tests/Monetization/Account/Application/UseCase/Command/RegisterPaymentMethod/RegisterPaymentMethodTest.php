@@ -99,9 +99,7 @@ class RegisterPaymentMethodTest extends TestCase
             ->andReturnNull();
         $repository->shouldReceive('save')
             ->once()
-            ->withArgs(function (RegisteredPaymentMethod $pm) {
-                return $pm->isDefault() === true;
-            });
+            ->withArgs(fn (RegisteredPaymentMethod $pm) => $pm->isDefault() === true);
 
         $factory = Mockery::mock(RegisteredPaymentMethodFactoryInterface::class);
         $factory->shouldReceive('create')
@@ -167,9 +165,7 @@ class RegisterPaymentMethodTest extends TestCase
             ->andReturn($existingDefault);
         $repository->shouldReceive('save')
             ->once()
-            ->withArgs(function (RegisteredPaymentMethod $pm) {
-                return $pm->isDefault() === false;
-            });
+            ->withArgs(fn (RegisteredPaymentMethod $pm) => $pm->isDefault() === false);
 
         $factory = Mockery::mock(RegisteredPaymentMethodFactoryInterface::class);
         $factory->shouldReceive('create')
@@ -220,9 +216,7 @@ class RegisterPaymentMethodTest extends TestCase
         $repository->shouldReceive('findDefaultByMonetizationAccountId')->once()->andReturnNull();
         $repository->shouldReceive('save')
             ->once()
-            ->withArgs(function (RegisteredPaymentMethod $pm) use ($meta) {
-                return $pm->meta() === $meta;
-            });
+            ->withArgs(fn (RegisteredPaymentMethod $pm) => $pm->meta() === $meta);
 
         $factory = Mockery::mock(RegisteredPaymentMethodFactoryInterface::class);
         $factory->shouldReceive('create')->once()->andReturn($newPaymentMethod);

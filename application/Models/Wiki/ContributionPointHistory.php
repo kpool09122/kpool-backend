@@ -20,14 +20,19 @@ use Illuminate\Support\Carbon;
  */
 class ContributionPointHistory extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'contribution_point_histories';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'principal_id',
@@ -40,6 +45,7 @@ class ContributionPointHistory extends Model
         'created_at',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

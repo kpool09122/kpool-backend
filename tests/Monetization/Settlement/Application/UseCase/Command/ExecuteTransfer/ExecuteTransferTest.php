@@ -57,11 +57,9 @@ class ExecuteTransferTest extends TestCase
             ->andReturn($transfer);
         $transferRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static function (Transfer $savedTransfer) use ($stripeTransferId) {
-                return $savedTransfer->status() === TransferStatus::SENT
-                    && $savedTransfer->stripeTransferId() === $stripeTransferId
-                    && $savedTransfer->sentAt() !== null;
-            }))
+            ->with(Mockery::on(static fn (Transfer $savedTransfer) => $savedTransfer->status() === TransferStatus::SENT
+                && $savedTransfer->stripeTransferId() === $stripeTransferId
+                && $savedTransfer->sentAt() !== null))
             ->andReturnNull();
 
         $monetizationAccountRepository = Mockery::mock(MonetizationAccountRepositoryInterface::class);
@@ -189,11 +187,9 @@ class ExecuteTransferTest extends TestCase
             ->andReturn($transfer);
         $transferRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static function (Transfer $savedTransfer) {
-                return $savedTransfer->status() === TransferStatus::FAILED
-                    && $savedTransfer->failureReason() === 'Stripe API error'
-                    && $savedTransfer->failedAt() !== null;
-            }))
+            ->with(Mockery::on(static fn (Transfer $savedTransfer) => $savedTransfer->status() === TransferStatus::FAILED
+                && $savedTransfer->failureReason() === 'Stripe API error'
+                && $savedTransfer->failedAt() !== null))
             ->andReturnNull();
 
         $monetizationAccountRepository = Mockery::mock(MonetizationAccountRepositoryInterface::class);

@@ -20,7 +20,6 @@ class Transfer
     private ?DateTimeImmutable $sentAt;
     private ?DateTimeImmutable $failedAt;
     private ?string $failureReason;
-    private ?StripeTransferId $stripeTransferId;
 
     public function __construct(
         private readonly TransferIdentifier $transferIdentifier,
@@ -31,14 +30,13 @@ class Transfer
         ?DateTimeImmutable $sentAt = null,
         ?DateTimeImmutable $failedAt = null,
         ?string $failureReason = null,
-        ?StripeTransferId $stripeTransferId = null
+        private ?StripeTransferId $stripeTransferId = null
     ) {
         $this->assertStatusConsistency($status, $sentAt, $failedAt, $failureReason);
         $this->status = $status;
         $this->sentAt = $sentAt;
         $this->failedAt = $failedAt;
         $this->failureReason = $failureReason === null ? null : trim($failureReason);
-        $this->stripeTransferId = $stripeTransferId;
     }
 
     public function transferIdentifier(): TransferIdentifier

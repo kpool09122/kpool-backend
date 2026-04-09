@@ -78,9 +78,7 @@ class AttachPolicyToRoleTest extends TestCase
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (Role $savedRole) use ($policyIdentifier) {
-                return $savedRole->hasPolicy($policyIdentifier);
-            }))
+            ->with(Mockery::on(fn (Role $savedRole) => $savedRole->hasPolicy($policyIdentifier)))
             ->andReturnNull();
 
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);
@@ -201,10 +199,10 @@ class AttachPolicyToRoleTest extends TestCase
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (Role $savedRole) use ($policyIdentifier) {
+            ->with(Mockery::on(
                 // 重複追加されていないことを確認
-                return count($savedRole->policies()) === 1 && $savedRole->hasPolicy($policyIdentifier);
-            }))
+                fn (Role $savedRole) => count($savedRole->policies()) === 1 && $savedRole->hasPolicy($policyIdentifier)
+            ))
             ->andReturnNull();
 
         $policyRepository = Mockery::mock(PolicyRepositoryInterface::class);

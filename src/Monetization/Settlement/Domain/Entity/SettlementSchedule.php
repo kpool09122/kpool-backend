@@ -14,19 +14,16 @@ use Source\Shared\Domain\ValueObject\Money;
 
 class SettlementSchedule
 {
-    private DateTimeImmutable $nextClosingDate;
-
     public function __construct(
-        private SettlementScheduleIdentifier $settlementScheduleIdentifier,
-        private MonetizationAccountIdentifier $monetizationAccountIdentifier,
-        DateTimeImmutable $anchorDate,
-        private SettlementInterval $interval,
-        private int $payoutDelayDays = 0,
-        private ?Money $threshold = null
+        private readonly SettlementScheduleIdentifier $settlementScheduleIdentifier,
+        private readonly MonetizationAccountIdentifier $monetizationAccountIdentifier,
+        private DateTimeImmutable $nextClosingDate,
+        private readonly SettlementInterval $interval,
+        private readonly int $payoutDelayDays = 0,
+        private readonly ?Money $threshold = null
     ) {
         $this->assertPayoutDelayDays($payoutDelayDays);
         $this->assertThreshold();
-        $this->nextClosingDate = $anchorDate;
     }
 
     public function settlementScheduleIdentifier(): SettlementScheduleIdentifier

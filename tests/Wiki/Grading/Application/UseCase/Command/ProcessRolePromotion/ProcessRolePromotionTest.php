@@ -285,10 +285,8 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([$warning]);
         // 警告がリセットされて保存されることを確認
         $demotionWarningRepository->shouldReceive('save')
-            ->with(Mockery::on(static function ($w) use ($principalId) {
-                return (string) $w->principalIdentifier() === $principalId
-                    && $w->warningCount()->value() === 0;
-            }))
+            ->with(Mockery::on(static fn ($w) => (string) $w->principalIdentifier() === $principalId
+                && $w->warningCount()->value() === 0))
             ->once();
 
         $promotionHistoryRepository = Mockery::mock(PromotionHistoryRepositoryInterface::class);
@@ -393,10 +391,8 @@ class ProcessRolePromotionTest extends TestCase
             ->andReturn([]);
         // 新規警告が作成されて保存されることを確認
         $demotionWarningRepository->shouldReceive('save')
-            ->with(Mockery::on(static function ($w) use ($principalId) {
-                return (string) $w->principalIdentifier() === $principalId
-                    && $w->warningCount()->value() === 1;
-            }))
+            ->with(Mockery::on(static fn ($w) => (string) $w->principalIdentifier() === $principalId
+                && $w->warningCount()->value() === 1))
             ->once();
 
         $promotionHistoryRepository = Mockery::mock(PromotionHistoryRepositoryInterface::class);

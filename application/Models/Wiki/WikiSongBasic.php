@@ -30,14 +30,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class WikiSongBasic extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'wiki_song_basics';
 
+    #[\Override]
     protected $primaryKey = 'wiki_id';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'wiki_id',
         'name',
@@ -56,6 +61,7 @@ class WikiSongBasic extends Model
         'normalized_arranger',
     ];
 
+    #[\Override]
     protected $casts = [
         'genres' => 'array',
     ];

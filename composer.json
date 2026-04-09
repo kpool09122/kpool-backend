@@ -3,7 +3,7 @@
     "description": "PHP Project with PHPUnit",
     "type": "project",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "symfony/uid": "^7.2",
         "laravel/framework": "^12.0",
         "illuminate/container": "^12.0",
@@ -26,7 +26,8 @@
         "illuminate/database": "*",
         "phpunit/php-code-coverage": "^12.0",
         "calebdw/larastan": "^3.8",
-        "barryvdh/laravel-ide-helper": "^3.6"
+        "barryvdh/laravel-ide-helper": "^3.6",
+        "rector/rector": "^2.4"
     },
     "autoload": {
         "files": [

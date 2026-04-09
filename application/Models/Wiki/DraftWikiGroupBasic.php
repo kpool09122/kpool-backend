@@ -25,14 +25,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class DraftWikiGroupBasic extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'draft_wiki_group_basics';
 
+    #[\Override]
     protected $primaryKey = 'wiki_id';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'wiki_id',
         'name',
@@ -50,6 +55,7 @@ class DraftWikiGroupBasic extends Model
         'main_image_identifier',
     ];
 
+    #[\Override]
     protected $casts = [
         'official_colors' => 'array',
     ];

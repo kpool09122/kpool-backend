@@ -92,11 +92,9 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
 
         $this->assertTrue($data->memberGroup->hasMember($data->identityIdentifier));
 
-        Event::assertDispatched(InvitationAccepted::class, static function (InvitationAccepted $event) use ($data) {
-            return (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
-                && (string) $event->accountIdentifier === (string) $data->accountIdentifier
-                && (string) $event->acceptedByIdentityIdentifier === (string) $data->identityIdentifier;
-        });
+        Event::assertDispatched(InvitationAccepted::class, static fn (InvitationAccepted $event) => (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
+            && (string) $event->accountIdentifier === (string) $data->accountIdentifier
+            && (string) $event->acceptedByIdentityIdentifier === (string) $data->identityIdentifier);
     }
 
     /**

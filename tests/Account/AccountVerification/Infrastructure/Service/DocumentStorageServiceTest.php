@@ -237,7 +237,7 @@ class DocumentStorageServiceTest extends TestCase
         $storedFileName = end($pathParts);
         // タイムスタンプ部分を除いたファイル名部分
         $fileNamePart = preg_replace('/^\d+_/', '', $storedFileName);
-        $this->assertLessThanOrEqual(200, strlen($fileNamePart));
+        $this->assertLessThanOrEqual(200, strlen((string) $fileNamePart));
         Storage::disk('verification-documents')->assertExists((string) $path);
     }
 

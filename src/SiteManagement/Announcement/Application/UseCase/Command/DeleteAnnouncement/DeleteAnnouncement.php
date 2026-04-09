@@ -12,8 +12,8 @@ use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 class DeleteAnnouncement implements DeleteAnnouncementInterface
 {
     public function __construct(
-        private AnnouncementRepositoryInterface $announcementRepository,
-        private UserRepositoryInterface $userRepository,
+        private readonly AnnouncementRepositoryInterface $announcementRepository,
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
 

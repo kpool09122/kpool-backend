@@ -99,13 +99,7 @@ class PrincipalGroup
 
     public function hasRole(RoleIdentifier $roleIdentifier): bool
     {
-        foreach ($this->roles as $role) {
-            if ((string) $role === (string) $roleIdentifier) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->roles, fn ($role) => (string) $role === (string) $roleIdentifier);
     }
 
     public function addRole(RoleIdentifier $roleIdentifier): void

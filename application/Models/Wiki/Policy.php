@@ -17,12 +17,16 @@ use Illuminate\Support\Carbon;
  */
 class Policy extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'policies';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'name',
@@ -30,6 +34,7 @@ class Policy extends Model
         'is_system_policy',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

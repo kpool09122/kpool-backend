@@ -50,9 +50,7 @@ class RefundPaymentTest extends TestCase
             ->andReturn($capturedPayment);
         $paymentRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (Payment $payment) {
-                return $payment->status() === PaymentStatus::PARTIALLY_REFUNDED;
-            });
+            ->withArgs(fn (Payment $payment) => $payment->status() === PaymentStatus::PARTIALLY_REFUNDED);
 
         $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
         $paymentGateway->shouldReceive('refund')
@@ -96,9 +94,7 @@ class RefundPaymentTest extends TestCase
             ->andReturn($capturedPayment);
         $paymentRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (Payment $payment) {
-                return $payment->status() === PaymentStatus::REFUNDED;
-            });
+            ->withArgs(fn (Payment $payment) => $payment->status() === PaymentStatus::REFUNDED);
 
         $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
         $paymentGateway->shouldReceive('refund')

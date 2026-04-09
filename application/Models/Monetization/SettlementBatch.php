@@ -27,12 +27,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class SettlementBatch extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'settlement_batches';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'monetization_account_id',
@@ -49,6 +53,7 @@ class SettlementBatch extends Model
         'failure_reason',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

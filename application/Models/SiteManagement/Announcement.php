@@ -21,12 +21,16 @@ class Announcement extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'announcements';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'translation_set_identifier',
@@ -37,6 +41,7 @@ class Announcement extends Model
         'published_date',
     ];
 
+    #[\Override]
     protected $casts = [
         'category' => 'integer',
         'published_date' => 'datetime',

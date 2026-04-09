@@ -18,11 +18,11 @@ class Account
     public function __construct(
         private readonly AccountIdentifier $accountIdentifier,
         private readonly Email $email,
-        private AccountType $type,
-        private AccountName $name,
-        private AccountStatus $status,
+        private readonly AccountType $type,
+        private readonly AccountName $name,
+        private readonly AccountStatus $status,
         private AccountCategory $accountCategory,
-        private DeletionReadinessChecklist $deletionReadiness,
+        private readonly DeletionReadinessChecklist $deletionReadiness,
     ) {
     }
 

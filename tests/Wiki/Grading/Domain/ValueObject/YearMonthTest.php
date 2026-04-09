@@ -64,7 +64,7 @@ class YearMonthTest extends TestCase
      */
     public function testCurrent(): void
     {
-        $expected = (new DateTimeImmutable())->format('Y-m');
+        $expected = new DateTimeImmutable()->format('Y-m');
         $yearMonth = YearMonth::current();
         $this->assertSame($expected, (string) $yearMonth);
     }
