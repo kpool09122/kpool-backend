@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $role_id
  * @property string $policy_id
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'role_id',
+    'policy_id',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'role_policy_attachments')]
 class RolePolicyAttachment extends Model
 {
     #[\Override]
@@ -17,13 +22,4 @@ class RolePolicyAttachment extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'role_policy_attachments';
-
-    #[\Override]
-    protected $fillable = [
-        'role_id',
-        'policy_id',
-    ];
 }

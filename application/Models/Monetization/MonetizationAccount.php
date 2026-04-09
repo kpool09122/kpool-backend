@@ -23,31 +23,24 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'account_id',
+    'capabilities',
+    'stripe_customer_id',
+    'stripe_connected_account_id',
+    'billing_address',
+    'billing_contact',
+    'billing_method',
+    'tax_info',
+    'card_meta',
+    'payout_bank_meta',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'monetization_accounts', keyType: 'string')]
 class MonetizationAccount extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'monetization_accounts';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'account_id',
-        'capabilities',
-        'stripe_customer_id',
-        'stripe_connected_account_id',
-        'billing_address',
-        'billing_contact',
-        'billing_method',
-        'tax_info',
-        'card_meta',
-        'payout_bank_meta',
-    ];
 
     #[\Override]
     protected function casts(): array

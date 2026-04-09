@@ -28,6 +28,29 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $stripe_payment_intent_id
  * @property ?string $stripe_payment_method_id
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'order_id',
+    'buyer_monetization_account_id',
+    'currency',
+    'amount',
+    'payment_method_id',
+    'payment_method_type',
+    'payment_method_label',
+    'payment_method_recurring_enabled',
+    'created_at',
+    'status',
+    'authorized_at',
+    'captured_at',
+    'failed_at',
+    'failure_reason',
+    'refunded_amount',
+    'last_refunded_at',
+    'last_refund_reason',
+    'stripe_payment_intent_id',
+    'stripe_payment_method_id',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'payments', keyType: 'string')]
 class Payment extends Model
 {
     #[\Override]
@@ -35,36 +58,6 @@ class Payment extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'payments';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'order_id',
-        'buyer_monetization_account_id',
-        'currency',
-        'amount',
-        'payment_method_id',
-        'payment_method_type',
-        'payment_method_label',
-        'payment_method_recurring_enabled',
-        'created_at',
-        'status',
-        'authorized_at',
-        'captured_at',
-        'failed_at',
-        'failure_reason',
-        'refunded_amount',
-        'last_refunded_at',
-        'last_refund_reason',
-        'stripe_payment_intent_id',
-        'stripe_payment_method_id',
-    ];
 
     #[\Override]
     protected function casts(): array

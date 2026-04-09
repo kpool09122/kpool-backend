@@ -19,28 +19,21 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'resource_type',
+    'wiki_id',
+    'owner_account_id',
+    'status',
+    'requested_at',
+    'approved_at',
+    'rejected_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'official_certifications', keyType: 'string')]
 class OfficialCertification extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'official_certifications';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'resource_type',
-        'wiki_id',
-        'owner_account_id',
-        'status',
-        'requested_at',
-        'approved_at',
-        'rejected_at',
-    ];
 
     #[\Override]
     protected function casts(): array

@@ -13,25 +13,18 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'principal_group_id',
+    'principal_id',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'principal_group_memberships', keyType: 'string')]
 class PrincipalGroupMembership extends Model
 {
     #[\Override]
     public $incrementing = false;
 
-    #[\Override]
-    protected $table = 'principal_group_memberships';
-
-    #[\Override]
+    /** @var string[] */
     protected $primaryKey = ['principal_group_id', 'principal_id'];
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'principal_group_id',
-        'principal_id',
-    ];
 
     #[\Override]
     public function getKey(): string

@@ -23,37 +23,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $representative_symbol
  * @property ?string $main_image_identifier
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'snapshot_id',
+    'name',
+    'normalized_name',
+    'agency_identifier',
+    'group_type',
+    'status',
+    'generation',
+    'debut_date',
+    'disband_date',
+    'fandom_name',
+    'official_colors',
+    'emoji',
+    'representative_symbol',
+    'main_image_identifier',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_snapshot_group_basics', key: 'snapshot_id', keyType: 'string')]
 class WikiSnapshotGroupBasic extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'wiki_snapshot_group_basics';
-
-    #[\Override]
-    protected $primaryKey = 'snapshot_id';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'snapshot_id',
-        'name',
-        'normalized_name',
-        'agency_identifier',
-        'group_type',
-        'status',
-        'generation',
-        'debut_date',
-        'disband_date',
-        'fandom_name',
-        'official_colors',
-        'emoji',
-        'representative_symbol',
-        'main_image_identifier',
-    ];
 
     #[\Override]
     protected $casts = [

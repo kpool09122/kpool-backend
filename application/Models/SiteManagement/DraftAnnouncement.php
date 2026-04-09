@@ -16,27 +16,20 @@ use Illuminate\Support\Carbon;
  * @property string      $content
  * @property Carbon|null $published_date
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'translation_set_identifier',
+    'language',
+    'category',
+    'title',
+    'content',
+    'published_date',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_announcements', keyType: 'string')]
 class DraftAnnouncement extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'draft_announcements';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'translation_set_identifier',
-        'language',
-        'category',
-        'title',
-        'content',
-        'published_date',
-    ];
 
     #[\Override]
     protected $casts = [

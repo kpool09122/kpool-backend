@@ -19,6 +19,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $display_order
  * @property Carbon $created_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'resource_type',
+    'wiki_id',
+    'url',
+    'video_usage',
+    'title',
+    'thumbnail_url',
+    'published_at',
+    'display_order',
+    'created_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'video_links', keyType: 'string')]
 class VideoLink extends Model
 {
     #[\Override]
@@ -26,26 +39,6 @@ class VideoLink extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'video_links';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'resource_type',
-        'wiki_id',
-        'url',
-        'video_usage',
-        'title',
-        'thumbnail_url',
-        'published_at',
-        'display_order',
-        'created_at',
-    ];
 
     #[\Override]
     protected $casts = [

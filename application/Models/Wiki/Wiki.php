@@ -31,37 +31,30 @@ use Illuminate\Support\Carbon;
  * @property-read ?WikiAgencyBasic $agencyBasic
  * @property-read ?WikiSongBasic $songBasic
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'translation_set_identifier',
+    'slug',
+    'language',
+    'resource_type',
+    'sections',
+    'theme_color',
+    'version',
+    'owner_account_id',
+    'editor_id',
+    'approver_id',
+    'merger_id',
+    'source_editor_id',
+    'merged_at',
+    'translated_at',
+    'approved_at',
+    'published_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wikis', keyType: 'string')]
 class Wiki extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'wikis';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'translation_set_identifier',
-        'slug',
-        'language',
-        'resource_type',
-        'sections',
-        'theme_color',
-        'version',
-        'owner_account_id',
-        'editor_id',
-        'approver_id',
-        'merger_id',
-        'source_editor_id',
-        'merged_at',
-        'translated_at',
-        'approved_at',
-        'published_at',
-    ];
 
     #[\Override]
     protected $casts = [

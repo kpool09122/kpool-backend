@@ -14,6 +14,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon|null $last_collected_at
  * @property Carbon $created_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'resource_type',
+    'wiki_id',
+    'last_collected_at',
+    'created_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'video_link_collection_statuses', keyType: 'string')]
 class VideoLinkCollectionStatus extends Model
 {
     #[\Override]
@@ -21,21 +29,6 @@ class VideoLinkCollectionStatus extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'video_link_collection_statuses';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'resource_type',
-        'wiki_id',
-        'last_collected_at',
-        'created_at',
-    ];
 
     #[\Override]
     protected $casts = [

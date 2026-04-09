@@ -18,6 +18,18 @@ use Illuminate\Support\Carbon;
  * @property bool $is_new_creation
  * @property ?Carbon $created_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'principal_id',
+    'year_month',
+    'points',
+    'resource_type',
+    'wiki_id',
+    'contributor_type',
+    'is_new_creation',
+    'created_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'contribution_point_histories', keyType: 'string')]
 class ContributionPointHistory extends Model
 {
     #[\Override]
@@ -25,25 +37,6 @@ class ContributionPointHistory extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'contribution_point_histories';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'principal_id',
-        'year_month',
-        'points',
-        'resource_type',
-        'wiki_id',
-        'contributor_type',
-        'is_new_creation',
-        'created_at',
-    ];
 
     #[\Override]
     protected function casts(): array

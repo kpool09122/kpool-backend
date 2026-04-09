@@ -29,40 +29,30 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?string $profile_image_identifier
  * @property-read Collection<int, Wiki> $groups
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'wiki_id',
+    'name',
+    'normalized_name',
+    'real_name',
+    'normalized_real_name',
+    'birthday',
+    'agency_identifier',
+    'emoji',
+    'representative_symbol',
+    'position',
+    'mbti',
+    'zodiac_sign',
+    'english_level',
+    'height',
+    'blood_type',
+    'fandom_name',
+    'profile_image_identifier',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wiki_talent_basics', key: 'wiki_id', keyType: 'string')]
 class DraftWikiTalentBasic extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'draft_wiki_talent_basics';
-
-    #[\Override]
-    protected $primaryKey = 'wiki_id';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'wiki_id',
-        'name',
-        'normalized_name',
-        'real_name',
-        'normalized_real_name',
-        'birthday',
-        'agency_identifier',
-        'emoji',
-        'representative_symbol',
-        'position',
-        'mbti',
-        'zodiac_sign',
-        'english_level',
-        'height',
-        'blood_type',
-        'fandom_name',
-        'profile_image_identifier',
-    ];
 
     /**
      * @return BelongsTo<DraftWiki, DraftWikiTalentBasic>

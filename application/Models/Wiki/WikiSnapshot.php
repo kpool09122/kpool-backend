@@ -31,38 +31,31 @@ use Illuminate\Support\Carbon;
  * @property-read ?WikiSnapshotAgencyBasic $agencyBasic
  * @property-read ?WikiSnapshotSongBasic $songBasic
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'wiki_id',
+    'translation_set_identifier',
+    'slug',
+    'language',
+    'resource_type',
+    'sections',
+    'theme_color',
+    'version',
+    'editor_id',
+    'merger_id',
+    'merged_at',
+    'approver_id',
+    'approved_at',
+    'source_editor_id',
+    'translated_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_snapshots', keyType: 'string')]
 class WikiSnapshot extends Model
 {
     #[\Override]
     public $incrementing = false;
 
     public const UPDATED_AT = null;
-
-    #[\Override]
-    protected $table = 'wiki_snapshots';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'wiki_id',
-        'translation_set_identifier',
-        'slug',
-        'language',
-        'resource_type',
-        'sections',
-        'theme_color',
-        'version',
-        'editor_id',
-        'merger_id',
-        'merged_at',
-        'approver_id',
-        'approved_at',
-        'source_editor_id',
-        'translated_at',
-    ];
 
     #[\Override]
     protected $casts = [

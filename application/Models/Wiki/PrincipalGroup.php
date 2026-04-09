@@ -19,24 +19,17 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, PrincipalGroupMembership> $memberships
  * @property-read Collection<int, PrincipalGroupRoleAttachment> $roleAttachments
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'account_id',
+    'name',
+    'is_default',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'principal_groups', keyType: 'string')]
 class PrincipalGroup extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'principal_groups';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'account_id',
-        'name',
-        'is_default',
-    ];
 
     #[\Override]
     protected function casts(): array

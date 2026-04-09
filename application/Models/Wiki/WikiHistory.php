@@ -21,6 +21,21 @@ use Illuminate\Support\Carbon;
  * @property string $subject_name
  * @property ?Carbon $recorded_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'action_type',
+    'actor_id',
+    'submitter_id',
+    'wiki_id',
+    'draft_wiki_id',
+    'from_status',
+    'to_status',
+    'from_version',
+    'to_version',
+    'subject_name',
+    'recorded_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_histories', keyType: 'string')]
 class WikiHistory extends Model
 {
     #[\Override]
@@ -28,28 +43,6 @@ class WikiHistory extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'wiki_histories';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'action_type',
-        'actor_id',
-        'submitter_id',
-        'wiki_id',
-        'draft_wiki_id',
-        'from_status',
-        'to_status',
-        'from_version',
-        'to_version',
-        'subject_name',
-        'recorded_at',
-    ];
 
     #[\Override]
     protected function casts(): array

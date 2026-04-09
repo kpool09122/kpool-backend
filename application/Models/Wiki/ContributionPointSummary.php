@@ -15,24 +15,17 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'principal_id',
+    'year_month',
+    'points',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'contribution_point_summaries', keyType: 'string')]
 class ContributionPointSummary extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'contribution_point_summaries';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'principal_id',
-        'year_month',
-        'points',
-    ];
 
     #[\Override]
     protected function casts(): array

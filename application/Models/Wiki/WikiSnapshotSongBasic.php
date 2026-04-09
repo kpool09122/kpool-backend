@@ -28,38 +28,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property-read Collection<int, Wiki> $groups
  * @property-read Collection<int, Wiki> $talents
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'snapshot_id',
+    'name',
+    'normalized_name',
+    'song_type',
+    'genres',
+    'agency_identifier',
+    'release_date',
+    'album_name',
+    'cover_image_identifier',
+    'lyricist',
+    'normalized_lyricist',
+    'composer',
+    'normalized_composer',
+    'arranger',
+    'normalized_arranger',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_snapshot_song_basics', key: 'snapshot_id', keyType: 'string')]
 class WikiSnapshotSongBasic extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'wiki_snapshot_song_basics';
-
-    #[\Override]
-    protected $primaryKey = 'snapshot_id';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'snapshot_id',
-        'name',
-        'normalized_name',
-        'song_type',
-        'genres',
-        'agency_identifier',
-        'release_date',
-        'album_name',
-        'cover_image_identifier',
-        'lyricist',
-        'normalized_lyricist',
-        'composer',
-        'normalized_composer',
-        'arranger',
-        'normalized_arranger',
-    ];
 
     #[\Override]
     protected $casts = [

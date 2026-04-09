@@ -21,30 +21,23 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'image_id',
+    'requester_name',
+    'requester_email',
+    'reason',
+    'status',
+    'requested_at',
+    'reviewer_id',
+    'reviewed_at',
+    'reviewer_comment',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'image_hide_requests', keyType: 'string')]
 class ImageHideRequest extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'image_hide_requests';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'image_id',
-        'requester_name',
-        'requester_email',
-        'reason',
-        'status',
-        'requested_at',
-        'reviewer_id',
-        'reviewed_at',
-        'reviewer_comment',
-    ];
 
     #[\Override]
     protected function casts(): array

@@ -17,24 +17,17 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'affiliation_id',
+    'policy_id',
+    'role_id',
+    'principal_group_id',
+    'type',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'affiliation_grants', keyType: 'string')]
 class AffiliationGrant extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'affiliation_grants';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'affiliation_id',
-        'policy_id',
-        'role_id',
-        'principal_group_id',
-        'type',
-    ];
 }

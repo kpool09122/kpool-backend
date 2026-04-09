@@ -19,27 +19,20 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'verification_id',
+    'document_type',
+    'document_path',
+    'original_file_name',
+    'file_size_bytes',
+    'uploaded_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'verification_documents', keyType: 'string')]
 class VerificationDocument extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'verification_documents';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'verification_id',
-        'document_type',
-        'document_path',
-        'original_file_name',
-        'file_size_bytes',
-        'uploaded_at',
-    ];
 
     #[\Override]
     protected function casts(): array

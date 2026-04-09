@@ -15,24 +15,17 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'name',
+    'statements',
+    'is_system_policy',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'policies', keyType: 'string')]
 class Policy extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'policies';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'name',
-        'statements',
-        'is_system_policy',
-    ];
 
     #[\Override]
     protected function casts(): array

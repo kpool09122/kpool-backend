@@ -28,6 +28,28 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?\Illuminate\Support\Carbon $voided_at
  * @property ?string $void_reason
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'order_id',
+    'buyer_monetization_account_id',
+    'currency',
+    'subtotal',
+    'discount_amount',
+    'tax_amount',
+    'total',
+    'issued_at',
+    'due_date',
+    'status',
+    'tax_document_type',
+    'tax_document_country',
+    'tax_document_registration_number',
+    'tax_document_issue_deadline',
+    'tax_document_reason',
+    'paid_at',
+    'voided_at',
+    'void_reason',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'invoices', keyType: 'string')]
 class Invoice extends Model
 {
     #[\Override]
@@ -35,35 +57,6 @@ class Invoice extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'invoices';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'order_id',
-        'buyer_monetization_account_id',
-        'currency',
-        'subtotal',
-        'discount_amount',
-        'tax_amount',
-        'total',
-        'issued_at',
-        'due_date',
-        'status',
-        'tax_document_type',
-        'tax_document_country',
-        'tax_document_registration_number',
-        'tax_document_issue_deadline',
-        'tax_document_reason',
-        'paid_at',
-        'voided_at',
-        'void_reason',
-    ];
 
     #[\Override]
     protected function casts(): array

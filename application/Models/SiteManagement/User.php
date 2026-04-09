@@ -14,21 +14,14 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'identity_id',
+    'role',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'site_management_users', keyType: 'string')]
 class User extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'site_management_users';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'identity_id',
-        'role',
-    ];
 }

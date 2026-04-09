@@ -25,33 +25,26 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'monetization_account_id',
+    'currency',
+    'gross_amount',
+    'fee_amount',
+    'net_amount',
+    'period_start',
+    'period_end',
+    'status',
+    'processed_at',
+    'paid_at',
+    'failed_at',
+    'failure_reason',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'settlement_batches', keyType: 'string')]
 class SettlementBatch extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'settlement_batches';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'monetization_account_id',
-        'currency',
-        'gross_amount',
-        'fee_amount',
-        'net_amount',
-        'period_start',
-        'period_end',
-        'status',
-        'processed_at',
-        'paid_at',
-        'failed_at',
-        'failure_reason',
-    ];
 
     #[\Override]
     protected function casts(): array

@@ -32,37 +32,30 @@ use Illuminate\Support\Carbon;
  * @property-read ?DraftWikiAgencyBasic $agencyBasic
  * @property-read ?DraftWikiSongBasic $songBasic
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'published_wiki_id',
+    'translation_set_identifier',
+    'slug',
+    'language',
+    'resource_type',
+    'sections',
+    'theme_color',
+    'status',
+    'editor_id',
+    'approver_id',
+    'merger_id',
+    'source_editor_id',
+    'edited_at',
+    'merged_at',
+    'translated_at',
+    'approved_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wikis', keyType: 'string')]
 class DraftWiki extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'draft_wikis';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'published_wiki_id',
-        'translation_set_identifier',
-        'slug',
-        'language',
-        'resource_type',
-        'sections',
-        'theme_color',
-        'status',
-        'editor_id',
-        'approver_id',
-        'merger_id',
-        'source_editor_id',
-        'edited_at',
-        'merged_at',
-        'translated_at',
-        'approved_at',
-    ];
 
     #[\Override]
     protected $casts = [

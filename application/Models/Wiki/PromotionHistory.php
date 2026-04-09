@@ -15,6 +15,15 @@ use Illuminate\Support\Carbon;
  * @property ?string $reason
  * @property Carbon $processed_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'principal_id',
+    'from_role',
+    'to_role',
+    'reason',
+    'processed_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'promotion_histories', keyType: 'string')]
 class PromotionHistory extends Model
 {
     #[\Override]
@@ -22,22 +31,6 @@ class PromotionHistory extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'promotion_histories';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'principal_id',
-        'from_role',
-        'to_role',
-        'reason',
-        'processed_at',
-    ];
 
     #[\Override]
     protected function casts(): array
