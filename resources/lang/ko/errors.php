@@ -45,4 +45,15 @@ return [
     'invalid_oauth_state' => 'OAuth 상태가 유효하지 않거나 만료되었습니다.',
     'social_oauth_error' => '소셜 로그인 중 오류가 발생했습니다.',
     'invalid_base64_image' => '이미지 형식이 유효하지 않습니다.',
+
+    // Account
+    'account_already_exists' => '계정이 이미 존재합니다.',
+    'account_not_found' => '지정된 계정을 찾을 수 없습니다.',
+    'account_deletion_blocked' => '해결되지 않은 조건이 있어 계정을 삭제할 수 없습니다.',
+    'identity_group_not_found' => '지정된 아이덴티티 그룹을 찾을 수 없습니다.',
+    'identity_already_member' => '해당 아이덴티티는 이미 이 그룹의 멤버입니다.',
+    'identity_not_member' => '해당 아이덴티티는 이 그룹의 멤버가 아닙니다.',
+    'cannot_remove_last_owner' => '계정에서 마지막 소유자를 제거할 수 없습니다.',
+    'cannot_delete_default_identity_group' => '기본 아이덴티티 그룹은 삭제할 수 없습니다.',
+    'cannot_delete_last_owner_group' => '멤버가 있는 마지막 소유자 그룹은 삭제할 수 없습니다.',
 ];

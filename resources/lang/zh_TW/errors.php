@@ -45,4 +45,15 @@ return [
     'invalid_oauth_state' => 'OAuth狀態無效或已過期。',
     'social_oauth_error' => '社交登入發生錯誤。',
     'invalid_base64_image' => '圖片格式無效。',
+
+    // Account
+    'account_already_exists' => '帳戶已存在。',
+    'account_not_found' => '找不到指定的帳戶。',
+    'account_deletion_blocked' => '由於存在未解決的條件，無法刪除帳戶。',
+    'identity_group_not_found' => '找不到指定的身分群組。',
+    'identity_already_member' => '該身分已是此群組的成員。',
+    'identity_not_member' => '該身分不是此群組的成員。',
+    'cannot_remove_last_owner' => '無法移除帳戶的最後一個擁有者。',
+    'cannot_delete_default_identity_group' => '無法刪除預設身分群組。',
+    'cannot_delete_last_owner_group' => '無法刪除有成員的最後一個擁有者群組。',
 ];

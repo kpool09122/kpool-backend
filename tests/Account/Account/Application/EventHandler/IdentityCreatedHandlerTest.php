@@ -9,14 +9,9 @@ use Mockery;
 use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInputPort;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
-use Source\Account\Account\Domain\Entity\Account;
-use Source\Account\Account\Domain\ValueObject\AccountName;
-use Source\Account\Account\Domain\ValueObject\AccountStatus;
+use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutputPort;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
-use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Identity\Domain\Event\IdentityCreated;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -44,24 +39,17 @@ class IdentityCreatedHandlerTest extends TestCase
             name: $name,
         );
 
-        $expectedAccount = new Account(
-            new AccountIdentifier(StrTestHelper::generateUuid()),
-            $email,
-            $accountType,
-            new AccountName($name),
-            AccountStatus::ACTIVE,
-            AccountCategory::GENERAL,
-            DeletionReadinessChecklist::ready(),
-        );
-
         $createAccount = Mockery::mock(CreateAccountInterface::class);
         $createAccount->shouldReceive('process')
             ->once()
-            ->with(Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
-                && $input->accountType() === $accountType
-                && (string) $input->accountName() === $name
-                && (string) $input->identityIdentifier() === (string) $identityIdentifier))
-            ->andReturn($expectedAccount);
+            ->with(
+                Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
+                    && $input->accountType() === $accountType
+                    && (string) $input->accountName() === $name
+                    && (string) $input->identityIdentifier() === (string) $identityIdentifier),
+                Mockery::type(CreateAccountOutputPort::class),
+            )
+            ->andReturnNull();
 
         $this->app->instance(CreateAccountInterface::class, $createAccount);
         $handler = $this->app->make(IdentityCreatedHandler::class);
@@ -87,24 +75,17 @@ class IdentityCreatedHandlerTest extends TestCase
             name: null,
         );
 
-        $expectedAccount = new Account(
-            new AccountIdentifier(StrTestHelper::generateUuid()),
-            $email,
-            $accountType,
-            new AccountName('My Account'),
-            AccountStatus::ACTIVE,
-            AccountCategory::GENERAL,
-            DeletionReadinessChecklist::ready(),
-        );
-
         $createAccount = Mockery::mock(CreateAccountInterface::class);
         $createAccount->shouldReceive('process')
             ->once()
-            ->with(Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
-                && $input->accountType() === $accountType
-                && (string) $input->accountName() === 'My Account'
-                && (string) $input->identityIdentifier() === (string) $identityIdentifier))
-            ->andReturn($expectedAccount);
+            ->with(
+                Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
+                    && $input->accountType() === $accountType
+                    && (string) $input->accountName() === 'My Account'
+                    && (string) $input->identityIdentifier() === (string) $identityIdentifier),
+                Mockery::type(CreateAccountOutputPort::class),
+            )
+            ->andReturnNull();
 
         $this->app->instance(CreateAccountInterface::class, $createAccount);
         $handler = $this->app->make(IdentityCreatedHandler::class);

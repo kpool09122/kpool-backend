@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup;
 
-use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
 use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 
@@ -16,7 +15,7 @@ readonly class CreateIdentityGroup implements CreateIdentityGroupInterface
     ) {
     }
 
-    public function process(CreateIdentityGroupInputPort $input): IdentityGroup
+    public function process(CreateIdentityGroupInputPort $input, CreateIdentityGroupOutputPort $output): void
     {
         $identityGroup = $this->identityGroupFactory->create(
             $input->accountIdentifier(),
@@ -27,6 +26,6 @@ readonly class CreateIdentityGroup implements CreateIdentityGroupInterface
 
         $this->identityGroupRepository->save($identityGroup);
 
-        return $identityGroup;
+        $output->setIdentityGroup($identityGroup);
     }
 }

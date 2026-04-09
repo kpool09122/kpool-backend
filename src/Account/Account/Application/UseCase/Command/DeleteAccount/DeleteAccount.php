@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\Account\Application\UseCase\Command\DeleteAccount;
 
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 
@@ -18,11 +17,12 @@ readonly class DeleteAccount implements DeleteAccountInterface
 
     /**
      * @param DeleteAccountInputPort $input
-     * @return Account
+     * @param DeleteAccountOutputPort $output
+     * @return void
      * @throws AccountNotFoundException
      * @throws AccountDeletionBlockedException
      */
-    public function process(DeleteAccountInputPort $input): Account
+    public function process(DeleteAccountInputPort $input, DeleteAccountOutputPort $output): void
     {
         $account = $this->accountRepository->findById($input->accountIdentifier());
 
@@ -35,6 +35,6 @@ readonly class DeleteAccount implements DeleteAccountInterface
 
         $this->accountRepository->delete($account);
 
-        return $account;
+        $output->setAccount($account);
     }
 }

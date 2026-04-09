@@ -45,4 +45,15 @@ return [
     'invalid_oauth_state' => 'OAuth状態が無効または期限切れです。',
     'social_oauth_error' => 'ソーシャルログインでエラーが発生しました。',
     'invalid_base64_image' => '画像のフォーマットが無効です。',
+
+    // Account
+    'account_already_exists' => 'アカウントは既に存在します。',
+    'account_not_found' => '指定されたアカウントが見つかりません。',
+    'account_deletion_blocked' => '未解決の条件があるため、アカウントを削除できません。',
+    'identity_group_not_found' => '指定されたアイデンティティグループが見つかりません。',
+    'identity_already_member' => 'このアイデンティティは既にこのグループのメンバーです。',
+    'identity_not_member' => 'このアイデンティティはこのグループのメンバーではありません。',
+    'cannot_remove_last_owner' => 'アカウントから最後のオーナーを削除することはできません。',
+    'cannot_delete_default_identity_group' => 'デフォルトのアイデンティティグループは削除できません。',
+    'cannot_delete_last_owner_group' => 'メンバーがいる最後のオーナーグループは削除できません。',
 ];

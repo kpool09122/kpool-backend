@@ -45,4 +45,15 @@ return [
     'invalid_oauth_state' => 'OAuth状态无效或已过期。',
     'social_oauth_error' => '社交登录发生错误。',
     'invalid_base64_image' => '图片格式无效。',
+
+    // Account
+    'account_already_exists' => '账户已存在。',
+    'account_not_found' => '找不到指定的账户。',
+    'account_deletion_blocked' => '由于存在未解决的条件，无法删除账户。',
+    'identity_group_not_found' => '找不到指定的身份组。',
+    'identity_already_member' => '该身份已是此组的成员。',
+    'identity_not_member' => '该身份不是此组的成员。',
+    'cannot_remove_last_owner' => '无法移除账户的最后一个所有者。',
+    'cannot_delete_default_identity_group' => '无法删除默认身份组。',
+    'cannot_delete_last_owner_group' => '无法删除有成员的最后一个所有者组。',
 ];

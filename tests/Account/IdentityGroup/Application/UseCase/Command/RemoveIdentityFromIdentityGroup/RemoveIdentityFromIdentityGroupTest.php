@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\IdentityGroup\Application\Exception\CannotRemoveLastOwnerException;
@@ -13,7 +12,9 @@ use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundExce
 use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroup;
 use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupInput;
 use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupInterface;
+use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupOutput;
 use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
+use Source\Account\IdentityGroup\Domain\Exception\IdentityNotMemberException;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
@@ -71,9 +72,11 @@ class RemoveIdentityFromIdentityGroupTest extends TestCase
         $useCase = $this->app->make(RemoveIdentityFromIdentityGroupInterface::class);
         $input = new RemoveIdentityFromIdentityGroupInput($identityGroupIdentifier, $identityIdentifier);
 
-        $result = $useCase->process($input);
+        $output = new RemoveIdentityFromIdentityGroupOutput();
+        $useCase->process($input, $output);
 
-        $this->assertFalse($result->hasMember($identityIdentifier));
+        $result = $output->toArray();
+        $this->assertNotContains((string) $identityIdentifier, $result['members']);
     }
 
     /**
@@ -99,7 +102,8 @@ class RemoveIdentityFromIdentityGroupTest extends TestCase
 
         $this->expectException(IdentityGroupNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new RemoveIdentityFromIdentityGroupOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -133,10 +137,10 @@ class RemoveIdentityFromIdentityGroupTest extends TestCase
         $useCase = $this->app->make(RemoveIdentityFromIdentityGroupInterface::class);
         $input = new RemoveIdentityFromIdentityGroupInput($identityGroupIdentifier, $identityIdentifier);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Identity is not a member of this group.');
+        $this->expectException(IdentityNotMemberException::class);
 
-        $useCase->process($input);
+        $output = new RemoveIdentityFromIdentityGroupOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -177,7 +181,8 @@ class RemoveIdentityFromIdentityGroupTest extends TestCase
 
         $this->expectException(CannotRemoveLastOwnerException::class);
 
-        $useCase->process($input);
+        $output = new RemoveIdentityFromIdentityGroupOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -220,9 +225,11 @@ class RemoveIdentityFromIdentityGroupTest extends TestCase
         $useCase = $this->app->make(RemoveIdentityFromIdentityGroupInterface::class);
         $input = new RemoveIdentityFromIdentityGroupInput($identityGroupIdentifier, $identityIdentifier);
 
-        $result = $useCase->process($input);
+        $output = new RemoveIdentityFromIdentityGroupOutput();
+        $useCase->process($input, $output);
 
-        $this->assertFalse($result->hasMember($identityIdentifier));
-        $this->assertTrue($result->hasMember($anotherIdentityIdentifier));
+        $result = $output->toArray();
+        $this->assertNotContains((string) $identityIdentifier, $result['members']);
+        $this->assertContains((string) $anotherIdentityIdentifier, $result['members']);
     }
 }

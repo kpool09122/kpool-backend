@@ -6,7 +6,6 @@ namespace Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentit
 
 use Source\Account\IdentityGroup\Application\Exception\CannotRemoveLastOwnerException;
 use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundException;
-use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 
@@ -21,7 +20,7 @@ readonly class RemoveIdentityFromIdentityGroup implements RemoveIdentityFromIden
      * @throws IdentityGroupNotFoundException
      * @throws CannotRemoveLastOwnerException
      */
-    public function process(RemoveIdentityFromIdentityGroupInputPort $input): IdentityGroup
+    public function process(RemoveIdentityFromIdentityGroupInputPort $input, RemoveIdentityFromIdentityGroupOutputPort $output): void
     {
         $identityGroup = $this->identityGroupRepository->findById($input->identityGroupIdentifier());
 
@@ -48,6 +47,6 @@ readonly class RemoveIdentityFromIdentityGroup implements RemoveIdentityFromIden
 
         $this->identityGroupRepository->save($identityGroup);
 
-        return $identityGroup;
+        $output->setIdentityGroup($identityGroup);
     }
 }

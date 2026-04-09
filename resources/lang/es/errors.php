@@ -45,4 +45,15 @@ return [
     'invalid_oauth_state' => 'El estado de OAuth no es válido o ha expirado.',
     'social_oauth_error' => 'Se produjo un error durante el inicio de sesión social.',
     'invalid_base64_image' => 'El formato de imagen no es válido.',
+
+    // Account
+    'account_already_exists' => 'La cuenta ya existe.',
+    'account_not_found' => 'No se encontró la cuenta especificada.',
+    'account_deletion_blocked' => 'La cuenta no se puede eliminar debido a condiciones no resueltas.',
+    'identity_group_not_found' => 'No se encontró el grupo de identidad especificado.',
+    'identity_already_member' => 'La identidad ya es miembro de este grupo.',
+    'identity_not_member' => 'La identidad no es miembro de este grupo.',
+    'cannot_remove_last_owner' => 'No se puede eliminar al último propietario de la cuenta.',
+    'cannot_delete_default_identity_group' => 'No se puede eliminar el grupo de identidad predeterminado.',
+    'cannot_delete_last_owner_group' => 'No se puede eliminar el último grupo de propietarios con miembros.',
 ];

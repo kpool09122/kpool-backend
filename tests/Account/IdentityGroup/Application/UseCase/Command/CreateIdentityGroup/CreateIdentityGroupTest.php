@@ -10,6 +10,7 @@ use Mockery;
 use Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup\CreateIdentityGroup;
 use Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup\CreateIdentityGroupInput;
 use Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup\CreateIdentityGroupInterface;
+use Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup\CreateIdentityGroupOutput;
 use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
 use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
@@ -65,13 +66,15 @@ class CreateIdentityGroupTest extends TestCase
 
         $useCase = $this->app->make(CreateIdentityGroupInterface::class);
 
-        $identityGroup = $useCase->process($testData->input);
+        $output = new CreateIdentityGroupOutput();
+        $useCase->process($testData->input, $output);
 
-        $this->assertSame((string) $testData->identityGroupIdentifier, (string) $identityGroup->identityGroupIdentifier());
-        $this->assertSame((string) $testData->accountIdentifier, (string) $identityGroup->accountIdentifier());
-        $this->assertSame($testData->name, $identityGroup->name());
-        $this->assertSame($testData->role, $identityGroup->role());
-        $this->assertFalse($identityGroup->isDefault());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->identityGroupIdentifier, $result['identityGroupIdentifier']);
+        $this->assertSame((string) $testData->accountIdentifier, $result['accountIdentifier']);
+        $this->assertSame($testData->name, $result['name']);
+        $this->assertSame($testData->role->value, $result['role']);
+        $this->assertFalse($result['isDefault']);
     }
 
     private function createDummyTestData(): CreateIdentityGroupTestData

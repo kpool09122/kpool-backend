@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\IdentityGroup\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Account\IdentityGroup\Domain\Exception\IdentityAlreadyMemberException;
+use Source\Account\IdentityGroup\Domain\Exception\IdentityNotMemberException;
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -77,7 +78,7 @@ class IdentityGroup
     public function addMember(IdentityIdentifier $identityIdentifier): void
     {
         if ($this->hasMember($identityIdentifier)) {
-            throw new DomainException('Identity is already a member of this group.');
+            throw new IdentityAlreadyMemberException();
         }
 
         $this->members[(string) $identityIdentifier] = $identityIdentifier;
@@ -86,7 +87,7 @@ class IdentityGroup
     public function removeMember(IdentityIdentifier $identityIdentifier): void
     {
         if (! $this->hasMember($identityIdentifier)) {
-            throw new DomainException('Identity is not a member of this group.');
+            throw new IdentityNotMemberException();
         }
 
         unset($this->members[(string) $identityIdentifier]);

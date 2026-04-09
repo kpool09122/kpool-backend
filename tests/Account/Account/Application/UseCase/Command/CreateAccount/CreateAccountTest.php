@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountAlreadyExistsException;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
+use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -95,12 +96,14 @@ class CreateAccountTest extends TestCase
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
-        $account = $useCase->process($testData->input);
+        $output = new CreateAccountOutput();
+        $useCase->process($testData->input, $output);
 
-        $this->assertSame((string) $testData->identifier, (string) $account->accountIdentifier());
-        $this->assertSame((string) $testData->email, (string) $account->email());
-        $this->assertSame($testData->accountType, $account->type());
-        $this->assertSame((string) $testData->accountName, (string) $account->name());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
+        $this->assertSame((string) $testData->email, $result['email']);
+        $this->assertSame($testData->accountType->value, $result['type']);
+        $this->assertSame((string) $testData->accountName, $result['name']);
         $this->assertTrue($testData->identityGroup->hasMember($testData->identityIdentifier));
     }
 
@@ -149,9 +152,11 @@ class CreateAccountTest extends TestCase
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
-        $account = $useCase->process($testData->input);
+        $output = new CreateAccountOutput();
+        $useCase->process($testData->input, $output);
 
-        $this->assertSame((string) $testData->identifier, (string) $account->accountIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->identifier, $result['accountIdentifier']);
         $this->assertSame(0, $testData->identityGroup->memberCount());
     }
 
@@ -191,7 +196,8 @@ class CreateAccountTest extends TestCase
 
         $this->expectException(AccountAlreadyExistsException::class);
 
-        $useCase->process($input);
+        $output = new CreateAccountOutput();
+        $useCase->process($input, $output);
     }
 
     private function createDummyAccountTestData(bool $includeIdentityIdentifier = true): CreateAccountTestData
