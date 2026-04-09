@@ -10,6 +10,7 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInput;
 use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
+use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountDeletionBlockedException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
@@ -62,12 +63,14 @@ class DeleteAccountTest extends TestCase
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $useCase = $this->app->make(DeleteAccountInterface::class);
-        $account = $useCase->process($input);
+        $output = new DeleteAccountOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $dummyData->identifier, (string) $account->accountIdentifier());
-        $this->assertSame((string) $dummyData->email, (string) $account->email());
-        $this->assertSame($dummyData->accountType, $account->type());
-        $this->assertSame((string) $dummyData->accountName, (string) $account->name());
+        $result = $output->toArray();
+        $this->assertSame((string) $dummyData->identifier, $result['accountIdentifier']);
+        $this->assertSame((string) $dummyData->email, $result['email']);
+        $this->assertSame($dummyData->accountType->value, $result['type']);
+        $this->assertSame((string) $dummyData->accountName, $result['name']);
     }
 
     /**
@@ -91,7 +94,8 @@ class DeleteAccountTest extends TestCase
         $useCase = $this->app->make(DeleteAccountInterface::class);
 
         $this->expectException(AccountNotFoundException::class);
-        $useCase->process($input);
+        $output = new DeleteAccountOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -122,7 +126,8 @@ class DeleteAccountTest extends TestCase
         $this->expectException(AccountDeletionBlockedException::class);
 
         try {
-            $useCase->process($input);
+            $output = new DeleteAccountOutput();
+            $useCase->process($input, $output);
             $this->fail('AccountDeletionBlockedException was not thrown.');
         } catch (AccountDeletionBlockedException $exception) {
             $this->assertEquals(

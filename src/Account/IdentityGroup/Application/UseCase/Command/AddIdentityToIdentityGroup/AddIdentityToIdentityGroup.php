@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup;
 
 use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundException;
-use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 
 readonly class AddIdentityToIdentityGroup implements AddIdentityToIdentityGroupInterface
@@ -18,7 +17,7 @@ readonly class AddIdentityToIdentityGroup implements AddIdentityToIdentityGroupI
     /**
      * @throws IdentityGroupNotFoundException
      */
-    public function process(AddIdentityToIdentityGroupInputPort $input): IdentityGroup
+    public function process(AddIdentityToIdentityGroupInputPort $input, AddIdentityToIdentityGroupOutputPort $output): void
     {
         $identityGroup = $this->identityGroupRepository->findById($input->identityGroupIdentifier());
 
@@ -30,6 +29,6 @@ readonly class AddIdentityToIdentityGroup implements AddIdentityToIdentityGroupI
 
         $this->identityGroupRepository->save($identityGroup);
 
-        return $identityGroup;
+        $output->setIdentityGroup($identityGroup);
     }
 }

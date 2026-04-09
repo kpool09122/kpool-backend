@@ -45,4 +45,15 @@ return [
     'invalid_oauth_state' => 'The OAuth state is invalid or has expired.',
     'social_oauth_error' => 'An error occurred during social login.',
     'invalid_base64_image' => 'The image format is invalid.',
+
+    // Account
+    'account_already_exists' => 'The account already exists.',
+    'account_not_found' => 'The specified account was not found.',
+    'account_deletion_blocked' => 'The account cannot be deleted due to unresolved conditions.',
+    'identity_group_not_found' => 'The specified identity group was not found.',
+    'identity_already_member' => 'The identity is already a member of this group.',
+    'identity_not_member' => 'The identity is not a member of this group.',
+    'cannot_remove_last_owner' => 'Cannot remove the last owner from the account.',
+    'cannot_delete_default_identity_group' => 'Cannot delete the default identity group.',
+    'cannot_delete_last_owner_group' => 'Cannot delete the last owner group with members.',
 ];

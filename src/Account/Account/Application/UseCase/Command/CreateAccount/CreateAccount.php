@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
 use Source\Account\Account\Application\Exception\AccountAlreadyExistsException;
-use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
@@ -26,10 +25,11 @@ readonly class CreateAccount implements CreateAccountInterface
 
     /**
      * @param CreateAccountInputPort $input
-     * @return Account
+     * @param CreateAccountOutputPort $output
+     * @return void
      * @throws AccountAlreadyExistsException
      */
-    public function process(CreateAccountInputPort $input): Account
+    public function process(CreateAccountInputPort $input, CreateAccountOutputPort $output): void
     {
         $account = $this->accountRepository->findByEmail($input->email());
 
@@ -58,6 +58,6 @@ readonly class CreateAccount implements CreateAccountInterface
 
         $this->identityGroupRepository->save($identityGroup);
 
-        return $account;
+        $output->setAccount($account);
     }
 }

@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Tests\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundException;
 use Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroup;
 use Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroupInput;
 use Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroupInterface;
+use Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroupOutput;
 use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
+use Source\Account\IdentityGroup\Domain\Exception\IdentityAlreadyMemberException;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
@@ -69,9 +70,11 @@ class AddIdentityToIdentityGroupTest extends TestCase
         $useCase = $this->app->make(AddIdentityToIdentityGroupInterface::class);
         $input = new AddIdentityToIdentityGroupInput($identityGroupIdentifier, $identityIdentifier);
 
-        $result = $useCase->process($input);
+        $output = new AddIdentityToIdentityGroupOutput();
+        $useCase->process($input, $output);
 
-        $this->assertTrue($result->hasMember($identityIdentifier));
+        $result = $output->toArray();
+        $this->assertContains((string) $identityIdentifier, $result['members']);
     }
 
     /**
@@ -97,7 +100,8 @@ class AddIdentityToIdentityGroupTest extends TestCase
 
         $this->expectException(IdentityGroupNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new AddIdentityToIdentityGroupOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -132,9 +136,9 @@ class AddIdentityToIdentityGroupTest extends TestCase
         $useCase = $this->app->make(AddIdentityToIdentityGroupInterface::class);
         $input = new AddIdentityToIdentityGroupInput($identityGroupIdentifier, $identityIdentifier);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Identity is already a member of this group.');
+        $this->expectException(IdentityAlreadyMemberException::class);
 
-        $useCase->process($input);
+        $output = new AddIdentityToIdentityGroupOutput();
+        $useCase->process($input, $output);
     }
 }
