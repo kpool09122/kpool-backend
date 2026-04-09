@@ -5,7 +5,8 @@ composer.lock
 # IDE
 /.idea/
 /.vscode/
-/.claude
+/.claude/*
+!/.claude/skills/
 *.swp
 *.swo
 _ide_helper.php
