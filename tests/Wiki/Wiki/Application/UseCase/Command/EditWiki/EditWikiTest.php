@@ -22,6 +22,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
@@ -122,15 +123,14 @@ class EditWikiTest extends TestCase
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $editWiki = $this->app->make(EditWikiInterface::class);
-        $wiki = $editWiki->process($input);
+        $output = new EditWikiOutput();
+        $editWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame((string) $testData->wikiIdentifier, (string) $wiki->wikiIdentifier());
-        $this->assertSame($updatedBasic, $wiki->basic());
-        $this->assertSame($updatedSections, $wiki->sections());
-        $this->assertSame((string) $updatedThemeColor, (string) $wiki->themeColor());
-        $this->assertSame($testData->language->value, $wiki->language()->value);
-        $this->assertSame($testData->resourceType->value, $wiki->resourceType()->value);
-        $this->assertSame($testData->status, $wiki->status());
+        $this->assertSame($testData->language->value, $result['language']);
+        $this->assertSame((string) $updatedBasic->name(), $result['name']);
+        $this->assertSame($testData->resourceType->value, $result['resourceType']);
+        $this->assertSame($testData->status->value, $result['status']);
     }
 
     /**
@@ -173,7 +173,7 @@ class EditWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $editWiki = $this->app->make(EditWikiInterface::class);
-        $editWiki->process($input);
+        $editWiki->process($input, new EditWikiOutput());
     }
 
     /**
@@ -219,7 +219,7 @@ class EditWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $editWiki = $this->app->make(EditWikiInterface::class);
-        $editWiki->process($input);
+        $editWiki->process($input, new EditWikiOutput());
     }
 
     /**
@@ -274,7 +274,7 @@ class EditWikiTest extends TestCase
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $editWiki = $this->app->make(EditWikiInterface::class);
-        $editWiki->process($input);
+        $editWiki->process($input, new EditWikiOutput());
     }
 
     /**
@@ -325,7 +325,7 @@ class EditWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $editWiki = $this->app->make(EditWikiInterface::class);
-        $editWiki->process($input);
+        $editWiki->process($input, new EditWikiOutput());
     }
 
     /**

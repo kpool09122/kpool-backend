@@ -11,7 +11,6 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -26,12 +25,13 @@ readonly class MergeWiki implements MergeWikiInterface
 
     /**
      * @param MergeWikiInputPort $input
-     * @return DraftWiki
+     * @param MergeWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws UnauthorizedException
      * @throws PrincipalNotFoundException
      */
-    public function process(MergeWikiInputPort $input): DraftWiki
+    public function process(MergeWikiInputPort $input, MergeWikiOutputPort $output): void
     {
         $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
 
@@ -69,6 +69,6 @@ readonly class MergeWiki implements MergeWikiInterface
 
         $this->draftWikiRepository->save($wiki);
 
-        return $wiki;
+        $output->setDraftWiki($wiki);
     }
 }

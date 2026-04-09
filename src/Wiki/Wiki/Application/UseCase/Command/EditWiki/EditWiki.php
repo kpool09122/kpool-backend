@@ -11,7 +11,6 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -26,12 +25,13 @@ readonly class EditWiki implements EditWikiInterface
 
     /**
      * @param EditWikiInputPort $input
-     * @return DraftWiki
+     * @param EditWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(EditWikiInputPort $input): DraftWiki
+    public function process(EditWikiInputPort $input, EditWikiOutputPort $output): void
     {
         $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
 
@@ -67,6 +67,6 @@ readonly class EditWiki implements EditWikiInterface
 
         $this->draftWikiRepository->save($wiki);
 
-        return $wiki;
+        $output->setDraftWiki($wiki);
     }
 }

@@ -7,16 +7,16 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 
 interface TranslateWikiInterface
 {
     /**
      * @param TranslateWikiInputPort $input
-     * @return DraftWiki[]
+     * @param TranslateWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(TranslateWikiInputPort $input): array;
+    public function process(TranslateWikiInputPort $input, TranslateWikiOutputPort $output): void;
 }

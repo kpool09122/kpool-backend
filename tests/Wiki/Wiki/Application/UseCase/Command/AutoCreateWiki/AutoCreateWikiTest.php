@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiOutput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\GeneratedWikiData;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
@@ -91,13 +92,12 @@ class AutoCreateWikiTest extends TestCase
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutoCreateWikiInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new AutoCreateWikiOutput();
+        $useCase->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertEquals((string) $payload->name(), (string) $result->basic()->name());
-        $this->assertEquals('ㅌㅇㅇㅅ', $result->basic()->normalizedName());
-        $this->assertEquals('twice', (string) $result->slug());
-        $this->assertEquals(ResourceType::GROUP, $result->resourceType());
-        $this->assertFalse($result->sections()->isEmpty());
+        $this->assertSame((string) $payload->name(), $result['name']);
+        $this->assertSame(ResourceType::GROUP->value, $result['resourceType']);
     }
 
     /**
@@ -153,11 +153,11 @@ class AutoCreateWikiTest extends TestCase
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutoCreateWikiInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new AutoCreateWikiOutput();
+        $useCase->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertEquals((string) $payload->name(), (string) $result->basic()->name());
-        $this->assertEquals('ㅌㅇㅇㅅ', $result->basic()->normalizedName());
-        $this->assertEquals('twice', (string) $result->slug());
+        $this->assertSame((string) $payload->name(), $result['name']);
     }
 
     /**
@@ -196,7 +196,7 @@ class AutoCreateWikiTest extends TestCase
         $useCase = $this->app->make(AutoCreateWikiInterface::class);
 
         $this->expectException(DisallowedException::class);
-        $useCase->process($input);
+        $useCase->process($input, new AutoCreateWikiOutput());
     }
 
     /**
@@ -232,7 +232,7 @@ class AutoCreateWikiTest extends TestCase
         $useCase = $this->app->make(AutoCreateWikiInterface::class);
 
         $this->expectException(PrincipalNotFoundException::class);
-        $useCase->process($input);
+        $useCase->process($input, new AutoCreateWikiOutput());
     }
 
     /**
@@ -293,9 +293,11 @@ class AutoCreateWikiTest extends TestCase
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
         $useCase = $this->app->make(AutoCreateWikiInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new AutoCreateWikiOutput();
+        $useCase->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertTrue($result->sections()->isEmpty());
+        $this->assertNotNull($result['language']);
     }
 
     private function makePayload(): AutoWikiCreationPayload

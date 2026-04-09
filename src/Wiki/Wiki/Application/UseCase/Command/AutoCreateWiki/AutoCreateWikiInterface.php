@@ -6,15 +6,15 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki;
 
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 
 interface AutoCreateWikiInterface
 {
     /**
      * @param AutoCreateWikiInputPort $input
-     * @return DraftWiki
+     * @param AutoCreateWikiOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(AutoCreateWikiInputPort $input): DraftWiki;
+    public function process(AutoCreateWikiInputPort $input, AutoCreateWikiOutputPort $output): void;
 }

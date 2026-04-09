@@ -25,6 +25,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -126,9 +127,10 @@ class RejectWikiTest extends TestCase
         $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
         $rejectWiki = $this->app->make(RejectWikiInterface::class);
-        $wiki = $rejectWiki->process($input);
-        $this->assertNotSame($dummyRejectWiki->status, $wiki->status());
-        $this->assertSame(ApprovalStatus::Rejected, $wiki->status());
+        $output = new RejectWikiOutput();
+        $rejectWiki->process($input, $output);
+        $result = $output->toArray();
+        $this->assertSame(ApprovalStatus::Rejected->value, $result['status']);
     }
 
     /**
@@ -174,7 +176,7 @@ class RejectWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $rejectWiki = $this->app->make(RejectWikiInterface::class);
-        $rejectWiki->process($input);
+        $rejectWiki->process($input, new RejectWikiOutput());
     }
 
     /**
@@ -223,7 +225,7 @@ class RejectWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $rejectWiki = $this->app->make(RejectWikiInterface::class);
-        $rejectWiki->process($input);
+        $rejectWiki->process($input, new RejectWikiOutput());
     }
 
     /**
@@ -269,7 +271,7 @@ class RejectWikiTest extends TestCase
 
         $this->expectException(InvalidStatusException::class);
         $rejectWiki = $this->app->make(RejectWikiInterface::class);
-        $rejectWiki->process($input);
+        $rejectWiki->process($input, new RejectWikiOutput());
     }
 
     /**
@@ -323,7 +325,7 @@ class RejectWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $rejectWiki = $this->app->make(RejectWikiInterface::class);
-        $rejectWiki->process($input);
+        $rejectWiki->process($input, new RejectWikiOutput());
     }
 
     /**

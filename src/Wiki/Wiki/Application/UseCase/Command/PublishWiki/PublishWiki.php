@@ -16,7 +16,6 @@ use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
@@ -47,14 +46,15 @@ readonly class PublishWiki implements PublishWikiInterface
 
     /**
      * @param PublishWikiInputPort $input
-     * @return Wiki
+     * @param PublishWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws InvalidStatusException
      * @throws InconsistentVersionException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(PublishWikiInputPort $input): Wiki
+    public function process(PublishWikiInputPort $input, PublishWikiOutputPort $output): void
     {
         $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
 
@@ -157,6 +157,6 @@ readonly class PublishWiki implements PublishWikiInterface
 
         $this->draftWikiRepository->delete($wiki);
 
-        return $publishedWiki;
+        $output->setWiki($publishedWiki);
     }
 }

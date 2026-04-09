@@ -56,4 +56,12 @@ return [
     'cannot_remove_last_owner' => 'アカウントから最後のオーナーを削除することはできません。',
     'cannot_delete_default_identity_group' => 'デフォルトのアイデンティティグループは削除できません。',
     'cannot_delete_last_owner_group' => 'メンバーがいる最後のオーナーグループは削除できません。',
+
+    // Wiki
+    'unauthorized' => 'この操作は認可されていません。',
+    'inconsistent_version' => '翻訳セット内の公開Wikiのバージョンが一致しません。',
+    'snapshot_not_found' => '指定されたスナップショットが見つかりません。',
+    'version_mismatch' => '翻訳セット内でバージョンの不一致が検出されました。',
+    'invalid_rollback_target_version' => 'ロールバック先のバージョンが無効です。',
+    'invalid_status' => 'ステータスが無効です。',
 ];

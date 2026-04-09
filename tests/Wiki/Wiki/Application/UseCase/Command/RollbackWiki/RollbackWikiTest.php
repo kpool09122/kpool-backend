@@ -25,6 +25,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Entity\WikiSnapshot;
@@ -156,12 +157,13 @@ class RollbackWikiTest extends TestCase
         $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $result = $rollbackWiki->process($input);
+        $output = new RollbackWikiOutput();
+        $rollbackWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertCount(1, $result);
-        $this->assertSame((string) $wikiIdentifier, (string) $result[0]->wikiIdentifier());
-        $this->assertSame((string) $snapshot->basic()->name(), (string) $result[0]->basic()->name());
-        $this->assertSame(6, $result[0]->version()->value());
+        $this->assertCount(1, $result['wikis']);
+        $this->assertSame((string) $snapshot->basic()->name(), $result['wikis'][0]['name']);
+        $this->assertSame(6, $result['wikis'][0]['version']);
     }
 
     /**
@@ -260,9 +262,11 @@ class RollbackWikiTest extends TestCase
         $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
 
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $result = $rollbackWiki->process($input);
+        $output = new RollbackWikiOutput();
+        $rollbackWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertCount(2, $result);
+        $this->assertCount(2, $result['wikis']);
     }
 
     /**
@@ -321,7 +325,7 @@ class RollbackWikiTest extends TestCase
         $this->expectException(DisallowedException::class);
         $this->setPolicyEvaluatorResult(false);
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $rollbackWiki->process($input);
+        $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
     /**
@@ -361,7 +365,7 @@ class RollbackWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $rollbackWiki->process($input);
+        $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
     /**
@@ -411,7 +415,7 @@ class RollbackWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $rollbackWiki->process($input);
+        $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
     /**
@@ -481,7 +485,7 @@ class RollbackWikiTest extends TestCase
 
         $this->expectException(SnapshotNotFoundException::class);
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $rollbackWiki->process($input);
+        $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
     /**
@@ -544,7 +548,7 @@ class RollbackWikiTest extends TestCase
 
         $this->expectException(VersionMismatchException::class);
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $rollbackWiki->process($input);
+        $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
     /**
@@ -602,7 +606,7 @@ class RollbackWikiTest extends TestCase
 
         $this->expectException(InvalidRollbackTargetVersionException::class);
         $rollbackWiki = $this->app->make(RollbackWikiInterface::class);
-        $rollbackWiki->process($input);
+        $rollbackWiki->process($input, new RollbackWikiOutput());
     }
 
     private function createWiki(

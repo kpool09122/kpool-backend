@@ -14,7 +14,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -34,13 +33,14 @@ readonly class RejectWiki implements RejectWikiInterface
 
     /**
      * @param RejectWikiInputPort $input
-     * @return DraftWiki
+     * @param RejectWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws InvalidStatusException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(RejectWikiInputPort $input): DraftWiki
+    public function process(RejectWikiInputPort $input, RejectWikiOutputPort $output): void
     {
         $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
 
@@ -93,6 +93,6 @@ readonly class RejectWiki implements RejectWikiInterface
         );
         $this->wikiHistoryRepository->save($history);
 
-        return $wiki;
+        $output->setDraftWiki($wiki);
     }
 }

@@ -14,7 +14,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -34,13 +33,14 @@ readonly class SubmitWiki implements SubmitWikiInterface
 
     /**
      * @param SubmitWikiInputPort $input
-     * @return DraftWiki
+     * @param SubmitWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws InvalidStatusException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(SubmitWikiInputPort $input): DraftWiki
+    public function process(SubmitWikiInputPort $input, SubmitWikiOutputPort $output): void
     {
         $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
 
@@ -94,6 +94,6 @@ readonly class SubmitWiki implements SubmitWikiInterface
         );
         $this->wikiHistoryRepository->save($history);
 
-        return $wiki;
+        $output->setDraftWiki($wiki);
     }
 }

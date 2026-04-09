@@ -15,7 +15,6 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -38,7 +37,8 @@ readonly class RollbackWiki implements RollbackWikiInterface
 
     /**
      * @param RollbackWikiInputPort $input
-     * @return Wiki[]
+     * @param RollbackWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws SnapshotNotFoundException
      * @throws VersionMismatchException
@@ -46,7 +46,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
      * @throws PrincipalNotFoundException
      * @throws DisallowedException
      */
-    public function process(RollbackWikiInputPort $input): array
+    public function process(RollbackWikiInputPort $input, RollbackWikiOutputPort $output): void
     {
         // 1. Wiki存在確認
         $wiki = $this->wikiRepository->findById($input->wikiIdentifier());
@@ -154,6 +154,6 @@ readonly class RollbackWiki implements RollbackWikiInterface
             $rolledBackWikis[] = $w;
         }
 
-        return $rolledBackWikis;
+        $output->setWikis($rolledBackWikis);
     }
 }

@@ -12,7 +12,6 @@ use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
@@ -33,11 +32,12 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
 
     /**
      * @param AutoCreateWikiInputPort $input
-     * @return DraftWiki
+     * @param AutoCreateWikiOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(AutoCreateWikiInputPort $input): DraftWiki
+    public function process(AutoCreateWikiInputPort $input, AutoCreateWikiOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null) {
@@ -90,6 +90,6 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
 
         $this->draftWikiRepository->save($draftWiki);
 
-        return $draftWiki;
+        $output->setDraftWiki($draftWiki);
     }
 }

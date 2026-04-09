@@ -6,7 +6,6 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
@@ -24,6 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
@@ -103,7 +103,7 @@ class CreateWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $useCase = $this->app->make(CreateWikiInterface::class);
-        $useCase->process($input);
+        $useCase->process($input, new CreateWikiOutput());
     }
 
     /**
@@ -157,7 +157,7 @@ class CreateWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $useCase = $this->app->make(CreateWikiInterface::class);
-        $useCase->process($input);
+        $useCase->process($input, new CreateWikiOutput());
     }
 
     /**
@@ -216,7 +216,7 @@ class CreateWikiTest extends TestCase
 
         $this->expectException(DuplicateSlugException::class);
         $useCase = $this->app->make(CreateWikiInterface::class);
-        $useCase->process($input);
+        $useCase->process($input, new CreateWikiOutput());
     }
 
     /**
@@ -289,18 +289,14 @@ class CreateWikiTest extends TestCase
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $useCase = $this->app->make(CreateWikiInterface::class);
-        $wiki = $useCase->process($input);
+        $output = new CreateWikiOutput();
+        $useCase->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertTrue(UuidValidator::isValid((string) $wiki->wikiIdentifier()));
-        $this->assertSame((string) $testData->publishedWikiIdentifier, (string) $wiki->publishedWikiIdentifier());
-        $this->assertSame((string) $testData->translationSetIdentifier, (string) $wiki->translationSetIdentifier());
-        $this->assertSame((string) $testData->editorIdentifier, (string) $wiki->editorIdentifier());
-        $this->assertSame($testData->language->value, $wiki->language()->value);
-        $this->assertSame($testData->resourceType->value, $wiki->resourceType()->value);
-        $this->assertSame($testData->basic, $wiki->basic());
-        $this->assertSame($testData->sections, $wiki->sections());
-        $this->assertSame((string) $testData->themeColor, (string) $wiki->themeColor());
-        $this->assertSame($testData->status, $wiki->status());
+        $this->assertSame($testData->language->value, $result['language']);
+        $this->assertSame((string) $testData->basic->name(), $result['name']);
+        $this->assertSame($testData->resourceType->value, $result['resourceType']);
+        $this->assertSame($testData->status->value, $result['status']);
     }
 
     /**

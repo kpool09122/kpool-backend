@@ -56,4 +56,12 @@ return [
     'cannot_remove_last_owner' => '无法移除账户的最后一个所有者。',
     'cannot_delete_default_identity_group' => '无法删除默认身份组。',
     'cannot_delete_last_owner_group' => '无法删除有成员的最后一个所有者组。',
+
+    // Wiki
+    'unauthorized' => '此操作未获授权。',
+    'inconsistent_version' => '翻译集中已发布的Wiki版本不一致。',
+    'snapshot_not_found' => '未找到指定的快照。',
+    'version_mismatch' => '翻译集中检测到版本不匹配。',
+    'invalid_rollback_target_version' => '目标版本必须小于当前版本。',
+    'invalid_status' => '此操作的状态无效。',
 ];

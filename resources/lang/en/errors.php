@@ -56,4 +56,12 @@ return [
     'cannot_remove_last_owner' => 'Cannot remove the last owner from the account.',
     'cannot_delete_default_identity_group' => 'Cannot delete the default identity group.',
     'cannot_delete_last_owner_group' => 'Cannot delete the last owner group with members.',
+
+    // Wiki
+    'unauthorized' => 'This action is not authorized.',
+    'inconsistent_version' => 'Published wiki versions in the translation set are not consistent.',
+    'snapshot_not_found' => 'The specified snapshot was not found.',
+    'version_mismatch' => 'Version mismatch detected in translation set.',
+    'invalid_rollback_target_version' => 'Target version must be less than current version.',
+    'invalid_status' => 'The status is invalid for this operation.',
 ];
