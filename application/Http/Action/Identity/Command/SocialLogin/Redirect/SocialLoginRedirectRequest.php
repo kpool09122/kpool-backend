@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Application\Http\Action\Identity\Command\SocialLogin\Redirect;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class SocialLoginRedirectRequest extends FormRequest
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'accountType' => ['nullable', 'string'],
+            'invitationToken' => ['nullable', 'string'],
+            'language' => ['nullable', 'string'],
+        ];
+    }
+
+    public function provider(): string
+    {
+        return (string) $this->route('provider');
+    }
+
+    public function accountType(): ?string
+    {
+        $value = $this->input('accountType');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    public function invitationToken(): ?string
+    {
+        $value = $this->input('invitationToken');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    public function language(): string
+    {
+        return (string) ($this->input('language') ?? 'en');
+    }
+}

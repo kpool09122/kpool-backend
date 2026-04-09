@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\Identity\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Identity\Domain\Exception\InvalidCredentialsException;
+use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
@@ -99,25 +100,25 @@ class Identity
     }
 
     /**
-     * @throws DomainException
+     * @throws InvalidCredentialsException
      * @return void
      */
     public function isEmailVerified(): void
     {
         if ($this->emailVerifiedAt === null) {
-            throw new DomainException('メールアドレスまたはパスワードが正しくありません');
+            throw new InvalidCredentialsException('メールアドレスまたはパスワードが正しくありません');
         }
     }
 
     /**
      * @param PlainPassword $plainPassword
      * @return void
-     * @throws DomainException
+     * @throws InvalidCredentialsException
      */
     public function verifyPassword(PlainPassword $plainPassword): void
     {
         if (! password_verify((string)$plainPassword, (string)$this->hashedPassword)) {
-            throw new DomainException('メールアドレスまたはパスワードが正しくありません');
+            throw new InvalidCredentialsException('メールアドレスまたはパスワードが正しくありません');
         }
     }
 
@@ -133,7 +134,7 @@ class Identity
     {
         foreach ($this->socialConnections as $existing) {
             if ($existing->equals($connection)) {
-                throw new DomainException('Social connection already exists.');
+                throw new SocialConnectionAlreadyExistsException();
             }
         }
 

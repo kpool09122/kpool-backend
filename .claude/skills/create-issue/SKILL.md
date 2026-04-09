@@ -108,10 +108,11 @@ argument-hint: "[任意: issueの概要を一言で]"
 
 ### Issue作成手順
 
-1. `gh issue create` でIssueを作成
+1. `gh issue create --repo kpool09122/kpool-backend --title "..." --body-file <tmpファイル>` でIssueを作成（長文は一時ファイル経由で）
 2. 適切なラベルを付与（コンテキスト由来、タイプ由来）
-3. GitHub Projects #1 に追加し、Statusを設定
-4. 作成したIssueのURLをユーザーに報告
+3. GitHub Projects #1 に追加: `gh project item-add 1 --owner kpool09122 --url <IssueのURL>`
+4. 必要に応じてStatusを設定
+5. 作成したIssueのURLをユーザーに報告
 
 ### ラベルルール
 - **コンテキスト**: 対象コンテキスト名を小文字でラベル付与（該当するものがあれば）

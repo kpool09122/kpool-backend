@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Tests\Identity\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Domain\Entity\Identity;
+use Source\Identity\Domain\Exception\InvalidCredentialsException;
+use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
@@ -60,7 +61,7 @@ class IdentityTest extends TestCase
     {
         $identity = $this->createIdentity(verifiedAt: null);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidCredentialsException::class);
 
         $identity->isEmailVerified();
     }
@@ -74,7 +75,7 @@ class IdentityTest extends TestCase
     {
         $identity = $this->createIdentity();
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidCredentialsException::class);
 
         $identity->verifyPassword(new PlainPassword('WrongPass1!'));
     }
@@ -100,7 +101,7 @@ class IdentityTest extends TestCase
     public function testConnectionWhenAddingDuplicateSocialConnection(): void
     {
         $identity = $this->createIdentity();
-        $this->expectException(DomainException::class);
+        $this->expectException(SocialConnectionAlreadyExistsException::class);
         $identity->addSocialConnection(new SocialConnection(SocialProvider::GOOGLE, 'provider-user-id'));
     }
 

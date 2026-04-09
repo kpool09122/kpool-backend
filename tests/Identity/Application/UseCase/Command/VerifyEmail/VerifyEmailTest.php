@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Tests\Identity\Application\UseCase\Command\VerifyEmail;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmail;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInput;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
+use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailOutput;
 use Source\Identity\Domain\Entity\AuthCodeSession;
+use Source\Identity\Domain\Exception\AuthCodeExpiredException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
+use Source\Identity\Domain\Exception\InvalidAuthCodeException;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
@@ -81,10 +83,11 @@ class VerifyEmailTest extends TestCase
         $useCase = $this->app->make(VerifyEmailInterface::class);
         $input = new VerifyEmailInput($email, $authCode);
 
-        $result = $useCase->process($input);
+        $output = new VerifyEmailOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($verifiedSession, $result);
-        $this->assertSame($verifiedAt, $result->verifiedAt());
+        $this->assertSame((string) $email, $output->toArray()['email']);
+        $this->assertNotNull($output->toArray()['verifiedAt']);
     }
 
     /**
@@ -116,7 +119,8 @@ class VerifyEmailTest extends TestCase
 
         $this->expectException(AuthCodeSessionNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new VerifyEmailOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -149,10 +153,11 @@ class VerifyEmailTest extends TestCase
         $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
         $useCase = $this->app->make(VerifyEmailInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(AuthCodeExpiredException::class);
         $this->expectExceptionMessage('認証コードの有効期限が切れています。');
 
-        $useCase->process($input);
+        $output = new VerifyEmailOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -186,9 +191,10 @@ class VerifyEmailTest extends TestCase
         $this->app->instance(AuthCodeSessionFactoryInterface::class, $factory);
         $useCase = $this->app->make(VerifyEmailInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidAuthCodeException::class);
         $this->expectExceptionMessage('認証コードが一致しません。');
 
-        $useCase->process($input);
+        $output = new VerifyEmailOutput();
+        $useCase->process($input, $output);
     }
 }

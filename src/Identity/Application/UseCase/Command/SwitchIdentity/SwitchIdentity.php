@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SwitchIdentity;
 
-use DomainException;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
-use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 
@@ -22,10 +21,12 @@ readonly class SwitchIdentity implements SwitchIdentityInterface
 
     /**
      * @param SwitchIdentityInputPort $input
-     * @return Identity
+     * @param SwitchIdentityOutputPort $output
+     * @return void
      * @throws IdentityNotFoundException
+     * @throws InvalidDelegationException
      */
-    public function process(SwitchIdentityInputPort $input): Identity
+    public function process(SwitchIdentityInputPort $input, SwitchIdentityOutputPort $output): void
     {
         $currentIdentity = $this->identityRepository->findById($input->currentIdentityIdentifier());
 
@@ -46,18 +47,20 @@ readonly class SwitchIdentity implements SwitchIdentityInterface
         $targetDelegationIdentifier = $input->targetDelegationIdentifier();
         if ($targetDelegationIdentifier === null) {
             if (! $currentIdentity->isDelegatedIdentity()) {
-                throw new DomainException('Already using original identity.');
+                throw new InvalidDelegationException('Already using original identity.');
             }
 
             $this->authService->logout();
             $this->authService->login($originalIdentity);
 
-            return $originalIdentity;
+            $output->setIdentity($originalIdentity);
+
+            return;
         }
 
         // Validate delegation
         if (! $this->delegationValidator->isValid($targetDelegationIdentifier)) {
-            throw new DomainException('Delegation is not valid.');
+            throw new InvalidDelegationException('Delegation is not valid.');
         }
 
         // Find the delegated identity
@@ -69,12 +72,12 @@ readonly class SwitchIdentity implements SwitchIdentityInterface
 
         // Verify the delegated identity belongs to the original identity
         if ((string) $delegatedIdentity->originalIdentityIdentifier() !== (string) $originalIdentity->identityIdentifier()) {
-            throw new DomainException('Delegation does not belong to the current identity.');
+            throw new InvalidDelegationException('Delegation does not belong to the current identity.');
         }
 
         $this->authService->logout();
         $this->authService->login($delegatedIdentity);
 
-        return $delegatedIdentity;
+        $output->setIdentity($delegatedIdentity);
     }
 }

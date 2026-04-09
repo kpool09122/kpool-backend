@@ -30,4 +30,19 @@ return [
     'payment_amount_mismatch_for_invoice' => '付款金额与发票总额不匹配。',
     'transfer_not_found' => '找不到指定的转账。',
     'settlement_schedule_not_found' => '找不到指定的结算计划。',
+
+    // Identity
+    'invalid_credentials' => '邮箱地址或密码不正确。',
+    'social_connection_already_exists' => '该社交账号已关联。',
+    'auth_code_expired' => '验证码已过期。',
+    'invalid_auth_code' => '验证码不匹配。',
+    'password_mismatch' => '密码不一致。',
+    'invalid_delegation' => '委托操作无效。',
+    'identity_not_found' => '找不到指定的身份。',
+    'already_user_exists' => '用户已存在。',
+    'unauthorized_email' => '邮箱地址尚未验证。',
+    'auth_code_session_not_found' => '找不到验证码会话。',
+    'invalid_oauth_state' => 'OAuth状态无效或已过期。',
+    'social_oauth_error' => '社交登录发生错误。',
+    'invalid_base64_image' => '图片格式无效。',
 ];

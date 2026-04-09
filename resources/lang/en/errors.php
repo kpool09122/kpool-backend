@@ -30,4 +30,19 @@ return [
     'payment_amount_mismatch_for_invoice' => 'The payment amount does not match the invoice total.',
     'transfer_not_found' => 'The specified transfer was not found.',
     'settlement_schedule_not_found' => 'The specified settlement schedule was not found.',
+
+    // Identity
+    'invalid_credentials' => 'The email address or password is incorrect.',
+    'social_connection_already_exists' => 'This social account is already linked.',
+    'auth_code_expired' => 'The authentication code has expired.',
+    'invalid_auth_code' => 'The authentication code does not match.',
+    'password_mismatch' => 'The passwords do not match.',
+    'invalid_delegation' => 'The delegation operation is invalid.',
+    'identity_not_found' => 'The specified identity was not found.',
+    'already_user_exists' => 'The user already exists.',
+    'unauthorized_email' => 'The email address has not been verified.',
+    'auth_code_session_not_found' => 'The authentication code session was not found.',
+    'invalid_oauth_state' => 'The OAuth state is invalid or has expired.',
+    'social_oauth_error' => 'An error occurred during social login.',
+    'invalid_base64_image' => 'The image format is invalid.',
 ];

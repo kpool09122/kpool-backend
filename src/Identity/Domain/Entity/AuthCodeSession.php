@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\Identity\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Identity\Domain\Exception\AuthCodeExpiredException;
+use Source\Identity\Domain\Exception\InvalidAuthCodeException;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Shared\Domain\ValueObject\Email;
 
@@ -54,17 +55,27 @@ readonly class AuthCodeSession
         return $this->verifiedAt;
     }
 
+    /**
+     * @param DateTimeImmutable $now
+     * @return void
+     * @throws AuthCodeExpiredException
+     */
     public function checkNotExpired(DateTimeImmutable $now): void
     {
         if ($this->expiresAt <= $now) {
-            throw new DomainException('認証コードの有効期限が切れています。');
+            throw new AuthCodeExpiredException('認証コードの有効期限が切れています。');
         }
     }
 
+    /**
+     * @param AuthCode $authCode
+     * @return void
+     * @throws InvalidAuthCodeException
+     */
     public function matchAuthCode(AuthCode $authCode): void
     {
         if ((string)$this->authCode !== (string)$authCode) {
-            throw new DomainException('認証コードが一致しません。');
+            throw new InvalidAuthCodeException('認証コードが一致しません。');
         }
     }
 }

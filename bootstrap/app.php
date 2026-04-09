@@ -16,6 +16,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/wiki',
         then: function () {
             Route::middleware('api')
+                ->prefix('api/identity')
+                ->group(base_path('routes/identity_api.php'));
+            Route::middleware('api')
                 ->prefix('api/monetization')
                 ->group(base_path('routes/monetization_api.php'));
             Route::prefix('webhook')

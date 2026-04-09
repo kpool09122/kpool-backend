@@ -7,17 +7,18 @@ namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Event;
-use InvalidArgumentException;
 use Mockery;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
+use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityOutput;
 use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
+use Source\Identity\Domain\Exception\PasswordMismatchException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
@@ -136,11 +137,12 @@ class CreateIdentityTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($identity, $result);
-        $this->assertSame($session->verifiedAt(), $result->emailVerifiedAt());
-        $this->assertSame($imagePath, $result->profileImage());
+        $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
+        $this->assertSame($session->verifiedAt(), $identity->emailVerifiedAt());
+        $this->assertSame($imagePath, $identity->profileImage());
     }
 
     /**
@@ -192,7 +194,8 @@ class CreateIdentityTest extends TestCase
 
         $this->expectException(AuthCodeSessionNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -260,7 +263,8 @@ class CreateIdentityTest extends TestCase
 
         $this->expectException(AlreadyUserExistsException::class);
 
-        $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -300,9 +304,10 @@ class CreateIdentityTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(PasswordMismatchException::class);
 
-        $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -372,7 +377,8 @@ class CreateIdentityTest extends TestCase
 
         $this->expectException(UnauthorizedEmailException::class);
 
-        $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -451,9 +457,10 @@ class CreateIdentityTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($identity, $result);
+        $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
 
         Event::assertDispatched(IdentityCreatedViaInvitation::class, static fn (IdentityCreatedViaInvitation $event) => (string) $event->identityIdentifier === (string) $identityIdentifier
             && (string) $event->invitationToken === (string) $invitationToken);
@@ -532,9 +539,10 @@ class CreateIdentityTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new CreateIdentityOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($identity, $result);
+        $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
 
         Event::assertNotDispatched(IdentityCreatedViaInvitation::class);
     }
