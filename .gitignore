@@ -7,6 +7,7 @@ composer.lock
 /.vscode/
 /.claude/*
 !/.claude/skills/
+!/.claude/agents/
 *.swp
 *.swo
 _ide_helper.php
