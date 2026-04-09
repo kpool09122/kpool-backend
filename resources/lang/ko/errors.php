@@ -30,4 +30,19 @@ return [
     'payment_amount_mismatch_for_invoice' => '결제 금액이 청구서 합계와 일치하지 않습니다.',
     'transfer_not_found' => '지정된 송금을 찾을 수 없습니다.',
     'settlement_schedule_not_found' => '지정된 정산 일정을 찾을 수 없습니다.',
+
+    // Identity
+    'invalid_credentials' => '이메일 주소 또는 비밀번호가 올바르지 않습니다.',
+    'social_connection_already_exists' => '이 소셜 계정은 이미 연결되어 있습니다.',
+    'auth_code_expired' => '인증 코드의 유효기간이 만료되었습니다.',
+    'invalid_auth_code' => '인증 코드가 일치하지 않습니다.',
+    'password_mismatch' => '비밀번호가 일치하지 않습니다.',
+    'invalid_delegation' => '위임 작업이 유효하지 않습니다.',
+    'identity_not_found' => '지정된 아이덴티티를 찾을 수 없습니다.',
+    'already_user_exists' => '사용자가 이미 존재합니다.',
+    'unauthorized_email' => '이메일 주소가 인증되지 않았습니다.',
+    'auth_code_session_not_found' => '인증 코드 세션을 찾을 수 없습니다.',
+    'invalid_oauth_state' => 'OAuth 상태가 유효하지 않거나 만료되었습니다.',
+    'social_oauth_error' => '소셜 로그인 중 오류가 발생했습니다.',
+    'invalid_base64_image' => '이미지 형식이 유효하지 않습니다.',
 ];

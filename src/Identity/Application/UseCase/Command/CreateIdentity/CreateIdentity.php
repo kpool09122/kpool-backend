@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
-use InvalidArgumentException;
-use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
+use Source\Identity\Domain\Exception\PasswordMismatchException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
@@ -28,16 +27,18 @@ readonly class CreateIdentity implements CreateIdentityInterface
 
     /**
      * @param CreateIdentityInputPort $input
-     * @return Identity
+     * @param CreateIdentityOutputPort $output
+     * @return void
+     * @throws PasswordMismatchException
      * @throws AuthCodeSessionNotFoundException
      * @throws UnauthorizedEmailException
      * @throws AlreadyUserExistsException
      * @throws InvalidBase64ImageException
      */
-    public function process(CreateIdentityInputPort $input): Identity
+    public function process(CreateIdentityInputPort $input, CreateIdentityOutputPort $output): void
     {
         if ((string)$input->password() !== (string)$input->confirmedPassword()) {
-            throw new InvalidArgumentException('パスワードが一致しません');
+            throw new PasswordMismatchException('パスワードが一致しません');
         }
 
         $session = $this->authCodeSessionRepository->findByEmail($input->email());
@@ -72,6 +73,6 @@ readonly class CreateIdentity implements CreateIdentityInterface
             ));
         }
 
-        return $identity;
+        $output->setIdentity($identity);
     }
 }

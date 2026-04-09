@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\Login;
 
-use DomainException;
-use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Identity\Domain\Exception\InvalidCredentialsException;
 
 interface LoginInterface
 {
     /**
      * @param LoginInputPort $input
-     * @return Identity
+     * @param LoginOutputPort $output
+     * @return void
      * @throws IdentityNotFoundException
-     * @throws DomainException
+     * @throws InvalidCredentialsException
      */
-    public function process(LoginInputPort $input): Identity;
+    public function process(LoginInputPort $input, LoginOutputPort $output): void;
 }

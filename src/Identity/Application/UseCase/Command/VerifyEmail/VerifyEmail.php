@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\VerifyEmail;
 
 use DateTimeImmutable;
-use Source\Identity\Domain\Entity\AuthCodeSession;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
 use Source\Identity\Domain\Factory\AuthCodeSessionFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
@@ -20,10 +19,11 @@ readonly class VerifyEmail implements VerifyEmailInterface
 
     /**
      * @param VerifyEmailInputPort $input
-     * @return AuthCodeSession
+     * @param VerifyEmailOutputPort $output
+     * @return void
      * @throws AuthCodeSessionNotFoundException
      */
-    public function process(VerifyEmailInputPort $input): AuthCodeSession
+    public function process(VerifyEmailInputPort $input, VerifyEmailOutputPort $output): void
     {
         $session = $this->authCodeSessionRepository->findByEmail($input->email());
 
@@ -45,6 +45,6 @@ readonly class VerifyEmail implements VerifyEmailInterface
         $this->authCodeSessionRepository->delete($input->email());
         $this->authCodeSessionRepository->save($verifiedSession);
 
-        return $verifiedSession;
+        $output->setSession($verifiedSession);
     }
 }

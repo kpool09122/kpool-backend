@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Tests\Identity\Application\UseCase\Command\Login;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Identity\Application\UseCase\Command\Login\Login;
 use Source\Identity\Application\UseCase\Command\Login\LoginInput;
 use Source\Identity\Application\UseCase\Command\Login\LoginInterface;
+use Source\Identity\Application\UseCase\Command\Login\LoginOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
@@ -89,9 +90,10 @@ class LoginTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(LoginInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new LoginOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($identity, $result);
+        $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
     }
 
     /**
@@ -121,7 +123,8 @@ class LoginTest extends TestCase
 
         $this->expectException(IdentityNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new LoginOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -167,9 +170,10 @@ class LoginTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(LoginInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidCredentialsException::class);
 
-        $useCase->process($input);
+        $output = new LoginOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -215,8 +219,9 @@ class LoginTest extends TestCase
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $useCase = $this->app->make(LoginInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidCredentialsException::class);
 
-        $useCase->process($input);
+        $output = new LoginOutput();
+        $useCase->process($input, $output);
     }
 }

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Tests\Identity\Application\UseCase\Command\SwitchIdentity;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Identity\Application\Service\DelegationValidatorInterface;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentity;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityInput;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityInterface;
+use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
@@ -99,9 +100,10 @@ class SwitchIdentityTest extends TestCase
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($originalIdentity, $result);
+        $this->assertSame((string) $originalIdentity->identityIdentifier(), $output->toArray()['identityIdentifier']);
     }
 
     /**
@@ -157,9 +159,10 @@ class SwitchIdentityTest extends TestCase
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($delegatedIdentity, $result);
+        $this->assertSame((string) $delegatedIdentity->identityIdentifier(), $output->toArray()['identityIdentifier']);
     }
 
     /**
@@ -226,9 +229,10 @@ class SwitchIdentityTest extends TestCase
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame($targetDelegatedIdentity, $result);
+        $this->assertSame((string) $targetDelegatedIdentity->identityIdentifier(), $output->toArray()['identityIdentifier']);
     }
 
     /**
@@ -262,7 +266,8 @@ class SwitchIdentityTest extends TestCase
         $this->expectException(IdentityNotFoundException::class);
         $this->expectExceptionMessage('Current identity not found.');
 
-        $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -307,7 +312,8 @@ class SwitchIdentityTest extends TestCase
         $this->expectException(IdentityNotFoundException::class);
         $this->expectExceptionMessage('Original identity not found.');
 
-        $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -339,10 +345,11 @@ class SwitchIdentityTest extends TestCase
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidDelegationException::class);
         $this->expectExceptionMessage('Already using original identity.');
 
-        $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -380,10 +387,11 @@ class SwitchIdentityTest extends TestCase
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidDelegationException::class);
         $this->expectExceptionMessage('Delegation is not valid.');
 
-        $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -428,7 +436,8 @@ class SwitchIdentityTest extends TestCase
         $this->expectException(IdentityNotFoundException::class);
         $this->expectExceptionMessage('Delegated identity not found.');
 
-        $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -477,10 +486,11 @@ class SwitchIdentityTest extends TestCase
 
         $useCase = $this->app->make(SwitchIdentityInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidDelegationException::class);
         $this->expectExceptionMessage('Delegation does not belong to the current identity.');
 
-        $useCase->process($input);
+        $output = new SwitchIdentityOutput();
+        $useCase->process($input, $output);
     }
 
     private function createIdentity(IdentityIdentifier $identityIdentifier): Identity

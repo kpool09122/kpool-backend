@@ -30,4 +30,19 @@ return [
     'payment_amount_mismatch_for_invoice' => '決済金額が請求書の合計と一致しません。',
     'transfer_not_found' => '指定された送金が見つかりません。',
     'settlement_schedule_not_found' => '指定された精算スケジュールが見つかりません。',
+
+    // Identity
+    'invalid_credentials' => 'メールアドレスまたはパスワードが正しくありません。',
+    'social_connection_already_exists' => 'このソーシャルアカウントは既に連携されています。',
+    'auth_code_expired' => '認証コードの有効期限が切れています。',
+    'invalid_auth_code' => '認証コードが一致しません。',
+    'password_mismatch' => 'パスワードが一致しません。',
+    'invalid_delegation' => '委任の操作が無効です。',
+    'identity_not_found' => '指定されたアイデンティティが見つかりません。',
+    'already_user_exists' => 'ユーザーは既に存在します。',
+    'unauthorized_email' => 'メールアドレスが認証されていません。',
+    'auth_code_session_not_found' => '認証コードセッションが見つかりません。',
+    'invalid_oauth_state' => 'OAuth状態が無効または期限切れです。',
+    'social_oauth_error' => 'ソーシャルログインでエラーが発生しました。',
+    'invalid_base64_image' => '画像のフォーマットが無効です。',
 ];

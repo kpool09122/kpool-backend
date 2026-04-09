@@ -30,4 +30,19 @@ return [
     'payment_amount_mismatch_for_invoice' => 'El monto del pago no coincide con el total de la factura.',
     'transfer_not_found' => 'No se encontró la transferencia especificada.',
     'settlement_schedule_not_found' => 'No se encontró el programa de liquidación especificado.',
+
+    // Identity
+    'invalid_credentials' => 'La dirección de correo electrónico o la contraseña es incorrecta.',
+    'social_connection_already_exists' => 'Esta cuenta social ya está vinculada.',
+    'auth_code_expired' => 'El código de autenticación ha expirado.',
+    'invalid_auth_code' => 'El código de autenticación no coincide.',
+    'password_mismatch' => 'Las contraseñas no coinciden.',
+    'invalid_delegation' => 'La operación de delegación no es válida.',
+    'identity_not_found' => 'No se encontró la identidad especificada.',
+    'already_user_exists' => 'El usuario ya existe.',
+    'unauthorized_email' => 'La dirección de correo electrónico no ha sido verificada.',
+    'auth_code_session_not_found' => 'No se encontró la sesión del código de autenticación.',
+    'invalid_oauth_state' => 'El estado de OAuth no es válido o ha expirado.',
+    'social_oauth_error' => 'Se produjo un error durante el inicio de sesión social.',
+    'invalid_base64_image' => 'El formato de imagen no es válido.',
 ];
