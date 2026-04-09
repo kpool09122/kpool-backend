@@ -14,24 +14,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'identity_group_id',
+    'target_account_id',
+    'affiliation_id',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'delegation_permissions', keyType: 'string')]
 class DelegationPermission extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'delegation_permissions';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'identity_group_id',
-        'target_account_id',
-        'affiliation_id',
-    ];
 
     #[\Override]
     protected function casts(): array

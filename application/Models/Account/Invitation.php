@@ -19,6 +19,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $accepted_at
  * @property Carbon $created_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'account_id',
+    'invited_by_identity_id',
+    'email',
+    'token',
+    'status',
+    'expires_at',
+    'accepted_by_identity_id',
+    'accepted_at',
+    'created_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'invitations', keyType: 'string')]
 class Invitation extends Model
 {
     #[\Override]
@@ -26,26 +39,6 @@ class Invitation extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'invitations';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'account_id',
-        'invited_by_identity_id',
-        'email',
-        'token',
-        'status',
-        'expires_at',
-        'accepted_by_identity_id',
-        'accepted_at',
-        'created_at',
-    ];
 
     #[\Override]
     protected function casts(): array

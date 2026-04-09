@@ -20,34 +20,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $official_website
  * @property array<string> $social_links
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'wiki_id',
+    'name',
+    'normalized_name',
+    'ceo',
+    'normalized_ceo',
+    'founded_in',
+    'parent_agency_identifier',
+    'status',
+    'logo_image_identifier',
+    'official_website',
+    'social_links',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_agency_basics', key: 'wiki_id', keyType: 'string')]
 class WikiAgencyBasic extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'wiki_agency_basics';
-
-    #[\Override]
-    protected $primaryKey = 'wiki_id';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'wiki_id',
-        'name',
-        'normalized_name',
-        'ceo',
-        'normalized_ceo',
-        'founded_in',
-        'parent_agency_identifier',
-        'status',
-        'logo_image_identifier',
-        'official_website',
-        'social_links',
-    ];
 
     #[\Override]
     protected $casts = [

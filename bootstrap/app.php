@@ -60,7 +60,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         \Application\Providers\Wiki\EventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->validateCsrfTokens(except: [
+        $middleware->preventRequestForgery(except: [
             'webhook/*',
         ]);
     })

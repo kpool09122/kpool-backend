@@ -18,27 +18,20 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'identity_id',
+    'agency_id',
+    'group_ids',
+    'talent_ids',
+    'delegation_identifier',
+    'enabled',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_principals', keyType: 'string')]
 class Principal extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'wiki_principals';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'identity_id',
-        'agency_id',
-        'group_ids',
-        'talent_ids',
-        'delegation_identifier',
-        'enabled',
-    ];
 
     #[\Override]
     protected function casts(): array

@@ -23,34 +23,25 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property-read Collection<int, IdentitySocialConnection> $socialConnections
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'username',
+    'email',
+    'language',
+    'profile_image',
+    'password',
+    'email_verified_at',
+    'delegation_identifier',
+    'original_identity_identifier',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Hidden([
+    'password',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identities', keyType: 'string')]
 class Identity extends Authenticatable
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'identities';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'username',
-        'email',
-        'language',
-        'profile_image',
-        'password',
-        'email_verified_at',
-        'delegation_identifier',
-        'original_identity_identifier',
-    ];
-
-    #[\Override]
-    protected $hidden = [
-        'password',
-    ];
 
     #[\Override]
     protected function casts(): array

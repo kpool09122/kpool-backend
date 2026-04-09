@@ -18,27 +18,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'monetization_account_id',
+    'interval',
+    'payout_delay_days',
+    'threshold_amount',
+    'threshold_currency',
+    'next_closing_date',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'settlement_schedules', keyType: 'string')]
 class SettlementSchedule extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'settlement_schedules';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'monetization_account_id',
-        'interval',
-        'payout_delay_days',
-        'threshold_amount',
-        'threshold_currency',
-        'next_closing_date',
-    ];
 
     #[\Override]
     protected function casts(): array

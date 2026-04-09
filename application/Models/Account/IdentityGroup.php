@@ -19,25 +19,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  * @property-read Collection<int, IdentityGroupMembership> $members
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'account_id',
+    'name',
+    'role',
+    'is_default',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identity_groups', keyType: 'string')]
 class IdentityGroup extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'identity_groups';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'account_id',
-        'name',
-        'role',
-        'is_default',
-    ];
 
     #[\Override]
     protected function casts(): array

@@ -16,21 +16,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $quantity
  * @property \Illuminate\Support\Carbon $created_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'invoice_id',
+    'description',
+    'currency',
+    'unit_price',
+    'quantity',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'invoice_lines')]
 class InvoiceLine extends Model
 {
     public const UPDATED_AT = null;
-
-    #[\Override]
-    protected $table = 'invoice_lines';
-
-    #[\Override]
-    protected $fillable = [
-        'invoice_id',
-        'description',
-        'currency',
-        'unit_price',
-        'quantity',
-    ];
 
     #[\Override]
     protected function casts(): array

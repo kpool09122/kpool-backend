@@ -17,23 +17,16 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property-read Collection<int, RolePolicyAttachment> $policyAttachments
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'name',
+    'is_system_role',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'roles', keyType: 'string')]
 class Role extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'roles';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'name',
-        'is_system_role',
-    ];
 
     #[\Override]
     protected function casts(): array

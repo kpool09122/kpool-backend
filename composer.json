@@ -5,9 +5,7 @@
     "require": {
         "php": "^8.5",
         "symfony/uid": "^7.2",
-        "laravel/framework": "^12.0",
-        "illuminate/container": "^12.0",
-        "illuminate/contracts": "^12.0",
+        "laravel/framework": "^13.0",
         "psr/log": "^3.0",
         "ext-mbstring": "*",
         "stripe/stripe-php": "^19.1",
@@ -20,13 +18,14 @@
         "friendsofphp/php-cs-fixer": "^3.86",
         "phpstan/phpstan": "^2.1",
         "mockery/mockery": "^1.6",
-        "orchestra/testbench": "^10.0",
+        "orchestra/testbench": "^11.0",
         "illuminate/console": "*",
         "illuminate/support": "*",
         "illuminate/database": "*",
         "phpunit/php-code-coverage": "^12.0",
-        "calebdw/larastan": "^3.8",
+        "larastan/larastan": "^3.9",
         "barryvdh/laravel-ide-helper": "^3.6",
+        "driftingly/rector-laravel": "^2.3",
         "rector/rector": "^2.4"
     },
     "autoload": {

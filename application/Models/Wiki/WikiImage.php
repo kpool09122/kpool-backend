@@ -27,6 +27,27 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $updater_id
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'resource_type',
+    'wiki_id',
+    'image_path',
+    'image_usage',
+    'display_order',
+    'source_url',
+    'source_name',
+    'alt_text',
+    'is_hidden',
+    'hidden_by',
+    'hidden_at',
+    'uploader_id',
+    'uploaded_at',
+    'approver_id',
+    'approved_at',
+    'updater_id',
+    'updated_at',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_images', keyType: 'string')]
 class WikiImage extends Model
 {
     #[\Override]
@@ -34,34 +55,6 @@ class WikiImage extends Model
 
     #[\Override]
     public $timestamps = false;
-
-    #[\Override]
-    protected $table = 'wiki_images';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'resource_type',
-        'wiki_id',
-        'image_path',
-        'image_usage',
-        'display_order',
-        'source_url',
-        'source_name',
-        'alt_text',
-        'is_hidden',
-        'hidden_by',
-        'hidden_at',
-        'uploader_id',
-        'uploaded_at',
-        'approver_id',
-        'approved_at',
-        'updater_id',
-        'updated_at',
-    ];
 
     #[\Override]
     protected $casts = [

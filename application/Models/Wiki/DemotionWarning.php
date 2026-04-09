@@ -15,24 +15,17 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'principal_id',
+    'warning_count',
+    'last_warning_month',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'demotion_warnings', keyType: 'string')]
 class DemotionWarning extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'demotion_warnings';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'principal_id',
-        'warning_count',
-        'last_warning_month',
-    ];
 
     #[\Override]
     protected function casts(): array

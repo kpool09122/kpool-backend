@@ -6,27 +6,17 @@ namespace Application\Models\SiteManagement;
 
 use Illuminate\Database\Eloquent\Model;
 
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'category',
+    'identity_identifier',
+    'name',
+    'email',
+    'content',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'contacts', keyType: 'string')]
 class Contact extends Model
 {
     #[\Override]
-    protected $table = 'contacts';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
     public $incrementing = false;
-
-    /**
-     * @var array<int, string>
-     */
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'category',
-        'identity_identifier',
-        'name',
-        'email',
-        'content',
-    ];
 }

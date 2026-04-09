@@ -14,23 +14,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'identity_group_id',
+    'identity_id',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'identity_group_memberships', keyType: 'string')]
 class IdentityGroupMembership extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'identity_group_memberships';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'identity_group_id',
-        'identity_id',
-    ];
 
     #[\Override]
     protected function casts(): array

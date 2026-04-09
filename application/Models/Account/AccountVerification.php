@@ -23,29 +23,22 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $updated_at
  * @property-read Collection<int, VerificationDocument> $documents
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'account_id',
+    'verification_type',
+    'status',
+    'applicant_info',
+    'requested_at',
+    'reviewed_by',
+    'reviewed_at',
+    'rejection_reason',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'account_verifications', keyType: 'string')]
 class AccountVerification extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'account_verifications';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'account_id',
-        'verification_type',
-        'status',
-        'applicant_info',
-        'requested_at',
-        'reviewed_by',
-        'reviewed_at',
-        'rejection_reason',
-    ];
 
     #[\Override]
     protected function casts(): array

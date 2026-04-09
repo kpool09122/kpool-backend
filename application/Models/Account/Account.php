@@ -16,26 +16,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'email',
+    'type',
+    'name',
+    'status',
+    'category',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'accounts', keyType: 'string')]
 class Account extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'accounts';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'email',
-        'type',
-        'name',
-        'status',
-        'category',
-    ];
 
     #[\Override]
     protected function casts(): array

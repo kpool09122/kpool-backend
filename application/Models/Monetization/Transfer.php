@@ -21,30 +21,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[\Illuminate\Database\Eloquent\Attributes\Fillable([
+    'id',
+    'settlement_batch_id',
+    'monetization_account_id',
+    'currency',
+    'amount',
+    'status',
+    'sent_at',
+    'failed_at',
+    'failure_reason',
+    'stripe_transfer_id',
+])]
+#[\Illuminate\Database\Eloquent\Attributes\Table(name: 'transfers', keyType: 'string')]
 class Transfer extends Model
 {
     #[\Override]
     public $incrementing = false;
-
-    #[\Override]
-    protected $table = 'transfers';
-
-    #[\Override]
-    protected $keyType = 'string';
-
-    #[\Override]
-    protected $fillable = [
-        'id',
-        'settlement_batch_id',
-        'monetization_account_id',
-        'currency',
-        'amount',
-        'status',
-        'sent_at',
-        'failed_at',
-        'failure_reason',
-        'stripe_transfer_id',
-    ];
 
     #[\Override]
     protected function casts(): array
