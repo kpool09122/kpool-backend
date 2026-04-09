@@ -10,13 +10,13 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Domain\Entity\Wiki;
 
 interface RollbackWikiInterface
 {
     /**
      * @param RollbackWikiInputPort $input
-     * @return Wiki[]
+     * @param RollbackWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws SnapshotNotFoundException
      * @throws VersionMismatchException
@@ -24,5 +24,5 @@ interface RollbackWikiInterface
      * @throws PrincipalNotFoundException
      * @throws DisallowedException
      */
-    public function process(RollbackWikiInputPort $input): array;
+    public function process(RollbackWikiInputPort $input, RollbackWikiOutputPort $output): void;
 }

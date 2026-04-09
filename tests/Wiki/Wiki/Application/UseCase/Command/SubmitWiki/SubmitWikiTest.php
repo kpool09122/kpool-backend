@@ -24,6 +24,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
@@ -123,9 +124,10 @@ class SubmitWikiTest extends TestCase
         $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
         $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
         $submitWiki = $this->app->make(SubmitWikiInterface::class);
-        $wiki = $submitWiki->process($input);
-        $this->assertNotSame($dummySubmitWiki->status, $wiki->status());
-        $this->assertSame(ApprovalStatus::UnderReview, $wiki->status());
+        $output = new SubmitWikiOutput();
+        $submitWiki->process($input, $output);
+        $result = $output->toArray();
+        $this->assertSame(ApprovalStatus::UnderReview->value, $result['status']);
     }
 
     /**
@@ -171,7 +173,7 @@ class SubmitWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $submitWiki = $this->app->make(SubmitWikiInterface::class);
-        $submitWiki->process($input);
+        $submitWiki->process($input, new SubmitWikiOutput());
     }
 
     /**
@@ -220,7 +222,7 @@ class SubmitWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $submitWiki = $this->app->make(SubmitWikiInterface::class);
-        $submitWiki->process($input);
+        $submitWiki->process($input, new SubmitWikiOutput());
     }
 
     /**
@@ -270,7 +272,7 @@ class SubmitWikiTest extends TestCase
 
         $this->expectException(InvalidStatusException::class);
         $submitWiki = $this->app->make(SubmitWikiInterface::class);
-        $submitWiki->process($input);
+        $submitWiki->process($input, new SubmitWikiOutput());
     }
 
     /**
@@ -322,7 +324,7 @@ class SubmitWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $submitWiki = $this->app->make(SubmitWikiInterface::class);
-        $submitWiki->process($input);
+        $submitWiki->process($input, new SubmitWikiOutput());
     }
 
     /**

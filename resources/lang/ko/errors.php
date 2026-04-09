@@ -56,4 +56,12 @@ return [
     'cannot_remove_last_owner' => '계정에서 마지막 소유자를 제거할 수 없습니다.',
     'cannot_delete_default_identity_group' => '기본 아이덴티티 그룹은 삭제할 수 없습니다.',
     'cannot_delete_last_owner_group' => '멤버가 있는 마지막 소유자 그룹은 삭제할 수 없습니다.',
+
+    // Wiki
+    'unauthorized' => '이 작업은 인가되지 않았습니다.',
+    'inconsistent_version' => '번역 세트 내 공개 위키의 버전이 일치하지 않습니다.',
+    'snapshot_not_found' => '지정된 스냅샷을 찾을 수 없습니다.',
+    'version_mismatch' => '번역 세트에서 버전 불일치가 감지되었습니다.',
+    'invalid_rollback_target_version' => '롤백 대상 버전이 유효하지 않습니다.',
+    'invalid_status' => '이 작업에 대해 상태가 유효하지 않습니다.',
 ];

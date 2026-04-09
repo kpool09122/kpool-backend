@@ -56,4 +56,12 @@ return [
     'cannot_remove_last_owner' => '無法移除帳戶的最後一個擁有者。',
     'cannot_delete_default_identity_group' => '無法刪除預設身分群組。',
     'cannot_delete_last_owner_group' => '無法刪除有成員的最後一個擁有者群組。',
+
+    // Wiki
+    'unauthorized' => '此操作未獲授權。',
+    'inconsistent_version' => '翻譯集中已發布的Wiki版本不一致。',
+    'snapshot_not_found' => '未找到指定的快照。',
+    'version_mismatch' => '翻譯集中檢測到版本不匹配。',
+    'invalid_rollback_target_version' => '目標版本必須小於當前版本。',
+    'invalid_status' => '此操作的狀態無效。',
 ];

@@ -14,7 +14,6 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -34,12 +33,13 @@ readonly class TranslateWiki implements TranslateWikiInterface
 
     /**
      * @param TranslateWikiInputPort $input
-     * @return DraftWiki[]
+     * @param TranslateWikiOutputPort $output
+     * @return void
      * @throws WikiNotFoundException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(TranslateWikiInputPort $input): array
+    public function process(TranslateWikiInputPort $input, TranslateWikiOutputPort $output): void
     {
         $wiki = $this->wikiRepository->findById($input->wikiIdentifier());
 
@@ -95,6 +95,6 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $this->draftWikiRepository->save($wikiDraft);
         }
 
-        return $wikiDrafts;
+        $output->setDraftWikis($wikiDrafts);
     }
 }

@@ -23,6 +23,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
@@ -125,17 +126,14 @@ class MergeWikiTest extends TestCase
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $mergeWiki = $this->app->make(MergeWikiInterface::class);
-        $wiki = $mergeWiki->process($input);
+        $output = new MergeWikiOutput();
+        $mergeWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame((string) $testData->wikiIdentifier, (string) $wiki->wikiIdentifier());
-        $this->assertSame($updatedBasic, $wiki->basic());
-        $this->assertSame($updatedSections, $wiki->sections());
-        $this->assertSame((string) $updatedThemeColor, (string) $wiki->themeColor());
-        $this->assertSame($testData->language->value, $wiki->language()->value);
-        $this->assertSame($testData->resourceType->value, $wiki->resourceType()->value);
-        $this->assertSame($testData->status, $wiki->status());
-        $this->assertSame($principalIdentifier, $wiki->mergerIdentifier());
-        $this->assertSame($mergedAt, $wiki->mergedAt());
+        $this->assertSame($testData->language->value, $result['language']);
+        $this->assertSame((string) $updatedBasic->name(), $result['name']);
+        $this->assertSame($testData->resourceType->value, $result['resourceType']);
+        $this->assertSame($testData->status->value, $result['status']);
     }
 
     /**
@@ -180,7 +178,7 @@ class MergeWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $mergeWiki = $this->app->make(MergeWikiInterface::class);
-        $mergeWiki->process($input);
+        $mergeWiki->process($input, new MergeWikiOutput());
     }
 
     /**
@@ -228,7 +226,7 @@ class MergeWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $mergeWiki = $this->app->make(MergeWikiInterface::class);
-        $mergeWiki->process($input);
+        $mergeWiki->process($input, new MergeWikiOutput());
     }
 
     /**
@@ -285,7 +283,7 @@ class MergeWikiTest extends TestCase
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $mergeWiki = $this->app->make(MergeWikiInterface::class);
-        $mergeWiki->process($input);
+        $mergeWiki->process($input, new MergeWikiOutput());
     }
 
     /**
@@ -338,7 +336,7 @@ class MergeWikiTest extends TestCase
 
         $this->expectException(UnauthorizedException::class);
         $mergeWiki = $this->app->make(MergeWikiInterface::class);
-        $mergeWiki->process($input);
+        $mergeWiki->process($input, new MergeWikiOutput());
     }
 
     /**

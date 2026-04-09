@@ -11,7 +11,6 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
-use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -30,12 +29,13 @@ readonly class CreateWiki implements CreateWikiInterface
 
     /**
      * @param CreateWikiInputPort $input
-     * @return DraftWiki
+     * @param CreateWikiOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      * @throws DuplicateSlugException
      */
-    public function process(CreateWikiInputPort $input): DraftWiki
+    public function process(CreateWikiInputPort $input, CreateWikiOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null) {
@@ -83,6 +83,6 @@ readonly class CreateWiki implements CreateWikiInterface
 
         $this->draftWikiRepository->save($wiki);
 
-        return $wiki;
+        $output->setDraftWiki($wiki);
     }
 }

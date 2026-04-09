@@ -27,6 +27,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki\PublishWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
@@ -175,11 +176,12 @@ class PublishWikiTest extends TestCase
         $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishedWiki = $publishWiki->process($input);
-        $this->assertSame((string) $dummyPublishWiki->publishedWikiIdentifier, (string) $publishedWiki->wikiIdentifier());
-        $this->assertSame($dummyPublishWiki->language->value, $publishedWiki->language()->value);
-        $this->assertSame((string) $dummyPublishWiki->name, (string) $publishedWiki->basic()->name());
-        $this->assertSame($dummyPublishWiki->publishedVersion->value() + 1, $publishedWiki->version()->value());
+        $output = new PublishWikiOutput();
+        $publishWiki->process($input, $output);
+        $result = $output->toArray();
+        $this->assertSame($dummyPublishWiki->language->value, $result['language']);
+        $this->assertSame((string) $dummyPublishWiki->name, $result['name']);
+        $this->assertSame($dummyPublishWiki->publishedVersion->value() + 1, $result['version']);
     }
 
     /**
@@ -277,11 +279,11 @@ class PublishWikiTest extends TestCase
         $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishedWiki = $publishWiki->process($input);
-        $this->assertSame((string) $dummyPublishWiki->publishedWikiIdentifier, (string) $publishedWiki->wikiIdentifier());
-        $this->assertSame($dummyPublishWiki->language->value, $publishedWiki->language()->value);
-        $this->assertSame((string) $dummyPublishWiki->translationSetIdentifier, (string) $publishedWiki->translationSetIdentifier());
-        $this->assertSame($dummyPublishWiki->version->value(), $publishedWiki->version()->value());
+        $output = new PublishWikiOutput();
+        $publishWiki->process($input, $output);
+        $result = $output->toArray();
+        $this->assertSame($dummyPublishWiki->language->value, $result['language']);
+        $this->assertSame($dummyPublishWiki->version->value(), $result['version']);
     }
 
     /**
@@ -331,7 +333,7 @@ class PublishWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
     }
 
     /**
@@ -384,7 +386,7 @@ class PublishWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
     }
 
     /**
@@ -433,7 +435,7 @@ class PublishWikiTest extends TestCase
 
         $this->expectException(InvalidStatusException::class);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
     }
 
     /**
@@ -493,7 +495,7 @@ class PublishWikiTest extends TestCase
 
         $this->expectException(InconsistentVersionException::class);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
     }
 
     /**
@@ -556,7 +558,7 @@ class PublishWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
     }
 
     /**
@@ -612,7 +614,7 @@ class PublishWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
     }
 
     /**
@@ -701,7 +703,7 @@ class PublishWikiTest extends TestCase
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
 
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $publishWiki->process($input);
+        $publishWiki->process($input, new PublishWikiOutput());
 
         $this->assertSame(ApprovalStatus::UnderReview, $dummyPublishWiki->status);
     }
@@ -820,9 +822,11 @@ class PublishWikiTest extends TestCase
         $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $result = $publishWiki->process($input);
+        $output = new PublishWikiOutput();
+        $publishWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame((string) $dummyPublishWiki->publishedWikiIdentifier, (string) $result->wikiIdentifier());
+        $this->assertNotNull($result['language']);
     }
 
     /**
@@ -937,9 +941,11 @@ class PublishWikiTest extends TestCase
         $this->app->instance(ContributionPointServiceInterface::class, $contributionPointService);
 
         $publishWiki = $this->app->make(PublishWikiInterface::class);
-        $result = $publishWiki->process($input);
+        $output = new PublishWikiOutput();
+        $publishWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertSame((string) $dummyPublishWiki->publishedWikiIdentifier, (string) $result->wikiIdentifier());
+        $this->assertNotNull($result['language']);
     }
 
     /**

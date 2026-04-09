@@ -56,4 +56,12 @@ return [
     'cannot_remove_last_owner' => 'No se puede eliminar al último propietario de la cuenta.',
     'cannot_delete_default_identity_group' => 'No se puede eliminar el grupo de identidad predeterminado.',
     'cannot_delete_last_owner_group' => 'No se puede eliminar el último grupo de propietarios con miembros.',
+
+    // Wiki
+    'unauthorized' => 'Esta acción no está autorizada.',
+    'inconsistent_version' => 'Las versiones de wiki publicadas en el conjunto de traducción no son consistentes.',
+    'snapshot_not_found' => 'No se encontró la instantánea especificada.',
+    'version_mismatch' => 'Se detectó una discrepancia de versión en el conjunto de traducción.',
+    'invalid_rollback_target_version' => 'La versión de destino debe ser menor que la versión actual.',
+    'invalid_status' => 'El estado no es válido para esta operación.',
 ];

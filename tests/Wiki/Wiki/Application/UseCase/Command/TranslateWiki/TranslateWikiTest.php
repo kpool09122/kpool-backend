@@ -23,6 +23,7 @@ use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiOutput;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
@@ -176,11 +177,11 @@ class TranslateWikiTest extends TestCase
         $this->app->instance(DraftWikiFactoryInterface::class, $draftWikiFactory);
 
         $translateWiki = $this->app->make(TranslateWikiInterface::class);
-        $wikis = $translateWiki->process($input);
+        $output = new TranslateWikiOutput();
+        $translateWiki->process($input, $output);
+        $result = $output->toArray();
 
-        $this->assertCount(2, $wikis);
-        $this->assertInstanceOf(DraftWiki::class, $wikis[0]);
-        $this->assertInstanceOf(DraftWiki::class, $wikis[1]);
+        $this->assertCount(2, $result['draftWikis']);
     }
 
     /**
@@ -218,7 +219,7 @@ class TranslateWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
         $translateWiki = $this->app->make(TranslateWikiInterface::class);
-        $translateWiki->process($input);
+        $translateWiki->process($input, new TranslateWikiOutput());
     }
 
     /**
@@ -258,7 +259,7 @@ class TranslateWikiTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $translateWiki = $this->app->make(TranslateWikiInterface::class);
-        $translateWiki->process($input);
+        $translateWiki->process($input, new TranslateWikiOutput());
     }
 
     /**
@@ -308,7 +309,7 @@ class TranslateWikiTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $translateWiki = $this->app->make(TranslateWikiInterface::class);
-        $translateWiki->process($input);
+        $translateWiki->process($input, new TranslateWikiOutput());
     }
 
     private function createTalentBasic(string $name): TalentBasic
