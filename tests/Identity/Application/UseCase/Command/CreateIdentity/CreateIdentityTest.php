@@ -455,10 +455,8 @@ class CreateIdentityTest extends TestCase
 
         $this->assertSame($identity, $result);
 
-        Event::assertDispatched(IdentityCreatedViaInvitation::class, static function (IdentityCreatedViaInvitation $event) use ($identityIdentifier, $invitationToken) {
-            return (string) $event->identityIdentifier === (string) $identityIdentifier
-                && (string) $event->invitationToken === (string) $invitationToken;
-        });
+        Event::assertDispatched(IdentityCreatedViaInvitation::class, static fn (IdentityCreatedViaInvitation $event) => (string) $event->identityIdentifier === (string) $identityIdentifier
+            && (string) $event->invitationToken === (string) $invitationToken);
     }
 
     /**

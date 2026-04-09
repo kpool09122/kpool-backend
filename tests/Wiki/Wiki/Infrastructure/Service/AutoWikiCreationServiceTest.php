@@ -266,10 +266,8 @@ class AutoWikiCreationServiceTest extends TestCase
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateGroup')
             ->once()
-            ->withArgs(function (GenerateGroupRequest $r) {
-                return $r->groupName() === '트와이스'
-                    && $r->agencyName() === 'JYP Entertainment';
-            })
+            ->withArgs(fn (GenerateGroupRequest $r) => $r->groupName() === '트와이스'
+                && $r->agencyName() === 'JYP Entertainment')
             ->andReturn(new GenerateGroupResponse($this->createPsrResponse($responseJson)));
 
         $this->app->instance(GeminiClient::class, $geminiClient);
@@ -489,11 +487,9 @@ class AutoWikiCreationServiceTest extends TestCase
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateTalent')
             ->once()
-            ->withArgs(function (GenerateTalentRequest $r) {
-                return $r->talentName() === '지민'
-                    && $r->agencyName() === 'HYBE'
-                    && $r->groupNames() === ['BTS'];
-            })
+            ->withArgs(fn (GenerateTalentRequest $r) => $r->talentName() === '지민'
+                && $r->agencyName() === 'HYBE'
+                && $r->groupNames() === ['BTS'])
             ->andReturn(new GenerateTalentResponse($this->createPsrResponse($responseJson)));
 
         $this->app->instance(GeminiClient::class, $geminiClient);
@@ -768,12 +764,10 @@ class AutoWikiCreationServiceTest extends TestCase
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateSong')
             ->once()
-            ->withArgs(function (GenerateSongRequest $r) {
-                return $r->songName() === 'Dynamite'
-                    && $r->agencyName() === 'HYBE'
-                    && $r->groupName() === 'BTS'
-                    && $r->talentName() === 'Jimin';
-            })
+            ->withArgs(fn (GenerateSongRequest $r) => $r->songName() === 'Dynamite'
+                && $r->agencyName() === 'HYBE'
+                && $r->groupName() === 'BTS'
+                && $r->talentName() === 'Jimin')
             ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
 
         $this->app->instance(GeminiClient::class, $geminiClient);
@@ -877,11 +871,9 @@ class AutoWikiCreationServiceTest extends TestCase
         $geminiClient = Mockery::mock(GeminiClient::class);
         $geminiClient->shouldReceive('generateSong')
             ->once()
-            ->withArgs(function (GenerateSongRequest $r) {
-                return $r->agencyName() === null
-                    && $r->groupName() === null
-                    && $r->talentName() === null;
-            })
+            ->withArgs(fn (GenerateSongRequest $r) => $r->agencyName() === null
+                && $r->groupName() === null
+                && $r->talentName() === null)
             ->andReturn(new GenerateSongResponse($this->createPsrResponse($responseJson)));
 
         $this->app->instance(GeminiClient::class, $geminiClient);

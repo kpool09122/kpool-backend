@@ -201,7 +201,7 @@ final readonly class SongBasic implements BasicInterface
             normalizedName: $data['normalized_name'] ?? '',
             songType: isset($data['song_type']) ? SongType::from($data['song_type']) : null,
             genres: isset($data['genres'])
-                ? array_map(static fn (string $genre) => SongGenre::from($genre), $data['genres'])
+                ? array_map(SongGenre::from(...), $data['genres'])
                 : [],
             // 関連エンティティ
             agencyIdentifier: isset($data['agency_identifier']) ? new WikiIdentifier($data['agency_identifier']) : null,

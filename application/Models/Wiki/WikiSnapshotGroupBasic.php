@@ -25,14 +25,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WikiSnapshotGroupBasic extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'wiki_snapshot_group_basics';
 
+    #[\Override]
     protected $primaryKey = 'snapshot_id';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'snapshot_id',
         'name',
@@ -50,6 +55,7 @@ class WikiSnapshotGroupBasic extends Model
         'main_image_identifier',
     ];
 
+    #[\Override]
     protected $casts = [
         'official_colors' => 'array',
     ];

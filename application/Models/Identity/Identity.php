@@ -25,12 +25,16 @@ use Illuminate\Support\Carbon;
  */
 class Identity extends Authenticatable
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'identities';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'username',
@@ -43,10 +47,12 @@ class Identity extends Authenticatable
         'original_identity_identifier',
     ];
 
+    #[\Override]
     protected $hidden = [
         'password',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -22,14 +22,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WikiAgencyBasic extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'wiki_agency_basics';
 
+    #[\Override]
     protected $primaryKey = 'wiki_id';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'wiki_id',
         'name',
@@ -44,6 +49,7 @@ class WikiAgencyBasic extends Model
         'social_links',
     ];
 
+    #[\Override]
     protected $casts = [
         'social_links' => 'array',
     ];

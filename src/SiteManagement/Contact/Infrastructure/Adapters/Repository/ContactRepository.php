@@ -9,10 +9,10 @@ use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 
-final class ContactRepository implements ContactRepositoryInterface
+final readonly class ContactRepository implements ContactRepositoryInterface
 {
     public function __construct(
-        private readonly EncryptionServiceInterface $encryptionService,
+        private EncryptionServiceInterface $encryptionService,
     ) {
     }
 

@@ -20,12 +20,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class SettlementSchedule extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'settlement_schedules';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'monetization_account_id',
@@ -36,6 +40,7 @@ class SettlementSchedule extends Model
         'next_closing_date',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -63,9 +63,7 @@ class RemoveIdentityFromIdentityGroupTest extends TestCase
             ->andReturn($identityGroup);
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (IdentityGroup $arg) use ($identityIdentifier) {
-                return ! $arg->hasMember($identityIdentifier);
-            }))
+            ->with(Mockery::on(fn (IdentityGroup $arg) => ! $arg->hasMember($identityIdentifier)))
             ->andReturnNull();
 
         $this->app->instance(IdentityGroupRepositoryInterface::class, $repository);

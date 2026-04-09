@@ -55,9 +55,7 @@ class DetachPolicyFromRoleTest extends TestCase
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (Role $savedRole) use ($policyIdentifier) {
-                return ! $savedRole->hasPolicy($policyIdentifier);
-            }))
+            ->with(Mockery::on(fn (Role $savedRole) => ! $savedRole->hasPolicy($policyIdentifier)))
             ->andReturnNull();
 
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
@@ -119,9 +117,7 @@ class DetachPolicyFromRoleTest extends TestCase
             ->andReturn($role);
         $roleRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (Role $savedRole) {
-                return count($savedRole->policies()) === 0;
-            }))
+            ->with(Mockery::on(fn (Role $savedRole) => count($savedRole->policies()) === 0))
             ->andReturnNull();
 
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);

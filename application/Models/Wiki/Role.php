@@ -19,18 +19,23 @@ use Illuminate\Support\Carbon;
  */
 class Role extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'roles';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'name',
         'is_system_role',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -25,14 +25,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class DraftWikiImage extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'draft_wiki_images';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'published_id',
@@ -50,6 +55,7 @@ class DraftWikiImage extends Model
         'uploaded_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'display_order' => 'integer',
         'agreed_to_terms_at' => 'datetime',

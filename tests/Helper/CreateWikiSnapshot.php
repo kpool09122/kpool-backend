@@ -98,7 +98,7 @@ class CreateWikiSnapshot
     private static function createTalentBasic(string $snapshotId, array $overrides = []): void
     {
         $groupIdentifiers = isset($overrides['group_identifiers'])
-            ? json_decode($overrides['group_identifiers'], true)
+            ? json_decode((string) $overrides['group_identifiers'], true)
             : [];
 
         DB::table('wiki_snapshot_talent_basics')->insert([
@@ -155,10 +155,10 @@ class CreateWikiSnapshot
     private static function createSongBasic(string $snapshotId, array $overrides = []): void
     {
         $groupIdentifiers = isset($overrides['group_identifiers'])
-            ? json_decode($overrides['group_identifiers'], true)
+            ? json_decode((string) $overrides['group_identifiers'], true)
             : [];
         $talentIdentifiers = isset($overrides['talent_identifiers'])
-            ? json_decode($overrides['talent_identifiers'], true)
+            ? json_decode((string) $overrides['talent_identifiers'], true)
             : [];
 
         DB::table('wiki_snapshot_song_basics')->insert([

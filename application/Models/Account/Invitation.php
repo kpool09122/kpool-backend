@@ -21,14 +21,19 @@ use Illuminate\Support\Carbon;
  */
 class Invitation extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'invitations';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'account_id',
@@ -42,6 +47,7 @@ class Invitation extends Model
         'created_at',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

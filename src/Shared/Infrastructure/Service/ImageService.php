@@ -42,11 +42,7 @@ class ImageService implements ImageServiceInterface
         // リサイズ版を作成して保存
         $resizedImage = $this->resizeImage($gdImage);
         $resizedPath = $this->saveAsWebp($resizedImage, $baseFileName . '_resized.webp');
-
-        // リソース解放
-        imagedestroy($gdImage);
         if ($resizedImage !== $gdImage) {
-            imagedestroy($resizedImage);
         }
 
         return new ImageUploadResult(

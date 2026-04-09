@@ -34,12 +34,16 @@ use Illuminate\Support\Carbon;
  */
 class DraftWiki extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'draft_wikis';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'published_wiki_id',
@@ -60,6 +64,7 @@ class DraftWiki extends Model
         'approved_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'sections' => 'array',
         'edited_at' => 'datetime',

@@ -17,14 +17,19 @@ use Illuminate\Support\Carbon;
  */
 class PromotionHistory extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'promotion_histories';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'principal_id',
@@ -34,6 +39,7 @@ class PromotionHistory extends Model
         'processed_at',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

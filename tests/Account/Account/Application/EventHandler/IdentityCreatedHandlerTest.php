@@ -57,12 +57,10 @@ class IdentityCreatedHandlerTest extends TestCase
         $createAccount = Mockery::mock(CreateAccountInterface::class);
         $createAccount->shouldReceive('process')
             ->once()
-            ->with(Mockery::on(static function (CreateAccountInputPort $input) use ($email, $accountType, $name, $identityIdentifier) {
-                return (string) $input->email() === (string) $email
-                    && $input->accountType() === $accountType
-                    && (string) $input->accountName() === $name
-                    && (string) $input->identityIdentifier() === (string) $identityIdentifier;
-            }))
+            ->with(Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
+                && $input->accountType() === $accountType
+                && (string) $input->accountName() === $name
+                && (string) $input->identityIdentifier() === (string) $identityIdentifier))
             ->andReturn($expectedAccount);
 
         $this->app->instance(CreateAccountInterface::class, $createAccount);
@@ -102,12 +100,10 @@ class IdentityCreatedHandlerTest extends TestCase
         $createAccount = Mockery::mock(CreateAccountInterface::class);
         $createAccount->shouldReceive('process')
             ->once()
-            ->with(Mockery::on(static function (CreateAccountInputPort $input) use ($email, $accountType, $identityIdentifier) {
-                return (string) $input->email() === (string) $email
-                    && $input->accountType() === $accountType
-                    && (string) $input->accountName() === 'My Account'
-                    && (string) $input->identityIdentifier() === (string) $identityIdentifier;
-            }))
+            ->with(Mockery::on(static fn (CreateAccountInputPort $input) => (string) $input->email() === (string) $email
+                && $input->accountType() === $accountType
+                && (string) $input->accountName() === 'My Account'
+                && (string) $input->identityIdentifier() === (string) $identityIdentifier))
             ->andReturn($expectedAccount);
 
         $this->app->instance(CreateAccountInterface::class, $createAccount);

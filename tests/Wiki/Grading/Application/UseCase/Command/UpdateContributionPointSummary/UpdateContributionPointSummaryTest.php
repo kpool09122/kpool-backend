@@ -138,11 +138,11 @@ class UpdateContributionPointSummaryTest extends TestCase
             ->once()
             ->andReturn([$existingSummary]);
         $summaryRepository->shouldReceive('save')
-            ->with(Mockery::on(static function ($summary) use ($principalId) {
+            ->with(Mockery::on(
                 // 既存サマリーが更新されていることを確認（履歴のポイント100が設定される）
-                return (string) $summary->principalIdentifier() === $principalId
-                    && $summary->points()->value() === 100;
-            }))
+                static fn ($summary) => (string) $summary->principalIdentifier() === $principalId
+                && $summary->points()->value() === 100
+            ))
             ->once();
 
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);

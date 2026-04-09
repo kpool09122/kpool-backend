@@ -23,12 +23,16 @@ use Illuminate\Support\Carbon;
  */
 class ImageHideRequest extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'image_hide_requests';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'image_id',
@@ -42,6 +46,7 @@ class ImageHideRequest extends Model
         'reviewer_comment',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

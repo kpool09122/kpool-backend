@@ -18,6 +18,7 @@ abstract class TestCase extends OrchestraTestCase
      *
      * @var bool
      */
+    #[\Override]
     protected $enablesPackageDiscoveries = true;
 
     // Enable DB usage only for tests belonging to the 'useDb' group (now defined via #[Group('useDb')]).

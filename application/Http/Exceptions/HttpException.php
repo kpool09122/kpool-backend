@@ -12,39 +12,22 @@ use Throwable;
  */
 abstract class HttpException extends Exception
 {
-    protected int $httpStatus;
-    protected ?string $type = null;
-    protected ?string $title = null;
-    protected ?string $detail = null;
-    protected ?string $instance = null;
-    /**
-     * @var array<string, mixed>
-     */
-    protected array $extensions = [];
-
     /**
      * @param array<string, mixed> $extensions
      */
     public function __construct(
-        int $httpStatus,
-        ?string $type = null,
-        ?string $title = null,
-        ?string $detail = null,
-        ?string $instance = null,
-        array $extensions = [],
+        protected int $httpStatus,
+        protected ?string $type = null,
+        protected ?string $title = null,
+        protected ?string $detail = null,
+        protected ?string $instance = null,
+        protected array $extensions = [],
         Exception|Throwable|null $previous = null
     ) {
-        $this->httpStatus = $httpStatus;
-        $this->type = $type;
-        $this->title = $title;
-        $this->detail = $detail;
-        $this->instance = $instance;
-        $this->extensions = $extensions;
-
         // メッセージには detail または title を使用
-        $message = $detail ?? $title ?? 'HTTP Exception';
+        $message = $this->detail ?? $this->title ?? 'HTTP Exception';
 
-        parent::__construct($message, $httpStatus, $previous);
+        parent::__construct($message, $this->httpStatus, $previous);
     }
 
     public function getHttpStatus(): int

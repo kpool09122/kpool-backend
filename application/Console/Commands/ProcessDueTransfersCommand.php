@@ -11,10 +11,12 @@ use Source\Monetization\Settlement\Domain\Repository\TransferRepositoryInterface
 
 class ProcessDueTransfersCommand extends Command
 {
+    #[\Override]
     protected $signature = 'settlement:process-due-transfers
                             {--date= : 処理対象日（指定がなければ今日）}
                             {--dry-run : 実行せずに対象件数のみ表示}';
 
+    #[\Override]
     protected $description = '送金日が到来したTransferの送金処理を実行する';
 
     public function handle(TransferRepositoryInterface $transferRepository): int

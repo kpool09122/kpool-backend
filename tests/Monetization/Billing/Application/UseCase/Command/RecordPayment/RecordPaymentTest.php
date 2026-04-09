@@ -59,9 +59,7 @@ class RecordPaymentTest extends TestCase
             ->andReturn($invoice);
         $invoiceRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (Invoice $inv) {
-                return $inv->status() === InvoiceStatus::PAID;
-            });
+            ->withArgs(fn (Invoice $inv) => $inv->status() === InvoiceStatus::PAID);
 
         $paymentRepository = Mockery::mock(PaymentRepositoryInterface::class);
         $paymentRepository->shouldReceive('findById')

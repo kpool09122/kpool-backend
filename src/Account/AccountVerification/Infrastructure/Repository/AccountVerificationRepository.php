@@ -150,17 +150,15 @@ class AccountVerificationRepository implements AccountVerificationRepositoryInte
             ? new AccountIdentifier($model->reviewed_by)
             : null;
 
-        $documents = $model->documents->map(function ($doc) {
-            return new VerificationDocument(
-                new DocumentIdentifier($doc->id),
-                new VerificationIdentifier($doc->verification_id),
-                DocumentType::from($doc->document_type),
-                new DocumentPath($doc->document_path),
-                $doc->original_file_name,
-                $doc->file_size_bytes,
-                $doc->uploaded_at->toDateTimeImmutable(),
-            );
-        })->all();
+        $documents = $model->documents->map(fn ($doc) => new VerificationDocument(
+            new DocumentIdentifier($doc->id),
+            new VerificationIdentifier($doc->verification_id),
+            DocumentType::from($doc->document_type),
+            new DocumentPath($doc->document_path),
+            $doc->original_file_name,
+            $doc->file_size_bytes,
+            $doc->uploaded_at->toDateTimeImmutable(),
+        ))->all();
 
         return new AccountVerification(
             new VerificationIdentifier($model->id),

@@ -69,12 +69,6 @@ class Role
 
     public function hasPolicy(PolicyIdentifier $policyIdentifier): bool
     {
-        foreach ($this->policies as $policy) {
-            if ((string) $policy === (string) $policyIdentifier) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->policies, fn ($policy) => (string) $policy === (string) $policyIdentifier);
     }
 }

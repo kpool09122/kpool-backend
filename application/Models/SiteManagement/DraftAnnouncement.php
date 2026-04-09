@@ -18,12 +18,16 @@ use Illuminate\Support\Carbon;
  */
 class DraftAnnouncement extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'draft_announcements';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'translation_set_identifier',
@@ -34,6 +38,7 @@ class DraftAnnouncement extends Model
         'published_date',
     ];
 
+    #[\Override]
     protected $casts = [
         'category' => 'integer',
         'published_date' => 'datetime',

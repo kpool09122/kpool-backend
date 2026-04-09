@@ -16,14 +16,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class VideoLinkCollectionStatus extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'video_link_collection_statuses';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'resource_type',
@@ -32,6 +37,7 @@ class VideoLinkCollectionStatus extends Model
         'created_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'last_collected_at' => 'datetime',
         'created_at' => 'datetime',

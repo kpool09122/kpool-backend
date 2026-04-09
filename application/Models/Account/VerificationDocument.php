@@ -21,12 +21,16 @@ use Illuminate\Support\Carbon;
  */
 class VerificationDocument extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'verification_documents';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'verification_id',
@@ -37,6 +41,7 @@ class VerificationDocument extends Model
         'uploaded_at',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

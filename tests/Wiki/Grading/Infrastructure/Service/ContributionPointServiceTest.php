@@ -215,7 +215,7 @@ class ContributionPointServiceTest extends TestCase
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
-        $recentPublishDate = (new DateTimeImmutable())->modify('-3 days');
+        $recentPublishDate = new DateTimeImmutable()->modify('-3 days');
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
@@ -267,7 +267,7 @@ class ContributionPointServiceTest extends TestCase
         $mergerId = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $wikiId = new WikiIdentifier(StrTestHelper::generateUuid());
 
-        $oldPublishDate = (new DateTimeImmutable())->modify('-10 days');
+        $oldPublishDate = new DateTimeImmutable()->modify('-10 days');
 
         $historyRepository = Mockery::mock(ContributionPointHistoryRepositoryInterface::class);
         $historyRepository->shouldReceive('findLastPublishDate')
@@ -334,9 +334,7 @@ class ContributionPointServiceTest extends TestCase
             ->andReturn($existingSummary);
         $summaryRepository->shouldReceive('save')
             ->times(3)
-            ->with(Mockery::on(static function (ContributionPointSummary $summary) {
-                return $summary->points()->value() > 0;
-            }));
+            ->with(Mockery::on(static fn (ContributionPointSummary $summary) => $summary->points()->value() > 0));
 
         $historyFactory = Mockery::mock(ContributionPointHistoryFactoryInterface::class);
         $historyFactory->shouldReceive('create')

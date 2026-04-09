@@ -21,6 +21,7 @@ class OAuthStateRepositoryTest extends TestCase
         parent::tearDown();
     }
 
+    #[\Override]
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);

@@ -78,13 +78,11 @@ class InvitationMailServiceTest extends TestCase
         $service = $this->app->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
-        Mail::assertSent(InvitationMail::class, static function (InvitationMail $mail) use ($data) {
-            return $mail->hasTo((string) $data->invitation->email())
-                && $mail->invitation === $data->invitation
-                && $mail->accountName === (string) $data->account->name()
-                && $mail->language === Language::JAPANESE
-                && str_contains($mail->invitationUrl, (string) $data->invitation->token());
-        });
+        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
+            && $mail->invitation === $data->invitation
+            && $mail->accountName === (string) $data->account->name()
+            && $mail->language === Language::JAPANESE
+            && str_contains($mail->invitationUrl, (string) $data->invitation->token()));
     }
 
     /**
@@ -121,13 +119,11 @@ class InvitationMailServiceTest extends TestCase
         $service = $this->app->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
-        Mail::assertSent(InvitationMail::class, static function (InvitationMail $mail) use ($data) {
-            return $mail->hasTo((string) $data->invitation->email())
-                && $mail->invitation === $data->invitation
-                && $mail->accountName === 'アカウント'
-                && $mail->language === Language::JAPANESE
-                && str_contains($mail->invitationUrl, (string) $data->invitation->token());
-        });
+        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => $mail->hasTo((string) $data->invitation->email())
+            && $mail->invitation === $data->invitation
+            && $mail->accountName === 'アカウント'
+            && $mail->language === Language::JAPANESE
+            && str_contains($mail->invitationUrl, (string) $data->invitation->token()));
     }
 
     /**
@@ -164,10 +160,8 @@ class InvitationMailServiceTest extends TestCase
         $service = $this->app->make(InvitationMailServiceInterface::class);
         $service->sendInvitationEmail($data->invitation);
 
-        Mail::assertSent(InvitationMail::class, static function (InvitationMail $mail) use ($data) {
-            return str_contains($mail->invitationUrl, '/signup?token=')
-                && str_contains($mail->invitationUrl, (string) $data->invitation->token());
-        });
+        Mail::assertSent(InvitationMail::class, static fn (InvitationMail $mail) => str_contains($mail->invitationUrl, '/signup?token=')
+            && str_contains($mail->invitationUrl, (string) $data->invitation->token()));
     }
 
     private function createTestData(): InvitationMailServiceTestData

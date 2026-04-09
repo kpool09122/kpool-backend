@@ -20,12 +20,16 @@ use Illuminate\Support\Carbon;
  */
 class Principal extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'wiki_principals';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'identity_id',
@@ -36,6 +40,7 @@ class Principal extends Model
         'enabled',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

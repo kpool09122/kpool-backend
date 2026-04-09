@@ -20,8 +20,10 @@ class InvoiceLine extends Model
 {
     public const UPDATED_AT = null;
 
+    #[\Override]
     protected $table = 'invoice_lines';
 
+    #[\Override]
     protected $fillable = [
         'invoice_id',
         'description',
@@ -30,6 +32,7 @@ class InvoiceLine extends Model
         'quantity',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

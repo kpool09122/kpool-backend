@@ -17,12 +17,16 @@ use Illuminate\Support\Carbon;
  */
 class ContributionPointSummary extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'contribution_point_summaries';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'principal_id',
@@ -30,6 +34,7 @@ class ContributionPointSummary extends Model
         'points',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

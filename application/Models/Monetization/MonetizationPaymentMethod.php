@@ -24,12 +24,16 @@ use Illuminate\Support\Carbon;
  */
 class MonetizationPaymentMethod extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'monetization_registered_payment_methods';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'monetization_account_id',
@@ -43,6 +47,7 @@ class MonetizationPaymentMethod extends Model
         'status',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

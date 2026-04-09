@@ -33,12 +33,16 @@ use Illuminate\Support\Carbon;
  */
 class Wiki extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'wikis';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'translation_set_identifier',
@@ -59,6 +63,7 @@ class Wiki extends Model
         'published_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'sections' => 'array',
         'version' => 'integer',

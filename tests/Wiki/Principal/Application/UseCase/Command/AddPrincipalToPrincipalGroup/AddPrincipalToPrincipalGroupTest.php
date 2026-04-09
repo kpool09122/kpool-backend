@@ -59,9 +59,7 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
             ->andReturn($principalGroup);
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(function (PrincipalGroup $arg) use ($principalIdentifier) {
-                return $arg->hasMember($principalIdentifier);
-            }))
+            ->with(Mockery::on(fn (PrincipalGroup $arg) => $arg->hasMember($principalIdentifier)))
             ->andReturnNull();
 
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $repository);

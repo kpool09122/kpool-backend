@@ -53,9 +53,7 @@ class AuthorizePaymentTest extends TestCase
         $paymentFactory = Mockery::mock(PaymentFactoryInterface::class);
         $paymentFactory->shouldReceive('create')
             ->once()
-            ->withArgs(function (OrderIdentifier $oi, MonetizationAccountIdentifier $buyerId, Money $m, PaymentMethod $pm, DateTimeImmutable $createdAt) use ($orderIdentifier, $buyerMonetizationAccountIdentifier, $money, $paymentMethod) {
-                return $oi === $orderIdentifier && $buyerId === $buyerMonetizationAccountIdentifier && $m === $money && $pm === $paymentMethod;
-            })
+            ->withArgs(fn (OrderIdentifier $oi, MonetizationAccountIdentifier $buyerId, Money $m, PaymentMethod $pm, DateTimeImmutable $createdAt) => $oi === $orderIdentifier && $buyerId === $buyerMonetizationAccountIdentifier && $m === $money && $pm === $paymentMethod)
             ->andReturn($pendingPayment);
 
         $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
@@ -66,9 +64,7 @@ class AuthorizePaymentTest extends TestCase
         $paymentRepository = Mockery::mock(PaymentRepositoryInterface::class);
         $paymentRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (Payment $payment) {
-                return $payment->status() === PaymentStatus::AUTHORIZED;
-            });
+            ->withArgs(fn (Payment $payment) => $payment->status() === PaymentStatus::AUTHORIZED);
 
         $this->app->instance(PaymentFactoryInterface::class, $paymentFactory);
         $this->app->instance(PaymentGatewayInterface::class, $paymentGateway);

@@ -20,9 +20,7 @@ class ClientServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $this->app->singleton(ClientInterface::class, function () {
-            return new GuzzleClient();
-        });
+        $this->app->singleton(ClientInterface::class, fn () => new GuzzleClient());
 
         $this->app->singleton(PsrFactories::class, function () {
             $httpFactory = new HttpFactory();

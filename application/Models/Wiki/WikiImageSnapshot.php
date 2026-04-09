@@ -26,14 +26,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class WikiImageSnapshot extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'wiki_image_snapshots';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'image_id',
@@ -52,6 +57,7 @@ class WikiImageSnapshot extends Model
         'updated_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'display_order' => 'integer',
         'uploaded_at' => 'datetime',

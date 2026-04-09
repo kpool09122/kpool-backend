@@ -17,7 +17,7 @@ class RegisteredPaymentMethod
         private readonly RegisteredPaymentMethodIdentifier $paymentMethodIdentifier,
         private readonly MonetizationAccountIdentifier     $monetizationAccountIdentifier,
         private readonly PaymentMethodId                   $paymentMethodId,
-        private PaymentMethodType                          $type,
+        private readonly PaymentMethodType                          $type,
         private ?PaymentMethodMeta                         $meta = null,
         private bool                                       $isDefault = false,
         private PaymentMethodStatus                        $status = PaymentMethodStatus::ACTIVE,

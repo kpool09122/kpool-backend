@@ -95,12 +95,10 @@ class DelegationApprovedHandlerTest extends TestCase
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
             ->once()
-            ->with(Mockery::on(static function ($dispatchedEvent) use ($delegationId, $delegatedIdentityId, $delegatorId) {
-                return $dispatchedEvent instanceof DelegatedIdentityCreated
-                    && (string) $dispatchedEvent->delegationIdentifier() === (string) $delegationId
-                    && (string) $dispatchedEvent->delegatedIdentityIdentifier() === (string) $delegatedIdentityId
-                    && (string) $dispatchedEvent->originalIdentityIdentifier() === (string) $delegatorId;
-            }))
+            ->with(Mockery::on(static fn ($dispatchedEvent) => $dispatchedEvent instanceof DelegatedIdentityCreated
+                && (string) $dispatchedEvent->delegationIdentifier() === (string) $delegationId
+                && (string) $dispatchedEvent->delegatedIdentityIdentifier() === (string) $delegatedIdentityId
+                && (string) $dispatchedEvent->originalIdentityIdentifier() === (string) $delegatorId))
             ->andReturnNull();
 
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);

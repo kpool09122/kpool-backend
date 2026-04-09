@@ -33,11 +33,11 @@ class Identity
      */
     public function __construct(
         private readonly IdentityIdentifier $identityIdentifier,
-        private UserName                    $username,
-        private Email                       $email,
-        private Language                    $language,
+        private readonly UserName                    $username,
+        private readonly Email                       $email,
+        private readonly Language                    $language,
         private ?ImagePath                  $profileImage,
-        private HashedPassword              $hashedPassword,
+        private readonly HashedPassword              $hashedPassword,
         private ?DateTimeImmutable          $emailVerifiedAt,
         private array                       $socialConnections = [],
         private readonly ?DelegationIdentifier $delegationIdentifier = null,

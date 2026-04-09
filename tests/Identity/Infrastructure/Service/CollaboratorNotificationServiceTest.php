@@ -55,10 +55,8 @@ class CollaboratorNotificationServiceTest extends TestCase
 
         $service->sendDemotionWarning($email, $language);
 
-        Mail::assertSent(DemotionWarningMail::class, function (DemotionWarningMail $mail) use ($email, $language) {
-            return $mail->hasTo((string) $email)
-                && $mail->language === $language;
-        });
+        Mail::assertSent(DemotionWarningMail::class, fn (DemotionWarningMail $mail) => $mail->hasTo((string) $email)
+            && $mail->language === $language);
     }
 
     /**
@@ -74,10 +72,8 @@ class CollaboratorNotificationServiceTest extends TestCase
 
         $service->sendPromotionNotification($email, $language);
 
-        Mail::assertSent(CollaboratorPromotedMail::class, function (CollaboratorPromotedMail $mail) use ($email, $language) {
-            return $mail->hasTo((string) $email)
-                && $mail->language === $language;
-        });
+        Mail::assertSent(CollaboratorPromotedMail::class, fn (CollaboratorPromotedMail $mail) => $mail->hasTo((string) $email)
+            && $mail->language === $language);
     }
 
     /**
@@ -93,9 +89,7 @@ class CollaboratorNotificationServiceTest extends TestCase
 
         $service->sendDemotionNotification($email, $language);
 
-        Mail::assertSent(CollaboratorDemotedMail::class, function (CollaboratorDemotedMail $mail) use ($email, $language) {
-            return $mail->hasTo((string) $email)
-                && $mail->language === $language;
-        });
+        Mail::assertSent(CollaboratorDemotedMail::class, fn (CollaboratorDemotedMail $mail) => $mail->hasTo((string) $email)
+            && $mail->language === $language);
     }
 }

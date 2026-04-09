@@ -33,14 +33,18 @@ use Illuminate\Support\Carbon;
  */
 class WikiSnapshot extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
     public const UPDATED_AT = null;
 
+    #[\Override]
     protected $table = 'wiki_snapshots';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'wiki_id',
@@ -60,6 +64,7 @@ class WikiSnapshot extends Model
         'translated_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'sections' => 'array',
         'version' => 'integer',

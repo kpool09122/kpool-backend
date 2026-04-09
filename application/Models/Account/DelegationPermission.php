@@ -16,12 +16,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 class DelegationPermission extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'delegation_permissions';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'identity_group_id',
@@ -29,6 +33,7 @@ class DelegationPermission extends Model
         'affiliation_id',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

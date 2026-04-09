@@ -21,14 +21,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class VideoLink extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'video_links';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'resource_type',
@@ -42,6 +47,7 @@ class VideoLink extends Model
         'created_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'display_order' => 'integer',
         'published_at' => 'datetime',

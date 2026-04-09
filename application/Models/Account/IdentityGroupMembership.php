@@ -16,18 +16,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class IdentityGroupMembership extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'identity_group_memberships';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'identity_group_id',
         'identity_id',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

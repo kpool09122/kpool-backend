@@ -16,10 +16,12 @@ use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 
 class ProcessRolePromotionCommand extends Command
 {
+    #[\Override]
     protected $signature = 'wiki:process-role-promotion
                             {--month= : 処理対象月（YYYY-MM形式、指定がなければ今月）}
                             {--sync : ジョブをキューに入れず同期実行}';
 
+    #[\Override]
     protected $description = 'Wiki Collaboratorの昇格・降格処理を実行する';
 
     public function handle(

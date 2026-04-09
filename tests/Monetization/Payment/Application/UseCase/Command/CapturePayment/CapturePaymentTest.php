@@ -49,9 +49,7 @@ class CapturePaymentTest extends TestCase
             ->andReturn($authorizedPayment);
         $paymentRepository->shouldReceive('save')
             ->once()
-            ->withArgs(function (Payment $payment) {
-                return $payment->status() === PaymentStatus::CAPTURED;
-            });
+            ->withArgs(fn (Payment $payment) => $payment->status() === PaymentStatus::CAPTURED);
 
         $paymentGateway = Mockery::mock(PaymentGatewayInterface::class);
         $paymentGateway->shouldReceive('capture')

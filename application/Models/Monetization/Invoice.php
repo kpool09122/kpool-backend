@@ -30,14 +30,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Invoice extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'invoices';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'order_id',
@@ -60,6 +65,7 @@ class Invoice extends Model
         'void_reason',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

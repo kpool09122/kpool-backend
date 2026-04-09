@@ -29,14 +29,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class WikiImage extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $table = 'wiki_images';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'resource_type',
@@ -58,6 +63,7 @@ class WikiImage extends Model
         'updated_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'display_order' => 'integer',
         'is_hidden' => 'boolean',

@@ -31,14 +31,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class WikiSnapshotTalentBasic extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'wiki_snapshot_talent_basics';
 
+    #[\Override]
     protected $primaryKey = 'snapshot_id';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'snapshot_id',
         'name',

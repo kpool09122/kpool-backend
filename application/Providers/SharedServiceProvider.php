@@ -14,6 +14,7 @@ use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 
 class SharedServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->app->useLangPath(dirname(__DIR__, 2) . '/resources/lang');

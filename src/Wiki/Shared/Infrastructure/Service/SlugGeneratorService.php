@@ -20,10 +20,10 @@ readonly class SlugGeneratorService implements SlugGeneratorServiceInterface
         $slug = preg_replace('/[^a-z0-9]+/u', '-', $slug);
 
         // 連続する - を1つに統合
-        $slug = preg_replace('/-+/', '-', $slug);
+        $slug = preg_replace('/-+/', '-', (string) $slug);
 
         // 先頭と末尾の - を削除
-        $slug = trim($slug, '-');
+        $slug = trim((string) $slug, '-');
 
         // 空または最小文字数未満の場合はランダムな10文字の英数字を生成
         if ($slug === '' || mb_strlen($slug) < Slug::MIN_LENGTH) {

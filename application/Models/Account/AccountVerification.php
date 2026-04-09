@@ -25,12 +25,16 @@ use Illuminate\Support\Carbon;
  */
 class AccountVerification extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'account_verifications';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'account_id',
@@ -43,6 +47,7 @@ class AccountVerification extends Model
         'rejection_reason',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -21,12 +21,16 @@ use Illuminate\Support\Carbon;
  */
 class PrincipalGroup extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'principal_groups';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'account_id',
@@ -34,6 +38,7 @@ class PrincipalGroup extends Model
         'is_default',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [

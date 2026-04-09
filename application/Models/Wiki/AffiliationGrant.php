@@ -19,12 +19,16 @@ use Illuminate\Support\Carbon;
  */
 class AffiliationGrant extends Model
 {
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = 'affiliation_grants';
 
+    #[\Override]
     protected $keyType = 'string';
 
+    #[\Override]
     protected $fillable = [
         'id',
         'affiliation_id',
