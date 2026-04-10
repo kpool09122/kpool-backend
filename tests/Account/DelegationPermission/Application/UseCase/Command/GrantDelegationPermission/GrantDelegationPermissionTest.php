@@ -10,6 +10,7 @@ use Mockery;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermission;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInput;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
+use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionOutput;
 use Source\Account\DelegationPermission\Domain\Entity\DelegationPermission;
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
@@ -104,12 +105,11 @@ class GrantDelegationPermissionTest extends TestCase
             $affiliationIdentifier,
         );
 
-        $result = $useCase->process($input);
+        $output = new GrantDelegationPermissionOutput();
 
-        $this->assertSame((string) $delegationPermissionIdentifier, (string) $result->delegationPermissionIdentifier());
-        $this->assertSame((string) $identityGroupIdentifier, (string) $result->identityGroupIdentifier());
-        $this->assertSame((string) $targetAccountIdentifier, (string) $result->targetAccountIdentifier());
-        $this->assertSame((string) $affiliationIdentifier, (string) $result->affiliationIdentifier());
+        $useCase->process($input, $output);
+
+        $this->assertSame((string) $delegationPermission->delegationPermissionIdentifier(), $output->toArray()['delegationPermissionIdentifier']);
     }
 
     /**
@@ -145,8 +145,10 @@ class GrantDelegationPermissionTest extends TestCase
             $affiliationIdentifier,
         );
 
+        $output = new GrantDelegationPermissionOutput();
+
         $this->expectException(IdentityGroupNotFoundException::class);
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 }

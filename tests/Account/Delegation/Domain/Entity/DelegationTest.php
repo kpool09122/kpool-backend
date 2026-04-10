@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Tests\Account\Delegation\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Delegation\Domain\Entity\Delegation;
+use Source\Account\Delegation\Domain\Exception\InvalidDelegationApprovalException;
+use Source\Account\Delegation\Domain\Exception\InvalidDelegationRevocationException;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
@@ -81,7 +82,7 @@ class DelegationTest extends TestCase
     {
         $delegation = $this->createApprovedDelegation();
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidDelegationApprovalException::class);
         $this->expectExceptionMessage('Only pending delegations can be approved.');
 
         $delegation->approve();
@@ -101,7 +102,7 @@ class DelegationTest extends TestCase
     {
         $delegation = $this->createPendingDelegation();
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidDelegationRevocationException::class);
         $this->expectExceptionMessage('Only approved delegations can be revoked.');
 
         $delegation->revoke();

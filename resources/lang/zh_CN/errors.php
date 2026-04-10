@@ -56,6 +56,13 @@ return [
     'cannot_remove_last_owner' => '无法移除账户的最后一个所有者。',
     'cannot_delete_default_identity_group' => '无法删除默认身份组。',
     'cannot_delete_last_owner_group' => '无法删除有成员的最后一个所有者组。',
+    'delegation_not_found' => '找不到指定的委托。',
+    'disallowed_delegation_operation' => '不允许此委托操作。',
+    'invalid_delegation_approval' => '只能批准待处理的委托。',
+    'invalid_delegation_revocation' => '只能撤销已批准的委托。',
+    'affiliation_not_found' => '找不到指定的所属。',
+    'invalid_affiliation_status' => '所属状态对此操作无效。',
+    'delegation_permission_not_found' => '找不到指定的委托权限。',
 
     // Wiki
     'unauthorized' => '此操作未获授权。',

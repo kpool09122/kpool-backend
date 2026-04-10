@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission;
 
-use Source\Account\DelegationPermission\Domain\Entity\DelegationPermission;
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
 use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundException;
@@ -22,7 +21,7 @@ readonly class GrantDelegationPermission implements GrantDelegationPermissionInt
     /**
      * @throws IdentityGroupNotFoundException
      */
-    public function process(GrantDelegationPermissionInputPort $input): DelegationPermission
+    public function process(GrantDelegationPermissionInputPort $input, GrantDelegationPermissionOutputPort $output): void
     {
         $identityGroup = $this->identityGroupRepository->findById($input->identityGroupIdentifier());
 
@@ -38,6 +37,6 @@ readonly class GrantDelegationPermission implements GrantDelegationPermissionInt
 
         $this->delegationPermissionRepository->save($delegationPermission);
 
-        return $delegationPermission;
+        $output->setDelegationPermission($delegationPermission);
     }
 }
