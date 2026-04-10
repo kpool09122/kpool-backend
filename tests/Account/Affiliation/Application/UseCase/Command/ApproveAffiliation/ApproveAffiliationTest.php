@@ -12,6 +12,7 @@ use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperat
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInterface;
+use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationOutput;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
@@ -74,10 +75,12 @@ class ApproveAffiliationTest extends TestCase
 
         $useCase = $this->app->make(ApproveAffiliationInterface::class);
 
-        $result = $useCase->process($testData->input);
+        $output = new ApproveAffiliationOutput();
 
-        $this->assertTrue($result->isActive());
-        $this->assertNotNull($result->activatedAt());
+        $useCase->process($testData->input, $output);
+
+        $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
+        $this->assertNotNull($output->toArray()['activatedAt']);
     }
 
     /**
@@ -114,10 +117,12 @@ class ApproveAffiliationTest extends TestCase
 
         $useCase = $this->app->make(ApproveAffiliationInterface::class);
 
-        $result = $useCase->process($testData->input);
+        $output = new ApproveAffiliationOutput();
 
-        $this->assertTrue($result->isActive());
-        $this->assertNotNull($result->activatedAt());
+        $useCase->process($testData->input, $output);
+
+        $this->assertSame(AffiliationStatus::ACTIVE->value, $output->toArray()['status']);
+        $this->assertNotNull($output->toArray()['activatedAt']);
     }
 
     /**
@@ -146,7 +151,7 @@ class ApproveAffiliationTest extends TestCase
         $this->expectException(AffiliationNotFoundException::class);
         $this->expectExceptionMessage('Affiliation not found.');
 
-        $useCase->process($input);
+        $useCase->process($input, new ApproveAffiliationOutput());
     }
 
     /**
@@ -179,7 +184,7 @@ class ApproveAffiliationTest extends TestCase
         $this->expectException(DisallowedAffiliationOperationException::class);
         $this->expectExceptionMessage('Only the designated approver can approve this affiliation.');
 
-        $useCase->process($input);
+        $useCase->process($input, new ApproveAffiliationOutput());
     }
 
     /**

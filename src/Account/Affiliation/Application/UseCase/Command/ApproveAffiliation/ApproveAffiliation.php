@@ -6,7 +6,6 @@ namespace Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliat
 
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
-use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationActivated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
@@ -19,7 +18,7 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
     ) {
     }
 
-    public function process(ApproveAffiliationInputPort $input): Affiliation
+    public function process(ApproveAffiliationInputPort $input, ApproveAffiliationOutputPort $output): void
     {
         $affiliation = $this->affiliationRepository->findById($input->affiliationIdentifier());
 
@@ -41,7 +40,6 @@ readonly class ApproveAffiliation implements ApproveAffiliationInterface
             $affiliation->talentAccountIdentifier(),
             $affiliation->activatedAt(),
         ));
-
-        return $affiliation;
+        $output->setAffiliation($affiliation);
     }
 }

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Source\Account\Affiliation\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationApprovalException;
+use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationTerminationException;
+use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationTermsUpdateException;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
@@ -74,7 +76,7 @@ class Affiliation
     public function approve(): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('Only pending affiliations can be approved.');
+            throw new InvalidAffiliationApprovalException('Only pending affiliations can be approved.');
         }
 
         $this->status = AffiliationStatus::ACTIVE;
@@ -84,7 +86,7 @@ class Affiliation
     public function terminate(): void
     {
         if (! $this->status->isActive()) {
-            throw new DomainException('Only active affiliations can be terminated.');
+            throw new InvalidAffiliationTerminationException('Only active affiliations can be terminated.');
         }
 
         $this->status = AffiliationStatus::TERMINATED;
@@ -94,7 +96,7 @@ class Affiliation
     public function updateTerms(AffiliationTerms $terms): void
     {
         if (! $this->status->isActive()) {
-            throw new DomainException('Terms can only be updated for active affiliations.');
+            throw new InvalidAffiliationTermsUpdateException('Terms can only be updated for active affiliations.');
         }
 
         $this->terms = $terms;

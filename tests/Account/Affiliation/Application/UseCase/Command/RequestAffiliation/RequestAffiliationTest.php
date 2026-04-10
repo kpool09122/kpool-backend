@@ -17,6 +17,7 @@ use Source\Account\Affiliation\Application\Exception\AffiliationAlreadyExistsExc
 use Source\Account\Affiliation\Application\Exception\InvalidAccountCategoryException;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationInterface;
+use Source\Account\Affiliation\Application\UseCase\Command\RequestAffiliation\RequestAffiliationOutput;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
@@ -75,11 +76,13 @@ class RequestAffiliationTest extends TestCase
 
         $useCase = $this->app->make(RequestAffiliationInterface::class);
 
-        $result = $useCase->process($testData->input);
+        $output = new RequestAffiliationOutput();
 
-        $this->assertSame((string) $testData->affiliationIdentifier, (string) $result->affiliationIdentifier());
-        $this->assertSame((string) $testData->agencyAccountIdentifier, (string) $result->agencyAccountIdentifier());
-        $this->assertSame((string) $testData->talentAccountIdentifier, (string) $result->talentAccountIdentifier());
+        $useCase->process($testData->input, $output);
+
+        $this->assertSame((string) $testData->affiliationIdentifier, $output->toArray()['affiliationIdentifier']);
+        $this->assertSame((string) $testData->agencyAccountIdentifier, $output->toArray()['agencyAccountIdentifier']);
+        $this->assertSame((string) $testData->talentAccountIdentifier, $output->toArray()['talentAccountIdentifier']);
     }
 
     /**
@@ -107,7 +110,7 @@ class RequestAffiliationTest extends TestCase
         $this->expectException(AccountNotFoundException::class);
         $this->expectExceptionMessage('Agency account not found.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, new RequestAffiliationOutput());
     }
 
     /**
@@ -139,7 +142,7 @@ class RequestAffiliationTest extends TestCase
         $this->expectException(AccountNotFoundException::class);
         $this->expectExceptionMessage('Talent account not found.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, new RequestAffiliationOutput());
     }
 
     /**
@@ -177,7 +180,7 @@ class RequestAffiliationTest extends TestCase
         $this->expectException(InvalidAccountCategoryException::class);
         $this->expectExceptionMessage('Agency account must have agency category.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, new RequestAffiliationOutput());
     }
 
     /**
@@ -219,7 +222,7 @@ class RequestAffiliationTest extends TestCase
         $this->expectException(InvalidAccountCategoryException::class);
         $this->expectExceptionMessage('Talent account must have talent category.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, new RequestAffiliationOutput());
     }
 
     /**
@@ -256,7 +259,7 @@ class RequestAffiliationTest extends TestCase
         $this->expectException(AffiliationAlreadyExistsException::class);
         $this->expectExceptionMessage('An active affiliation already exists between these accounts.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, new RequestAffiliationOutput());
     }
 
     private function createTestData(): RequestAffiliationTestData

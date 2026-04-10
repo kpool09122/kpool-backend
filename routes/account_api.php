@@ -7,6 +7,10 @@ use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountA
 use Application\Http\Action\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
 use Application\Http\Action\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
 use Application\Http\Action\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
+use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
+use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
+use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
+use Application\Http\Action\Account\Affiliation\Command\TerminateAffiliation\TerminateAffiliationAction;
 use Application\Http\Action\Account\Delegation\Command\ApproveDelegation\ApproveDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RequestDelegation\RequestDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RevokeDelegation\RevokeDelegationAction;
@@ -41,3 +45,9 @@ Route::delete('/identity-groups/{identityGroupId}', DeleteIdentityGroupAction::c
 Route::post('/account-verifications', RequestVerificationAction::class);
 Route::post('/account-verifications/{verificationId}/approve', ApproveVerificationAction::class);
 Route::post('/account-verifications/{verificationId}/reject', RejectVerificationAction::class);
+
+// Affiliation
+Route::post('/affiliations', RequestAffiliationAction::class);
+Route::post('/affiliations/{affiliationId}/approve', ApproveAffiliationAction::class);
+Route::post('/affiliations/{affiliationId}/reject', RejectAffiliationAction::class);
+Route::post('/affiliations/{affiliationId}/terminate', TerminateAffiliationAction::class);
