@@ -69,6 +69,10 @@ return [
     'invalid_account_category_for_verification' => '此帳戶類型無法申請身分驗證。',
     'account_verification_already_requested' => '身分驗證申請已提交。',
     'invalid_documents_for_verification' => '提交的文件不符合要求。',
+    'invitation_already_used_or_revoked' => '該邀請已被使用或已被撤銷。',
+    'invitation_expired' => '該邀請連結已過期。',
+    'invitation_not_pending' => '只能撤銷待處理的邀請。',
+    'disallowed_invitation' => '您沒有建立邀請的權限。',
 
     // Wiki
     'unauthorized' => '此操作未獲授權。',

@@ -69,6 +69,10 @@ return [
     'invalid_account_category_for_verification' => 'This account category cannot request verification.',
     'account_verification_already_requested' => 'An account verification has already been requested.',
     'invalid_documents_for_verification' => 'The submitted documents do not meet the requirements.',
+    'invitation_already_used_or_revoked' => 'This invitation has already been used or revoked.',
+    'invitation_expired' => 'This invitation link has expired.',
+    'invitation_not_pending' => 'Only pending invitations can be revoked.',
+    'disallowed_invitation' => 'You do not have permission to create invitations.',
 
     // Wiki
     'unauthorized' => 'This action is not authorized.',

@@ -69,6 +69,10 @@ return [
     'invalid_account_category_for_verification' => '이 계정 유형으로는 본인 확인을 신청할 수 없습니다.',
     'account_verification_already_requested' => '본인 확인 신청이 이미 제출되었습니다.',
     'invalid_documents_for_verification' => '제출된 서류가 요건을 충족하지 않습니다.',
+    'invitation_already_used_or_revoked' => '이 초대는 이미 사용되었거나 취소되었습니다.',
+    'invitation_expired' => '이 초대 링크의 유효기간이 만료되었습니다.',
+    'invitation_not_pending' => '보류 중인 초대만 취소할 수 있습니다.',
+    'disallowed_invitation' => '초대를 생성할 권한이 없습니다.',
 
     // Wiki
     'unauthorized' => '이 작업은 인가되지 않았습니다.',

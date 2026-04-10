@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Source\Account\Invitation\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Account\Invitation\Domain\Exception\InvitationAlreadyUsedOrRevokedException;
+use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;
+use Source\Account\Invitation\Domain\Exception\InvitationNotPendingException;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
@@ -92,11 +94,11 @@ class Invitation
     public function assertAcceptable(): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('この招待は既に使用済みまたは取り消されています。');
+            throw new InvitationAlreadyUsedOrRevokedException();
         }
 
         if ($this->isExpired()) {
-            throw new DomainException('この招待リンクは有効期限が切れています。');
+            throw new InvitationExpiredException();
         }
     }
 
@@ -112,7 +114,7 @@ class Invitation
     public function revoke(): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('PENDING状態の招待のみ取り消すことができます。');
+            throw new InvitationNotPendingException();
         }
 
         $this->status = InvitationStatus::REVOKED;

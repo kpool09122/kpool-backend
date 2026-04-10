@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Account\Invitation\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Invitation\Domain\Entity\Invitation;
+use Source\Account\Invitation\Domain\Exception\InvitationAlreadyUsedOrRevokedException;
+use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;
+use Source\Account\Invitation\Domain\Exception\InvitationNotPendingException;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
@@ -86,8 +88,7 @@ class InvitationTest extends TestCase
     {
         $invitation = $this->createInvitation(InvitationStatus::ACCEPTED);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('この招待は既に使用済みまたは取り消されています。');
+        $this->expectException(InvitationAlreadyUsedOrRevokedException::class);
 
         $invitation->assertAcceptable();
     }
@@ -96,8 +97,7 @@ class InvitationTest extends TestCase
     {
         $invitation = $this->createInvitation(InvitationStatus::REVOKED);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('この招待は既に使用済みまたは取り消されています。');
+        $this->expectException(InvitationAlreadyUsedOrRevokedException::class);
 
         $invitation->assertAcceptable();
     }
@@ -106,8 +106,7 @@ class InvitationTest extends TestCase
     {
         $invitation = $this->createInvitation(expiresAt: new DateTimeImmutable('-1 day'));
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('この招待リンクは有効期限が切れています。');
+        $this->expectException(InvitationExpiredException::class);
 
         $invitation->assertAcceptable();
     }
@@ -129,8 +128,7 @@ class InvitationTest extends TestCase
         $invitation = $this->createInvitation(InvitationStatus::ACCEPTED);
         $acceptedByIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('この招待は既に使用済みまたは取り消されています。');
+        $this->expectException(InvitationAlreadyUsedOrRevokedException::class);
 
         $invitation->accept($acceptedByIdentityIdentifier);
     }
@@ -140,8 +138,7 @@ class InvitationTest extends TestCase
         $invitation = $this->createInvitation(expiresAt: new DateTimeImmutable('-1 day'));
         $acceptedByIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('この招待リンクは有効期限が切れています。');
+        $this->expectException(InvitationExpiredException::class);
 
         $invitation->accept($acceptedByIdentityIdentifier);
     }
@@ -159,8 +156,7 @@ class InvitationTest extends TestCase
     {
         $invitation = $this->createInvitation(InvitationStatus::ACCEPTED);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('PENDING状態の招待のみ取り消すことができます。');
+        $this->expectException(InvitationNotPendingException::class);
 
         $invitation->revoke();
     }
@@ -169,8 +165,7 @@ class InvitationTest extends TestCase
     {
         $invitation = $this->createInvitation(InvitationStatus::REVOKED);
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('PENDING状態の招待のみ取り消すことができます。');
+        $this->expectException(InvitationNotPendingException::class);
 
         $invitation->revoke();
     }

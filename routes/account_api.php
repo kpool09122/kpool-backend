@@ -16,6 +16,7 @@ use Application\Http\Action\Account\IdentityGroup\Command\AddIdentityToIdentityG
 use Application\Http\Action\Account\IdentityGroup\Command\CreateIdentityGroup\CreateIdentityGroupAction;
 use Application\Http\Action\Account\IdentityGroup\Command\DeleteIdentityGroup\DeleteIdentityGroupAction;
 use Application\Http\Action\Account\IdentityGroup\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupAction;
+use Application\Http\Action\Account\Invitation\Command\CreateInvitation\CreateInvitationAction;
 use Illuminate\Support\Facades\Route;
 
 // Account
@@ -36,6 +37,9 @@ Route::post('/identity-groups', CreateIdentityGroupAction::class);
 Route::post('/identity-groups/{identityGroupId}/add-member', AddIdentityToIdentityGroupAction::class);
 Route::post('/identity-groups/{identityGroupId}/remove-member', RemoveIdentityFromIdentityGroupAction::class);
 Route::delete('/identity-groups/{identityGroupId}', DeleteIdentityGroupAction::class);
+
+// Invitation
+Route::post('/invitations', CreateInvitationAction::class);
 
 // AccountVerification
 Route::post('/account-verifications', RequestVerificationAction::class);

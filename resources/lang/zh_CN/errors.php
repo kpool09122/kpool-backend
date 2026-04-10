@@ -69,6 +69,10 @@ return [
     'invalid_account_category_for_verification' => '此账户类型无法申请身份验证。',
     'account_verification_already_requested' => '身份验证申请已提交。',
     'invalid_documents_for_verification' => '提交的文件不符合要求。',
+    'invitation_already_used_or_revoked' => '该邀请已被使用或已被撤销。',
+    'invitation_expired' => '该邀请链接已过期。',
+    'invitation_not_pending' => '只能撤销待处理的邀请。',
+    'disallowed_invitation' => '您没有创建邀请的权限。',
 
     // Wiki
     'unauthorized' => '此操作未获授权。',
