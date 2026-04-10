@@ -12,6 +12,7 @@ use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperatio
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationInterface;
+use Source\Account\Delegation\Application\UseCase\Command\ApproveDelegation\ApproveDelegationOutput;
 use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
@@ -69,10 +70,11 @@ class ApproveDelegationTest extends TestCase
 
         $useCase = $this->app->make(ApproveDelegationInterface::class);
 
-        $result = $useCase->process($testData->input);
+        $output = new ApproveDelegationOutput();
 
-        $this->assertTrue($result->isApproved());
-        $this->assertNotNull($result->approvedAt());
+        $useCase->process($testData->input, $output);
+
+        $this->assertSame((string) $testData->delegation->delegationIdentifier(), $output->toArray()['delegationIdentifier']);
     }
 
     /**
@@ -98,10 +100,12 @@ class ApproveDelegationTest extends TestCase
 
         $useCase = $this->app->make(ApproveDelegationInterface::class);
 
+        $output = new ApproveDelegationOutput();
+
         $this->expectException(DelegationNotFoundException::class);
         $this->expectExceptionMessage('Delegation not found.');
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 
     /**
@@ -131,10 +135,12 @@ class ApproveDelegationTest extends TestCase
 
         $useCase = $this->app->make(ApproveDelegationInterface::class);
 
+        $output = new ApproveDelegationOutput();
+
         $this->expectException(DisallowedDelegationOperationException::class);
         $this->expectExceptionMessage('Only the delegator can approve this delegation.');
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 
     private function createTestData(): ApproveDelegationTestData

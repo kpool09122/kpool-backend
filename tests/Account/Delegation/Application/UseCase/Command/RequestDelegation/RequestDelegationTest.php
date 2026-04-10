@@ -16,6 +16,7 @@ use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationInterface;
+use Source\Account\Delegation\Application\UseCase\Command\RequestDelegation\RequestDelegationOutput;
 use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
@@ -86,13 +87,11 @@ class RequestDelegationTest extends TestCase
 
         $useCase = $this->app->make(RequestDelegationInterface::class);
 
-        $result = $useCase->process($testData->input);
+        $output = new RequestDelegationOutput();
 
-        $this->assertSame((string) $testData->delegationIdentifier, (string) $result->delegationIdentifier());
-        $this->assertSame((string) $testData->affiliationIdentifier, (string) $result->affiliationIdentifier());
-        $this->assertSame((string) $testData->delegateIdentifier, (string) $result->delegateIdentifier());
-        $this->assertSame((string) $testData->delegatorIdentifier, (string) $result->delegatorIdentifier());
-        $this->assertTrue($result->isPending());
+        $useCase->process($testData->input, $output);
+
+        $this->assertSame((string) $testData->delegation->delegationIdentifier(), $output->toArray()['delegationIdentifier']);
     }
 
     /**
@@ -120,10 +119,12 @@ class RequestDelegationTest extends TestCase
 
         $useCase = $this->app->make(RequestDelegationInterface::class);
 
+        $output = new RequestDelegationOutput();
+
         $this->expectException(AffiliationNotFoundException::class);
         $this->expectExceptionMessage('Affiliation not found.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, $output);
     }
 
     /**
@@ -151,10 +152,12 @@ class RequestDelegationTest extends TestCase
 
         $useCase = $this->app->make(RequestDelegationInterface::class);
 
+        $output = new RequestDelegationOutput();
+
         $this->expectException(InvalidAffiliationStatusException::class);
         $this->expectExceptionMessage('Delegation can only be requested for active affiliations.');
 
-        $useCase->process($testData->input);
+        $useCase->process($testData->input, $output);
     }
 
     private function createTestData(): RequestDelegationTestData

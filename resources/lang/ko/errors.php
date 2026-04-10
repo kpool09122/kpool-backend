@@ -56,6 +56,13 @@ return [
     'cannot_remove_last_owner' => '계정에서 마지막 소유자를 제거할 수 없습니다.',
     'cannot_delete_default_identity_group' => '기본 아이덴티티 그룹은 삭제할 수 없습니다.',
     'cannot_delete_last_owner_group' => '멤버가 있는 마지막 소유자 그룹은 삭제할 수 없습니다.',
+    'delegation_not_found' => '지정된 위임을 찾을 수 없습니다.',
+    'disallowed_delegation_operation' => '이 위임 작업은 허용되지 않습니다.',
+    'invalid_delegation_approval' => '보류 중인 위임만 승인할 수 있습니다.',
+    'invalid_delegation_revocation' => '승인된 위임만 취소할 수 있습니다.',
+    'affiliation_not_found' => '지정된 소속을 찾을 수 없습니다.',
+    'invalid_affiliation_status' => '소속 상태가 이 작업에 유효하지 않습니다.',
+    'delegation_permission_not_found' => '지정된 위임 권한을 찾을 수 없습니다.',
 
     // Wiki
     'unauthorized' => '이 작업은 인가되지 않았습니다.',

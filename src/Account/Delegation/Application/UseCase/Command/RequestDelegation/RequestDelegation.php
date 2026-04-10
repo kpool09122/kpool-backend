@@ -7,7 +7,6 @@ namespace Source\Account\Delegation\Application\UseCase\Command\RequestDelegatio
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\InvalidAffiliationStatusException;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
-use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Factory\DelegationFactoryInterface;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 
@@ -20,7 +19,7 @@ readonly class RequestDelegation implements RequestDelegationInterface
     ) {
     }
 
-    public function process(RequestDelegationInputPort $input): Delegation
+    public function process(RequestDelegationInputPort $input, RequestDelegationOutputPort $output): void
     {
         $affiliation = $this->affiliationRepository->findById($input->affiliationIdentifier());
 
@@ -40,6 +39,6 @@ readonly class RequestDelegation implements RequestDelegationInterface
 
         $this->delegationRepository->save($delegation);
 
-        return $delegation;
+        $output->setDelegation($delegation);
     }
 }

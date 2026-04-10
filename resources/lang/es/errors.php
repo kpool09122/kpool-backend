@@ -56,6 +56,11 @@ return [
     'cannot_remove_last_owner' => 'No se puede eliminar al último propietario de la cuenta.',
     'cannot_delete_default_identity_group' => 'No se puede eliminar el grupo de identidad predeterminado.',
     'cannot_delete_last_owner_group' => 'No se puede eliminar el último grupo de propietarios con miembros.',
+    'delegation_not_found' => 'No se encontró la delegación especificada.',
+    'disallowed_delegation_operation' => 'Esta operación de delegación no está permitida.',
+    'invalid_delegation_approval' => 'Solo se pueden aprobar las delegaciones pendientes.',
+    'invalid_delegation_revocation' => 'Solo se pueden revocar las delegaciones aprobadas.',
+    'delegation_permission_not_found' => 'No se encontró el permiso de delegación especificado.',
 
     // Wiki
     'unauthorized' => 'Esta acción no está autorizada.',

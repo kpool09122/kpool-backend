@@ -56,6 +56,13 @@ return [
     'cannot_remove_last_owner' => 'Cannot remove the last owner from the account.',
     'cannot_delete_default_identity_group' => 'Cannot delete the default identity group.',
     'cannot_delete_last_owner_group' => 'Cannot delete the last owner group with members.',
+    'delegation_not_found' => 'The specified delegation was not found.',
+    'disallowed_delegation_operation' => 'This delegation operation is not allowed.',
+    'invalid_delegation_approval' => 'Only pending delegations can be approved.',
+    'invalid_delegation_revocation' => 'Only approved delegations can be revoked.',
+    'affiliation_not_found' => 'The specified affiliation was not found.',
+    'invalid_affiliation_status' => 'The affiliation status is invalid for this operation.',
+    'delegation_permission_not_found' => 'The specified delegation permission was not found.',
 
     // Wiki
     'unauthorized' => 'This action is not authorized.',

@@ -12,6 +12,7 @@ use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperatio
 use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegation;
 use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegationInput;
 use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegationInterface;
+use Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation\RevokeDelegationOutput;
 use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Event\DelegationRevoked;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
@@ -73,10 +74,11 @@ class RevokeDelegationTest extends TestCase
 
         $useCase = $this->app->make(RevokeDelegationInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new RevokeDelegationOutput();
 
-        $this->assertTrue($result->isRevoked());
-        $this->assertNotNull($result->revokedAt());
+        $useCase->process($input, $output);
+
+        $this->assertSame((string) $testData->delegation->delegationIdentifier(), $output->toArray()['delegationIdentifier']);
     }
 
     /**
@@ -112,10 +114,11 @@ class RevokeDelegationTest extends TestCase
 
         $useCase = $this->app->make(RevokeDelegationInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new RevokeDelegationOutput();
 
-        $this->assertTrue($result->isRevoked());
-        $this->assertNotNull($result->revokedAt());
+        $useCase->process($input, $output);
+
+        $this->assertSame((string) $testData->delegation->delegationIdentifier(), $output->toArray()['delegationIdentifier']);
     }
 
     /**
@@ -141,10 +144,12 @@ class RevokeDelegationTest extends TestCase
 
         $useCase = $this->app->make(RevokeDelegationInterface::class);
 
+        $output = new RevokeDelegationOutput();
+
         $this->expectException(DelegationNotFoundException::class);
         $this->expectExceptionMessage('Delegation not found.');
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 
     /**
@@ -174,10 +179,12 @@ class RevokeDelegationTest extends TestCase
 
         $useCase = $this->app->make(RevokeDelegationInterface::class);
 
+        $output = new RevokeDelegationOutput();
+
         $this->expectException(DisallowedDelegationOperationException::class);
         $this->expectExceptionMessage('Only the delegator or delegate can revoke this delegation.');
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 
     private function createTestData(): RevokeDelegationTestData

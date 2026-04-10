@@ -6,7 +6,6 @@ namespace Source\Account\Delegation\Application\UseCase\Command\ApproveDelegatio
 
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
-use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Event\DelegationApproved;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
@@ -19,7 +18,7 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
     ) {
     }
 
-    public function process(ApproveDelegationInputPort $input): Delegation
+    public function process(ApproveDelegationInputPort $input, ApproveDelegationOutputPort $output): void
     {
         $delegation = $this->delegationRepository->findById($input->delegationIdentifier());
 
@@ -42,6 +41,6 @@ readonly class ApproveDelegation implements ApproveDelegationInterface
             $delegation->approvedAt(),
         ));
 
-        return $delegation;
+        $output->setDelegation($delegation);
     }
 }

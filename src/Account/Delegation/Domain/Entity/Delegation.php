@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\Delegation\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Account\Delegation\Domain\Exception\InvalidDelegationApprovalException;
+use Source\Account\Delegation\Domain\Exception\InvalidDelegationRevocationException;
 use Source\Account\Delegation\Domain\ValueObject\DelegationDirection;
 use Source\Account\Delegation\Domain\ValueObject\DelegationStatus;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
@@ -75,7 +76,7 @@ class Delegation
     public function approve(): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('Only pending delegations can be approved.');
+            throw new InvalidDelegationApprovalException();
         }
 
         $this->status = DelegationStatus::APPROVED;
@@ -85,7 +86,7 @@ class Delegation
     public function revoke(): void
     {
         if (! $this->status->isApproved()) {
-            throw new DomainException('Only approved delegations can be revoked.');
+            throw new InvalidDelegationRevocationException();
         }
 
         $this->status = DelegationStatus::REVOKED;

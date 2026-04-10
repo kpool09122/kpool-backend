@@ -56,6 +56,13 @@ return [
     'cannot_remove_last_owner' => '無法移除帳戶的最後一個擁有者。',
     'cannot_delete_default_identity_group' => '無法刪除預設身分群組。',
     'cannot_delete_last_owner_group' => '無法刪除有成員的最後一個擁有者群組。',
+    'delegation_not_found' => '找不到指定的委託。',
+    'disallowed_delegation_operation' => '不允許此委託操作。',
+    'invalid_delegation_approval' => '只能核准待處理的委託。',
+    'invalid_delegation_revocation' => '只能撤銷已核准的委託。',
+    'affiliation_not_found' => '找不到指定的所屬。',
+    'invalid_affiliation_status' => '所屬狀態對此操作無效。',
+    'delegation_permission_not_found' => '找不到指定的委託權限。',
 
     // Wiki
     'unauthorized' => '此操作未獲授權。',

@@ -6,7 +6,6 @@ namespace Source\Account\Delegation\Application\UseCase\Command\RevokeDelegation
 
 use Source\Account\Delegation\Application\Exception\DelegationNotFoundException;
 use Source\Account\Delegation\Application\Exception\DisallowedDelegationOperationException;
-use Source\Account\Delegation\Domain\Entity\Delegation;
 use Source\Account\Delegation\Domain\Event\DelegationRevoked;
 use Source\Account\Delegation\Domain\Repository\DelegationRepositoryInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
@@ -19,7 +18,7 @@ readonly class RevokeDelegation implements RevokeDelegationInterface
     ) {
     }
 
-    public function process(RevokeDelegationInputPort $input): Delegation
+    public function process(RevokeDelegationInputPort $input, RevokeDelegationOutputPort $output): void
     {
         $delegation = $this->delegationRepository->findById($input->delegationIdentifier());
 
@@ -44,6 +43,6 @@ readonly class RevokeDelegation implements RevokeDelegationInterface
             $delegation->revokedAt(),
         ));
 
-        return $delegation;
+        $output->setDelegation($delegation);
     }
 }
