@@ -63,6 +63,12 @@ return [
     'affiliation_not_found' => '지정된 소속을 찾을 수 없습니다.',
     'invalid_affiliation_status' => '소속 상태가 이 작업에 유효하지 않습니다.',
     'delegation_permission_not_found' => '지정된 위임 권한을 찾을 수 없습니다.',
+    'account_verification_not_found' => '지정된 본인 확인 신청을 찾을 수 없습니다.',
+    'invalid_verification_approval' => '보류 중인 본인 확인 신청만 승인할 수 있습니다.',
+    'invalid_verification_rejection' => '보류 중인 본인 확인 신청만 거부할 수 있습니다.',
+    'invalid_account_category_for_verification' => '이 계정 유형으로는 본인 확인을 신청할 수 없습니다.',
+    'account_verification_already_requested' => '본인 확인 신청이 이미 제출되었습니다.',
+    'invalid_documents_for_verification' => '제출된 서류가 요건을 충족하지 않습니다.',
 
     // Wiki
     'unauthorized' => '이 작업은 인가되지 않았습니다.',

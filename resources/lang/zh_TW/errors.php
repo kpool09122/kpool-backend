@@ -63,6 +63,12 @@ return [
     'affiliation_not_found' => '找不到指定的所屬。',
     'invalid_affiliation_status' => '所屬狀態對此操作無效。',
     'delegation_permission_not_found' => '找不到指定的委託權限。',
+    'account_verification_not_found' => '找不到指定的身分驗證申請。',
+    'invalid_verification_approval' => '只能核准待處理的身分驗證申請。',
+    'invalid_verification_rejection' => '只能拒絕待處理的身分驗證申請。',
+    'invalid_account_category_for_verification' => '此帳戶類型無法申請身分驗證。',
+    'account_verification_already_requested' => '身分驗證申請已提交。',
+    'invalid_documents_for_verification' => '提交的文件不符合要求。',
 
     // Wiki
     'unauthorized' => '此操作未獲授權。',

@@ -6,7 +6,6 @@ namespace Source\Account\AccountVerification\Application\UseCase\Command\Approve
 
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\AccountVerification\Application\Exception\AccountVerificationNotFoundException;
-use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
 use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
 
 readonly class ApproveVerification implements ApproveVerificationInterface
@@ -19,10 +18,11 @@ readonly class ApproveVerification implements ApproveVerificationInterface
 
     /**
      * @param ApproveVerificationInputPort $input
-     * @return AccountVerification
+     * @param ApproveVerificationOutputPort $output
+     * @return void
      * @throws AccountVerificationNotFoundException
      */
-    public function process(ApproveVerificationInputPort $input): AccountVerification
+    public function process(ApproveVerificationInputPort $input, ApproveVerificationOutputPort $output): void
     {
         // Find the verification
         $verification = $this->verificationRepository->findById($input->verificationIdentifier());
@@ -45,6 +45,6 @@ readonly class ApproveVerification implements ApproveVerificationInterface
 
         $this->verificationRepository->save($verification);
 
-        return $verification;
+        $output->setVerification($verification);
     }
 }

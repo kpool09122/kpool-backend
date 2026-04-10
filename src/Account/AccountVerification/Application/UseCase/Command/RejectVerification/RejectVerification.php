@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\AccountVerification\Application\UseCase\Command\RejectVerification;
 
 use Source\Account\AccountVerification\Application\Exception\AccountVerificationNotFoundException;
-use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
 use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
 
 readonly class RejectVerification implements RejectVerificationInterface
@@ -17,10 +16,11 @@ readonly class RejectVerification implements RejectVerificationInterface
 
     /**
      * @param RejectVerificationInputPort $input
-     * @return AccountVerification
+     * @param RejectVerificationOutputPort $output
+     * @return void
      * @throws AccountVerificationNotFoundException
      */
-    public function process(RejectVerificationInputPort $input): AccountVerification
+    public function process(RejectVerificationInputPort $input, RejectVerificationOutputPort $output): void
     {
         // Find the verification
         $verification = $this->verificationRepository->findById($input->verificationIdentifier());
@@ -37,6 +37,6 @@ readonly class RejectVerification implements RejectVerificationInterface
 
         $this->verificationRepository->save($verification);
 
-        return $verification;
+        $output->setVerification($verification);
     }
 }

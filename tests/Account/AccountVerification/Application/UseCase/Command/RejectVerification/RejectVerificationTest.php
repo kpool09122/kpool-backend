@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests\Account\AccountVerification\Application\UseCase\Command\RejectVerification;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\AccountVerification\Application\Exception\AccountVerificationNotFoundException;
 use Source\Account\AccountVerification\Application\UseCase\Command\RejectVerification\RejectVerificationInput;
 use Source\Account\AccountVerification\Application\UseCase\Command\RejectVerification\RejectVerificationInterface;
+use Source\Account\AccountVerification\Application\UseCase\Command\RejectVerification\RejectVerificationOutput;
 use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
+use Source\Account\AccountVerification\Domain\Exception\InvalidVerificationRejectionException;
 use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
 use Source\Account\AccountVerification\Domain\ValueObject\ApplicantInfo;
 use Source\Account\AccountVerification\Domain\ValueObject\RejectionReason;
@@ -55,10 +56,12 @@ class RejectVerificationTest extends TestCase
 
         $this->app->instance(AccountVerificationRepositoryInterface::class, $verificationRepository);
         $useCase = $this->app->make(RejectVerificationInterface::class);
-        $result = $useCase->process($input);
+        $output = new RejectVerificationOutput();
+        $useCase->process($input, $output);
 
-        $this->assertTrue($result->isRejected());
-        $this->assertSame(RejectionReasonCode::DOCUMENT_UNCLEAR, $result->rejectionReason()->code());
+        $result = $output->toArray();
+        $this->assertSame(VerificationStatus::REJECTED->value, $result['status']);
+        $this->assertSame(RejectionReasonCode::DOCUMENT_UNCLEAR->value, $result['rejectionReason']['code']);
     }
 
     /**
@@ -87,7 +90,7 @@ class RejectVerificationTest extends TestCase
         $this->expectException(AccountVerificationNotFoundException::class);
 
         $input = new RejectVerificationInput($verificationId, $reviewerAccountId, $rejectionReason);
-        $useCase->process($input);
+        $useCase->process($input, new RejectVerificationOutput());
     }
 
     /**
@@ -116,10 +119,10 @@ class RejectVerificationTest extends TestCase
         $this->app->instance(AccountVerificationRepositoryInterface::class, $verificationRepository);
         $useCase = $this->app->make(RejectVerificationInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidVerificationRejectionException::class);
 
         $input = new RejectVerificationInput($verificationId, $reviewerAccountId, $rejectionReason);
-        $useCase->process($input);
+        $useCase->process($input, new RejectVerificationOutput());
     }
 
     private function createVerification(
