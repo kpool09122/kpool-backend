@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Tests\Account\Affiliation\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
+use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationApprovalException;
+use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationTerminationException;
+use Source\Account\Affiliation\Domain\Exception\InvalidAffiliationTermsUpdateException;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationStatus;
 use Source\Account\Affiliation\Domain\ValueObject\AffiliationTerms;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
@@ -64,7 +66,7 @@ class AffiliationTest extends TestCase
     {
         $affiliation = $this->createActiveAffiliation();
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidAffiliationApprovalException::class);
         $this->expectExceptionMessage('Only pending affiliations can be approved.');
 
         $affiliation->approve();
@@ -84,7 +86,7 @@ class AffiliationTest extends TestCase
     {
         $affiliation = $this->createPendingAffiliation();
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidAffiliationTerminationException::class);
         $this->expectExceptionMessage('Only active affiliations can be terminated.');
 
         $affiliation->terminate();
@@ -105,7 +107,7 @@ class AffiliationTest extends TestCase
         $affiliation = $this->createPendingAffiliation();
         $newTerms = new AffiliationTerms(new Percentage(50), 'Updated notes');
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidAffiliationTermsUpdateException::class);
         $this->expectExceptionMessage('Terms can only be updated for active affiliations.');
 
         $affiliation->updateTerms($newTerms);

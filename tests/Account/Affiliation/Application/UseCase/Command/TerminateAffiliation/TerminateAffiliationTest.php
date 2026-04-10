@@ -12,6 +12,7 @@ use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperat
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationInput;
 use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationInterface;
+use Source\Account\Affiliation\Application\UseCase\Command\TerminateAffiliation\TerminateAffiliationOutput;
 use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
@@ -88,10 +89,12 @@ class TerminateAffiliationTest extends TestCase
 
         $useCase = $this->app->make(TerminateAffiliationInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new TerminateAffiliationOutput();
 
-        $this->assertTrue($result->isTerminated());
-        $this->assertNotNull($result->terminatedAt());
+        $useCase->process($input, $output);
+
+        $this->assertSame(AffiliationStatus::TERMINATED->value, $output->toArray()['status']);
+        $this->assertNotNull($output->toArray()['terminatedAt']);
     }
 
     /**
@@ -139,10 +142,12 @@ class TerminateAffiliationTest extends TestCase
 
         $useCase = $this->app->make(TerminateAffiliationInterface::class);
 
-        $result = $useCase->process($input);
+        $output = new TerminateAffiliationOutput();
 
-        $this->assertTrue($result->isTerminated());
-        $this->assertNotNull($result->terminatedAt());
+        $useCase->process($input, $output);
+
+        $this->assertSame(AffiliationStatus::TERMINATED->value, $output->toArray()['status']);
+        $this->assertNotNull($output->toArray()['terminatedAt']);
     }
 
     /**
@@ -174,7 +179,7 @@ class TerminateAffiliationTest extends TestCase
         $this->expectException(AffiliationNotFoundException::class);
         $this->expectExceptionMessage('Affiliation not found.');
 
-        $useCase->process($input);
+        $useCase->process($input, new TerminateAffiliationOutput());
     }
 
     /**
@@ -211,7 +216,7 @@ class TerminateAffiliationTest extends TestCase
         $this->expectException(DisallowedAffiliationOperationException::class);
         $this->expectExceptionMessage('Only the agency or talent can terminate this affiliation.');
 
-        $useCase->process($input);
+        $useCase->process($input, new TerminateAffiliationOutput());
     }
 
     private function createTestData(): TerminateAffiliationTestData

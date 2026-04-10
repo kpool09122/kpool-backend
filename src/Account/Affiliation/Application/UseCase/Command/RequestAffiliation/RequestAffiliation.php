@@ -8,7 +8,6 @@ use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Affiliation\Application\Exception\AffiliationAlreadyExistsException;
 use Source\Account\Affiliation\Application\Exception\InvalidAccountCategoryException;
-use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Factory\AffiliationFactoryInterface;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
@@ -22,7 +21,7 @@ readonly class RequestAffiliation implements RequestAffiliationInterface
     ) {
     }
 
-    public function process(RequestAffiliationInputPort $input): Affiliation
+    public function process(RequestAffiliationInputPort $input, RequestAffiliationOutputPort $output): void
     {
         $agencyAccount = $this->accountRepository->findById($input->agencyAccountIdentifier());
         if ($agencyAccount === null) {
@@ -57,7 +56,6 @@ readonly class RequestAffiliation implements RequestAffiliationInterface
         );
 
         $this->affiliationRepository->save($affiliation);
-
-        return $affiliation;
+        $output->setAffiliation($affiliation);
     }
 }

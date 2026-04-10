@@ -6,7 +6,6 @@ namespace Source\Account\Affiliation\Application\UseCase\Command\TerminateAffili
 
 use Source\Account\Affiliation\Application\Exception\AffiliationNotFoundException;
 use Source\Account\Affiliation\Application\Exception\DisallowedAffiliationOperationException;
-use Source\Account\Affiliation\Domain\Entity\Affiliation;
 use Source\Account\Affiliation\Domain\Event\AffiliationTerminated;
 use Source\Account\Affiliation\Domain\Repository\AffiliationRepositoryInterface;
 use Source\Account\Delegation\Domain\Service\DelegationTerminationServiceInterface;
@@ -21,7 +20,7 @@ readonly class TerminateAffiliation implements TerminateAffiliationInterface
     ) {
     }
 
-    public function process(TerminateAffiliationInputPort $input): Affiliation
+    public function process(TerminateAffiliationInputPort $input, TerminateAffiliationOutputPort $output): void
     {
         $affiliation = $this->affiliationRepository->findById($input->affiliationIdentifier());
 
@@ -49,7 +48,6 @@ readonly class TerminateAffiliation implements TerminateAffiliationInterface
             $affiliation->talentAccountIdentifier(),
             $affiliation->terminatedAt(),
         ));
-
-        return $affiliation;
+        $output->setAffiliation($affiliation);
     }
 }
