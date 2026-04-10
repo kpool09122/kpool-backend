@@ -61,6 +61,12 @@ return [
     'invalid_delegation_approval' => 'Solo se pueden aprobar las delegaciones pendientes.',
     'invalid_delegation_revocation' => 'Solo se pueden revocar las delegaciones aprobadas.',
     'delegation_permission_not_found' => 'No se encontró el permiso de delegación especificado.',
+    'account_verification_not_found' => 'No se encontró la verificación de cuenta especificada.',
+    'invalid_verification_approval' => 'Solo se pueden aprobar las verificaciones pendientes.',
+    'invalid_verification_rejection' => 'Solo se pueden rechazar las verificaciones pendientes.',
+    'invalid_account_category_for_verification' => 'Este tipo de cuenta no puede solicitar verificación.',
+    'account_verification_already_requested' => 'Ya se ha enviado una solicitud de verificación de cuenta.',
+    'invalid_documents_for_verification' => 'Los documentos enviados no cumplen con los requisitos.',
 
     // Wiki
     'unauthorized' => 'Esta acción no está autorizada.',

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
+use Application\Http\Action\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
+use Application\Http\Action\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
+use Application\Http\Action\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
 use Application\Http\Action\Account\Delegation\Command\ApproveDelegation\ApproveDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RequestDelegation\RequestDelegationAction;
 use Application\Http\Action\Account\Delegation\Command\RevokeDelegation\RevokeDelegationAction;
@@ -33,3 +36,8 @@ Route::post('/identity-groups', CreateIdentityGroupAction::class);
 Route::post('/identity-groups/{identityGroupId}/add-member', AddIdentityToIdentityGroupAction::class);
 Route::post('/identity-groups/{identityGroupId}/remove-member', RemoveIdentityFromIdentityGroupAction::class);
 Route::delete('/identity-groups/{identityGroupId}', DeleteIdentityGroupAction::class);
+
+// AccountVerification
+Route::post('/account-verifications', RequestVerificationAction::class);
+Route::post('/account-verifications/{verificationId}/approve', ApproveVerificationAction::class);
+Route::post('/account-verifications/{verificationId}/reject', RejectVerificationAction::class);

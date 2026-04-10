@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\Account\AccountVerification\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Account\AccountVerification\Domain\Exception\InvalidVerificationApprovalException;
+use Source\Account\AccountVerification\Domain\Exception\InvalidVerificationRejectionException;
 use Source\Account\AccountVerification\Domain\ValueObject\ApplicantInfo;
 use Source\Account\AccountVerification\Domain\ValueObject\RejectionReason;
 use Source\Account\AccountVerification\Domain\ValueObject\VerificationIdentifier;
@@ -93,7 +94,7 @@ class AccountVerification
     public function approve(AccountIdentifier $reviewerAccountIdentifier): void
     {
         if (! $this->status->canTransitionTo(VerificationStatus::APPROVED)) {
-            throw new DomainException('Cannot approve this verification.');
+            throw new InvalidVerificationApprovalException();
         }
 
         $this->status = VerificationStatus::APPROVED;
@@ -105,7 +106,7 @@ class AccountVerification
     public function reject(AccountIdentifier $reviewerAccountIdentifier, RejectionReason $rejectionReason): void
     {
         if (! $this->status->canTransitionTo(VerificationStatus::REJECTED)) {
-            throw new DomainException('Cannot reject this verification.');
+            throw new InvalidVerificationRejectionException();
         }
 
         $this->status = VerificationStatus::REJECTED;

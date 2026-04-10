@@ -10,7 +10,6 @@ use Source\Account\AccountVerification\Application\Exception\AccountVerification
 use Source\Account\AccountVerification\Application\Exception\DocumentStorageFailedException;
 use Source\Account\AccountVerification\Application\Exception\InvalidAccountCategoryForVerificationException;
 use Source\Account\AccountVerification\Application\Service\DocumentStorageServiceInterface;
-use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
 use Source\Account\AccountVerification\Domain\Entity\VerificationDocument;
 use Source\Account\AccountVerification\Domain\Factory\AccountVerificationFactoryInterface;
 use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
@@ -33,10 +32,11 @@ readonly class RequestVerification implements RequestVerificationInterface
 
     /**
      * @param RequestVerificationInputPort $input
-     * @return AccountVerification
+     * @param RequestVerificationOutputPort $output
+     * @return void
      * @throws DocumentStorageFailedException
      */
-    public function process(RequestVerificationInputPort $input): AccountVerification
+    public function process(RequestVerificationInputPort $input, RequestVerificationOutputPort $output): void
     {
         // Check if account is GENERAL
         $account = $this->accountRepository->findById($input->accountIdentifier());
@@ -102,6 +102,6 @@ readonly class RequestVerification implements RequestVerificationInterface
 
         $this->verificationRepository->save($verification);
 
-        return $verification;
+        $output->setVerification($verification);
     }
 }

@@ -63,6 +63,12 @@ return [
     'affiliation_not_found' => '找不到指定的所属。',
     'invalid_affiliation_status' => '所属状态对此操作无效。',
     'delegation_permission_not_found' => '找不到指定的委托权限。',
+    'account_verification_not_found' => '找不到指定的身份验证申请。',
+    'invalid_verification_approval' => '只能批准待处理的身份验证申请。',
+    'invalid_verification_rejection' => '只能拒绝待处理的身份验证申请。',
+    'invalid_account_category_for_verification' => '此账户类型无法申请身份验证。',
+    'account_verification_already_requested' => '身份验证申请已提交。',
+    'invalid_documents_for_verification' => '提交的文件不符合要求。',
 
     // Wiki
     'unauthorized' => '此操作未获授权。',

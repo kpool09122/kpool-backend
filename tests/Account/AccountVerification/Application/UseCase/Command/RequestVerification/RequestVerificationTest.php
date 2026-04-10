@@ -22,6 +22,7 @@ use Source\Account\AccountVerification\Application\Service\DocumentStorageServic
 use Source\Account\AccountVerification\Application\UseCase\Command\RequestVerification\DocumentData;
 use Source\Account\AccountVerification\Application\UseCase\Command\RequestVerification\RequestVerificationInput;
 use Source\Account\AccountVerification\Application\UseCase\Command\RequestVerification\RequestVerificationInterface;
+use Source\Account\AccountVerification\Application\UseCase\Command\RequestVerification\RequestVerificationOutput;
 use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
 use Source\Account\AccountVerification\Domain\Factory\AccountVerificationFactoryInterface;
 use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
@@ -107,11 +108,12 @@ class RequestVerificationTest extends TestCase
         $this->app->instance(DocumentRequirementValidator::class, new DocumentRequirementValidator());
 
         $useCase = $this->app->make(RequestVerificationInterface::class);
-        $result = $useCase->process($input);
+        $output = new RequestVerificationOutput();
+        $useCase->process($input, $output);
 
-        $this->assertInstanceOf(AccountVerification::class, $result);
-        $this->assertSame(VerificationStatus::PENDING, $result->status());
-        $this->assertCount(2, $result->documents());
+        $result = $output->toArray();
+        $this->assertSame(VerificationStatus::PENDING->value, $result['status']);
+        $this->assertCount(2, $result['documents']);
     }
 
     /**
@@ -180,11 +182,12 @@ class RequestVerificationTest extends TestCase
         $this->app->instance(DocumentRequirementValidator::class, new DocumentRequirementValidator());
 
         $useCase = $this->app->make(RequestVerificationInterface::class);
-        $result = $useCase->process($input);
+        $output = new RequestVerificationOutput();
+        $useCase->process($input, $output);
 
-        $this->assertInstanceOf(AccountVerification::class, $result);
-        $this->assertSame(VerificationStatus::PENDING, $result->status());
-        $this->assertCount(2, $result->documents());
+        $result = $output->toArray();
+        $this->assertSame(VerificationStatus::PENDING->value, $result['status']);
+        $this->assertCount(2, $result['documents']);
     }
 
     /**
@@ -236,7 +239,7 @@ class RequestVerificationTest extends TestCase
         $this->expectException(InvalidAccountCategoryForVerificationException::class);
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     /**
@@ -292,7 +295,7 @@ class RequestVerificationTest extends TestCase
         $this->expectException(AccountVerificationAlreadyRequestedException::class);
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     /**
@@ -349,7 +352,7 @@ class RequestVerificationTest extends TestCase
         $this->expectExceptionMessage('Selfie is required for talent verification.');
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     /**
@@ -406,7 +409,7 @@ class RequestVerificationTest extends TestCase
         $this->expectExceptionMessage('ID document is required for talent verification.');
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     /**
@@ -463,7 +466,7 @@ class RequestVerificationTest extends TestCase
         $this->expectExceptionMessage('Business document is required for agency verification.');
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     /**
@@ -528,7 +531,7 @@ class RequestVerificationTest extends TestCase
         $this->expectExceptionMessage('Failed to store verification documents: S3 connection failed');
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     /**
@@ -605,7 +608,7 @@ class RequestVerificationTest extends TestCase
         $this->expectException(DocumentStorageFailedException::class);
 
         $input = new RequestVerificationInput($accountId, $verificationType, $applicantInfo, $documents);
-        $useCase->process($input);
+        $useCase->process($input, new RequestVerificationOutput());
     }
 
     private function createAccount(AccountIdentifier $accountId, AccountCategory $category): Account

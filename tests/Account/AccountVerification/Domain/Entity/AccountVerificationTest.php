@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Account\AccountVerification\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
 use Source\Account\AccountVerification\Domain\Entity\VerificationDocument;
+use Source\Account\AccountVerification\Domain\Exception\InvalidVerificationApprovalException;
+use Source\Account\AccountVerification\Domain\Exception\InvalidVerificationRejectionException;
 use Source\Account\AccountVerification\Domain\ValueObject\ApplicantInfo;
 use Source\Account\AccountVerification\Domain\ValueObject\DocumentIdentifier;
 use Source\Account\AccountVerification\Domain\ValueObject\DocumentPath;
@@ -78,7 +79,7 @@ class AccountVerificationTest extends TestCase
         $verification = $testData->verification;
         $reviewerAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidVerificationApprovalException::class);
 
         $verification->approve($reviewerAccountId);
     }
@@ -94,7 +95,7 @@ class AccountVerificationTest extends TestCase
         $verification = $testData->verification;
         $reviewerAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidVerificationApprovalException::class);
 
         $verification->approve($reviewerAccountId);
     }
@@ -131,7 +132,7 @@ class AccountVerificationTest extends TestCase
         $reviewerAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $rejectionReason = new RejectionReason(RejectionReasonCode::DOCUMENT_UNCLEAR);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidVerificationRejectionException::class);
 
         $verification->reject($reviewerAccountId, $rejectionReason);
     }
@@ -148,7 +149,7 @@ class AccountVerificationTest extends TestCase
         $reviewerAccountId = new AccountIdentifier(StrTestHelper::generateUuid());
         $rejectionReason = new RejectionReason(RejectionReasonCode::DOCUMENT_UNCLEAR);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidVerificationRejectionException::class);
 
         $verification->reject($reviewerAccountId, $rejectionReason);
     }

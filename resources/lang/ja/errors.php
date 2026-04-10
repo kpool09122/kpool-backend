@@ -63,6 +63,12 @@ return [
     'affiliation_not_found' => '指定された所属が見つかりません。',
     'invalid_affiliation_status' => '所属のステータスがこの操作に対して無効です。',
     'delegation_permission_not_found' => '指定された委任許可が見つかりません。',
+    'account_verification_not_found' => '指定された本人確認申請が見つかりません。',
+    'invalid_verification_approval' => '保留中の本人確認申請のみ承認できます。',
+    'invalid_verification_rejection' => '保留中の本人確認申請のみ却下できます。',
+    'invalid_account_category_for_verification' => 'このアカウント種別では本人確認を申請できません。',
+    'account_verification_already_requested' => '本人確認申請は既に提出されています。',
+    'invalid_documents_for_verification' => '提出された書類が要件を満たしていません。',
 
     // Wiki
     'unauthorized' => 'この操作は認可されていません。',

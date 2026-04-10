@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Account\AccountVerification\Application\UseCase\Command\ApproveVerification;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Account\Domain\Entity\Account;
@@ -17,7 +16,9 @@ use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\AccountVerification\Application\Exception\AccountVerificationNotFoundException;
 use Source\Account\AccountVerification\Application\UseCase\Command\ApproveVerification\ApproveVerificationInput;
 use Source\Account\AccountVerification\Application\UseCase\Command\ApproveVerification\ApproveVerificationInterface;
+use Source\Account\AccountVerification\Application\UseCase\Command\ApproveVerification\ApproveVerificationOutput;
 use Source\Account\AccountVerification\Domain\Entity\AccountVerification;
+use Source\Account\AccountVerification\Domain\Exception\InvalidVerificationApprovalException;
 use Source\Account\AccountVerification\Domain\Repository\AccountVerificationRepositoryInterface;
 use Source\Account\AccountVerification\Domain\ValueObject\ApplicantInfo;
 use Source\Account\AccountVerification\Domain\ValueObject\VerificationIdentifier;
@@ -72,9 +73,11 @@ class ApproveVerificationTest extends TestCase
         $this->app->instance(AccountVerificationRepositoryInterface::class, $verificationRepository);
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $useCase = $this->app->make(ApproveVerificationInterface::class);
-        $result = $useCase->process($input);
+        $output = new ApproveVerificationOutput();
+        $useCase->process($input, $output);
 
-        $this->assertTrue($result->isApproved());
+        $result = $output->toArray();
+        $this->assertSame(VerificationStatus::APPROVED->value, $result['status']);
         $this->assertSame(AccountCategory::TALENT, $account->accountCategory());
     }
 
@@ -107,7 +110,7 @@ class ApproveVerificationTest extends TestCase
         $this->expectException(AccountVerificationNotFoundException::class);
 
         $input = new ApproveVerificationInput($verificationId, $reviewerAccountId);
-        $useCase->process($input);
+        $useCase->process($input, new ApproveVerificationOutput());
     }
 
     /**
@@ -140,10 +143,10 @@ class ApproveVerificationTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $useCase = $this->app->make(ApproveVerificationInterface::class);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidVerificationApprovalException::class);
 
         $input = new ApproveVerificationInput($verificationId, $reviewerAccountId);
-        $useCase->process($input);
+        $useCase->process($input, new ApproveVerificationOutput());
     }
 
     private function createVerification(

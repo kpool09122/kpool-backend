@@ -63,6 +63,12 @@ return [
     'affiliation_not_found' => 'The specified affiliation was not found.',
     'invalid_affiliation_status' => 'The affiliation status is invalid for this operation.',
     'delegation_permission_not_found' => 'The specified delegation permission was not found.',
+    'account_verification_not_found' => 'The specified account verification was not found.',
+    'invalid_verification_approval' => 'Only pending verifications can be approved.',
+    'invalid_verification_rejection' => 'Only pending verifications can be rejected.',
+    'invalid_account_category_for_verification' => 'This account category cannot request verification.',
+    'account_verification_already_requested' => 'An account verification has already been requested.',
+    'invalid_documents_for_verification' => 'The submitted documents do not meet the requirements.',
 
     // Wiki
     'unauthorized' => 'This action is not authorized.',
