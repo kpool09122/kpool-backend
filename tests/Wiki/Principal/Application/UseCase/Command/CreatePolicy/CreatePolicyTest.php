@@ -10,6 +10,7 @@ use Mockery;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicy;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy\CreatePolicyOutput;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -63,13 +64,14 @@ class CreatePolicyTest extends TestCase
         $this->app->instance(PolicyFactoryInterface::class, $factory);
 
         $useCase = $this->app->make(CreatePolicyInterface::class);
+        $output = new CreatePolicyOutput();
 
-        $policy = $useCase->process($testData->input);
+        $useCase->process($testData->input, $output);
 
-        $this->assertSame((string) $testData->policyIdentifier, (string) $policy->policyIdentifier());
-        $this->assertSame($testData->name, $policy->name());
-        $this->assertSame($testData->statements, $policy->statements());
-        $this->assertSame($testData->isSystemPolicy, $policy->isSystemPolicy());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->policyIdentifier, $result['policyIdentifier']);
+        $this->assertSame($testData->name, $result['name']);
+        $this->assertSame($testData->isSystemPolicy, $result['isSystemPolicy']);
     }
 
     private function createDummyTestData(): CreatePolicyTestData

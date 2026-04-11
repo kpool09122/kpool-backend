@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup;
 
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
-use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 
 readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromPrincipalGroupInterface
@@ -18,7 +17,7 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
     /**
      * @throws PrincipalGroupNotFoundException
      */
-    public function process(RemovePrincipalFromPrincipalGroupInputPort $input): PrincipalGroup
+    public function process(RemovePrincipalFromPrincipalGroupInputPort $input, RemovePrincipalFromPrincipalGroupOutputPort $output): void
     {
         $principalGroup = $this->principalGroupRepository->findById($input->principalGroupIdentifier());
 
@@ -30,6 +29,6 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
 
         $this->principalGroupRepository->save($principalGroup);
 
-        return $principalGroup;
+        $output->setPrincipalGroup($principalGroup);
     }
 }

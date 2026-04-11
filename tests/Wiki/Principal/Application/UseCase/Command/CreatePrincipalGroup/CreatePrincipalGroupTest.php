@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupOutput;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
@@ -62,13 +63,15 @@ class CreatePrincipalGroupTest extends TestCase
         $this->app->instance(PrincipalGroupFactoryInterface::class, $factory);
 
         $useCase = $this->app->make(CreatePrincipalGroupInterface::class);
+        $output = new CreatePrincipalGroupOutput();
 
-        $principalGroup = $useCase->process($testData->input);
+        $useCase->process($testData->input, $output);
 
-        $this->assertSame((string) $testData->principalGroupIdentifier, (string) $principalGroup->principalGroupIdentifier());
-        $this->assertSame((string) $testData->accountIdentifier, (string) $principalGroup->accountIdentifier());
-        $this->assertSame($testData->name, $principalGroup->name());
-        $this->assertFalse($principalGroup->isDefault());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->principalGroupIdentifier, $result['principalGroupIdentifier']);
+        $this->assertSame((string) $testData->accountIdentifier, $result['accountIdentifier']);
+        $this->assertSame($testData->name, $result['name']);
+        $this->assertFalse($result['isDefault']);
     }
 
     private function createDummyTestData(): CreatePrincipalGroupTestData

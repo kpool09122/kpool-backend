@@ -86,4 +86,16 @@ return [
     'version_mismatch' => 'Se detectó una discrepancia de versión en el conjunto de traducción.',
     'invalid_rollback_target_version' => 'La versión de destino debe ser menor que la versión actual.',
     'invalid_status' => 'El estado no es válido para esta operación.',
+
+    // Wiki Principal
+    'principal_group_not_found' => 'No se encontró el grupo de principal especificado.',
+    'policy_not_found' => 'No se encontró la política especificada.',
+    'role_not_found' => 'No se encontró el rol especificado.',
+    'principal_already_exists' => 'Ya existe un principal para esta identidad.',
+    'cannot_delete_system_policy' => 'Las políticas del sistema no se pueden eliminar.',
+    'cannot_delete_system_role' => 'Los roles del sistema no se pueden eliminar.',
+    'cannot_delete_default_principal_group' => 'El grupo de principal predeterminado no se puede eliminar.',
+    'principal_already_member' => 'El principal ya es miembro de este grupo.',
+    'principal_not_member' => 'El principal no es miembro de este grupo.',
+    'cannot_change_non_delegated_principal' => 'No se puede cambiar el estado habilitado de un principal no delegado.',
 ];

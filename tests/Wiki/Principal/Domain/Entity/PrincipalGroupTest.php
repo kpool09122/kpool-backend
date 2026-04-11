@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
+use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyMemberException;
+use Source\Wiki\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -117,7 +118,7 @@ class PrincipalGroupTest extends TestCase
 
         $principalGroup->addMember($principalIdentifier);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(PrincipalAlreadyMemberException::class);
         $this->expectExceptionMessage('Principal is already a member of this group.');
 
         $principalGroup->addMember($principalIdentifier);
@@ -146,7 +147,7 @@ class PrincipalGroupTest extends TestCase
         $principalGroup = $this->createPrincipalGroup();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
+        $this->expectException(PrincipalNotMemberException::class);
         $this->expectExceptionMessage('Principal is not a member of this group.');
 
         $principalGroup->removeMember($principalIdentifier);

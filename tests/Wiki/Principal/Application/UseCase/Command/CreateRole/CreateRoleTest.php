@@ -10,6 +10,7 @@ use Mockery;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRole;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreateRole\CreateRoleOutput;
 use Source\Wiki\Principal\Domain\Entity\Role;
 use Source\Wiki\Principal\Domain\Factory\RoleFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\RoleRepositoryInterface;
@@ -60,13 +61,14 @@ class CreateRoleTest extends TestCase
         $this->app->instance(RoleFactoryInterface::class, $factory);
 
         $useCase = $this->app->make(CreateRoleInterface::class);
+        $output = new CreateRoleOutput();
 
-        $role = $useCase->process($testData->input);
+        $useCase->process($testData->input, $output);
 
-        $this->assertSame((string) $testData->roleIdentifier, (string) $role->roleIdentifier());
-        $this->assertSame($testData->name, $role->name());
-        $this->assertSame($testData->policies, $role->policies());
-        $this->assertSame($testData->isSystemRole, $role->isSystemRole());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->roleIdentifier, $result['roleIdentifier']);
+        $this->assertSame($testData->name, $result['name']);
+        $this->assertSame($testData->isSystemRole, $result['isSystemRole']);
     }
 
     private function createDummyTestData(): CreateRoleTestData

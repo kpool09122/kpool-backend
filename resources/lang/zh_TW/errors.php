@@ -86,4 +86,16 @@ return [
     'version_mismatch' => '翻譯集中檢測到版本不匹配。',
     'invalid_rollback_target_version' => '目標版本必須小於當前版本。',
     'invalid_status' => '此操作的狀態無效。',
+
+    // Wiki Principal
+    'principal_group_not_found' => '找不到指定的主體群組。',
+    'policy_not_found' => '找不到指定的政策。',
+    'role_not_found' => '找不到指定的角色。',
+    'principal_already_exists' => '此身分已存在主體。',
+    'cannot_delete_system_policy' => '系統政策無法刪除。',
+    'cannot_delete_system_role' => '系統角色無法刪除。',
+    'cannot_delete_default_principal_group' => '預設主體群組無法刪除。',
+    'principal_already_member' => '該主體已是此群組的成員。',
+    'principal_not_member' => '該主體不是此群組的成員。',
+    'cannot_change_non_delegated_principal' => '無法變更非委任主體的啟用狀態。',
 ];

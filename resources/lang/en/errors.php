@@ -86,4 +86,16 @@ return [
     'version_mismatch' => 'Version mismatch detected in translation set.',
     'invalid_rollback_target_version' => 'Target version must be less than current version.',
     'invalid_status' => 'The status is invalid for this operation.',
+
+    // Wiki Principal
+    'principal_group_not_found' => 'The specified principal group was not found.',
+    'policy_not_found' => 'The specified policy was not found.',
+    'role_not_found' => 'The specified role was not found.',
+    'principal_already_exists' => 'A principal already exists for this identity.',
+    'cannot_delete_system_policy' => 'System policies cannot be deleted.',
+    'cannot_delete_system_role' => 'System roles cannot be deleted.',
+    'cannot_delete_default_principal_group' => 'The default principal group cannot be deleted.',
+    'principal_already_member' => 'The principal is already a member of this group.',
+    'principal_not_member' => 'The principal is not a member of this group.',
+    'cannot_change_non_delegated_principal' => 'Cannot change the enabled status of a non-delegated principal.',
 ];
