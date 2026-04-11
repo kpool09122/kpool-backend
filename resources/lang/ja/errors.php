@@ -87,6 +87,10 @@ return [
     'invalid_rollback_target_version' => 'ロールバック先のバージョンが無効です。',
     'invalid_status' => 'ステータスが無効です。',
 
+    // Wiki Image
+    'image_not_found' => '指定された画像が見つかりません。',
+    'allow_only_under_review_image_status' => '提出済みステータス以外の画像の承認・却下はできません。',
+
     // Wiki Principal
     'principal_group_not_found' => '指定されたプリンシパルグループが見つかりません。',
     'policy_not_found' => '指定されたポリシーが見つかりません。',

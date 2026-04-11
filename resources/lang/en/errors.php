@@ -87,6 +87,10 @@ return [
     'invalid_rollback_target_version' => 'Target version must be less than current version.',
     'invalid_status' => 'The status is invalid for this operation.',
 
+    // Wiki Image
+    'image_not_found' => 'The specified image was not found.',
+    'allow_only_under_review_image_status' => 'Only images with submitted status can be approved or rejected.',
+
     // Wiki Principal
     'principal_group_not_found' => 'The specified principal group was not found.',
     'policy_not_found' => 'The specified policy was not found.',

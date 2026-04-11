@@ -7,13 +7,13 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\ApproveImage;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImage;
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
@@ -151,17 +151,14 @@ class ApproveImageTest extends TestCase
         $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $approveImage = $this->app->make(ApproveImageInterface::class);
-        $result = $approveImage->process($input);
+        $output = new ApproveImageOutput();
+        $approveImage->process($input, $output);
 
-        $this->assertTrue(UuidValidator::isValid((string)$result->imageIdentifier()));
-        $this->assertSame($testData->resourceType, $result->resourceType());
-        $this->assertSame((string)$testData->wikiIdentifier, (string)$result->wikiIdentifier());
-        $this->assertSame((string)$testData->imagePath, (string)$result->imagePath());
-        $this->assertSame($testData->imageUsage, $result->imageUsage());
-        $this->assertSame($testData->displayOrder, $result->displayOrder());
-        $this->assertSame($testData->sourceUrl, $result->sourceUrl());
-        $this->assertSame($testData->sourceName, $result->sourceName());
-        $this->assertSame($testData->altText, $result->altText());
+        $result = $output->toArray();
+        $this->assertNotNull($result['imageIdentifier']);
+        $this->assertSame($testData->resourceType->value, $result['resourceType']);
+        $this->assertSame($testData->imageUsage->value, $result['imageUsage']);
+        $this->assertFalse($result['isHidden']);
     }
 
     /**
@@ -202,7 +199,8 @@ class ApproveImageTest extends TestCase
 
         $this->expectException(ImageNotFoundException::class);
         $approveImage = $this->app->make(ApproveImageInterface::class);
-        $approveImage->process($input);
+        $output = new ApproveImageOutput();
+        $approveImage->process($input, $output);
     }
 
     /**
@@ -259,7 +257,8 @@ class ApproveImageTest extends TestCase
 
         $this->expectException(InvalidStatusException::class);
         $approveImage = $this->app->make(ApproveImageInterface::class);
-        $approveImage->process($input);
+        $output = new ApproveImageOutput();
+        $approveImage->process($input, $output);
     }
 
     /**
@@ -358,16 +357,15 @@ class ApproveImageTest extends TestCase
         $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $approveImage = $this->app->make(ApproveImageInterface::class);
-        $result = $approveImage->process($input);
+        $output = new ApproveImageOutput();
+        $approveImage->process($input, $output);
 
         // 更新後の値が反映されていることを確認
-        $this->assertSame((string)$testData->publishedImageIdentifier, (string)$result->imageIdentifier());
-        $this->assertSame((string)$testData->newImagePath, (string)$result->imagePath());
-        $this->assertSame($testData->newImageUsage, $result->imageUsage());
-        $this->assertSame($testData->newDisplayOrder, $result->displayOrder());
-        $this->assertSame($testData->newSourceUrl, $result->sourceUrl());
-        $this->assertSame($testData->newSourceName, $result->sourceName());
-        $this->assertSame($testData->newAltText, $result->altText());
+        $result = $output->toArray();
+        $this->assertSame((string) $testData->publishedImageIdentifier, $result['imageIdentifier']);
+        $this->assertSame($testData->existingImage->resourceType()->value, $result['resourceType']);
+        $this->assertSame($testData->newImageUsage->value, $result['imageUsage']);
+        $this->assertFalse($result['isHidden']);
     }
 
     /**
@@ -425,7 +423,8 @@ class ApproveImageTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $approveImage = $this->app->make(ApproveImageInterface::class);
-        $approveImage->process($input);
+        $output = new ApproveImageOutput();
+        $approveImage->process($input, $output);
     }
 
     /**
@@ -473,7 +472,8 @@ class ApproveImageTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $approveImage = $this->app->make(ApproveImageInterface::class);
-        $approveImage->process($input);
+        $output = new ApproveImageOutput();
+        $approveImage->process($input, $output);
     }
 
     /**

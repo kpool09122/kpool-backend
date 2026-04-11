@@ -13,6 +13,7 @@ use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImage;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageOutput;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
@@ -100,11 +101,11 @@ class UnhideImageTest extends TestCase
         $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $unhideImage = $this->app->make(UnhideImageInterface::class);
-        $result = $unhideImage->process($input);
+        $output = new UnhideImageOutput();
+        $unhideImage->process($input, $output);
 
-        $this->assertFalse($result->isHidden());
-        $this->assertNull($result->hiddenBy());
-        $this->assertNull($result->hiddenAt());
+        $result = $output->toArray();
+        $this->assertFalse($result['isHidden']);
     }
 
     /**
@@ -140,7 +141,8 @@ class UnhideImageTest extends TestCase
 
         $this->expectException(ImageNotFoundException::class);
         $unhideImage = $this->app->make(UnhideImageInterface::class);
-        $unhideImage->process($input);
+        $output = new UnhideImageOutput();
+        $unhideImage->process($input, $output);
     }
 
     /**
@@ -179,7 +181,8 @@ class UnhideImageTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $unhideImage = $this->app->make(UnhideImageInterface::class);
-        $unhideImage->process($input);
+        $output = new UnhideImageOutput();
+        $unhideImage->process($input, $output);
     }
 
     /**
@@ -228,7 +231,8 @@ class UnhideImageTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $unhideImage = $this->app->make(UnhideImageInterface::class);
-        $unhideImage->process($input);
+        $output = new UnhideImageOutput();
+        $unhideImage->process($input, $output);
     }
 
     /**

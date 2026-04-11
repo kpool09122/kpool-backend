@@ -87,6 +87,10 @@ return [
     'invalid_rollback_target_version' => 'La versión de destino debe ser menor que la versión actual.',
     'invalid_status' => 'El estado no es válido para esta operación.',
 
+    // Wiki Image
+    'image_not_found' => 'No se encontró la imagen especificada.',
+    'allow_only_under_review_image_status' => 'Solo se pueden aprobar o rechazar imágenes con estado enviado.',
+
     // Wiki Principal
     'principal_group_not_found' => 'No se encontró el grupo de principal especificado.',
     'policy_not_found' => 'No se encontró la política especificada.',

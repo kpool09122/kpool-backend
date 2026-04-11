@@ -6,7 +6,6 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
-use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
@@ -30,12 +29,13 @@ readonly class UploadImage implements UploadImageInterface
 
     /**
      * @param UploadImageInputPort $input
-     * @return DraftImage
+     * @param UploadImageOutputPort $output
+     * @return void
      * @throws InvalidBase64ImageException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
-    public function process(UploadImageInputPort $input): DraftImage
+    public function process(UploadImageInputPort $input, UploadImageOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
 
@@ -71,6 +71,6 @@ readonly class UploadImage implements UploadImageInterface
 
         $this->draftImageRepository->save($draftImage);
 
-        return $draftImage;
+        $output->setDraftImage($draftImage);
     }
 }

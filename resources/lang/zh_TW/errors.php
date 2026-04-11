@@ -87,6 +87,10 @@ return [
     'invalid_rollback_target_version' => '目標版本必須小於當前版本。',
     'invalid_status' => '此操作的狀態無效。',
 
+    // Wiki Image
+    'image_not_found' => '找不到指定的圖片。',
+    'allow_only_under_review_image_status' => '只有已提交狀態的圖片才能被批准或拒絕。',
+
     // Wiki Principal
     'principal_group_not_found' => '找不到指定的主體群組。',
     'policy_not_found' => '找不到指定的政策。',

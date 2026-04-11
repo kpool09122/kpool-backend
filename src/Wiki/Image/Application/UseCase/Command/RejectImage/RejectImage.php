@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Application\UseCase\Command\RejectImage;
 
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
-use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -28,13 +27,14 @@ readonly class RejectImage implements RejectImageInterface
 
     /**
      * @param RejectImageInputPort $input
-     * @return DraftImage
+     * @param RejectImageOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws ImageNotFoundException
      * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
      */
-    public function process(RejectImageInputPort $input): DraftImage
+    public function process(RejectImageInputPort $input, RejectImageOutputPort $output): void
     {
         $principal = $this->principalRepository->findById($input->principalIdentifier());
         if ($principal === null) {
@@ -58,6 +58,6 @@ readonly class RejectImage implements RejectImageInterface
         $draftImage->setStatus(ApprovalStatus::Rejected);
         $this->draftImageRepository->save($draftImage);
 
-        return $draftImage;
+        $output->setDraftImage($draftImage);
     }
 }

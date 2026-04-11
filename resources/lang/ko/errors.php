@@ -87,6 +87,10 @@ return [
     'invalid_rollback_target_version' => '롤백 대상 버전이 유효하지 않습니다.',
     'invalid_status' => '이 작업에 대해 상태가 유효하지 않습니다.',
 
+    // Wiki Image
+    'image_not_found' => '지정된 이미지를 찾을 수 없습니다.',
+    'allow_only_under_review_image_status' => '제출된 상태의 이미지만 승인 또는 거부할 수 있습니다.',
+
     // Wiki Principal
     'principal_group_not_found' => '지정된 프린시펄 그룹을 찾을 수 없습니다.',
     'policy_not_found' => '지정된 정책을 찾을 수 없습니다.',

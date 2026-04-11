@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use Application\Http\Action\Wiki\Image\Command\ApproveImage\ApproveImageAction;
+use Application\Http\Action\Wiki\Image\Command\DeleteImage\DeleteImageAction;
+use Application\Http\Action\Wiki\Image\Command\RejectImage\RejectImageAction;
+use Application\Http\Action\Wiki\Image\Command\UnhideImage\UnhideImageAction;
+use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
 use Application\Http\Action\Wiki\Principal\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\AttachPolicyToRole\AttachPolicyToRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroupAction;
@@ -37,6 +42,13 @@ Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
 Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
 Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
 Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
+
+// Image
+Route::post('/image/{imageId}/approve', ApproveImageAction::class);
+Route::delete('/image/{imageId}', DeleteImageAction::class);
+Route::post('/image/{imageId}/reject', RejectImageAction::class);
+Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
+Route::post('/image/upload', UploadImageAction::class);
 
 // Principal
 Route::post('/principal/create', CreatePrincipalAction::class);
