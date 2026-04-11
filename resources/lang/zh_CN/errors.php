@@ -102,4 +102,11 @@ return [
     'principal_already_member' => '该主体已是此组的成员。',
     'principal_not_member' => '该主体不是此组的成员。',
     'cannot_change_non_delegated_principal' => '无法更改非委托主体的启用状态。',
+
+    // ImageHideRequest
+    'image_hide_request_not_found' => '未找到指定的图片隐藏请求。',
+    'image_not_found' => '未找到指定的图片。',
+    'image_hide_request_not_pending_for_approval' => '只能批准待处理的图片隐藏请求。',
+    'image_hide_request_not_pending_for_rejection' => '只能拒绝待处理的图片隐藏请求。',
+    'image_hide_request_already_pending' => '该图片已存在待处理的隐藏请求。',
 ];

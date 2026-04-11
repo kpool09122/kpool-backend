@@ -29,6 +29,9 @@ use Application\Http\Action\Wiki\Wiki\Command\PublishWiki\PublishWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\RejectWiki\RejectWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\RollbackWiki\RollbackWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\SubmitWiki\SubmitWikiAction;
+use Application\Http\Action\Wiki\ImageHideRequest\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
+use Application\Http\Action\Wiki\ImageHideRequest\Command\RejectImageHideRequest\RejectImageHideRequestAction;
+use Application\Http\Action\Wiki\ImageHideRequest\Command\RequestImageHide\RequestImageHideAction;
 use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
 use Illuminate\Support\Facades\Route;
 
@@ -64,3 +67,8 @@ Route::post('/role/{roleId}/attach-policy', AttachPolicyToRoleAction::class);
 Route::post('/role/{roleId}/detach-policy', DetachPolicyFromRoleAction::class);
 Route::post('/policy/create', CreatePolicyAction::class);
 Route::delete('/policy/{policyId}', DeletePolicyAction::class);
+
+// ImageHideRequest
+Route::post('/image-hide-request/create', RequestImageHideAction::class);
+Route::post('/image-hide-request/{requestId}/approve', ApproveImageHideRequestAction::class);
+Route::post('/image-hide-request/{requestId}/reject', RejectImageHideRequestAction::class);
