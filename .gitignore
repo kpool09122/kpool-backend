@@ -41,7 +41,8 @@ clover.xml
 /build/
 /dist/
 
-.codex
+.codex/*
+!.codex/skills/
 
 # Mailpit local DB
 /mailpit/
