@@ -102,4 +102,11 @@ return [
     'principal_already_member' => 'El principal ya es miembro de este grupo.',
     'principal_not_member' => 'El principal no es miembro de este grupo.',
     'cannot_change_non_delegated_principal' => 'No se puede cambiar el estado habilitado de un principal no delegado.',
+
+    // ImageHideRequest
+    'image_hide_request_not_found' => 'No se encontró la solicitud de ocultación de imagen especificada.',
+    'image_not_found' => 'No se encontró la imagen especificada.',
+    'image_hide_request_not_pending_for_approval' => 'Solo se pueden aprobar solicitudes de ocultación de imagen pendientes.',
+    'image_hide_request_not_pending_for_rejection' => 'Solo se pueden rechazar solicitudes de ocultación de imagen pendientes.',
+    'image_hide_request_already_pending' => 'Ya existe una solicitud de ocultación pendiente para esta imagen.',
 ];

@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Tests\Wiki\ImageHideRequest\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
+use Source\Wiki\ImageHideRequest\Domain\Exception\ImageHideRequestNotPendingForApprovalException;
+use Source\Wiki\ImageHideRequest\Domain\Exception\ImageHideRequestNotPendingForRejectionException;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -90,7 +91,7 @@ class ImageHideRequestTest extends TestCase
         $imageHideRequest = $this->createDummyImageHideRequest(ImageHideRequestStatus::APPROVED);
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
+        $this->expectException(ImageHideRequestNotPendingForApprovalException::class);
         $this->expectExceptionMessage('Only pending requests can be approved.');
 
         $imageHideRequest->approve($reviewerIdentifier, 'comment');
@@ -129,7 +130,7 @@ class ImageHideRequestTest extends TestCase
         $imageHideRequest = $this->createDummyImageHideRequest(ImageHideRequestStatus::REJECTED);
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $this->expectException(DomainException::class);
+        $this->expectException(ImageHideRequestNotPendingForRejectionException::class);
         $this->expectExceptionMessage('Only pending requests can be rejected.');
 
         $imageHideRequest->reject($reviewerIdentifier, 'comment');

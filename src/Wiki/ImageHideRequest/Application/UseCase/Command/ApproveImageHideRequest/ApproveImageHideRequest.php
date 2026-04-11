@@ -9,7 +9,6 @@ use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\ImageHideRequest\Application\Exception\ImageHideRequestInvalidStatusException;
 use Source\Wiki\ImageHideRequest\Application\Exception\ImageHideRequestNotFoundException;
-use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\Repository\ImageHideRequestRepositoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -30,12 +29,13 @@ readonly class ApproveImageHideRequest implements ApproveImageHideRequestInterfa
 
     /**
      * @param ApproveImageHideRequestInputPort $input
-     * @return ImageHideRequest
+     * @param ApproveImageHideRequestOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws ImageNotFoundException
      * @throws PrincipalNotFoundException
      */
-    public function process(ApproveImageHideRequestInputPort $input): ImageHideRequest
+    public function process(ApproveImageHideRequestInputPort $input, ApproveImageHideRequestOutputPort $output): void
     {
         $imageHideRequest = $this->imageHideRequestRepository->findById($input->requestIdentifier());
         if ($imageHideRequest === null) {
@@ -67,6 +67,6 @@ readonly class ApproveImageHideRequest implements ApproveImageHideRequestInterfa
         $image->hide($input->principalIdentifier());
         $this->imageRepository->save($image);
 
-        return $imageHideRequest;
+        $output->setImageHideRequest($imageHideRequest);
     }
 }

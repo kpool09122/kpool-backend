@@ -19,6 +19,7 @@ use Source\Wiki\ImageHideRequest\Application\Exception\ImageHideRequestNotFoundE
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RejectImageHideRequest\RejectImageHideRequest;
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RejectImageHideRequest\RejectImageHideRequestInput;
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RejectImageHideRequest\RejectImageHideRequestInterface;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RejectImageHideRequest\RejectImageHideRequestOutput;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\Repository\ImageHideRequestRepositoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
@@ -123,12 +124,19 @@ class RejectImageHideRequestTest extends TestCase
         $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $rejectImageHideRequest = $this->app->make(RejectImageHideRequestInterface::class);
-        $result = $rejectImageHideRequest->process($input);
+        $output = new RejectImageHideRequestOutput();
+        $rejectImageHideRequest->process($input, $output);
 
-        $this->assertSame(ImageHideRequestStatus::REJECTED, $result->status());
-        $this->assertSame((string) $principalIdentifier, (string) $result->reviewerIdentifier());
-        $this->assertSame($reviewerComment, $result->reviewerComment());
+        $this->assertSame(ImageHideRequestStatus::REJECTED, $testData->imageHideRequest->status());
+        $this->assertSame((string) $principalIdentifier, (string) $testData->imageHideRequest->reviewerIdentifier());
+        $this->assertSame($reviewerComment, $testData->imageHideRequest->reviewerComment());
         $this->assertFalse($testData->image->isHidden());
+
+        $outputArray = $output->toArray();
+        $this->assertSame((string) $testData->requestIdentifier, $outputArray['requestIdentifier']);
+        $this->assertSame((string) $testData->imageIdentifier, $outputArray['imageIdentifier']);
+        $this->assertSame('rejected', $outputArray['status']);
+        $this->assertSame($reviewerComment, $outputArray['reviewerComment']);
     }
 
     /**
@@ -171,7 +179,8 @@ class RejectImageHideRequestTest extends TestCase
 
         $this->expectException(ImageHideRequestNotFoundException::class);
         $rejectImageHideRequest = $this->app->make(RejectImageHideRequestInterface::class);
-        $rejectImageHideRequest->process($input);
+        $output = new RejectImageHideRequestOutput();
+        $rejectImageHideRequest->process($input, $output);
     }
 
     /**
@@ -214,7 +223,8 @@ class RejectImageHideRequestTest extends TestCase
 
         $this->expectException(ImageHideRequestInvalidStatusException::class);
         $rejectImageHideRequest = $this->app->make(RejectImageHideRequestInterface::class);
-        $rejectImageHideRequest->process($input);
+        $output = new RejectImageHideRequestOutput();
+        $rejectImageHideRequest->process($input, $output);
     }
 
     /**
@@ -260,7 +270,8 @@ class RejectImageHideRequestTest extends TestCase
 
         $this->expectException(ImageNotFoundException::class);
         $rejectImageHideRequest = $this->app->make(RejectImageHideRequestInterface::class);
-        $rejectImageHideRequest->process($input);
+        $output = new RejectImageHideRequestOutput();
+        $rejectImageHideRequest->process($input, $output);
     }
 
     /**
@@ -309,7 +320,8 @@ class RejectImageHideRequestTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $rejectImageHideRequest = $this->app->make(RejectImageHideRequestInterface::class);
-        $rejectImageHideRequest->process($input);
+        $output = new RejectImageHideRequestOutput();
+        $rejectImageHideRequest->process($input, $output);
     }
 
     /**
@@ -368,7 +380,8 @@ class RejectImageHideRequestTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $rejectImageHideRequest = $this->app->make(RejectImageHideRequestInterface::class);
-        $rejectImageHideRequest->process($input);
+        $output = new RejectImageHideRequestOutput();
+        $rejectImageHideRequest->process($input, $output);
     }
 
     /**

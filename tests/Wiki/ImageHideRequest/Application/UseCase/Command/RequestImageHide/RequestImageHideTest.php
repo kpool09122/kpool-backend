@@ -16,6 +16,7 @@ use Source\Wiki\ImageHideRequest\Application\Exception\ImageHideRequestAlreadyPe
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHide;
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHideInput;
 use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHideInterface;
+use Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageHide\RequestImageHideOutput;
 use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\Factory\ImageHideRequestFactoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\Repository\ImageHideRequestRepositoryInterface;
@@ -111,13 +112,15 @@ class RequestImageHideTest extends TestCase
         $this->app->instance(ImageHideRequestFactoryInterface::class, $imageHideRequestFactory);
 
         $requestImageHide = $this->app->make(RequestImageHideInterface::class);
-        $result = $requestImageHide->process($input);
+        $output = new RequestImageHideOutput();
+        $requestImageHide->process($input, $output);
 
-        $this->assertSame(ImageHideRequestStatus::PENDING, $result->status());
-        $this->assertSame((string) $testData->imageIdentifier, (string) $result->imageIdentifier());
-        $this->assertSame($requesterName, $result->requesterName());
-        $this->assertSame($requesterEmail, $result->requesterEmail());
-        $this->assertSame($reason, $result->reason());
+        $outputArray = $output->toArray();
+        $this->assertSame('pending', $outputArray['status']);
+        $this->assertSame((string) $testData->imageIdentifier, $outputArray['imageIdentifier']);
+        $this->assertSame($requesterName, $outputArray['requesterName']);
+        $this->assertSame($requesterEmail, $outputArray['requesterEmail']);
+        $this->assertSame($reason, $outputArray['reason']);
     }
 
     /**
@@ -156,7 +159,8 @@ class RequestImageHideTest extends TestCase
 
         $this->expectException(ImageNotFoundException::class);
         $requestImageHide = $this->app->make(RequestImageHideInterface::class);
-        $requestImageHide->process($input);
+        $output = new RequestImageHideOutput();
+        $requestImageHide->process($input, $output);
     }
 
     /**
@@ -198,7 +202,8 @@ class RequestImageHideTest extends TestCase
 
         $this->expectException(ImageHideRequestAlreadyPendingException::class);
         $requestImageHide = $this->app->make(RequestImageHideInterface::class);
-        $requestImageHide->process($input);
+        $output = new RequestImageHideOutput();
+        $requestImageHide->process($input, $output);
     }
 
     /**

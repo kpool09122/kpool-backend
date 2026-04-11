@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\ImageHideRequest\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
+use Source\Wiki\ImageHideRequest\Domain\Exception\ImageHideRequestNotPendingForApprovalException;
+use Source\Wiki\ImageHideRequest\Domain\Exception\ImageHideRequestNotPendingForRejectionException;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestIdentifier;
 use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -80,7 +81,7 @@ class ImageHideRequest
     public function approve(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('Only pending requests can be approved.');
+            throw new ImageHideRequestNotPendingForApprovalException();
         }
 
         $this->status = ImageHideRequestStatus::APPROVED;
@@ -92,7 +93,7 @@ class ImageHideRequest
     public function reject(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('Only pending requests can be rejected.');
+            throw new ImageHideRequestNotPendingForRejectionException();
         }
 
         $this->status = ImageHideRequestStatus::REJECTED;

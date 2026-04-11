@@ -102,4 +102,11 @@ return [
     'principal_already_member' => 'このプリンシパルは既にこのグループのメンバーです。',
     'principal_not_member' => 'このプリンシパルはこのグループのメンバーではありません。',
     'cannot_change_non_delegated_principal' => '委任されていないプリンシパルの有効状態は変更できません。',
+
+    // ImageHideRequest
+    'image_hide_request_not_found' => '指定された画像非表示リクエストが見つかりません。',
+    'image_not_found' => '指定された画像が見つかりません。',
+    'image_hide_request_not_pending_for_approval' => '保留中以外の画像非表示リクエストは承認できません。',
+    'image_hide_request_not_pending_for_rejection' => '保留中以外の画像非表示リクエストは拒否できません。',
+    'image_hide_request_already_pending' => 'この画像に対する非表示リクエストは既に保留中です。',
 ];

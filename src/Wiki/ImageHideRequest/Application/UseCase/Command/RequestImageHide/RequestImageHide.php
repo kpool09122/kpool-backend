@@ -7,7 +7,6 @@ namespace Source\Wiki\ImageHideRequest\Application\UseCase\Command\RequestImageH
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\ImageHideRequest\Application\Exception\ImageHideRequestAlreadyPendingException;
-use Source\Wiki\ImageHideRequest\Domain\Entity\ImageHideRequest;
 use Source\Wiki\ImageHideRequest\Domain\Factory\ImageHideRequestFactoryInterface;
 use Source\Wiki\ImageHideRequest\Domain\Repository\ImageHideRequestRepositoryInterface;
 
@@ -22,10 +21,11 @@ readonly class RequestImageHide implements RequestImageHideInterface
 
     /**
      * @param RequestImageHideInputPort $input
-     * @return ImageHideRequest
+     * @param RequestImageHideOutputPort $output
+     * @return void
      * @throws ImageNotFoundException
      */
-    public function process(RequestImageHideInputPort $input): ImageHideRequest
+    public function process(RequestImageHideInputPort $input, RequestImageHideOutputPort $output): void
     {
         $image = $this->imageRepository->findById($input->imageIdentifier());
         if ($image === null) {
@@ -45,6 +45,6 @@ readonly class RequestImageHide implements RequestImageHideInterface
 
         $this->imageHideRequestRepository->save($imageHideRequest);
 
-        return $imageHideRequest;
+        $output->setImageHideRequest($imageHideRequest);
     }
 }
