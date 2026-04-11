@@ -13,6 +13,7 @@ use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
 
 readonly class CreateIdentity implements CreateIdentityInterface
@@ -22,6 +23,7 @@ readonly class CreateIdentity implements CreateIdentityInterface
         private IdentityFactoryInterface $identityFactory,
         private ImageServiceInterface $imageService,
         private IdentityRepositoryInterface $identityRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -67,7 +69,7 @@ readonly class CreateIdentity implements CreateIdentityInterface
         $this->identityRepository->save($identity);
 
         if ($input->invitationToken() !== null) {
-            event(new IdentityCreatedViaInvitation(
+            $this->eventDispatcher->dispatch(new IdentityCreatedViaInvitation(
                 identityIdentifier: $identity->identityIdentifier(),
                 invitationToken: $input->invitationToken(),
             ));

@@ -11,6 +11,7 @@ use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class IdentityCreatedViaInvitationHandler
 {
@@ -20,6 +21,7 @@ readonly class IdentityCreatedViaInvitationHandler
         private InvitationRepositoryInterface $invitationRepository,
         private IdentityGroupRepositoryInterface $identityGroupRepository,
         private IdentityGroupFactoryInterface $identityGroupFactory,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -53,7 +55,7 @@ readonly class IdentityCreatedViaInvitationHandler
         $invitation->accept($event->identityIdentifier);
         $this->invitationRepository->save($invitation);
 
-        event(new InvitationAccepted(
+        $this->eventDispatcher->dispatch(new InvitationAccepted(
             invitationIdentifier: $invitation->invitationIdentifier(),
             accountIdentifier: $invitation->accountIdentifier(),
             acceptedByIdentityIdentifier: $event->identityIdentifier,

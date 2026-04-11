@@ -15,6 +15,7 @@ use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\SocialConnection;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class SocialLoginCallback implements SocialLoginCallbackInterface
 {
@@ -27,6 +28,7 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         private IdentityFactoryInterface           $identityFactory,
         private SignupSessionRepositoryInterface   $signupSessionRepository,
         private AuthServiceInterface               $authService,
+        private EventDispatcherInterface           $eventDispatcher,
     ) {
     }
 
@@ -74,12 +76,12 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         $this->identityRepository->save($newIdentity);
 
         if ($invitationToken = $signupSession?->invitationToken()) {
-            event(new IdentityCreatedViaInvitation(
+            $this->eventDispatcher->dispatch(new IdentityCreatedViaInvitation(
                 identityIdentifier: $newIdentity->identityIdentifier(),
                 invitationToken: $invitationToken,
             ));
         } else {
-            event(new IdentityCreated(
+            $this->eventDispatcher->dispatch(new IdentityCreated(
                 identityIdentifier: $newIdentity->identityIdentifier(),
                 email: $profile->email(),
                 accountType: $accountType,
