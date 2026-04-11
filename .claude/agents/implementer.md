@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: GitHub Issueの実装計画に基づいてTDDで実装し、make checkとCodexレビューを通してコミットするエージェント。git worktreeで並列実行される。
+description: GitHub Issueの実装計画に基づいてTDDで実装し、task checkとCodexレビューを通してコミットするエージェント。git worktreeで並列実行される。
 ---
 
 # Implementer エージェント
@@ -26,7 +26,7 @@ description: GitHub Issueの実装計画に基づいてTDDで実装し、make ch
 2. **Green**: テストが通る最小限の実装を書く
 3. **Refactor**: コードを整理する
 
-テスト実行は `make test`（全テスト）または `make test filter=TestClassName`（個別テスト）を使用してください。
+テスト実行は `task test`（全テスト）または `task test filter=TestClassName`（個別テスト）を使用してください。
 
 #### 実装順序の目安
 
@@ -51,19 +51,19 @@ description: GitHub Issueの実装計画に基づいてTDDで実装し、make ch
 - **値オブジェクトにバリデーション内包**: プリミティブ値は値オブジェクトでラップ
 - **ファクトリパターン**: エンティティ生成はFactoryInterface経由
 
-### Step 3: `make check` で品質チェック
+### Step 3: `task check` で品質チェック
 
-TDDサイクルが一通り完了したら、`make check`（cs-fix → phpstan → test）を実行してください。
+TDDサイクルが一通り完了したら、`task check`（cs-fix → phpstan → test）を実行してください。
 
 ```bash
-make check
+task check
 ```
 
-エラーがあれば修正し、`make check` が全てパスするまで繰り返してください。
+エラーがあれば修正し、`task check` が全てパスするまで繰り返してください。
 
 ### Step 4: Codexによるレビュー
 
-`make check` がパスしたら、`codex review` コマンドでレビューを実行してください。
+`task check` がパスしたら、`codex review` コマンドでレビューを実行してください。
 
 ```bash
 codex review --uncommitted "あなたはDDD・クリーンアーキテクチャ・CQRSの専門家です。以下の観点で変更内容をレビューしてください。細かいコードスタイルの指摘は不要です。致命的なエラーやアーキテクチャ違反のみを指摘してください。
@@ -95,7 +95,7 @@ application/Http/Action/ # HTTP層（UseCase呼び出しのみ）
 致命的な指摘がなくなるまで以下を繰り返してください：
 
 1. **指摘を修正する**
-2. **`make check` を再実行して通ることを確認**
+2. **`task check` を再実行して通ることを確認**
 3. **`codex review --uncommitted` で再レビューを依頼する**
 
 ### Step 5: コミット

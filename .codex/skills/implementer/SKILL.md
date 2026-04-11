@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: GitHub Issueの実装計画に基づいてTDDで実装し、make checkとCodexレビューを通してコミットする実装用スキル。
+description: GitHub Issueの実装計画に基づいてTDDで実装し、task checkとCodexレビューを通してコミットする実装用スキル。
 ---
 
 # Implementer スキル
@@ -26,7 +26,7 @@ description: GitHub Issueの実装計画に基づいてTDDで実装し、make ch
 2. Green: 最小限の実装で通す
 3. Refactor: 重複や責務を整理する
 
-テスト実行は `make test` または `make test filter=TestClassName` を使います。
+テスト実行は `task test` または `task test filter=TestClassName` を使います。
 
 #### 実装順序の目安
 
@@ -45,13 +45,13 @@ description: GitHub Issueの実装計画に基づいてTDDで実装し、make ch
 - 値オブジェクトにバリデーションを内包する
 - エンティティ生成はFactory経由
 
-### Step 3: `make check` で品質チェック
+### Step 3: `task check` で品質チェック
 
-TDDが一通り完了したら `make check` を実行し、通るまで修正します。
+TDDが一通り完了したら `task check` を実行し、通るまで修正します。
 
 ### Step 4: Codexレビュー
 
-`make check` が通ったら、未コミット差分を自分でレビューし、必要に応じて `codex review --uncommitted` 相当の観点で再点検します。
+`task check` が通ったら、未コミット差分を自分でレビューし、必要に応じて `codex review --uncommitted` 相当の観点で再点検します。
 レビュー観点は以下です。
 
 1. 致命的な実行時エラー
@@ -62,7 +62,7 @@ TDDが一通り完了したら `make check` を実行し、通るまで修正し
 6. サブドメイン間の不適切な直接依存
 7. トランザクション管理の責務違反
 
-指摘がなくなるまで、修正 → `make check` → 再レビューを繰り返します。
+指摘がなくなるまで、修正 → `task check` → 再レビューを繰り返します。
 
 ### Step 5: コミット
 

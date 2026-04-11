@@ -46,13 +46,13 @@ docker-compose exec php composer install
 3. Run tests:
 ```bash
 # Run all tests (including database tests)
-make test
+task test
 
 # Run tests without database
-make test-no-db
+task test-no-db
 
 # Run only database tests
-make test-db
+task test-db
 ```
 
 ### Test Organization

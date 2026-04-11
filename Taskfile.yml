@@ -1,0 +1,106 @@
+version: '3'
+
+vars:
+  PHPUNIT: ./vendor/bin/phpunit
+  SLEEP_SECONDS: 5
+
+tasks:
+  wait-for-test-db:
+    desc: Wait for testing database to be ready
+    cmds:
+      - echo "Waiting for testing database to be ready..."
+      - '{{if eq OS "windows"}}powershell -Command "Start-Sleep -Seconds {{.SLEEP_SECONDS}}"{{else}}sleep {{.SLEEP_SECONDS}}{{end}}'
+    silent: true
+
+  test:
+    desc: "Run all PHPUnit tests (DB tests + non-DB tests). Usage: task test [filter=TestClassName] [keepdb=1]"
+    cmds:
+      - docker-compose up -d testing_db redis
+      - task: wait-for-test-db
+      - defer: '{{if not .keepdb}}docker-compose stop testing_db redis && docker-compose rm -v -f testing_db redis{{end}}'
+      - docker-compose run --rm php bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --coverage-html coverage-html"
+
+  test-no-db:
+    desc: "Run PHPUnit tests excluding 'useDb' group. Usage: task test-no-db [filter=TestClassName]"
+    cmds:
+      - docker-compose stop testing_db 2>/dev/null || true
+      - docker-compose run --rm php bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --exclude-group useDb --coverage-html coverage-html"
+
+  check:
+    desc: Run code style fix, static analysis, and all tests
+    cmds:
+      - task: cs-fix
+      - task: phpstan
+      - task: test
+
+  db-up:
+    desc: Start PostgreSQL testing service
+    cmds:
+      - docker-compose up -d testing_db
+
+  db-down:
+    desc: Stop all services
+    cmds:
+      - docker-compose down
+
+  db-restart:
+    desc: Restart PostgreSQL testing service
+    cmds:
+      - docker-compose restart testing_db
+
+  db-logs:
+    desc: View PostgreSQL testing logs
+    cmds:
+      - docker-compose logs -f testing_db
+
+  db-shell:
+    desc: Connect to PostgreSQL testing shell
+    cmds:
+      - docker-compose exec testing_db psql -U kpool -d kpool
+
+  db-clean:
+    desc: Stop services and remove testing database volumes
+    cmds:
+      - docker-compose down -v --remove-orphans
+
+  mail-up:
+    desc: Start Mailpit and php (php will pull up testing_db via depends_on)
+    cmds:
+      - docker-compose up -d mail php
+
+  mail-down:
+    desc: Stop Mailpit and php
+    cmds:
+      - docker-compose stop mail php
+
+  up:
+    desc: Start all services
+    cmds:
+      - docker-compose up -d
+
+  install:
+    desc: Install composer dependencies
+    cmds:
+      - docker-compose run --rm php composer install
+
+  phpstan:
+    desc: Run PHPStan static analysis
+    cmds:
+      - docker-compose run --rm php composer phpstan
+
+  cs-fix:
+    desc: Fix code style using PHP CS Fixer
+    cmds:
+      - docker-compose run --rm php composer cs-fix
+
+  process-due-transfers:
+    desc: "Execute due transfer batch processing. Usage: task process-due-transfers [date=2024-02-10] [dry-run=1]"
+    cmds:
+      - docker-compose up -d testing_db redis
+      - task: wait-for-test-db
+      - docker-compose run --rm php php artisan settlement:process-due-transfers {{if .date}}--date={{.date}}{{end}} {{if (index . "dry-run")}}--dry-run{{end}}
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list
