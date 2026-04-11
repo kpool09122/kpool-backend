@@ -105,8 +105,14 @@ return [
 
     // ImageHideRequest
     'image_hide_request_not_found' => '指定された画像非表示リクエストが見つかりません。',
-    'image_not_found' => '指定された画像が見つかりません。',
     'image_hide_request_not_pending_for_approval' => '保留中以外の画像非表示リクエストは承認できません。',
     'image_hide_request_not_pending_for_rejection' => '保留中以外の画像非表示リクエストは拒否できません。',
     'image_hide_request_already_pending' => 'この画像に対する非表示リクエストは既に保留中です。',
+
+    // Wiki OfficialCertification
+    'official_certification_not_found' => '指定された公式認定が見つかりません。',
+    'certification_not_pending_for_approval' => '保留中の公式認定のみ承認できます。',
+    'certification_not_pending_for_rejection' => '保留中の公式認定のみ却下できます。',
+    'official_certification_already_requested' => '公式認定は既に申請されています。',
+    'official_certification_invalid_status' => '公式認定のステータスがこの操作に対して無効です。',
 ];

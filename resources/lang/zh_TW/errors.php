@@ -105,8 +105,14 @@ return [
 
     // ImageHideRequest
     'image_hide_request_not_found' => '未找到指定的圖片隱藏請求。',
-    'image_not_found' => '未找到指定的圖片。',
     'image_hide_request_not_pending_for_approval' => '只能批准待處理的圖片隱藏請求。',
     'image_hide_request_not_pending_for_rejection' => '只能拒絕待處理的圖片隱藏請求。',
     'image_hide_request_already_pending' => '該圖片已存在待處理的隱藏請求。',
+
+    // Wiki OfficialCertification
+    'official_certification_not_found' => '找不到指定的官方認證。',
+    'certification_not_pending_for_approval' => '只能核准待處理的官方認證。',
+    'certification_not_pending_for_rejection' => '只能拒絕待處理的官方認證。',
+    'official_certification_already_requested' => '官方認證已被申請。',
+    'official_certification_invalid_status' => '官方認證的狀態對此操作無效。',
 ];

@@ -11,6 +11,9 @@ use Application\Http\Action\Wiki\Principal\Command\AddPrincipalToPrincipalGroup\
 use Application\Http\Action\Wiki\Principal\Command\AttachPolicyToRole\AttachPolicyToRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePolicy\CreatePolicyAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\CreateRole\CreateRoleAction;
@@ -72,3 +75,8 @@ Route::delete('/policy/{policyId}', DeletePolicyAction::class);
 Route::post('/image-hide-request/create', RequestImageHideAction::class);
 Route::post('/image-hide-request/{requestId}/approve', ApproveImageHideRequestAction::class);
 Route::post('/image-hide-request/{requestId}/reject', RejectImageHideRequestAction::class);
+
+// OfficialCertification
+Route::post('/official-certification/request', RequestCertificationAction::class);
+Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class);
+Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);

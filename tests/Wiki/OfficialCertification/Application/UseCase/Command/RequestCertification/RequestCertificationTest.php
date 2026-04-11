@@ -12,6 +12,7 @@ use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificatio
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification\RequestCertificationOutput;
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactoryInterface;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
@@ -82,10 +83,14 @@ class RequestCertificationTest extends TestCase
             $ownerAccountIdentifier,
         );
 
-        $certification = $useCase->process($input);
+        $output = new RequestCertificationOutput();
 
-        $this->assertSame($certificationId, (string) $certification->certificationIdentifier());
-        $this->assertTrue($certification->status()->isPending());
+        $useCase->process($input, $output);
+
+        $result = $output->toArray();
+
+        $this->assertSame($certificationId, $result['certificationIdentifier']);
+        $this->assertSame(CertificationStatus::PENDING->value, $result['status']);
     }
 
     public function testProcessWhenAlreadyRequested(): void
@@ -121,8 +126,10 @@ class RequestCertificationTest extends TestCase
             new AccountIdentifier(StrTestHelper::generateUuid()),
         );
 
+        $output = new RequestCertificationOutput();
+
         $this->expectException(OfficialCertificationAlreadyRequestedException::class);
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 }

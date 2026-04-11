@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification;
 
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
-use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Factory\OfficialCertificationFactoryInterface;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 
@@ -19,9 +18,11 @@ readonly class RequestCertification implements RequestCertificationInterface
 
     /**
      * @param RequestCertificationInputPort $input
-     * @return OfficialCertification
+     * @param RequestCertificationOutputPort $output
+     * @return void
+     * @throws OfficialCertificationAlreadyRequestedException
      */
-    public function process(RequestCertificationInputPort $input): OfficialCertification
+    public function process(RequestCertificationInputPort $input, RequestCertificationOutputPort $output): void
     {
         $existing = $this->repository->findByResource(
             $input->resourceType(),
@@ -40,6 +41,6 @@ readonly class RequestCertification implements RequestCertificationInterface
 
         $this->repository->save($certification);
 
-        return $certification;
+        $output->setOfficialCertification($certification);
     }
 }

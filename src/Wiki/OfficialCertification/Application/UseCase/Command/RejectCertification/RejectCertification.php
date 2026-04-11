@@ -6,7 +6,6 @@ namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCe
 
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
-use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 
 readonly class RejectCertification implements RejectCertificationInterface
@@ -18,10 +17,12 @@ readonly class RejectCertification implements RejectCertificationInterface
 
     /**
      * @param RejectCertificationInputPort $input
-     * @return OfficialCertification
+     * @param RejectCertificationOutputPort $output
+     * @return void
      * @throws OfficialCertificationNotFoundException
+     * @throws OfficialCertificationInvalidStatusException
      */
-    public function process(RejectCertificationInputPort $input): OfficialCertification
+    public function process(RejectCertificationInputPort $input, RejectCertificationOutputPort $output): void
     {
         $certification = $this->repository->findById($input->certificationIdentifier());
 
@@ -37,6 +38,6 @@ readonly class RejectCertification implements RejectCertificationInterface
 
         $this->repository->save($certification);
 
-        return $certification;
+        $output->setOfficialCertification($certification);
     }
 }

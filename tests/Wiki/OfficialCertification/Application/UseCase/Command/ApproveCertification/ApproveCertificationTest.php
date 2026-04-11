@@ -14,6 +14,7 @@ use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdate
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInput;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInterface;
+use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationOutput;
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
@@ -79,11 +80,12 @@ class ApproveCertificationTest extends TestCase
         $useCase = $this->app->make(ApproveCertificationInterface::class);
 
         $input = new ApproveCertificationInput($certificationId);
+        $output = new ApproveCertificationOutput();
 
-        $result = $useCase->process($input);
+        $useCase->process($input, $output);
 
-        $this->assertTrue($result->isApproved());
-        $this->assertNotNull($result->approvedAt());
+        $this->assertTrue($certification->isApproved());
+        $this->assertNotNull($certification->approvedAt());
     }
 
     public function testProcessWhenNotFound(): void
@@ -105,9 +107,11 @@ class ApproveCertificationTest extends TestCase
 
         $input = new ApproveCertificationInput($certificationId);
 
+        $output = new ApproveCertificationOutput();
+
         $this->expectException(OfficialCertificationNotFoundException::class);
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 
     public function testProcessWhenInvalidStatus(): void
@@ -139,8 +143,10 @@ class ApproveCertificationTest extends TestCase
 
         $input = new ApproveCertificationInput($certificationId);
 
+        $output = new ApproveCertificationOutput();
+
         $this->expectException(OfficialCertificationInvalidStatusException::class);
 
-        $useCase->process($input);
+        $useCase->process($input, $output);
     }
 }

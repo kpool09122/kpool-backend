@@ -105,8 +105,14 @@ return [
 
     // ImageHideRequest
     'image_hide_request_not_found' => 'The specified image hide request was not found.',
-    'image_not_found' => 'The specified image was not found.',
     'image_hide_request_not_pending_for_approval' => 'Only pending image hide requests can be approved.',
     'image_hide_request_not_pending_for_rejection' => 'Only pending image hide requests can be rejected.',
     'image_hide_request_already_pending' => 'An image hide request is already pending for this image.',
+
+    // Wiki OfficialCertification
+    'official_certification_not_found' => 'The specified official certification was not found.',
+    'certification_not_pending_for_approval' => 'Only pending certifications can be approved.',
+    'certification_not_pending_for_rejection' => 'Only pending certifications can be rejected.',
+    'official_certification_already_requested' => 'An official certification has already been requested.',
+    'official_certification_invalid_status' => 'The certification status is invalid for this operation.',
 ];
