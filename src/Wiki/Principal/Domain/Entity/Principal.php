@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Domain\Entity;
 
-use DomainException;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Wiki\Principal\Domain\Exception\CannotChangeNonDelegatedPrincipalException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class Principal
@@ -80,7 +80,7 @@ class Principal
     public function setEnabled(bool $enabled): void
     {
         if (! $this->isDelegatedPrincipal()) {
-            throw new DomainException('Cannot change enabled status of non-delegated principal.');
+            throw new CannotChangeNonDelegatedPrincipalException();
         }
 
         $this->enabled = $enabled;

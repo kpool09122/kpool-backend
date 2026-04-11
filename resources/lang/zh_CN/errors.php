@@ -86,4 +86,16 @@ return [
     'version_mismatch' => '翻译集中检测到版本不匹配。',
     'invalid_rollback_target_version' => '目标版本必须小于当前版本。',
     'invalid_status' => '此操作的状态无效。',
+
+    // Wiki Principal
+    'principal_group_not_found' => '未找到指定的主体组。',
+    'policy_not_found' => '未找到指定的策略。',
+    'role_not_found' => '未找到指定的角色。',
+    'principal_already_exists' => '此身份已存在主体。',
+    'cannot_delete_system_policy' => '系统策略不可删除。',
+    'cannot_delete_system_role' => '系统角色不可删除。',
+    'cannot_delete_default_principal_group' => '默认主体组不可删除。',
+    'principal_already_member' => '该主体已是此组的成员。',
+    'principal_not_member' => '该主体不是此组的成员。',
+    'cannot_change_non_delegated_principal' => '无法更改非委托主体的启用状态。',
 ];

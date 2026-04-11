@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Application\Http\Action\Wiki\Principal\Command\CreatePrincipal;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class CreatePrincipalRequest extends FormRequest
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'identityIdentifier' => ['required', 'uuid'],
+            'accountIdentifier' => ['required', 'uuid'],
+        ];
+    }
+
+    public function identityIdentifier(): string
+    {
+        return (string) $this->input('identityIdentifier');
+    }
+
+    public function accountIdentifier(): string
+    {
+        return (string) $this->input('accountIdentifier');
+    }
+
+    public function language(): string
+    {
+        return (string) ($this->input('language') ?? 'en');
+    }
+}

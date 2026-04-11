@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Principal\Domain\Entity;
 
-use DomainException;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Exception\CannotChangeNonDelegatedPrincipalException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -131,7 +131,7 @@ class PrincipalTest extends TestCase
             [],
         );
 
-        $this->expectException(DomainException::class);
+        $this->expectException(CannotChangeNonDelegatedPrincipalException::class);
         $this->expectExceptionMessage('Cannot change enabled status of non-delegated principal.');
 
         $principal->setEnabled(false);

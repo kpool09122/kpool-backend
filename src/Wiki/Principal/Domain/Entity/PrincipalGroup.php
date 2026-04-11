@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyMemberException;
+use Source\Wiki\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Principal\Domain\ValueObject\RoleIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -74,7 +75,7 @@ class PrincipalGroup
     public function addMember(PrincipalIdentifier $principalIdentifier): void
     {
         if ($this->hasMember($principalIdentifier)) {
-            throw new DomainException('Principal is already a member of this group.');
+            throw new PrincipalAlreadyMemberException();
         }
 
         $this->members[(string) $principalIdentifier] = $principalIdentifier;
@@ -83,7 +84,7 @@ class PrincipalGroup
     public function removeMember(PrincipalIdentifier $principalIdentifier): void
     {
         if (! $this->hasMember($principalIdentifier)) {
-            throw new DomainException('Principal is not a member of this group.');
+            throw new PrincipalNotMemberException();
         }
 
         unset($this->members[(string) $principalIdentifier]);

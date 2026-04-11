@@ -7,7 +7,6 @@ namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Exception\PrincipalAlreadyExistsException;
 use Source\Wiki\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -34,10 +33,10 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
 
     /**
      * @param CreatePrincipalInputPort $input
-     * @return Principal
+     * @param CreatePrincipalOutputPort $output
      * @throws PrincipalAlreadyExistsException
      */
-    public function process(CreatePrincipalInputPort $input): Principal
+    public function process(CreatePrincipalInputPort $input, CreatePrincipalOutputPort $output): void
     {
         $existingPrincipal = $this->principalRepository->findByIdentityIdentifier(
             $input->identityIdentifier()
@@ -79,7 +78,7 @@ readonly class CreatePrincipal implements CreatePrincipalInterface
         $defaultPrincipalGroup->addMember($principal->principalIdentifier());
         $this->principalGroupRepository->save($defaultPrincipalGroup);
 
-        return $principal;
+        $output->setPrincipal($principal);
     }
 
     private function determineRoleName(AccountIdentifier $accountIdentifier): string

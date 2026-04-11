@@ -86,4 +86,16 @@ return [
     'version_mismatch' => '번역 세트에서 버전 불일치가 감지되었습니다.',
     'invalid_rollback_target_version' => '롤백 대상 버전이 유효하지 않습니다.',
     'invalid_status' => '이 작업에 대해 상태가 유효하지 않습니다.',
+
+    // Wiki Principal
+    'principal_group_not_found' => '지정된 프린시펄 그룹을 찾을 수 없습니다.',
+    'policy_not_found' => '지정된 정책을 찾을 수 없습니다.',
+    'role_not_found' => '지정된 역할을 찾을 수 없습니다.',
+    'principal_already_exists' => '이 아이덴티티에는 이미 프린시펄이 존재합니다.',
+    'cannot_delete_system_policy' => '시스템 정책은 삭제할 수 없습니다.',
+    'cannot_delete_system_role' => '시스템 역할은 삭제할 수 없습니다.',
+    'cannot_delete_default_principal_group' => '기본 프린시펄 그룹은 삭제할 수 없습니다.',
+    'principal_already_member' => '이 프린시펄은 이미 이 그룹의 멤버입니다.',
+    'principal_not_member' => '이 프린시펄은 이 그룹의 멤버가 아닙니다.',
+    'cannot_change_non_delegated_principal' => '위임되지 않은 프린시펄의 활성 상태는 변경할 수 없습니다.',
 ];

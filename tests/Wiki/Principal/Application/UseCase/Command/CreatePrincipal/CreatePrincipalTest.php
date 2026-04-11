@@ -19,6 +19,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalOutput;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Entity\Role;
@@ -122,10 +123,12 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
-        $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
+        $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
         $this->assertTrue($defaultPrincipalGroup->hasMember($principalIdentifier));
     }
 
@@ -206,10 +209,12 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
-        $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
+        $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
         $this->assertTrue($existingDefaultPrincipalGroup->hasMember($principalIdentifier));
     }
 
@@ -269,7 +274,8 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -362,9 +368,11 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
         $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
     }
 
@@ -458,9 +466,11 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
         $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
     }
 
@@ -554,9 +564,11 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
         $this->assertTrue($defaultPrincipalGroup->hasRole($roleIdentifier));
     }
 
@@ -648,9 +660,11 @@ class CreatePrincipalTest extends TestCase
         $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(RoleRepositoryInterface::class, $roleRepository);
         $useCase = $this->app->make(CreatePrincipalInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreatePrincipalOutput();
+        $useCase->process($input, $output);
 
-        $this->assertSame((string) $principalIdentifier, (string) $result->principalIdentifier());
+        $result = $output->toArray();
+        $this->assertSame((string) $principalIdentifier, $result['principalIdentifier']);
         $this->assertEmpty($defaultPrincipalGroup->roles());
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup;
 
 use DateTimeImmutable;
-use DomainException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -13,7 +12,9 @@ use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInput;
 use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
+use Source\Wiki\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupOutput;
 use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
+use Source\Wiki\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Wiki\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -67,10 +68,12 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
 
         $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
+        $output = new RemovePrincipalFromPrincipalGroupOutput();
 
-        $result = $useCase->process($input);
+        $useCase->process($input, $output);
 
-        $this->assertFalse($result->hasMember($principalIdentifier));
+        $result = $output->toArray();
+        $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
     }
 
     /**
@@ -96,7 +99,8 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
 
         $this->expectException(PrincipalGroupNotFoundException::class);
 
-        $useCase->process($input);
+        $output = new RemovePrincipalFromPrincipalGroupOutput();
+        $useCase->process($input, $output);
     }
 
     /**
@@ -129,9 +133,10 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
         $useCase = $this->app->make(RemovePrincipalFromPrincipalGroupInterface::class);
         $input = new RemovePrincipalFromPrincipalGroupInput($principalGroupIdentifier, $principalIdentifier);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(PrincipalNotMemberException::class);
         $this->expectExceptionMessage('Principal is not a member of this group.');
 
-        $useCase->process($input);
+        $output = new RemovePrincipalFromPrincipalGroupOutput();
+        $useCase->process($input, $output);
     }
 }
