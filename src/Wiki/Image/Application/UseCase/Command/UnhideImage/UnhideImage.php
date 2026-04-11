@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Application\UseCase\Command\UnhideImage;
 
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
-use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -26,12 +25,13 @@ readonly class UnhideImage implements UnhideImageInterface
 
     /**
      * @param UnhideImageInputPort $input
-     * @return Image
+     * @param UnhideImageOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws ImageNotFoundException
      * @throws PrincipalNotFoundException
      */
-    public function process(UnhideImageInputPort $input): Image
+    public function process(UnhideImageInputPort $input, UnhideImageOutputPort $output): void
     {
         $image = $this->imageRepository->findById($input->imageIdentifier());
         if ($image === null) {
@@ -51,6 +51,6 @@ readonly class UnhideImage implements UnhideImageInterface
         $image->unhide();
         $this->imageRepository->save($image);
 
-        return $image;
+        $output->setImage($image);
     }
 }

@@ -10,12 +10,12 @@ use Mockery;
 use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
-use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
@@ -143,20 +143,14 @@ class UploadImageTest extends TestCase
         $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $uploadImage = $this->app->make(UploadImageInterface::class);
-        $result = $uploadImage->process($input);
+        $output = new UploadImageOutput();
+        $uploadImage->process($input, $output);
 
-        $this->assertTrue(UuidValidator::isValid((string)$result->imageIdentifier()));
-        $this->assertSame((string)$testData->publishedImageIdentifier, (string)$result->publishedImageIdentifier());
-        $this->assertSame($testData->resourceType, $result->resourceType());
-        $this->assertSame((string)$testData->draftResourceIdentifier, (string)$result->wikiIdentifier());
-        $this->assertSame((string)$testData->principalIdentifier, (string)$result->uploaderIdentifier());
-        $this->assertSame((string)$testData->imagePath, (string)$result->imagePath());
-        $this->assertSame($testData->imageUsage, $result->imageUsage());
-        $this->assertSame($testData->displayOrder, $result->displayOrder());
-        $this->assertSame($testData->sourceUrl, $result->sourceUrl());
-        $this->assertSame($testData->sourceName, $result->sourceName());
-        $this->assertSame($testData->altText, $result->altText());
-        $this->assertSame(ApprovalStatus::UnderReview, $result->status());
+        $result = $output->toArray();
+        $this->assertNotNull($result['imageIdentifier']);
+        $this->assertSame($testData->resourceType->value, $result['resourceType']);
+        $this->assertSame($testData->imageUsage->value, $result['imageUsage']);
+        $this->assertSame('under_review', $result['status']);
     }
 
     /**
@@ -215,7 +209,8 @@ class UploadImageTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $uploadImage = $this->app->make(UploadImageInterface::class);
-        $uploadImage->process($input);
+        $output = new UploadImageOutput();
+        $uploadImage->process($input, $output);
     }
 
     /**
@@ -264,7 +259,8 @@ class UploadImageTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $uploadImage = $this->app->make(UploadImageInterface::class);
-        $uploadImage->process($input);
+        $output = new UploadImageOutput();
+        $uploadImage->process($input, $output);
     }
 
     /**

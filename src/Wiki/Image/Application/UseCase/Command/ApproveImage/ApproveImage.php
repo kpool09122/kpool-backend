@@ -6,7 +6,6 @@ namespace Source\Wiki\Image\Application\UseCase\Command\ApproveImage;
 
 use DateTimeImmutable;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
-use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
@@ -37,13 +36,14 @@ readonly class ApproveImage implements ApproveImageInterface
 
     /**
      * @param ApproveImageInputPort $input
-     * @return Image
+     * @param ApproveImageOutputPort $output
+     * @return void
      * @throws DisallowedException
      * @throws ImageNotFoundException
      * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
      */
-    public function process(ApproveImageInputPort $input): Image
+    public function process(ApproveImageInputPort $input, ApproveImageOutputPort $output): void
     {
         $draftImage = $this->draftImageRepository->findById($input->imageIdentifier());
         if ($draftImage === null) {
@@ -94,7 +94,9 @@ readonly class ApproveImage implements ApproveImageInterface
                 $this->imageRepository->save($existingImage);
                 $this->draftImageRepository->delete($draftImage->imageIdentifier());
 
-                return $existingImage;
+                $output->setImage($existingImage);
+
+                return;
             }
         }
 
@@ -116,6 +118,6 @@ readonly class ApproveImage implements ApproveImageInterface
         $this->imageRepository->save($image);
         $this->draftImageRepository->delete($draftImage->imageIdentifier());
 
-        return $image;
+        $output->setImage($image);
     }
 }

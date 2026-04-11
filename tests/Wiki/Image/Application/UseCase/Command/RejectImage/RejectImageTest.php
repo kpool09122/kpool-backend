@@ -13,6 +13,7 @@ use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImage;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageInterface;
+use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
@@ -103,9 +104,11 @@ class RejectImageTest extends TestCase
         $this->app->instance(ImageAuthorizationResourceBuilderInterface::class, $imageAuthorizationResourceBuilder);
 
         $rejectImage = $this->app->make(RejectImageInterface::class);
-        $result = $rejectImage->process($input);
+        $output = new RejectImageOutput();
+        $rejectImage->process($input, $output);
 
-        $this->assertSame(ApprovalStatus::Rejected, $result->status());
+        $result = $output->toArray();
+        $this->assertSame('rejected', $result['status']);
     }
 
     /**
@@ -146,7 +149,8 @@ class RejectImageTest extends TestCase
 
         $this->expectException(ImageNotFoundException::class);
         $rejectImage = $this->app->make(RejectImageInterface::class);
-        $rejectImage->process($input);
+        $output = new RejectImageOutput();
+        $rejectImage->process($input, $output);
     }
 
     /**
@@ -194,7 +198,8 @@ class RejectImageTest extends TestCase
 
         $this->expectException(InvalidStatusException::class);
         $rejectImage = $this->app->make(RejectImageInterface::class);
-        $rejectImage->process($input);
+        $output = new RejectImageOutput();
+        $rejectImage->process($input, $output);
     }
 
     /**
@@ -243,7 +248,8 @@ class RejectImageTest extends TestCase
 
         $this->expectException(DisallowedException::class);
         $rejectImage = $this->app->make(RejectImageInterface::class);
-        $rejectImage->process($input);
+        $output = new RejectImageOutput();
+        $rejectImage->process($input, $output);
     }
 
     /**
@@ -279,7 +285,8 @@ class RejectImageTest extends TestCase
 
         $this->expectException(PrincipalNotFoundException::class);
         $rejectImage = $this->app->make(RejectImageInterface::class);
-        $rejectImage->process($input);
+        $output = new RejectImageOutput();
+        $rejectImage->process($input, $output);
     }
 
     /**
