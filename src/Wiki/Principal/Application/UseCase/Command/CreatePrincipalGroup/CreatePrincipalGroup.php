@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipalGroup;
 
-use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 
@@ -16,7 +15,7 @@ readonly class CreatePrincipalGroup implements CreatePrincipalGroupInterface
     ) {
     }
 
-    public function process(CreatePrincipalGroupInputPort $input): PrincipalGroup
+    public function process(CreatePrincipalGroupInputPort $input, CreatePrincipalGroupOutputPort $output): void
     {
         $principalGroup = $this->principalGroupFactory->create(
             $input->accountIdentifier(),
@@ -26,6 +25,6 @@ readonly class CreatePrincipalGroup implements CreatePrincipalGroupInterface
 
         $this->principalGroupRepository->save($principalGroup);
 
-        return $principalGroup;
+        $output->setPrincipalGroup($principalGroup);
     }
 }

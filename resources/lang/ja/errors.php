@@ -86,4 +86,16 @@ return [
     'version_mismatch' => '翻訳セット内でバージョンの不一致が検出されました。',
     'invalid_rollback_target_version' => 'ロールバック先のバージョンが無効です。',
     'invalid_status' => 'ステータスが無効です。',
+
+    // Wiki Principal
+    'principal_group_not_found' => '指定されたプリンシパルグループが見つかりません。',
+    'policy_not_found' => '指定されたポリシーが見つかりません。',
+    'role_not_found' => '指定されたロールが見つかりません。',
+    'principal_already_exists' => 'このアイデンティティにはプリンシパルが既に存在します。',
+    'cannot_delete_system_policy' => 'システムポリシーは削除できません。',
+    'cannot_delete_system_role' => 'システムロールは削除できません。',
+    'cannot_delete_default_principal_group' => 'デフォルトのプリンシパルグループは削除できません。',
+    'principal_already_member' => 'このプリンシパルは既にこのグループのメンバーです。',
+    'principal_not_member' => 'このプリンシパルはこのグループのメンバーではありません。',
+    'cannot_change_non_delegated_principal' => '委任されていないプリンシパルの有効状態は変更できません。',
 ];

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Application\UseCase\Command\CreatePolicy;
 
-use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
 
@@ -16,7 +15,7 @@ readonly class CreatePolicy implements CreatePolicyInterface
     ) {
     }
 
-    public function process(CreatePolicyInputPort $input): Policy
+    public function process(CreatePolicyInputPort $input, CreatePolicyOutputPort $output): void
     {
         $policy = $this->policyFactory->create(
             $input->name(),
@@ -26,6 +25,6 @@ readonly class CreatePolicy implements CreatePolicyInterface
 
         $this->policyRepository->save($policy);
 
-        return $policy;
+        $output->setPolicy($policy);
     }
 }

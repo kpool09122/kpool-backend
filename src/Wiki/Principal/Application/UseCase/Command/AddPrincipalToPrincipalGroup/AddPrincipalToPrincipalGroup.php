@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup;
 
 use Source\Wiki\Principal\Application\Exception\PrincipalGroupNotFoundException;
-use Source\Wiki\Principal\Domain\Entity\PrincipalGroup;
 use Source\Wiki\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 
 readonly class AddPrincipalToPrincipalGroup implements AddPrincipalToPrincipalGroupInterface
@@ -18,7 +17,7 @@ readonly class AddPrincipalToPrincipalGroup implements AddPrincipalToPrincipalGr
     /**
      * @throws PrincipalGroupNotFoundException
      */
-    public function process(AddPrincipalToPrincipalGroupInputPort $input): PrincipalGroup
+    public function process(AddPrincipalToPrincipalGroupInputPort $input, AddPrincipalToPrincipalGroupOutputPort $output): void
     {
         $principalGroup = $this->principalGroupRepository->findById($input->principalGroupIdentifier());
 
@@ -30,6 +29,6 @@ readonly class AddPrincipalToPrincipalGroup implements AddPrincipalToPrincipalGr
 
         $this->principalGroupRepository->save($principalGroup);
 
-        return $principalGroup;
+        $output->setPrincipalGroup($principalGroup);
     }
 }
