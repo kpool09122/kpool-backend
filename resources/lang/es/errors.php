@@ -105,8 +105,14 @@ return [
 
     // ImageHideRequest
     'image_hide_request_not_found' => 'No se encontró la solicitud de ocultación de imagen especificada.',
-    'image_not_found' => 'No se encontró la imagen especificada.',
     'image_hide_request_not_pending_for_approval' => 'Solo se pueden aprobar solicitudes de ocultación de imagen pendientes.',
     'image_hide_request_not_pending_for_rejection' => 'Solo se pueden rechazar solicitudes de ocultación de imagen pendientes.',
     'image_hide_request_already_pending' => 'Ya existe una solicitud de ocultación pendiente para esta imagen.',
+
+    // Wiki OfficialCertification
+    'official_certification_not_found' => 'No se encontró la certificación oficial especificada.',
+    'certification_not_pending_for_approval' => 'Solo se pueden aprobar las certificaciones pendientes.',
+    'certification_not_pending_for_rejection' => 'Solo se pueden rechazar las certificaciones pendientes.',
+    'official_certification_already_requested' => 'Ya se ha solicitado una certificación oficial.',
+    'official_certification_invalid_status' => 'El estado de la certificación es inválido para esta operación.',
 ];

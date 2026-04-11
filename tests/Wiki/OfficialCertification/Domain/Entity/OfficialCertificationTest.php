@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Tests\Wiki\OfficialCertification\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
+use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForApprovalException;
+use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForRejectionException;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -100,7 +101,7 @@ class OfficialCertificationTest extends TestCase
             null,
         );
 
-        $this->expectException(DomainException::class);
+        $this->expectException(CertificationNotPendingForApprovalException::class);
 
         $certification->approve();
     }
@@ -123,7 +124,7 @@ class OfficialCertificationTest extends TestCase
             null,
         );
 
-        $this->expectException(DomainException::class);
+        $this->expectException(CertificationNotPendingForRejectionException::class);
 
         $certification->reject();
     }

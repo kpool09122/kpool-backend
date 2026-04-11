@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\RequestCertification;
 
-use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
+use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationAlreadyRequestedException;
 
 interface RequestCertificationInterface
 {
     /**
      * @param RequestCertificationInputPort $input
-     * @return OfficialCertification
+     * @param RequestCertificationOutputPort $output
+     * @return void
+     * @throws OfficialCertificationAlreadyRequestedException
      */
-    public function process(RequestCertificationInputPort $input): OfficialCertification;
+    public function process(RequestCertificationInputPort $input, RequestCertificationOutputPort $output): void;
 }

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Source\Wiki\OfficialCertification\Domain\Entity;
 
 use DateTimeImmutable;
-use DomainException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForApprovalException;
+use Source\Wiki\OfficialCertification\Domain\Exception\CertificationNotPendingForRejectionException;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationIdentifier;
 use Source\Wiki\OfficialCertification\Domain\ValueObject\CertificationStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -69,7 +70,7 @@ class OfficialCertification
     public function approve(): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('Only pending certifications can be approved.');
+            throw new CertificationNotPendingForApprovalException();
         }
 
         $this->status = CertificationStatus::APPROVED;
@@ -79,7 +80,7 @@ class OfficialCertification
     public function reject(): void
     {
         if (! $this->status->isPending()) {
-            throw new DomainException('Only pending certifications can be rejected.');
+            throw new CertificationNotPendingForRejectionException();
         }
 
         $this->status = CertificationStatus::REJECTED;

@@ -105,8 +105,14 @@ return [
 
     // ImageHideRequest
     'image_hide_request_not_found' => '지정된 이미지 숨김 요청을 찾을 수 없습니다.',
-    'image_not_found' => '지정된 이미지를 찾을 수 없습니다.',
     'image_hide_request_not_pending_for_approval' => '대기 중인 이미지 숨김 요청만 승인할 수 있습니다.',
     'image_hide_request_not_pending_for_rejection' => '대기 중인 이미지 숨김 요청만 거부할 수 있습니다.',
     'image_hide_request_already_pending' => '이 이미지에 대한 숨김 요청이 이미 대기 중입니다.',
+
+    // Wiki OfficialCertification
+    'official_certification_not_found' => '지정된 공식 인증을 찾을 수 없습니다.',
+    'certification_not_pending_for_approval' => '보류 중인 공식 인증만 승인할 수 있습니다.',
+    'certification_not_pending_for_rejection' => '보류 중인 공식 인증만 거부할 수 있습니다.',
+    'official_certification_already_requested' => '공식 인증이 이미 신청되었습니다.',
+    'official_certification_invalid_status' => '공식 인증의 상태가 이 작업에 대해 유효하지 않습니다.',
 ];

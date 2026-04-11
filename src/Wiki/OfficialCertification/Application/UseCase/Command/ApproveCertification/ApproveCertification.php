@@ -7,7 +7,6 @@ namespace Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveC
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationInvalidStatusException;
 use Source\Wiki\OfficialCertification\Application\Exception\OfficialCertificationNotFoundException;
 use Source\Wiki\OfficialCertification\Application\Service\OfficialResourceUpdaterInterface;
-use Source\Wiki\OfficialCertification\Domain\Entity\OfficialCertification;
 use Source\Wiki\OfficialCertification\Domain\Repository\OfficialCertificationRepositoryInterface;
 
 readonly class ApproveCertification implements ApproveCertificationInterface
@@ -18,7 +17,7 @@ readonly class ApproveCertification implements ApproveCertificationInterface
     ) {
     }
 
-    public function process(ApproveCertificationInputPort $input): OfficialCertification
+    public function process(ApproveCertificationInputPort $input, ApproveCertificationOutputPort $output): void
     {
         $certification = $this->repository->findById($input->certificationIdentifier());
 
@@ -40,6 +39,6 @@ readonly class ApproveCertification implements ApproveCertificationInterface
             $certification->ownerAccountIdentifier(),
         );
 
-        return $certification;
+        $output->setOfficialCertification($certification);
     }
 }
