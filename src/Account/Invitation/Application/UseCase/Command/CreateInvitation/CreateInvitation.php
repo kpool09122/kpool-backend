@@ -7,7 +7,6 @@ namespace Source\Account\Invitation\Application\UseCase\Command\CreateInvitation
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
-use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
@@ -21,10 +20,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
     ) {
     }
 
-    /**
-     * @return array<Invitation>
-     */
-    public function process(CreateInvitationInputPort $input): array
+    public function process(CreateInvitationInputPort $input, CreateInvitationOutputPort $output): void
     {
         $this->assertInviterHasPermission($input);
 
@@ -59,7 +55,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
             $invitations[] = $invitation;
         }
 
-        return $invitations;
+        $output->setInvitations($invitations);
     }
 
     private function assertInviterHasPermission(CreateInvitationInputPort $input): void

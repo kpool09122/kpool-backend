@@ -74,6 +74,10 @@ return [
     'invalid_account_category_for_verification' => 'このアカウント種別では本人確認を申請できません。',
     'account_verification_already_requested' => '本人確認申請は既に提出されています。',
     'invalid_documents_for_verification' => '提出された書類が要件を満たしていません。',
+    'invitation_already_used_or_revoked' => 'この招待は既に使用済みまたは取り消されています。',
+    'invitation_expired' => 'この招待リンクは有効期限が切れています。',
+    'invitation_not_pending' => 'PENDING状態の招待のみ取り消すことができます。',
+    'disallowed_invitation' => '招待を作成する権限がありません。',
 
     // Wiki
     'unauthorized' => 'この操作は認可されていません。',

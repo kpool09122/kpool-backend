@@ -74,6 +74,10 @@ return [
     'invalid_account_category_for_verification' => 'Este tipo de cuenta no puede solicitar verificación.',
     'account_verification_already_requested' => 'Ya se ha enviado una solicitud de verificación de cuenta.',
     'invalid_documents_for_verification' => 'Los documentos enviados no cumplen con los requisitos.',
+    'invitation_already_used_or_revoked' => 'Esta invitación ya ha sido utilizada o revocada.',
+    'invitation_expired' => 'El enlace de invitación ha expirado.',
+    'invitation_not_pending' => 'Solo se pueden revocar las invitaciones pendientes.',
+    'disallowed_invitation' => 'No tiene permiso para crear invitaciones.',
 
     // Wiki
     'unauthorized' => 'Esta acción no está autorizada.',

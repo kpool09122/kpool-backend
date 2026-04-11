@@ -15,6 +15,7 @@ use Source\Account\Invitation\Application\Exception\DisallowedInvitationExceptio
 use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitation;
 use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInput;
 use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInterface;
+use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationOutput;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
@@ -88,10 +89,10 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $result = $useCase->process($data->input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($data->input, $output);
 
-        $this->assertCount(1, $result);
-        $this->assertSame($data->invitation, $result[0]);
+        $this->assertCount(1, $output->toArray());
 
         Event::assertDispatched(InvitationCreated::class, static fn (InvitationCreated $event) => (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
             && (string) $event->accountIdentifier === (string) $data->accountIdentifier
@@ -135,10 +136,10 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $result = $useCase->process($data->input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($data->input, $output);
 
-        $this->assertCount(1, $result);
-        $this->assertSame($data->invitation, $result[0]);
+        $this->assertCount(1, $output->toArray());
     }
 
     /**
@@ -167,7 +168,8 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $useCase->process($data->input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($data->input, $output);
     }
 
     /**
@@ -196,7 +198,8 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $useCase->process($data->input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($data->input, $output);
     }
 
     /**
@@ -242,9 +245,10 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $result = $useCase->process($data->input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($data->input, $output);
 
-        $this->assertCount(1, $result);
+        $this->assertCount(1, $output->toArray());
     }
 
     /**
@@ -309,11 +313,10 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $result = $useCase->process($input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($input, $output);
 
-        $this->assertCount(2, $result);
-        $this->assertSame($invitation1, $result[0]);
-        $this->assertSame($invitation2, $result[1]);
+        $this->assertCount(2, $output->toArray());
 
         Event::assertDispatchedTimes(InvitationCreated::class, 2);
     }
@@ -361,9 +364,10 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
-        $result = $useCase->process($data->input);
+        $output = new CreateInvitationOutput();
+        $useCase->process($data->input, $output);
 
-        $this->assertCount(1, $result);
+        $this->assertCount(1, $output->toArray());
     }
 
     private function createTestData(AccountRole $role): CreateInvitationTestData
