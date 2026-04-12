@@ -10,6 +10,7 @@ use Source\Account\Invitation\Application\Exception\DisallowedInvitationExceptio
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class CreateInvitation implements CreateInvitationInterface
 {
@@ -17,6 +18,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
         private InvitationRepositoryInterface $invitationRepository,
         private InvitationFactoryInterface $invitationFactory,
         private IdentityGroupRepositoryInterface $identityGroupRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -44,7 +46,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
 
             $this->invitationRepository->save($invitation);
 
-            event(new InvitationCreated(
+            $this->eventDispatcher->dispatch(new InvitationCreated(
                 invitationIdentifier: $invitation->invitationIdentifier(),
                 accountIdentifier: $invitation->accountIdentifier(),
                 invitedByIdentityIdentifier: $invitation->invitedByIdentityIdentifier(),

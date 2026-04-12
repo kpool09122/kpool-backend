@@ -6,7 +6,6 @@ namespace Tests\Account\Invitation\Application\UseCase\Command\CreateInvitation;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\Event;
 use Mockery;
 use Source\Account\IdentityGroup\Domain\Entity\IdentityGroup;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
@@ -24,6 +23,7 @@ use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -42,10 +42,12 @@ class CreateInvitationTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationFactory = Mockery::mock(InvitationFactoryInterface::class);
         $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
 
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
 
@@ -59,9 +61,17 @@ class CreateInvitationTest extends TestCase
      */
     public function testProcessWithOwnerRole(): void
     {
-        Event::fake();
-
         $data = $this->createTestData(AccountRole::OWNER);
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn ($event) => $event instanceof InvitationCreated
+                    && (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
+                    && (string) $event->accountIdentifier === (string) $data->accountIdentifier
+                    && (string) $event->email === (string) $data->email
+            ));
 
         $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
         $identityGroupRepository->shouldReceive('findByAccountIdAndIdentityId')
@@ -84,6 +94,7 @@ class CreateInvitationTest extends TestCase
             ->with($data->accountIdentifier, $data->inviterIdentityIdentifier, $data->email)
             ->andReturn($data->invitation);
 
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
@@ -93,10 +104,6 @@ class CreateInvitationTest extends TestCase
         $useCase->process($data->input, $output);
 
         $this->assertCount(1, $output->toArray());
-
-        Event::assertDispatched(InvitationCreated::class, static fn (InvitationCreated $event) => (string) $event->invitationIdentifier === (string) $data->invitation->invitationIdentifier()
-            && (string) $event->accountIdentifier === (string) $data->accountIdentifier
-            && (string) $event->email === (string) $data->email);
     }
 
     /**
@@ -106,9 +113,14 @@ class CreateInvitationTest extends TestCase
      */
     public function testProcessWithAdminRole(): void
     {
-        Event::fake();
-
         $data = $this->createTestData(AccountRole::ADMIN);
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn ($event) => $event instanceof InvitationCreated
+            ));
 
         $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
         $identityGroupRepository->shouldReceive('findByAccountIdAndIdentityId')
@@ -131,6 +143,7 @@ class CreateInvitationTest extends TestCase
             ->with($data->accountIdentifier, $data->inviterIdentityIdentifier, $data->email)
             ->andReturn($data->invitation);
 
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
@@ -209,9 +222,14 @@ class CreateInvitationTest extends TestCase
      */
     public function testProcessRevokesExistingPendingInvitation(): void
     {
-        Event::fake();
-
         $data = $this->createTestData(AccountRole::OWNER);
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn ($event) => $event instanceof InvitationCreated
+            ));
 
         $existingInvitation = Mockery::mock(Invitation::class);
         $existingInvitation->shouldReceive('revoke')->once();
@@ -240,6 +258,7 @@ class CreateInvitationTest extends TestCase
             ->with($data->accountIdentifier, $data->inviterIdentityIdentifier, $data->email)
             ->andReturn($data->invitation);
 
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
@@ -258,7 +277,12 @@ class CreateInvitationTest extends TestCase
      */
     public function testProcessWithMultipleEmails(): void
     {
-        Event::fake();
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->times(2)
+            ->with(Mockery::on(
+                static fn ($event) => $event instanceof InvitationCreated
+            ));
 
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -308,6 +332,7 @@ class CreateInvitationTest extends TestCase
             ->with($accountIdentifier, $inviterIdentityIdentifier, $email2)
             ->andReturn($invitation2);
 
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
@@ -317,8 +342,6 @@ class CreateInvitationTest extends TestCase
         $useCase->process($input, $output);
 
         $this->assertCount(2, $output->toArray());
-
-        Event::assertDispatchedTimes(InvitationCreated::class, 2);
     }
 
     /**
@@ -328,9 +351,14 @@ class CreateInvitationTest extends TestCase
      */
     public function testProcessWithMultipleGroupsOneIsOwner(): void
     {
-        Event::fake();
-
         $data = $this->createTestData(AccountRole::MEMBER);
+
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn ($event) => $event instanceof InvitationCreated
+            ));
 
         $ownerGroup = $this->createIdentityGroup(
             $data->accountIdentifier,
@@ -359,6 +387,7 @@ class CreateInvitationTest extends TestCase
             ->with($data->accountIdentifier, $data->inviterIdentityIdentifier, $data->email)
             ->andReturn($data->invitation);
 
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);

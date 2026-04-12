@@ -6,7 +6,6 @@ namespace Tests\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\Event;
 use Mockery;
 use RuntimeException;
 use Source\Account\Account\Domain\ValueObject\AccountType;
@@ -33,6 +32,7 @@ use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
 use Source\Identity\Domain\ValueObject\UserName;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -56,12 +56,15 @@ class SocialLoginCallbackTest extends TestCase
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 
@@ -76,8 +79,6 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function testProcessWhenSocialConnectionExists(): void
     {
-        Event::fake();
-
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
         $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
@@ -121,19 +122,22 @@ class SocialLoginCallbackTest extends TestCase
             ->with($identity)
             ->andReturn($identity);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertNotDispatched(IdentityCreated::class);
     }
 
     /**
@@ -144,8 +148,6 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function testProcessWhenUserWithSameEmailExists(): void
     {
-        Event::fake();
-
         $provider = SocialProvider::LINE;
         $code = new OAuthCode('code');
         $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
@@ -195,19 +197,22 @@ class SocialLoginCallbackTest extends TestCase
             ->with($existingUser)
             ->andReturn($existingUser);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertNotDispatched(IdentityCreated::class);
     }
 
     /**
@@ -218,8 +223,6 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function testProcessWhenUserNotFoundCreatesNewUserWithSignupSession(): void
     {
-        Event::fake();
-
         $provider = SocialProvider::KAKAO;
         $code = new OAuthCode('code');
         $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
@@ -280,22 +283,30 @@ class SocialLoginCallbackTest extends TestCase
             ->with($newUser)
             ->andReturn($newUser);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof IdentityCreated
+                    && (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+                    && (string) $event->email === (string) $email
+                    && $event->accountType === AccountType::CORPORATION
+                    && $event->name === $profile->name()
+            ));
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertDispatched(IdentityCreated::class, fn (IdentityCreated $event) => (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-            && (string) $event->email === (string) $email
-            && $event->accountType === AccountType::CORPORATION
-            && $event->name === $profile->name());
     }
 
     /**
@@ -306,8 +317,6 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function testProcessWhenUserNotFoundWithInvitationToken(): void
     {
-        Event::fake();
-
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
         $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
@@ -369,21 +378,28 @@ class SocialLoginCallbackTest extends TestCase
             ->with($newUser)
             ->andReturn($newUser);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof IdentityCreatedViaInvitation
+                    && (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+                    && (string) $event->invitationToken === (string) $invitationToken
+            ));
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertDispatched(IdentityCreatedViaInvitation::class, fn (IdentityCreatedViaInvitation $event) => (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-            && (string) $event->invitationToken === (string) $invitationToken);
-        Event::assertNotDispatched(IdentityCreated::class);
     }
 
     /**
@@ -394,8 +410,6 @@ class SocialLoginCallbackTest extends TestCase
      */
     public function testProcessWhenUserNotFoundCreatesNewUserWithoutSignupSession(): void
     {
-        Event::fake();
-
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
         $state = new OAuthState('state-token', new DateTimeImmutable('+10 minutes'));
@@ -450,22 +464,30 @@ class SocialLoginCallbackTest extends TestCase
             ->with($newUser)
             ->andReturn($newUser);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                fn ($event) => $event instanceof IdentityCreated
+                    && (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
+                    && (string) $event->email === (string) $email
+                    && $event->accountType === AccountType::INDIVIDUAL
+                    && $event->name === $profile->name()
+            ));
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 
         $useCase->process($input, $output);
 
         $this->assertSame('/auth/callback', $output->redirectUrl());
-        Event::assertDispatched(IdentityCreated::class, fn (IdentityCreated $event) => (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-            && (string) $event->email === (string) $email
-            && $event->accountType === AccountType::INDIVIDUAL
-            && $event->name === $profile->name());
     }
 
     /**
@@ -496,12 +518,15 @@ class SocialLoginCallbackTest extends TestCase
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
         $authService = Mockery::mock(AuthServiceInterface::class);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);
         $this->app->instance(SocialOAuthServiceInterface::class, $socialOAuthClient);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(SignupSessionRepositoryInterface::class, $signupSessionRepository);
         $this->app->instance(AuthServiceInterface::class, $authService);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(SocialLoginCallbackInterface::class);
 

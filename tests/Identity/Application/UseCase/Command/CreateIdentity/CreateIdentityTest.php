@@ -6,7 +6,6 @@ namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\Event;
 use Mockery;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
@@ -28,6 +27,7 @@ use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\DTO\ImageUploadResult;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -50,10 +50,12 @@ class CreateIdentityTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
         $this->assertInstanceOf(CreateIdentity::class, $useCase);
     }
@@ -131,10 +133,14 @@ class CreateIdentityTest extends TestCase
             ->with($userName, $email, $language, $password)
             ->andReturn($identity);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $output = new CreateIdentityOutput();
@@ -186,10 +192,13 @@ class CreateIdentityTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('upload');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(AuthCodeSessionNotFoundException::class);
@@ -255,10 +264,13 @@ class CreateIdentityTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('upload');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(AlreadyUserExistsException::class);
@@ -298,10 +310,13 @@ class CreateIdentityTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $identityRepository = Mockery::mock(IdentityRepositoryInterface::class);
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(PasswordMismatchException::class);
@@ -369,10 +384,13 @@ class CreateIdentityTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('upload');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $this->expectException(UnauthorizedEmailException::class);
@@ -392,8 +410,6 @@ class CreateIdentityTest extends TestCase
      */
     public function testProcessDispatchesIdentityCreatedViaInvitationEvent(): void
     {
-        Event::fake();
-
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
@@ -451,19 +467,26 @@ class CreateIdentityTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('upload');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn ($event) => $event instanceof IdentityCreatedViaInvitation
+                    && (string) $event->identityIdentifier === (string) $identityIdentifier
+                    && (string) $event->invitationToken === (string) $invitationToken
+            ));
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $output = new CreateIdentityOutput();
         $useCase->process($input, $output);
 
         $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
-
-        Event::assertDispatched(IdentityCreatedViaInvitation::class, static fn (IdentityCreatedViaInvitation $event) => (string) $event->identityIdentifier === (string) $identityIdentifier
-            && (string) $event->invitationToken === (string) $invitationToken);
     }
 
     /**
@@ -477,8 +500,6 @@ class CreateIdentityTest extends TestCase
      */
     public function testProcessDoesNotDispatchIdentityCreatedViaInvitationEventWhenTokenIsNull(): void
     {
-        Event::fake();
-
         $userName = new UserName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
@@ -533,17 +554,19 @@ class CreateIdentityTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('upload');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldNotReceive('dispatch');
+
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
         $this->app->instance(IdentityFactoryInterface::class, $identityFactory);
         $this->app->instance(ImageServiceInterface::class, $imageService);
         $this->app->instance(IdentityRepositoryInterface::class, $identityRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateIdentityInterface::class);
 
         $output = new CreateIdentityOutput();
         $useCase->process($input, $output);
 
         $this->assertSame((string) $identity->identityIdentifier(), $output->toArray()['identityIdentifier']);
-
-        Event::assertNotDispatched(IdentityCreatedViaInvitation::class);
     }
 }
