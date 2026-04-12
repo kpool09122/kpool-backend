@@ -10,12 +10,15 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\HideRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateImage;
+use Tests\Helper\CreateImageHideRequest;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -249,6 +252,222 @@ class ImageRepositoryTest extends TestCase
         ]);
 
         $this->assertDatabaseCount('wiki_images', 1);
+    }
+
+    /**
+     * 正常系：findByIdでhideRequest履歴が読み込まれ、pendingHideRequestを取得できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdWithPendingHideRequest(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+        $requestId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        CreateImageHideRequest::create($requestId, [
+            'image_id' => $imageId,
+            'status' => ImageHideRequestStatus::PENDING->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $image = $repository->findById(new ImageIdentifier($imageId));
+
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertCount(1, $image->hideRequests());
+        $this->assertInstanceOf(HideRequest::class, $image->pendingHideRequest());
+        $this->assertSame(ImageHideRequestStatus::PENDING, $image->pendingHideRequest()->status());
+    }
+
+    /**
+     * 正常系：findByIdでapprovedのhideRequest履歴も読み込まれること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByIdWithApprovedHideRequest(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+        $requestId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        CreateImageHideRequest::create($requestId, [
+            'image_id' => $imageId,
+            'status' => ImageHideRequestStatus::APPROVED->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $image = $repository->findById(new ImageIdentifier($imageId));
+
+        $this->assertInstanceOf(Image::class, $image);
+        $this->assertCount(1, $image->hideRequests());
+        $this->assertNull($image->pendingHideRequest());
+        $this->assertSame(ImageHideRequestStatus::APPROVED, $image->latestHideRequest()->status());
+    }
+
+    /**
+     * 正常系：saveでhideRequestが保存されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveWithHideRequest(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $image = $repository->findById(new ImageIdentifier($imageId));
+
+        $image->requestHide('Test Requester', 'requester@example.com', 'Privacy concern');
+        $repository->save($image);
+
+        $this->assertDatabaseHas('image_hide_requests', [
+            'image_id' => $imageId,
+            'requester_name' => 'Test Requester',
+            'requester_email' => 'requester@example.com',
+            'reason' => 'Privacy concern',
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * 正常系：saveでhideRequestのステータス更新（approve）が永続化されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveWithHideRequestApprove(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+        $requestId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        CreateImageHideRequest::create($requestId, [
+            'image_id' => $imageId,
+            'status' => ImageHideRequestStatus::PENDING->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $image = $repository->findById(new ImageIdentifier($imageId));
+
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $image->approveHideRequest($reviewerIdentifier, 'Approved for privacy');
+        $repository->save($image);
+
+        $this->assertDatabaseHas('image_hide_requests', [
+            'image_id' => $imageId,
+            'status' => 'approved',
+            'reviewer_id' => (string) $reviewerIdentifier,
+            'reviewer_comment' => 'Approved for privacy',
+        ]);
+
+        $this->assertDatabaseHas('wiki_images', [
+            'id' => $imageId,
+            'is_hidden' => true,
+        ]);
+    }
+
+    /**
+     * 正常系：saveでhideRequestのステータス更新（reject）が永続化されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveWithHideRequestReject(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+        $requestId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        CreateImageHideRequest::create($requestId, [
+            'image_id' => $imageId,
+            'status' => ImageHideRequestStatus::PENDING->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $image = $repository->findById(new ImageIdentifier($imageId));
+
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $image->rejectHideRequest($reviewerIdentifier, 'Not applicable');
+        $repository->save($image);
+
+        $this->assertDatabaseHas('image_hide_requests', [
+            'image_id' => $imageId,
+            'status' => 'rejected',
+            'reviewer_id' => (string) $reviewerIdentifier,
+            'reviewer_comment' => 'Not applicable',
+        ]);
+
+        $this->assertDatabaseHas('wiki_images', [
+            'id' => $imageId,
+            'is_hidden' => false,
+        ]);
+    }
+
+    /**
+     * 正常系：existsPendingHideRequestがpendingの場合にtrueを返すこと.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsPendingHideRequestTrue(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+        $requestId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        CreateImageHideRequest::create($requestId, [
+            'image_id' => $imageId,
+            'status' => ImageHideRequestStatus::PENDING->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $this->assertTrue($repository->existsPendingHideRequest(new ImageIdentifier($imageId)));
+    }
+
+    /**
+     * 正常系：existsPendingHideRequestがpendingでない場合にfalseを返すこと.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsPendingHideRequestFalse(): void
+    {
+        $imageId = StrTestHelper::generateUuid();
+
+        CreateImage::create($imageId, [
+            'resource_type' => ResourceType::TALENT->value,
+            'image_usage' => ImageUsage::PROFILE->value,
+        ]);
+
+        $repository = $this->app->make(ImageRepositoryInterface::class);
+        $this->assertFalse($repository->existsPendingHideRequest(new ImageIdentifier($imageId)));
     }
 
     /**

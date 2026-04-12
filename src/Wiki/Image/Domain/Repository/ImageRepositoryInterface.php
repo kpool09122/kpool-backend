@@ -21,4 +21,6 @@ interface ImageRepositoryInterface
     public function save(Image $image): void;
 
     public function delete(ImageIdentifier $identifier): void;
+
+    public function existsPendingHideRequest(ImageIdentifier $imageIdentifier): bool;
 }

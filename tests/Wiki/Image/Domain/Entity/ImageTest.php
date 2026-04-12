@@ -8,6 +8,10 @@ use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\Image;
+use Source\Wiki\Image\Domain\Exception\ImageHideRequestAlreadyPendingException;
+use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
+use Source\Wiki\Image\Domain\ValueObject\HideRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -193,6 +197,115 @@ class ImageTest extends TestCase
         $this->assertFalse($image->isHidden());
         $this->assertNull($image->hiddenBy());
         $this->assertNull($image->hiddenAt());
+    }
+
+    /**
+     * 正常系: requestHide後にpendingHideRequestがセットされること.
+     */
+    public function testRequestHide(): void
+    {
+        $image = $this->createDummyImage();
+
+        $this->assertSame([], $image->hideRequests());
+        $this->assertNull($image->pendingHideRequest());
+
+        $image->requestHide('Test Requester', 'requester@example.com', 'Privacy concern');
+
+        $this->assertCount(1, $image->hideRequests());
+        $this->assertInstanceOf(HideRequest::class, $image->pendingHideRequest());
+        $this->assertSame('Test Requester', $image->pendingHideRequest()->requesterName());
+        $this->assertSame('requester@example.com', $image->pendingHideRequest()->requesterEmail());
+        $this->assertSame('Privacy concern', $image->pendingHideRequest()->reason());
+        $this->assertSame(ImageHideRequestStatus::PENDING, $image->pendingHideRequest()->status());
+    }
+
+    /**
+     * 正常系: approveHideRequest後にlatestHideRequestがAPPROVEDかつisHidden=trueになること.
+     */
+    public function testApproveHideRequest(): void
+    {
+        $image = $this->createDummyImage();
+        $image->requestHide('Test Requester', 'requester@example.com', 'Privacy concern');
+
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $image->approveHideRequest($reviewerIdentifier, 'Approved for privacy');
+
+        $this->assertNull($image->pendingHideRequest());
+        $this->assertSame(ImageHideRequestStatus::APPROVED, $image->latestHideRequest()->status());
+        $this->assertSame('Approved for privacy', $image->latestHideRequest()->reviewerComment());
+        $this->assertTrue($image->isHidden());
+    }
+
+    /**
+     * 正常系: rejectHideRequest後にlatestHideRequestがREJECTEDになること.
+     */
+    public function testRejectHideRequest(): void
+    {
+        $image = $this->createDummyImage();
+        $image->requestHide('Test Requester', 'requester@example.com', 'Privacy concern');
+
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $image->rejectHideRequest($reviewerIdentifier, 'Not applicable');
+
+        $this->assertNull($image->pendingHideRequest());
+        $this->assertSame(ImageHideRequestStatus::REJECTED, $image->latestHideRequest()->status());
+        $this->assertSame('Not applicable', $image->latestHideRequest()->reviewerComment());
+        $this->assertFalse($image->isHidden());
+    }
+
+    /**
+     * 異常系: 既にpendingのhideRequestがある場合にrequestHideで例外がスローされること.
+     */
+    public function testRequestHideThrowsWhenAlreadyPending(): void
+    {
+        $image = $this->createDummyImage();
+        $image->requestHide('First Requester', 'first@example.com', 'First reason');
+
+        $this->expectException(ImageHideRequestAlreadyPendingException::class);
+        $image->requestHide('Second Requester', 'second@example.com', 'Second reason');
+    }
+
+    /**
+     * 正常系: reject済みのhideRequestがある場合にrequestHideで新しいリクエストが作成されること.
+     */
+    public function testRequestHideAfterRejection(): void
+    {
+        $image = $this->createDummyImage();
+        $image->requestHide('First Requester', 'first@example.com', 'First reason');
+
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $image->rejectHideRequest($reviewerIdentifier, 'Rejected');
+
+        $image->requestHide('Second Requester', 'second@example.com', 'Second reason');
+
+        $this->assertCount(2, $image->hideRequests());
+        $this->assertSame(ImageHideRequestStatus::REJECTED, $image->hideRequests()[0]->status());
+        $this->assertSame('Second Requester', $image->pendingHideRequest()->requesterName());
+        $this->assertSame(ImageHideRequestStatus::PENDING, $image->pendingHideRequest()->status());
+    }
+
+    /**
+     * 異常系: hideRequestがnullの場合にapproveHideRequestで例外がスローされること.
+     */
+    public function testApproveHideRequestThrowsWhenNoHideRequest(): void
+    {
+        $image = $this->createDummyImage();
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $this->expectException(ImageHideRequestNotPendingException::class);
+        $image->approveHideRequest($reviewerIdentifier, 'comment');
+    }
+
+    /**
+     * 異常系: hideRequestがnullの場合にrejectHideRequestで例外がスローされること.
+     */
+    public function testRejectHideRequestThrowsWhenNoHideRequest(): void
+    {
+        $image = $this->createDummyImage();
+        $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+
+        $this->expectException(ImageHideRequestNotPendingException::class);
+        $image->rejectHideRequest($reviewerIdentifier, 'comment');
     }
 
     private function createDummyImage(bool $isHidden = false): Image

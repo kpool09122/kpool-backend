@@ -6,6 +6,10 @@ namespace Source\Wiki\Image\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Wiki\Image\Domain\Exception\ImageHideRequestAlreadyPendingException;
+use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
+use Source\Wiki\Image\Domain\ValueObject\HideRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -14,6 +18,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class Image
 {
+    /**
+     * @param HideRequest[] $hideRequests
+     */
     public function __construct(
         private readonly ImageIdentifier     $imageIdentifier,
         private readonly ResourceType        $resourceType,
@@ -33,6 +40,7 @@ class Image
         private ?DateTimeImmutable $approvedAt,
         private ?PrincipalIdentifier $updaterIdentifier,
         private ?DateTimeImmutable $updatedAt,
+        private array $hideRequests = [],
     ) {
     }
 
@@ -188,5 +196,85 @@ class Image
         $this->isHidden = false;
         $this->hiddenBy = null;
         $this->hiddenAt = null;
+    }
+
+    /**
+     * @return HideRequest[]
+     */
+    public function hideRequests(): array
+    {
+        return $this->hideRequests;
+    }
+
+    public function pendingHideRequest(): ?HideRequest
+    {
+        foreach ($this->hideRequests as $hideRequest) {
+            if ($hideRequest->status()->isPending()) {
+                return $hideRequest;
+            }
+        }
+
+        return null;
+    }
+
+    public function latestHideRequest(): ?HideRequest
+    {
+        if ($this->hideRequests === []) {
+            return null;
+        }
+
+        return $this->hideRequests[array_key_last($this->hideRequests)];
+    }
+
+    public function requestHide(string $requesterName, string $requesterEmail, string $reason): void
+    {
+        if ($this->pendingHideRequest() !== null) {
+            throw new ImageHideRequestAlreadyPendingException();
+        }
+
+        $this->hideRequests[] = new HideRequest(
+            $requesterName,
+            $requesterEmail,
+            $reason,
+            ImageHideRequestStatus::PENDING,
+            new DateTimeImmutable(),
+            null,
+            null,
+            null,
+        );
+    }
+
+    public function approveHideRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
+    {
+        $pendingHideRequest = $this->pendingHideRequest();
+        if ($pendingHideRequest === null) {
+            throw new ImageHideRequestNotPendingException();
+        }
+
+        foreach ($this->hideRequests as $index => $hideRequest) {
+            if ($hideRequest === $pendingHideRequest) {
+                $this->hideRequests[$index] = $hideRequest->approve($reviewerIdentifier, $reviewerComment);
+
+                break;
+            }
+        }
+
+        $this->hide($reviewerIdentifier);
+    }
+
+    public function rejectHideRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
+    {
+        $pendingHideRequest = $this->pendingHideRequest();
+        if ($pendingHideRequest === null) {
+            throw new ImageHideRequestNotPendingException();
+        }
+
+        foreach ($this->hideRequests as $index => $hideRequest) {
+            if ($hideRequest === $pendingHideRequest) {
+                $this->hideRequests[$index] = $hideRequest->reject($reviewerIdentifier, $reviewerComment);
+
+                break;
+            }
+        }
     }
 }

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Infrastructure\Repository;
 
+use Application\Models\Wiki\ImageHideRequest as ImageHideRequestModel;
 use Application\Models\Wiki\WikiImage;
+use Illuminate\Support\Str;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
+use Source\Wiki\Image\Domain\ValueObject\HideRequest;
+use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -19,6 +23,7 @@ final class ImageRepository implements ImageRepositoryInterface
     public function findById(ImageIdentifier $identifier): ?Image
     {
         $model = WikiImage::query()
+            ->with('hideRequests')
             ->where('id', (string) $identifier)
             ->first();
 
@@ -35,6 +40,7 @@ final class ImageRepository implements ImageRepositoryInterface
     public function findByResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array
     {
         $models = WikiImage::query()
+            ->with('hideRequests')
             ->where('resource_type', $resourceType->value)
             ->where('wiki_id', (string) $wikiIdentifier)
             ->orderBy('display_order')
@@ -67,6 +73,32 @@ final class ImageRepository implements ImageRepositoryInterface
                 'updated_at' => $image->updatedAt(),
             ],
         );
+
+        foreach ($image->hideRequests() as $hideRequest) {
+            $existingModel = ImageHideRequestModel::query()
+                ->where('image_id', (string) $image->imageIdentifier())
+                ->where('requested_at', $hideRequest->requestedAt())
+                ->first();
+
+            $attributes = [
+                'image_id' => (string) $image->imageIdentifier(),
+                'requester_name' => $hideRequest->requesterName(),
+                'requester_email' => $hideRequest->requesterEmail(),
+                'reason' => $hideRequest->reason(),
+                'status' => $hideRequest->status()->value,
+                'requested_at' => $hideRequest->requestedAt(),
+                'reviewer_id' => $hideRequest->reviewerIdentifier() ? (string) $hideRequest->reviewerIdentifier() : null,
+                'reviewed_at' => $hideRequest->reviewedAt(),
+                'reviewer_comment' => $hideRequest->reviewerComment(),
+            ];
+
+            if ($existingModel !== null) {
+                $existingModel->update($attributes);
+            } else {
+                $attributes['id'] = (string) Str::uuid7();
+                ImageHideRequestModel::query()->create($attributes);
+            }
+        }
     }
 
     public function delete(ImageIdentifier $identifier): void
@@ -74,6 +106,14 @@ final class ImageRepository implements ImageRepositoryInterface
         WikiImage::query()
             ->where('id', (string) $identifier)
             ->delete();
+    }
+
+    public function existsPendingHideRequest(ImageIdentifier $imageIdentifier): bool
+    {
+        return ImageHideRequestModel::query()
+            ->where('image_id', (string) $imageIdentifier)
+            ->where('status', ImageHideRequestStatus::PENDING->value)
+            ->exists();
     }
 
     private function toEntity(WikiImage $model): Image
@@ -97,6 +137,23 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->approved_at?->toDateTimeImmutable(),
             $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
             $model->updated_at?->toDateTimeImmutable(),
+            $model->hideRequests
+                ->map(fn (ImageHideRequestModel $hideRequestModel) => $this->toHideRequest($hideRequestModel))
+                ->all(),
+        );
+    }
+
+    private function toHideRequest(ImageHideRequestModel $model): HideRequest
+    {
+        return new HideRequest(
+            $model->requester_name,
+            $model->requester_email,
+            $model->reason,
+            ImageHideRequestStatus::from($model->status),
+            $model->requested_at->toDateTimeImmutable(),
+            $model->reviewer_id ? new PrincipalIdentifier($model->reviewer_id) : null,
+            $model->reviewed_at?->toDateTimeImmutable(),
+            $model->reviewer_comment,
         );
     }
 }

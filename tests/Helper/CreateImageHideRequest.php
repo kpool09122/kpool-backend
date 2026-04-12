@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
-use Source\Wiki\ImageHideRequest\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 
 class CreateImageHideRequest
 {
