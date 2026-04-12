@@ -35,6 +35,7 @@ use Application\Http\Action\Wiki\Wiki\Command\SubmitWiki\SubmitWikiAction;
 use Application\Http\Action\Wiki\ImageHideRequest\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
 use Application\Http\Action\Wiki\ImageHideRequest\Command\RejectImageHideRequest\RejectImageHideRequestAction;
 use Application\Http\Action\Wiki\ImageHideRequest\Command\RequestImageHide\RequestImageHideAction;
+use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinksAction;
 use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
 use Illuminate\Support\Facades\Route;
 
@@ -80,3 +81,6 @@ Route::post('/image-hide-request/{requestId}/reject', RejectImageHideRequestActi
 Route::post('/official-certification/request', RequestCertificationAction::class);
 Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class);
 Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);
+
+// VideoLink
+Route::post('/video-link/save', SaveVideoLinksAction::class);
