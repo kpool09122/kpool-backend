@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -20,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $reviewer_comment
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
+ * @property-read ?WikiImage $image
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -46,5 +48,13 @@ class ImageHideRequest extends Model
             'requested_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return BelongsTo<WikiImage, $this>
+     */
+    public function image(): BelongsTo
+    {
+        return $this->belongsTo(WikiImage::class, 'image_id', 'id');
     }
 }
