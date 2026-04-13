@@ -8,30 +8,33 @@ use Application\Http\Context\ActorContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 final readonly class Handler
 {
-    public function __construct(
-        private LoggerInterface $logger,
-    ) {
-    }
-
     public function __invoke(Throwable $e, Request $request): Response
     {
-        $this->report($e);
-
         return $this->render($e, $request);
     }
 
-    private function report(Throwable $e): void
+    public static function shouldReportToSentry(Throwable $e): bool
     {
-        $this->logger->error((string)$e);
+        if (! app()->environment('production')) {
+            return false;
+        }
 
-        // TODO: Sentry に記録する
-        // Sentry::captureException($e);
+        $dsn = config('sentry.dsn');
+
+        if (! is_string($dsn) || trim($dsn) === '') {
+            return false;
+        }
+
+        if ($e instanceof HttpException) {
+            return $e->getHttpStatus() >= Response::HTTP_INTERNAL_SERVER_ERROR;
+        }
+
+        return true;
     }
 
     private function render(Throwable $e, Request $request): Response
