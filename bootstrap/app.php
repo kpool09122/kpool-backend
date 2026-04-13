@@ -5,9 +5,10 @@ declare(strict_types=1);
 use Application\Jobs\Wiki\ProcessRolePromotionJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
+use Sentry\Laravel\Integration as SentryIntegration;
 use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 
 $app = Application::configure(basePath: dirname(__DIR__))
@@ -77,6 +78,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        if (env('APP_ENV') === 'production' && filled(env('SENTRY_LARAVEL_DSN', env('SENTRY_DSN')))) {
+            SentryIntegration::handles($exceptions);
+        }
+
         $exceptions->render(app(\Application\Http\Exceptions\Handler::class));
     })
     ->create();

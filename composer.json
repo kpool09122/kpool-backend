@@ -10,7 +10,8 @@
         "ext-mbstring": "*",
         "stripe/stripe-php": "^20.0",
         "ext-gd": "*",
-        "google/cloud-translate": "^2.1"
+        "google/cloud-translate": "^2.1",
+        "sentry/sentry-laravel": "^4.25"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
