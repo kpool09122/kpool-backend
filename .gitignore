@@ -40,6 +40,7 @@ clover.xml
 # Build artifacts
 /build/
 /dist/
+/node_modules/
 
 .codex/*
 !.codex/skills/

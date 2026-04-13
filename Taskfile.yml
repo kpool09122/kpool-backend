@@ -83,6 +83,17 @@ tasks:
     cmds:
       - docker-compose run --rm php composer install
 
+  openapi:
+    desc: Install TypeSpec dependencies and generate OpenAPI specs
+    cmds:
+      - pnpm install --frozen-lockfile
+      - pnpm run typespec:compile
+
+  openapi-generate:
+    desc: Generate OpenAPI specs from TypeSpec definitions
+    cmds:
+      - pnpm run typespec:compile
+
   phpstan:
     desc: Run PHPStan static analysis
     cmds:

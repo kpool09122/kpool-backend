@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: k-pool Monetization API
+  version: 0.0.0
+tags: []
+paths: {}
+components: {}
+servers:
+  - url: /api/monetization
+    description: Laravel route prefix from bootstrap/app.php.
+    variables: {}
