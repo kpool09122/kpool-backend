@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: k-pool Account API
+  version: 0.0.0
+tags: []
+paths: {}
+components: {}
+servers:
+  - url: /api/account
+    description: Laravel route prefix from bootstrap/app.php.
+    variables: {}

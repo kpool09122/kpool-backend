@@ -1,0 +1,14 @@
+{
+  "name": "kpool-backend-typespec",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "typespec:compile": "tsp compile ./typespec/main.tsp --config ./tspconfig.yaml"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "^1.11.0",
+    "@typespec/http": "^1.11.0",
+    "@typespec/openapi3": "^1.11.0",
+    "@typespec/rest": "^0.71.0"
+  }
+}

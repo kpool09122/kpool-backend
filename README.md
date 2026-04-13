@@ -94,6 +94,33 @@ If you prefer to set up PostgreSQL manually:
 
 Dependencies are automatically reviewed by Renovate using the rules in `renovate.json`. It groups Composer updates, schedules them for early Tokyo mornings, and surfaces all pending changes on the Renovate dashboard so pull requests stay easy to review. Enable Renovate for this repository on GitHub (connecting it once is enough) to keep tooling current without manual version tracking.
 
+## OpenAPI Generation
+
+TypeSpec definitions live under `typespec/` and are split by Laravel route file so later endpoint work can proceed in parallel.
+
+- `typespec/services/identity-api.tsp` -> `routes/identity_api.php`
+- `typespec/services/account-api.tsp` -> `routes/account_api.php`
+- `typespec/services/monetization-api.tsp` -> `routes/monetization_api.php`
+- `typespec/services/wiki-private-api.tsp` -> `routes/wiki_private_api.php`
+- `typespec/services/webhook.tsp` -> `routes/webhook.php`
+- `typespec/common/` holds shared schema fragments such as Problem Details
+
+Install TypeSpec dependencies and generate OpenAPI artifacts with:
+
+```bash
+task openapi
+```
+
+After the initial install, regenerate the specs with:
+
+```bash
+task openapi-generate
+```
+
+If you want to run the compiler directly, use `pnpm run typespec:compile`.
+
+Generated OpenAPI files are written to `doc/openapi/` and should be updated together with TypeSpec changes.
+
 ## License
 All rights reserved. Unauthorized forks, copying, distribution, modification, or commercial use of this project are strictly prohibited without explicit written permission from the project owner.
 
