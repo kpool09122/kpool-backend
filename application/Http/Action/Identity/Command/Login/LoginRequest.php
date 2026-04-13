@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\Login;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LoginRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -16,7 +19,6 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
-            'language' => ['nullable', 'string'],
         ];
     }
 
@@ -28,10 +30,5 @@ class LoginRequest extends FormRequest
     public function password(): string
     {
         return (string) $this->input('password');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

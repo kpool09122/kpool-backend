@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\IdentityGroup\Command\AddIdentityToIdentityGroup;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AddIdentityToIdentityGroupRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -26,10 +29,5 @@ class AddIdentityToIdentityGroupRequest extends FormRequest
     public function identityIdentifier(): string
     {
         return (string) $this->input('identityIdentifier');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

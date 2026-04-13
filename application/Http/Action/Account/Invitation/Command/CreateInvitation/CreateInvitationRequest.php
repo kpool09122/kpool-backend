@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Invitation\Command\CreateInvitation;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateInvitationRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -37,10 +40,5 @@ class CreateInvitationRequest extends FormRequest
     public function emails(): array
     {
         return (array) $this->input('emails');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Image\Command\UploadImage;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -20,7 +21,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +30,7 @@ readonly class UploadImageAction
 {
     public function __construct(
         private UploadImageInterface $uploadImage,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -44,7 +45,7 @@ readonly class UploadImageAction
         try {
             try {
                 $input = new UploadImageInput(
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                     $request->publishedImageIdentifier() !== null ? new ImageIdentifier($request->publishedImageIdentifier()) : null,
                     ResourceType::from($request->resourceType()),
                     new WikiIdentifier($request->wikiIdentifier()),

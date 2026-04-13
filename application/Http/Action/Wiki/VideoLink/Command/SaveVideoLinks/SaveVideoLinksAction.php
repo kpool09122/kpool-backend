@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use DateTimeImmutable;
@@ -11,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinksInput;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinksInterface;
@@ -26,6 +26,7 @@ readonly class SaveVideoLinksAction
 {
     public function __construct(
         private SaveVideoLinksInterface $saveVideoLinks,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -50,7 +51,7 @@ readonly class SaveVideoLinksAction
                 );
 
                 $input = new SaveVideoLinksInput(
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
                     new WikiIdentifier($request->wikiIdentifier()),
                     $videoLinkDataArray,

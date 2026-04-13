@@ -12,18 +12,19 @@ use Source\Wiki\Grading\Domain\ValueObject\YearMonth;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        api: __DIR__ . '/../routes/wiki_private_api.php',
-        apiPrefix: 'api/wiki',
         then: function () {
             Route::middleware('api')
                 ->prefix('api/identity')
                 ->group(base_path('routes/identity_api.php'));
-            Route::middleware('api')
+            Route::middleware(['api', 'auth.api', 'resolve.actor'])
                 ->prefix('api/monetization')
                 ->group(base_path('routes/monetization_api.php'));
-            Route::middleware('api')
+            Route::middleware(['api', 'auth.api', 'resolve.actor'])
                 ->prefix('api/account')
                 ->group(base_path('routes/account_api.php'));
+            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
+                ->prefix('api/wiki')
+                ->group(base_path('routes/wiki_private_api.php'));
             Route::prefix('webhook')
                 ->group(base_path('routes/webhook.php'));
         },
@@ -66,6 +67,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         \Application\Providers\Wiki\EventServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'auth.api' => \Application\Http\Middleware\EnsureAuthenticated::class,
+            'resolve.actor' => \Application\Http\Middleware\ResolveActorContext::class,
+            'resolve.wiki' => \Application\Http\Middleware\ResolveWikiContext::class,
+        ]);
         $middleware->preventRequestForgery(except: [
             'webhook/*',
         ]);

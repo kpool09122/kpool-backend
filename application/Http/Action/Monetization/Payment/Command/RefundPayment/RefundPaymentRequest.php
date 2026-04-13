@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Payment\Command\RefundPayment;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RefundPaymentRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -39,10 +42,5 @@ class RefundPaymentRequest extends FormRequest
     public function reason(): string
     {
         return (string) $this->input('reason');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

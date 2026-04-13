@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\CreateIdentity;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateIdentityRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -16,7 +19,6 @@ class CreateIdentityRequest extends FormRequest
         return [
             'username' => ['required', 'string'],
             'email' => ['required', 'email'],
-            'language' => ['required', 'string'],
             'password' => ['required', 'string'],
             'confirmedPassword' => ['required', 'string'],
             'base64EncodedImage' => ['nullable', 'string'],
@@ -32,11 +34,6 @@ class CreateIdentityRequest extends FormRequest
     public function email(): string
     {
         return (string) $this->input('email');
-    }
-
-    public function language(): string
-    {
-        return (string) $this->input('language');
     }
 
     public function password(): string

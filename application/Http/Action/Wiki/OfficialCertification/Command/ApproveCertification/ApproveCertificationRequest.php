@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApproveCertificationRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -19,10 +22,5 @@ class ApproveCertificationRequest extends FormRequest
     public function certificationId(): string
     {
         return (string) $this->route('certificationId');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

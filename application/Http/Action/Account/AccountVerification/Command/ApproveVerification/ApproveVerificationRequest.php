@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\AccountVerification\Command\ApproveVerification;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApproveVerificationRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -26,10 +29,5 @@ class ApproveVerificationRequest extends FormRequest
     public function reviewerAccountIdentifier(): string
     {
         return (string) $this->input('reviewerAccountIdentifier');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

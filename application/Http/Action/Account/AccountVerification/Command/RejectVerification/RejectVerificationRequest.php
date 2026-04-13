@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\AccountVerification\Command\RejectVerification;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RejectVerificationRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -38,10 +41,5 @@ class RejectVerificationRequest extends FormRequest
     public function rejectionReasonDetail(): ?string
     {
         return $this->input('rejectionReasonDetail');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Settlement\Command\SettleRevenue;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SettleRevenueRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -72,10 +75,5 @@ class SettleRevenueRequest extends FormRequest
     public function periodEnd(): string
     {
         return (string) $this->input('periodEnd');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

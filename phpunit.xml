@@ -12,6 +12,7 @@
         <include>
             <directory>src</directory>
             <directory>application/Shared</directory>
+            <directory>application/Http/Context</directory>
         </include>
     </source>
     <coverage>

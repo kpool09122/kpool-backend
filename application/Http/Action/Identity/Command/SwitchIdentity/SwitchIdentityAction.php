@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SwitchIdentity;
 
+use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -17,7 +18,6 @@ use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityOut
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -25,6 +25,7 @@ readonly class SwitchIdentityAction
 {
     public function __construct(
         private SwitchIdentityInterface $switchIdentity,
+        private ActorContext $actorContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -39,7 +40,7 @@ readonly class SwitchIdentityAction
         try {
             try {
                 $input = new SwitchIdentityInput(
-                    currentIdentityIdentifier: new IdentityIdentifier($request->currentIdentityIdentifier()),
+                    currentIdentityIdentifier: $this->actorContext->identityIdentifier,
                     targetDelegationIdentifier: $request->targetDelegationIdentifier() !== null
                         ? new DelegationIdentifier($request->targetDelegationIdentifier())
                         : null,

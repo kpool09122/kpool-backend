@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Account\Command\OnboardSeller;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OnboardSellerRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -45,10 +48,5 @@ class OnboardSellerRequest extends FormRequest
     public function returnUrl(): string
     {
         return (string) $this->input('returnUrl');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

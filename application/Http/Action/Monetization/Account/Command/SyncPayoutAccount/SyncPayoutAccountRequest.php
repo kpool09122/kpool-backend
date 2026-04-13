@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Account\Command\SyncPayoutAccount;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SyncPayoutAccountRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -79,10 +82,5 @@ class SyncPayoutAccountRequest extends FormRequest
     public function isDefault(): bool
     {
         return (bool) $this->input('isDefault', false);
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -14,7 +15,6 @@ use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
@@ -29,6 +29,7 @@ readonly class AutoCreateWikiAction
 {
     public function __construct(
         private AutoCreateWikiInterface $autoCreateWiki,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -53,7 +54,7 @@ readonly class AutoCreateWikiAction
 
                 $input = new AutoCreateWikiInput(
                     $payload,
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                 );
                 $output = new AutoCreateWikiOutput();
             } catch (InvalidArgumentException $e) {

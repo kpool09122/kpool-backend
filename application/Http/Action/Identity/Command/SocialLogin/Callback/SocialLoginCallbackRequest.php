@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SocialLogin\Callback;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SocialLoginCallbackRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -16,7 +19,6 @@ class SocialLoginCallbackRequest extends FormRequest
         return [
             'code' => ['required', 'string'],
             'state' => ['required', 'string'],
-            'language' => ['nullable', 'string'],
         ];
     }
 
@@ -33,10 +35,5 @@ class SocialLoginCallbackRequest extends FormRequest
     public function state(): string
     {
         return (string) $this->input('state');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

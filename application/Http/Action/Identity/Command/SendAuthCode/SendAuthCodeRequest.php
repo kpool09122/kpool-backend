@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SendAuthCode;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SendAuthCodeRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -15,17 +18,11 @@ class SendAuthCodeRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
-            'language' => ['nullable', 'string'],
         ];
     }
 
     public function email(): string
     {
         return (string) $this->input('email');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

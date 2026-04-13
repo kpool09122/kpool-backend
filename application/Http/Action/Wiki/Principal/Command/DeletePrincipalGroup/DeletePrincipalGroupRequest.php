@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Principal\Command\DeletePrincipalGroup;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DeletePrincipalGroupRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -19,10 +22,5 @@ class DeletePrincipalGroupRequest extends FormRequest
     public function principalGroupId(): string
     {
         return (string) $this->route('principalGroupId');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

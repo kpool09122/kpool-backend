@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\PublishWiki;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PublishWikiRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -15,7 +18,6 @@ class PublishWikiRequest extends FormRequest
     {
         return [
             'wikiId' => ['required', 'uuid'],
-            'principalId' => ['required', 'uuid'],
             'resourceType' => ['required', 'string'],
             'publishedWikiIdentifier' => ['nullable', 'uuid'],
             'agencyIdentifier' => ['nullable', 'uuid'],
@@ -29,11 +31,6 @@ class PublishWikiRequest extends FormRequest
     public function wikiId(): string
     {
         return (string) $this->input('wikiId');
-    }
-
-    public function principalId(): string
-    {
-        return (string) $this->input('principalId');
     }
 
     public function resourceType(): string
@@ -69,10 +66,5 @@ class PublishWikiRequest extends FormRequest
     public function talentIdentifiers(): array
     {
         return (array) ($this->input('talentIdentifiers') ?? []);
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }
