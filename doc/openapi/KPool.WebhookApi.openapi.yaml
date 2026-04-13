@@ -3,8 +3,72 @@ info:
   title: k-pool Webhook API
   version: 0.0.0
 tags: []
-paths: {}
-components: {}
+paths:
+  /stripe:
+    post:
+      operationId: StripeWebhookOperations_receiveStripeWebhook
+      description: Receive Stripe account external account webhook events.
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 200 response for accepted Stripe webhook events.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/StripeWebhookAcceptedResponseBody'
+                  - $ref: '#/components/schemas/StripeWebhookIgnoredResponseBody'
+        '400':
+          description: 400 response for Stripe webhook requests with an invalid signature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StripeWebhookInvalidSignatureResponseBody'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {}
+components:
+  schemas:
+    StripeWebhookAcceptedResponseBody:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - accepted
+          description: Webhook processing result.
+      description: Response body returned when a Stripe webhook event is accepted for processing.
+    StripeWebhookIgnoredResponseBody:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ignored
+          description: Webhook processing result.
+      description: Response body returned when a Stripe webhook event is ignored.
+    StripeWebhookInvalidSignatureResponseBody:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          enum:
+            - Invalid signature
+          description: Error message describing why the webhook was rejected.
+      description: Response body returned when Stripe signature verification fails.
 servers:
   - url: /webhook
     description: Laravel route prefix from bootstrap/app.php.
