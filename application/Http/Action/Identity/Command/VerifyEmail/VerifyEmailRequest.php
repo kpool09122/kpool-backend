@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\VerifyEmail;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VerifyEmailRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -16,7 +19,6 @@ class VerifyEmailRequest extends FormRequest
         return [
             'email' => ['required', 'email'],
             'authCode' => ['required', 'string'],
-            'language' => ['nullable', 'string'],
         ];
     }
 
@@ -28,10 +30,5 @@ class VerifyEmailRequest extends FormRequest
     public function authCode(): string
     {
         return (string) $this->input('authCode');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

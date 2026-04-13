@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\RejectWiki;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -16,7 +17,6 @@ use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInput;
@@ -31,6 +31,7 @@ readonly class RejectWikiAction
 {
     public function __construct(
         private RejectWikiInterface $rejectWiki,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -46,7 +47,7 @@ readonly class RejectWikiAction
             try {
                 $input = new RejectWikiInput(
                     new DraftWikiIdentifier($request->wikiId()),
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),

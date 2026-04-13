@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\RollbackWiki;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -18,7 +19,6 @@ use Source\Wiki\Shared\Domain\Exception\InvalidRollbackTargetVersionException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\SnapshotNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\VersionMismatchException;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
@@ -33,6 +33,7 @@ readonly class RollbackWikiAction
 {
     public function __construct(
         private RollbackWikiInterface $rollbackWiki,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -47,7 +48,7 @@ readonly class RollbackWikiAction
         try {
             try {
                 $input = new RollbackWikiInput(
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                     new WikiIdentifier($request->wikiId()),
                     new Version($request->targetVersion()),
                     ResourceType::from($request->resourceType()),

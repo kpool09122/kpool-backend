@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\IdentityGroup\Command\CreateIdentityGroup;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateIdentityGroupRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -33,10 +36,5 @@ class CreateIdentityGroupRequest extends FormRequest
     public function role(): string
     {
         return (string) $this->input('role');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

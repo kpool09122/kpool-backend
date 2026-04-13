@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApproveAffiliationRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -26,10 +29,5 @@ class ApproveAffiliationRequest extends FormRequest
     public function approverAccountIdentifier(): string
     {
         return (string) $this->input('approverAccountIdentifier');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

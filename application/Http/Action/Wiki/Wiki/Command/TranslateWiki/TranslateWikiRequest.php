@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\TranslateWiki;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TranslateWikiRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -15,7 +18,6 @@ class TranslateWikiRequest extends FormRequest
     {
         return [
             'wikiId' => ['required', 'uuid'],
-            'principalId' => ['required', 'uuid'],
             'resourceType' => ['required', 'string'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
@@ -28,11 +30,6 @@ class TranslateWikiRequest extends FormRequest
     public function wikiId(): string
     {
         return (string) $this->input('wikiId');
-    }
-
-    public function principalId(): string
-    {
-        return (string) $this->input('principalId');
     }
 
     public function resourceType(): string
@@ -61,10 +58,5 @@ class TranslateWikiRequest extends FormRequest
     public function talentIdentifiers(): array
     {
         return (array) ($this->input('talentIdentifiers') ?? []);
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

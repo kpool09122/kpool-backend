@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\CreateWiki;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateWikiRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'principalId' => ['required', 'uuid'],
             'resourceType' => ['required', 'string'],
             'language' => ['required', 'string'],
             'slug' => ['required', 'string'],
@@ -28,11 +30,6 @@ class CreateWikiRequest extends FormRequest
             'talentIdentifiers' => ['nullable', 'array'],
             'talentIdentifiers.*' => ['uuid'],
         ];
-    }
-
-    public function principalId(): string
-    {
-        return (string) $this->input('principalId');
     }
 
     public function resourceType(): string
@@ -104,10 +101,5 @@ class CreateWikiRequest extends FormRequest
     public function talentIdentifiers(): array
     {
         return (array) ($this->input('talentIdentifiers') ?? []);
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

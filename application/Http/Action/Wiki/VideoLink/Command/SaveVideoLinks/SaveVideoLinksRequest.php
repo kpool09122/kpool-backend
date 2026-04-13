@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaveVideoLinksRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'principalId' => ['required', 'uuid'],
             'resourceType' => ['required', 'string'],
             'wikiIdentifier' => ['required', 'uuid'],
             'videoLinks' => ['present', 'array'],
@@ -25,11 +27,6 @@ class SaveVideoLinksRequest extends FormRequest
             'videoLinks.*.thumbnailUrl' => ['nullable', 'url'],
             'videoLinks.*.publishedAt' => ['nullable', 'date'],
         ];
-    }
-
-    public function principalId(): string
-    {
-        return (string) $this->input('principalId');
     }
 
     public function resourceType(): string
@@ -51,10 +48,5 @@ class SaveVideoLinksRequest extends FormRequest
         $videoLinks = $this->input('videoLinks', []);
 
         return $videoLinks;
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\MergeWiki;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -15,7 +16,6 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWikiInput;
@@ -33,6 +33,7 @@ readonly class MergeWikiAction
 {
     public function __construct(
         private MergeWikiInterface $mergeWiki,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -56,7 +57,7 @@ readonly class MergeWikiAction
                     $basic,
                     $sections,
                     $request->themeColor() !== null ? new Color($request->themeColor()) : null,
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                     $resourceType,
                     new DateTimeImmutable(),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,

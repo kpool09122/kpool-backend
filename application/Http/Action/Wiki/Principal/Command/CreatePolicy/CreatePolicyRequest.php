@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Principal\Command\CreatePolicy;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreatePolicyRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -36,10 +39,5 @@ class CreatePolicyRequest extends FormRequest
     public function isSystemPolicy(): bool
     {
         return (bool) $this->input('isSystemPolicy');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

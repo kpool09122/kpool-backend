@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\DelegationPermission\Command\GrantDelegationPermission;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class GrantDelegationPermissionRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -33,10 +36,5 @@ class GrantDelegationPermissionRequest extends FormRequest
     public function affiliationIdentifier(): string
     {
         return (string) $this->input('affiliationIdentifier');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Image\Command\UnhideImage;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -19,7 +20,6 @@ use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageOutput;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -27,6 +27,7 @@ readonly class UnhideImageAction
 {
     public function __construct(
         private UnhideImageInterface $unhideImage,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -42,7 +43,7 @@ readonly class UnhideImageAction
             try {
                 $input = new UnhideImageInput(
                     new ImageIdentifier($request->imageId()),
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                 );
                 $output = new UnhideImageOutput();
             } catch (InvalidArgumentException $e) {

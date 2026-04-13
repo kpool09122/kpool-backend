@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SocialLogin\Redirect;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SocialLoginRedirectRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -16,7 +19,6 @@ class SocialLoginRedirectRequest extends FormRequest
         return [
             'accountType' => ['nullable', 'string'],
             'invitationToken' => ['nullable', 'string'],
-            'language' => ['nullable', 'string'],
         ];
     }
 
@@ -37,10 +39,5 @@ class SocialLoginRedirectRequest extends FormRequest
         $value = $this->input('invitationToken');
 
         return $value !== null ? (string) $value : null;
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

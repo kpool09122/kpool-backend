@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Account\Command\ProvisionMonetizationAccount;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProvisionMonetizationAccountRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -21,10 +24,5 @@ class ProvisionMonetizationAccountRequest extends FormRequest
     public function accountId(): string
     {
         return (string) $this->input('accountId');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

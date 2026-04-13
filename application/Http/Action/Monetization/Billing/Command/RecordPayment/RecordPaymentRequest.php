@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Billing\Command\RecordPayment;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RecordPaymentRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -27,10 +30,5 @@ class RecordPaymentRequest extends FormRequest
     public function paymentIdentifier(): string
     {
         return (string) $this->input('paymentIdentifier');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }

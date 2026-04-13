@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Exceptions;
 
+use Application\Http\Context\ActorContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -48,7 +49,8 @@ final readonly class Handler
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());
         }
 
-        $language = (string)($request->input('language') ?? 'en');
+        $actorContext = app()->bound(ActorContext::class) ? app(ActorContext::class) : null;
+        $language = $actorContext?->language->value ?? $request->header('Accept-Language', 'en');
 
         return response()->json([
             'status' => Response::HTTP_INTERNAL_SERVER_ERROR,

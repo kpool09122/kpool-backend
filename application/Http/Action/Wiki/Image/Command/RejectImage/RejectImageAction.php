@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Image\Command\RejectImage;
 
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -21,7 +22,6 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -29,6 +29,7 @@ readonly class RejectImageAction
 {
     public function __construct(
         private RejectImageInterface $rejectImage,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -44,7 +45,7 @@ readonly class RejectImageAction
             try {
                 $input = new RejectImageInput(
                     new ImageIdentifier($request->imageId()),
-                    new PrincipalIdentifier($request->principalId()),
+                    $this->wikiContext->principalIdentifier,
                 );
                 $output = new RejectImageOutput();
             } catch (InvalidArgumentException $e) {

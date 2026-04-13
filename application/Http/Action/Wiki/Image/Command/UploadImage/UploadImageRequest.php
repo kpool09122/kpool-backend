@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Image\Command\UploadImage;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UploadImageRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
         return [
-            'principalId' => ['required', 'uuid'],
             'publishedImageIdentifier' => ['nullable', 'uuid'],
             'resourceType' => ['required', 'string'],
             'wikiIdentifier' => ['required', 'uuid'],
@@ -26,11 +28,6 @@ class UploadImageRequest extends FormRequest
             'altText' => ['required', 'string'],
             'agreedToTermsAt' => ['required', 'date'],
         ];
-    }
-
-    public function principalId(): string
-    {
-        return (string) $this->input('principalId');
     }
 
     public function publishedImageIdentifier(): ?string
@@ -83,10 +80,5 @@ class UploadImageRequest extends FormRequest
     public function agreedToTermsAt(): string
     {
         return (string) $this->input('agreedToTermsAt');
-    }
-
-    public function language(): string
-    {
-        return (string) ($this->input('language') ?? 'en');
     }
 }
