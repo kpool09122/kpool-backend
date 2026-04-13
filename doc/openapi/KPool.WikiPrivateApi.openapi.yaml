@@ -3,8 +3,2205 @@ info:
   title: k-pool Wiki Private API
   version: 0.0.0
 tags: []
-paths: {}
-components: {}
+paths:
+  /image/upload:
+    post:
+      operationId: ImageOperations_uploadImage
+      description: Upload a new image.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a draft image is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageDraftSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadImageRequestBody'
+  /image/{imageId}:
+    delete:
+      operationId: ImageOperations_deleteImage
+      description: Delete an image.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /image/{imageId}/approve:
+    post:
+      operationId: ImageOperations_approveImage
+      description: Approve an image.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a draft image is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageDraftSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /image/{imageId}/approve-hide-request:
+    post:
+      operationId: ImageOperations_approveImageHideRequest
+      description: Approve an image hide request.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an image hide request is reviewed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageHideReviewSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewImageHideRequestBody'
+  /image/{imageId}/reject:
+    post:
+      operationId: ImageOperations_rejectImage
+      description: Reject an image.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an image operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /image/{imageId}/reject-hide-request:
+    post:
+      operationId: ImageOperations_rejectImageHideRequest
+      description: Reject an image hide request.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an image hide request is reviewed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageHideReviewSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewImageHideRequestBody'
+  /image/{imageId}/request-hide:
+    post:
+      operationId: ImageOperations_requestImageHide
+      description: Request that an image be hidden.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when an image hide request is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageHideRequestSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestImageHideRequestBody'
+  /image/{imageId}/unhide:
+    post:
+      operationId: ImageOperations_unhideImage
+      description: Unhide an image.
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an image operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /official-certification/request:
+    post:
+      operationId: OfficialCertificationOperations_requestCertification
+      description: Create an official certification request.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an official certification request is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficialCertificationSummary'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCertificationRequestBody'
+  /official-certification/{certificationId}/approve:
+    post:
+      operationId: OfficialCertificationOperations_approveCertification
+      description: Approve an official certification request.
+      parameters:
+        - name: certificationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an official certification operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficialCertificationSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /official-certification/{certificationId}/reject:
+    post:
+      operationId: OfficialCertificationOperations_rejectCertification
+      description: Reject an official certification request.
+      parameters:
+        - name: certificationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an official certification operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfficialCertificationSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /policy/create:
+    post:
+      operationId: PrincipalOperations_createPolicy
+      description: Create a policy.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a policy is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicySummary'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequestBody'
+  /policy/{policyId}:
+    delete:
+      operationId: PrincipalOperations_deletePolicy
+      description: Delete a policy.
+      parameters:
+        - name: policyId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /principal-group/create:
+    post:
+      operationId: PrincipalOperations_createPrincipalGroup
+      description: Create a principal group.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a principal group is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalGroupSummary'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePrincipalGroupRequestBody'
+  /principal-group/{principalGroupId}:
+    delete:
+      operationId: PrincipalOperations_deletePrincipalGroup
+      description: Delete a principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /principal-group/{principalGroupId}/add-member:
+    post:
+      operationId: PrincipalOperations_addPrincipalToPrincipalGroup
+      description: Add a principal to a principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when a principal group operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalGroupSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
+  /principal-group/{principalGroupId}/attach-role:
+    post:
+      operationId: PrincipalOperations_attachRoleToPrincipalGroup
+      description: Attach a role to a principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachRoleToPrincipalGroupRequestBody'
+  /principal-group/{principalGroupId}/detach-role:
+    post:
+      operationId: PrincipalOperations_detachRoleFromPrincipalGroup
+      description: Detach a role from a principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachRoleToPrincipalGroupRequestBody'
+  /principal-group/{principalGroupId}/remove-member:
+    post:
+      operationId: PrincipalOperations_removePrincipalFromPrincipalGroup
+      description: Remove a principal from a principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when a principal group operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalGroupSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
+  /principal/create:
+    post:
+      operationId: PrincipalOperations_createPrincipal
+      description: Create a principal.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a principal is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalSummary'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePrincipalRequestBody'
+  /role/create:
+    post:
+      operationId: PrincipalOperations_createRole
+      description: Create a role.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a role is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleSummary'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequestBody'
+  /role/{roleId}:
+    delete:
+      operationId: PrincipalOperations_deleteRole
+      description: Delete a role.
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /role/{roleId}/attach-policy:
+    post:
+      operationId: PrincipalOperations_attachPolicyToRole
+      description: Attach a policy to a role.
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachPolicyToRoleRequestBody'
+  /role/{roleId}/detach-policy:
+    post:
+      operationId: PrincipalOperations_detachPolicyFromRole
+      description: Detach a policy from a role.
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachPolicyToRoleRequestBody'
+  /video-link/save:
+    post:
+      operationId: VideoLinkOperations_saveVideoLinks
+      description: Save video links for a wiki.
+      parameters: []
+      responses:
+        '204':
+          description: Response with no content.
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveVideoLinksRequestBody'
+  /wiki/auto-create:
+    post:
+      operationId: WikiOperations_autoCreateWiki
+      description: Automatically create a wiki draft from the provided metadata.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoCreateWikiRequestBody'
+  /wiki/create:
+    post:
+      operationId: WikiOperations_createWiki
+      description: Create a new wiki draft.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWikiRequestBody'
+  /wiki/{wikiId}/approve:
+    post:
+      operationId: WikiOperations_approveWiki
+      description: Approve a wiki draft.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+  /wiki/{wikiId}/edit:
+    post:
+      operationId: WikiOperations_editWiki
+      description: Edit an existing wiki draft.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWikiDraftRequestBody'
+  /wiki/{wikiId}/merge:
+    post:
+      operationId: WikiOperations_mergeWiki
+      description: Merge changes into an existing wiki draft.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWikiDraftRequestBody'
+  /wiki/{wikiId}/publish:
+    post:
+      operationId: WikiOperations_publishWiki
+      description: Publish a wiki draft.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki is published.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishedWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishWikiRequestBody'
+  /wiki/{wikiId}/reject:
+    post:
+      operationId: WikiOperations_rejectWiki
+      description: Reject a wiki draft.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+  /wiki/{wikiId}/rollback:
+    post:
+      operationId: WikiOperations_rollbackWiki
+      description: Roll back a wiki to a previous published version.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when wiki rollback succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollbackWikiResponseBody'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollbackWikiRequestBody'
+  /wiki/{wikiId}/submit:
+    post:
+      operationId: WikiOperations_submitWiki
+      description: Submit a wiki draft for review.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when a wiki draft is created or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiSummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+  /wiki/{wikiId}/translate:
+    post:
+      operationId: WikiOperations_translateWiki
+      description: Translate a wiki draft into additional languages.
+      parameters:
+        - name: wikiId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '201':
+          description: Response returned when wiki translation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslateWikiResponseBody'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+components:
+  schemas:
+    AttachPolicyToRoleRequestBody:
+      type: object
+      required:
+        - policyIdentifier
+      properties:
+        policyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Policy identifier to mutate.
+      description: Request body for attaching or detaching a policy from a role.
+    AttachRoleToPrincipalGroupRequestBody:
+      type: object
+      required:
+        - roleIdentifier
+      properties:
+        roleIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Role identifier to mutate.
+      description: Request body for attaching or detaching a role from a principal group.
+    AutoCreateWikiRequestBody:
+      type: object
+      required:
+        - resourceType
+        - language
+        - name
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        language:
+          type: string
+          description: Language of the wiki.
+        name:
+          type: string
+          description: Display name of the wiki.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for automatically creating a wiki draft.
+    CreatePolicyRequestBody:
+      type: object
+      required:
+        - name
+        - statements
+        - isSystemPolicy
+      properties:
+        name:
+          type: string
+          description: Policy name.
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyStatement'
+          description: Statements that define the policy.
+        isSystemPolicy:
+          type: boolean
+          description: Whether this is a system policy.
+      description: Request body for creating a policy.
+    CreatePrincipalGroupRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - name
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier that owns the principal group.
+        name:
+          type: string
+          description: Principal group name.
+      description: Request body for creating a principal group.
+    CreatePrincipalRequestBody:
+      type: object
+      required:
+        - identityIdentifier
+        - accountIdentifier
+      properties:
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier to bind to the principal.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier that owns the principal.
+      description: Request body for creating a principal.
+    CreateRoleRequestBody:
+      type: object
+      required:
+        - name
+        - isSystemRole
+      properties:
+        name:
+          type: string
+          description: Role name.
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Uuid'
+          description: Policy identifiers attached to the role.
+        isSystemRole:
+          type: boolean
+          description: Whether this is a system role.
+      description: Request body for creating a role.
+    CreateWikiRequestBody:
+      type: object
+      required:
+        - resourceType
+        - language
+        - slug
+        - basic
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        language:
+          type: string
+          description: Language of the wiki.
+        slug:
+          type: string
+          description: Unique slug for the wiki.
+        basic:
+          description: Basic wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+        themeColor:
+          type: string
+          description: Theme color applied to the wiki.
+        publishedWikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Published wiki identifier to branch from.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for creating a wiki draft.
+    DraftWikiSummary:
+      type: object
+      required:
+        - language
+        - name
+        - resourceType
+        - status
+      properties:
+        language:
+          type: string
+          description: Language of the wiki.
+        name:
+          type: string
+          description: Display name of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        status:
+          type: string
+          description: Current workflow status of the draft wiki.
+      description: Summary of a draft wiki.
+    ImageDraftSummary:
+      type: object
+      required:
+        - imageIdentifier
+        - resourceType
+        - imageUsage
+        - status
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Image identifier.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        imageUsage:
+          type: string
+          description: Usage category of the image.
+        status:
+          type: string
+          description: Current workflow status of the image.
+      description: Summary of a draft image.
+    ImageHideRequestSummary:
+      type: object
+      required:
+        - imageIdentifier
+        - requesterName
+        - requesterEmail
+        - reason
+        - status
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Image identifier.
+        requesterName:
+          type: string
+          description: Name of the requester.
+        requesterEmail:
+          type: string
+          description: Email address of the requester.
+        reason:
+          type: string
+          description: Reason for requesting the image to be hidden.
+        status:
+          type: string
+          description: Current review status of the hide request.
+      description: Summary of an image hide request.
+    ImageHideReviewSummary:
+      type: object
+      required:
+        - imageIdentifier
+        - status
+        - reviewerComment
+        - isHidden
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Image identifier.
+        status:
+          type: string
+          description: Review status of the hide request.
+        reviewerComment:
+          type: string
+          description: Comment left by the reviewer.
+        isHidden:
+          type: boolean
+          description: Whether the image is hidden after the review.
+      description: Summary of an image hide request review result.
+    ImageSummary:
+      type: object
+      required:
+        - imageIdentifier
+        - resourceType
+        - imageUsage
+        - isHidden
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Image identifier.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        imageUsage:
+          type: string
+          description: Usage category of the image.
+        isHidden:
+          type: boolean
+          description: Whether the image is currently hidden.
+      description: Summary of an image.
+    KPool.Common.ProblemDetails:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        title:
+          type: string
+          description: Short error title.
+        detail:
+          type: string
+          description: Human-readable error detail.
+      description: RFC 9457 Problem Details payload shared by JSON error responses.
+    MutatePrincipalGroupMemberRequestBody:
+      type: object
+      required:
+        - principalIdentifier
+      properties:
+        principalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Principal identifier to mutate.
+      description: Request body for adding or removing a principal group member.
+    OfficialCertificationSummary:
+      type: object
+      required:
+        - certificationIdentifier
+        - resourceType
+        - wikiIdentifier
+        - status
+      properties:
+        certificationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Certification identifier.
+        resourceType:
+          type: string
+          description: Resource type that the certification belongs to.
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Wiki identifier related to the certification.
+        status:
+          type: string
+          description: Current workflow status of the certification.
+      description: Summary of an official certification request.
+    PolicyCondition:
+      type: object
+      properties:
+        clauses:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyConditionClause'
+          description: List of condition clauses.
+      description: Conditional constraints for a policy statement.
+    PolicyConditionClause:
+      type: object
+      required:
+        - field
+        - operator
+        - value
+      properties:
+        field:
+          type: string
+          description: Field name to evaluate.
+        operator:
+          type: string
+          description: Operator used for the comparison.
+        value:
+          type: string
+          description: Value to compare against.
+      description: Single condition clause in a policy.
+    PolicyStatement:
+      type: object
+      required:
+        - effect
+        - actions
+        - resourceTypes
+      properties:
+        effect:
+          type: string
+          description: Whether the statement allows or denies the action.
+        actions:
+          type: array
+          items:
+            type: string
+          description: Actions covered by this statement.
+        resourceTypes:
+          type: array
+          items:
+            type: string
+          description: Resource types covered by this statement.
+        condition:
+          allOf:
+            - $ref: '#/components/schemas/PolicyCondition'
+          description: Optional condition attached to the statement.
+      description: Statement that grants or denies actions on resource types.
+    PolicySummary:
+      type: object
+      required:
+        - policyIdentifier
+        - name
+        - isSystemPolicy
+        - createdAt
+      properties:
+        policyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Policy identifier.
+        name:
+          type: string
+          description: Policy name.
+        isSystemPolicy:
+          type: boolean
+          description: Whether this is a system policy.
+        createdAt:
+          type: string
+          description: Timestamp when the policy was created.
+      description: Summary of a policy.
+    PrincipalGroupSummary:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - accountIdentifier
+        - name
+        - isDefault
+        - memberCount
+        - createdAt
+      properties:
+        principalGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Principal group identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Owning account identifier.
+        name:
+          type: string
+          description: Principal group name.
+        isDefault:
+          type: boolean
+          description: Whether this is the default principal group.
+        memberCount:
+          type: integer
+          format: int32
+          description: Number of members in the principal group.
+        createdAt:
+          type: string
+          description: Timestamp when the principal group was created.
+      description: Summary of a principal group.
+    PrincipalSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - isDelegatedPrincipal
+        - isEnabled
+      properties:
+        principalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Principal identifier.
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier linked to the principal.
+        isDelegatedPrincipal:
+          type: boolean
+          description: Whether the principal is delegated.
+        isEnabled:
+          type: boolean
+          description: Whether the principal is enabled.
+      description: Summary of a principal.
+    PublishWikiRequestBody:
+      type: object
+      required:
+        - resourceType
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        publishedWikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Published wiki identifier to update.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for publishing a wiki.
+    PublishedWikiSummary:
+      type: object
+      required:
+        - language
+        - name
+        - resourceType
+        - version
+      properties:
+        language:
+          type: string
+          description: Language of the wiki.
+        name:
+          type: string
+          description: Display name of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number.
+      description: Summary of a published wiki.
+    RequestCertificationRequestBody:
+      type: object
+      required:
+        - resourceType
+        - wikiId
+        - ownerAccountId
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the certification belongs to.
+        wikiId:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Wiki identifier to certify.
+        ownerAccountId:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Owner account identifier for the certification.
+      description: Request body for creating an official certification request.
+    RequestImageHideRequestBody:
+      type: object
+      required:
+        - requesterName
+        - requesterEmail
+        - reason
+      properties:
+        requesterName:
+          type: string
+          description: Name of the requester.
+        requesterEmail:
+          type: string
+          description: Email address of the requester.
+        reason:
+          type: string
+          description: Reason for requesting the image to be hidden.
+      description: Request body for creating an image hide request.
+    ReviewImageHideRequestBody:
+      type: object
+      required:
+        - reviewerComment
+      properties:
+        reviewerComment:
+          type: string
+          description: Comment from the reviewer.
+      description: Request body for reviewing an image hide request.
+    RoleSummary:
+      type: object
+      required:
+        - roleIdentifier
+        - name
+        - isSystemRole
+        - createdAt
+      properties:
+        roleIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Role identifier.
+        name:
+          type: string
+          description: Role name.
+        isSystemRole:
+          type: boolean
+          description: Whether this is a system role.
+        createdAt:
+          type: string
+          description: Timestamp when the role was created.
+      description: Summary of a role.
+    RollbackWikiRequestBody:
+      type: object
+      required:
+        - resourceType
+        - targetVersion
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        targetVersion:
+          type: integer
+          format: int32
+          description: Version number to roll back to.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for rolling back a wiki to a previous version.
+    RollbackWikiResponseBody:
+      type: object
+      required:
+        - wikis
+      properties:
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublishedWikiSummary'
+          description: Published wikis produced by the rollback action.
+      description: Response body for wiki rollback results.
+    SaveVideoLinksRequestBody:
+      type: object
+      required:
+        - resourceType
+        - wikiIdentifier
+        - videoLinks
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the video links belong to.
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Wiki identifier that the video links belong to.
+        videoLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoLinkInput'
+          description: Video links to save.
+      description: Request body for saving video links.
+    TranslateWikiResponseBody:
+      type: object
+      required:
+        - draftWikis
+      properties:
+        draftWikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftWikiSummary'
+          description: Draft wikis generated by the translation action.
+      description: Response body for wiki translation results.
+    UpdateWikiDraftRequestBody:
+      type: object
+      required:
+        - resourceType
+        - basic
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        basic:
+          description: Basic wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+        themeColor:
+          type: string
+          description: Theme color applied to the wiki.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for updating a wiki draft.
+    UploadImageRequestBody:
+      type: object
+      required:
+        - resourceType
+        - wikiIdentifier
+        - base64EncodedImage
+        - imageUsage
+        - displayOrder
+        - sourceUrl
+        - sourceName
+        - altText
+        - agreedToTermsAt
+      properties:
+        publishedImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Published image identifier to replace.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Wiki identifier that the image belongs to.
+        base64EncodedImage:
+          type: string
+          description: Image data encoded as base64.
+        imageUsage:
+          type: string
+          description: Usage category of the image.
+        displayOrder:
+          type: integer
+          format: int32
+          description: Display order of the image.
+        sourceUrl:
+          type: string
+          description: Original source URL of the image.
+        sourceName:
+          type: string
+          description: Original source name of the image.
+        altText:
+          type: string
+          description: Alternative text for the image.
+        agreedToTermsAt:
+          type: string
+          description: Timestamp when the uploader agreed to the terms.
+      description: Request body for uploading an image.
+    Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
+    VideoLinkInput:
+      type: object
+      required:
+        - url
+        - videoUsage
+        - displayOrder
+      properties:
+        url:
+          type: string
+          description: Video URL.
+        videoUsage:
+          type: string
+          description: Usage category of the video.
+        title:
+          type: string
+          description: Video title.
+        displayOrder:
+          type: integer
+          format: int32
+          description: Display order of the video link.
+        thumbnailUrl:
+          type: string
+          description: Thumbnail image URL.
+        publishedAt:
+          type: string
+          description: Publication timestamp of the video.
+      description: Input payload for a single video link.
+    WikiAssociationTargets:
+      type: object
+      properties:
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Associated agency identifier.
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Uuid'
+          description: Associated group identifiers.
+        talentIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Uuid'
+          description: Associated talent identifiers.
+      description: Association targets that link a wiki to related agencies, groups, or talents.
+    WikiWorkflowRequestBody:
+      type: object
+      required:
+        - resourceType
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for wiki workflow actions.
 servers:
   - url: /api/wiki
     description: Laravel route prefix from bootstrap/app.php.
