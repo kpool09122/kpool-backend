@@ -1,11 +1,13 @@
-FROM php:8.5-cli
+FROM php:8.5-fpm
 
 # 必要なパッケージのインストール
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
+        bash \
         build-essential \
         autoconf \
+        curl \
         libzip-dev \
         libpq-dev \
         libpng-dev \
@@ -33,12 +35,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 作業ディレクトリの設定
 WORKDIR /var/www/html
 
-# PHPUnitのインストール
-RUN composer require --dev phpunit/phpunit
-
-# テスト実行用のエントリーポイント
+# CLI実行とphp-fpm起動を兼ねるエントリーポイント
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["docker-entrypoint.sh"] 
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["php-fpm", "-F"]

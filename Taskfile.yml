@@ -3,6 +3,10 @@ version: '3'
 vars:
   PHPUNIT: ./vendor/bin/phpunit
   SLEEP_SECONDS: 5
+  API_SERVICES: php nginx testing_db redis mail
+  TEST_SERVICES: testing_db redis
+  PHP_RUN: docker-compose run --rm php
+  PHP_EXEC: docker-compose exec php
 
 tasks:
   wait-for-test-db:
@@ -15,16 +19,16 @@ tasks:
   test:
     desc: "Run all PHPUnit tests (DB tests + non-DB tests). Usage: task test [filter=TestClassName] [keepdb=1]"
     cmds:
-      - docker-compose up -d testing_db redis
+      - docker-compose up -d {{.TEST_SERVICES}}
       - task: wait-for-test-db
       - defer: '{{if not .keepdb}}docker-compose stop testing_db redis && docker-compose rm -v -f testing_db redis{{end}}'
-      - docker-compose run --rm php bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --coverage-html coverage-html"
+      - '{{.PHP_RUN}} bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --coverage-html coverage-html"'
 
   test-no-db:
     desc: "Run PHPUnit tests excluding 'useDb' group. Usage: task test-no-db [filter=TestClassName]"
     cmds:
       - docker-compose stop testing_db 2>/dev/null || true
-      - docker-compose run --rm php bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --exclude-group useDb --coverage-html coverage-html"
+      - '{{.PHP_RUN}} bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --exclude-group useDb --coverage-html coverage-html"'
 
   check:
     desc: Run code style fix, static analysis, and all tests
@@ -33,55 +37,50 @@ tasks:
       - task: phpstan
       - task: test
 
-  db-up:
-    desc: Start PostgreSQL testing service
+  up:
+    desc: Start Laravel API server with nginx + php-fpm
     cmds:
-      - docker-compose up -d testing_db
+      - docker-compose up -d {{.API_SERVICES}}
 
-  db-down:
-    desc: Stop all services
+  down:
+    desc: Stop the API stack
     cmds:
-      - docker-compose down
+      - docker-compose stop {{.API_SERVICES}}
 
-  db-restart:
-    desc: Restart PostgreSQL testing service
+  restart:
+    desc: Restart the API stack
     cmds:
-      - docker-compose restart testing_db
+      - docker-compose restart {{.API_SERVICES}}
 
-  db-logs:
-    desc: View PostgreSQL testing logs
+  logs:
+    desc: View Laravel API server logs
     cmds:
-      - docker-compose logs -f testing_db
+      - docker-compose logs -f {{.API_SERVICES}}
 
-  db-shell:
-    desc: Connect to PostgreSQL testing shell
+  shell:
+    desc: Open a shell in the php container
     cmds:
-      - docker-compose exec testing_db psql -U kpool -d kpool
+      - '{{.PHP_EXEC}} bash'
 
-  db-clean:
-    desc: Stop services and remove testing database volumes
+  reset:
+    desc: Stop the API stack and remove local Docker volumes
     cmds:
       - docker-compose down -v --remove-orphans
 
-  mail-up:
-    desc: Start Mailpit and php (php will pull up testing_db via depends_on)
+  curl:
+    desc: "Call a Laravel API endpoint from the host network. Usage: task curl path=/api/identity/auth/send-auth-code method=POST data='{\"email\":\"foo@example.com\"}'"
     cmds:
-      - docker-compose up -d mail php
+      - 'curl -i -X {{.method | default "GET"}} "http://localhost:{{.APP_PORT | default "8080"}}{{.path}}"{{if .data}} -H "Content-Type: application/json" --data "{{.data}}"{{end}}'
 
-  mail-down:
-    desc: Stop Mailpit and php
+  curl-from-docker:
+    desc: "Call the API from another container on the shared Docker network. Usage: task curl-from-docker path=/api/identity/auth/send-auth-code method=POST data='{\"email\":\"foo@example.com\"}'"
     cmds:
-      - docker-compose stop mail php
-
-  up:
-    desc: Start all services
-    cmds:
-      - docker-compose up -d
+      - 'docker run --rm --network kpool-network curlimages/curl:8.13.0 -i -X {{.method | default "GET"}} "http://nginx{{.path}}"{{if .data}} -H "Content-Type: application/json" --data "{{.data}}"{{end}}'
 
   install:
     desc: Install composer dependencies
     cmds:
-      - docker-compose run --rm php composer install
+      - '{{.PHP_RUN}} composer install'
 
   openapi:
     desc: Install TypeSpec dependencies and generate OpenAPI specs
@@ -97,19 +96,19 @@ tasks:
   phpstan:
     desc: Run PHPStan static analysis
     cmds:
-      - docker-compose run --rm php composer phpstan
+      - '{{.PHP_RUN}} composer phpstan'
 
   cs-fix:
     desc: Fix code style using PHP CS Fixer
     cmds:
-      - docker-compose run --rm php composer cs-fix
+      - '{{.PHP_RUN}} composer cs-fix'
 
   process-due-transfers:
     desc: "Execute due transfer batch processing. Usage: task process-due-transfers [date=2024-02-10] [dry-run=1]"
     cmds:
-      - docker-compose up -d testing_db redis
+      - docker-compose up -d {{.TEST_SERVICES}}
       - task: wait-for-test-db
-      - docker-compose run --rm php php artisan settlement:process-due-transfers {{if .date}}--date={{.date}}{{end}} {{if (index . "dry-run")}}--dry-run{{end}}
+      - '{{.PHP_RUN}} php artisan settlement:process-due-transfers {{if .date}}--date={{.date}}{{end}} {{if (index . "dry-run")}}--dry-run{{end}}'
 
   help:
     desc: Show available tasks
