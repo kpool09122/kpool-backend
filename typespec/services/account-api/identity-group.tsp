@@ -1,4 +1,5 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.AccountApi;
 
@@ -59,5 +60,5 @@ interface IdentityGroupOperations {
   @doc("Delete an identity group.")
   deleteIdentityGroup(
     @path identityGroupId: Uuid,
-  ): NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

@@ -1,4 +1,5 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.AccountApi;
 
@@ -31,5 +32,5 @@ interface DelegationPermissionOperations {
   @doc("Revoke a delegation permission.")
   revokeDelegationPermission(
     @path delegationPermissionId: Uuid,
-  ): NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

@@ -1,4 +1,5 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.AccountApi;
 
@@ -66,7 +67,7 @@ interface AffiliationOperations {
   rejectAffiliation(
     @path affiliationId: Uuid,
     @body body: RejectAffiliationRequestBody,
-  ): NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{affiliationId}/terminate")

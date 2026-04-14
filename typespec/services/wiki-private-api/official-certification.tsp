@@ -1,4 +1,5 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.WikiPrivateApi;
 

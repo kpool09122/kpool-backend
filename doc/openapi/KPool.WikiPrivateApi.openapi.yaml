@@ -49,7 +49,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -86,7 +86,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a draft image is created.
@@ -133,7 +133,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an image hide request is reviewed.
@@ -186,7 +186,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an image operation succeeds.
@@ -233,7 +233,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an image hide request is reviewed.
@@ -286,7 +286,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when an image hide request is created.
@@ -333,7 +333,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an image operation succeeds.
@@ -410,7 +410,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an official certification operation succeeds.
@@ -451,7 +451,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an official certification operation succeeds.
@@ -522,7 +522,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -589,7 +589,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -626,7 +626,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when a principal group operation succeeds.
@@ -673,7 +673,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -710,7 +710,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -747,7 +747,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when a principal group operation succeeds.
@@ -860,7 +860,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -897,7 +897,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -934,7 +934,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -1075,7 +1075,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a wiki draft is created or updated.
@@ -1128,7 +1128,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a wiki draft is created or updated.
@@ -1175,7 +1175,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a wiki draft is created or updated.
@@ -1228,7 +1228,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a wiki is published.
@@ -1281,7 +1281,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a wiki draft is created or updated.
@@ -1334,7 +1334,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when wiki rollback succeeds.
@@ -1387,7 +1387,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when a wiki draft is created or updated.
@@ -1440,7 +1440,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '201':
           description: Response returned when wiki translation succeeds.
@@ -1493,7 +1493,7 @@ components:
       properties:
         policyIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Policy identifier to mutate.
       description: Request body for attaching or detaching a policy from a role.
     AttachRoleToPrincipalGroupRequestBody:
@@ -1503,7 +1503,7 @@ components:
       properties:
         roleIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Role identifier to mutate.
       description: Request body for attaching or detaching a role from a principal group.
     AutoCreateWikiRequestBody:
@@ -1552,7 +1552,7 @@ components:
       properties:
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier that owns the principal group.
         name:
           type: string
@@ -1566,11 +1566,11 @@ components:
       properties:
         identityIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier to bind to the principal.
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier that owns the principal.
       description: Request body for creating a principal.
     CreateRoleRequestBody:
@@ -1585,7 +1585,7 @@ components:
         policies:
           type: array
           items:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Policy identifiers attached to the role.
         isSystemRole:
           type: boolean
@@ -1619,7 +1619,7 @@ components:
           description: Theme color applied to the wiki.
         publishedWikiIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Published wiki identifier to branch from.
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
@@ -1655,7 +1655,7 @@ components:
       properties:
         imageIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Image identifier.
         resourceType:
           type: string
@@ -1678,7 +1678,7 @@ components:
       properties:
         imageIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Image identifier.
         requesterName:
           type: string
@@ -1703,7 +1703,7 @@ components:
       properties:
         imageIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Image identifier.
         status:
           type: string
@@ -1725,7 +1725,7 @@ components:
       properties:
         imageIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Image identifier.
         resourceType:
           type: string
@@ -1757,6 +1757,10 @@ components:
           type: string
           description: URI reference identifying the specific occurrence.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
+    KPool.Common.Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
     MutatePrincipalGroupMemberRequestBody:
       type: object
       required:
@@ -1764,7 +1768,7 @@ components:
       properties:
         principalIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Principal identifier to mutate.
       description: Request body for adding or removing a principal group member.
     OfficialCertificationSummary:
@@ -1777,14 +1781,14 @@ components:
       properties:
         certificationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Certification identifier.
         resourceType:
           type: string
           description: Resource type that the certification belongs to.
         wikiIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Wiki identifier related to the certification.
         status:
           type: string
@@ -1851,7 +1855,7 @@ components:
       properties:
         policyIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Policy identifier.
         name:
           type: string
@@ -1875,11 +1879,11 @@ components:
       properties:
         principalGroupIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Principal group identifier.
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Owning account identifier.
         name:
           type: string
@@ -1905,11 +1909,11 @@ components:
       properties:
         principalIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Principal identifier.
         identityIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier linked to the principal.
         isDelegatedPrincipal:
           type: boolean
@@ -1928,7 +1932,7 @@ components:
           description: Resource type that the wiki belongs to.
         publishedWikiIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Published wiki identifier to update.
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
@@ -1967,11 +1971,11 @@ components:
           description: Resource type that the certification belongs to.
         wikiId:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Wiki identifier to certify.
         ownerAccountId:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Owner account identifier for the certification.
       description: Request body for creating an official certification request.
     RequestImageHideRequestBody:
@@ -2010,7 +2014,7 @@ components:
       properties:
         roleIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Role identifier.
         name:
           type: string
@@ -2061,7 +2065,7 @@ components:
           description: Resource type that the video links belong to.
         wikiIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Wiki identifier that the video links belong to.
         videoLinks:
           type: array
@@ -2116,14 +2120,14 @@ components:
       properties:
         publishedImageIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Published image identifier to replace.
         resourceType:
           type: string
           description: Resource type that the image belongs to.
         wikiIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Wiki identifier that the image belongs to.
         base64EncodedImage:
           type: string
@@ -2148,10 +2152,6 @@ components:
           type: string
           description: Timestamp when the uploader agreed to the terms.
       description: Request body for uploading an image.
-    Uuid:
-      type: string
-      format: uuid
-      description: UUID identifier.
     VideoLinkInput:
       type: object
       required:
@@ -2184,17 +2184,17 @@ components:
       properties:
         agencyIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Associated agency identifier.
         groupIdentifiers:
           type: array
           items:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Associated group identifiers.
         talentIdentifiers:
           type: array
           items:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Associated talent identifiers.
       description: Association targets that link a wiki to related agencies, groups, or talents.
     WikiWorkflowRequestBody:

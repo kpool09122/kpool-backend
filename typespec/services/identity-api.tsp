@@ -1,18 +1,9 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 @service(#{ title: "k-pool Identity API" })
 @server("/api/identity", "Laravel route prefix from bootstrap/app.php.")
 namespace KPool.IdentityApi;
-
-@format("uuid")
-@doc("UUID identifier.")
-scalar Uuid extends string;
-
-@doc("Timestamp in ISO 8601 format.")
-scalar Timestamp extends string;
-
-@doc("Empty JSON object returned by endpoints with no payload.")
-model EmptyJsonObject {}
 
 @doc("Identity summary returned after authentication-related operations.")
 model IdentitySummary {
