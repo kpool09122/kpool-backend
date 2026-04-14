@@ -25,6 +25,8 @@ REDIS_PORT=6379
 APP_ENV=local
 APP_DEBUG=true
 APP_KEY=
+APP_URL=http://localhost:8080
+FRONTEND_URL=http://localhost:3000
 
 # Logging
 LOG_CHANNEL=stack
@@ -33,17 +35,39 @@ LOG_LEVEL=debug
 
 ### Running with Docker
 
-1. Start the services:
+1. Start the Laravel API stack (`nginx + php-fpm + postgres + redis + mailpit`):
 ```bash
-docker-compose up -d
+task up
 ```
 
-2. Install PHP dependencies:
+2. Install PHP dependencies if `vendor/` is not present yet:
 ```bash
-docker-compose exec php composer install
+task install
 ```
 
-3. Run tests:
+3. Confirm the API server is reachable from the host:
+```bash
+curl -i http://localhost:8080/
+```
+
+`/` has no application route by default, so a `404 Not Found` response still confirms that `nginx -> php-fpm -> Laravel` is working.
+
+4. Confirm an `/api/...` endpoint is reachable from the host:
+```bash
+curl -i -X POST http://localhost:8080/api/identity/auth/send-auth-code \
+  -H 'Content-Type: application/json' \
+  --data '{"email":"demo@example.com"}'
+```
+
+5. Confirm another container on the same Docker network can reach the backend:
+```bash
+docker run --rm --network kpool-network curlimages/curl:8.13.0 \
+  -i http://nginx/api/identity/auth/send-auth-code \
+  -H 'Content-Type: application/json' \
+  --data '{"email":"demo@example.com"}'
+```
+
+6. Run tests:
 ```bash
 # Run all tests (including database tests)
 task test
@@ -51,9 +75,23 @@ task test
 # Run tests without database
 task test-no-db
 
-# Run only database tests
-task test-db
 ```
+
+### API Operations
+
+Use these tasks during development:
+
+```bash
+task up
+task down
+task restart
+task logs
+task shell
+```
+
+The backend is published on `http://localhost:8080`, and containers joined to the shared Docker network can reach it via `http://nginx`. The network name is fixed to `kpool-network` so a separate Next.js compose stack can join it as an external network.
+
+If the frontend runs on another origin, set `FRONTEND_URL` in `.env` so CORS permits requests from that origin.
 
 ### Test Organization
 
