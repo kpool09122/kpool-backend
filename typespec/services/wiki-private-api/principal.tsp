@@ -1,4 +1,5 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.WikiPrivateApi;
 
@@ -123,7 +124,7 @@ interface PrincipalOperations {
   @doc("Delete a principal group.")
   deletePrincipalGroup(
     @path principalGroupId: Uuid,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/principal-group/{principalGroupId}/attach-role")
@@ -131,7 +132,7 @@ interface PrincipalOperations {
   attachRoleToPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: AttachRoleToPrincipalGroupRequestBody,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/principal-group/{principalGroupId}/detach-role")
@@ -139,7 +140,7 @@ interface PrincipalOperations {
   detachRoleFromPrincipalGroup(
     @path principalGroupId: Uuid,
     @body body: AttachRoleToPrincipalGroupRequestBody,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/role/create")
@@ -153,7 +154,7 @@ interface PrincipalOperations {
   @doc("Delete a role.")
   deleteRole(
     @path roleId: Uuid,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/role/{roleId}/attach-policy")
@@ -161,7 +162,7 @@ interface PrincipalOperations {
   attachPolicyToRole(
     @path roleId: Uuid,
     @body body: AttachPolicyToRoleRequestBody,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/role/{roleId}/detach-policy")
@@ -169,7 +170,7 @@ interface PrincipalOperations {
   detachPolicyFromRole(
     @path roleId: Uuid,
     @body body: AttachPolicyToRoleRequestBody,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/policy/create")
@@ -183,5 +184,5 @@ interface PrincipalOperations {
   @doc("Delete a policy.")
   deletePolicy(
     @path policyId: Uuid,
-  ): NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

@@ -49,7 +49,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an account verification operation succeeds.
@@ -96,7 +96,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an account verification operation succeeds.
@@ -185,7 +185,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an account operation succeeds.
@@ -274,7 +274,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an affiliation operation succeeds.
@@ -327,7 +327,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -376,7 +376,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an affiliation operation succeeds.
@@ -471,7 +471,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -550,7 +550,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when a delegation operation succeeds.
@@ -603,7 +603,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when a delegation operation succeeds.
@@ -692,7 +692,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '204':
           description: Response with no content.
@@ -729,7 +729,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an identity group operation succeeds.
@@ -776,7 +776,7 @@ paths:
           in: path
           required: true
           schema:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
           description: Response returned when an identity group operation succeeds.
@@ -871,7 +871,7 @@ components:
       properties:
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier.
         email:
           type: string
@@ -899,11 +899,11 @@ components:
       properties:
         verificationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Verification identifier.
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier under review.
         verificationType:
           type: string
@@ -916,18 +916,18 @@ components:
           description: Applicant full name.
         requestedAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the verification was requested.
         reviewedBy:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Reviewer account identifier.
         reviewedAt:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
           description: Timestamp when the verification was reviewed.
         rejectionReason:
@@ -954,19 +954,19 @@ components:
       properties:
         affiliationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Affiliation identifier.
         agencyAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Agency account identifier.
         talentAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Talent account identifier.
         requestedBy:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account that initiated the affiliation workflow.
         status:
           type: string
@@ -979,18 +979,18 @@ components:
           description: Optional affiliation terms.
         requestedAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the affiliation was requested.
         activatedAt:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
           description: Timestamp when the affiliation was activated.
         terminatedAt:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
           description: Timestamp when the affiliation was terminated.
       description: Affiliation state.
@@ -1012,7 +1012,7 @@ components:
       properties:
         approverAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Approver account identifier.
       description: Request body for approving an affiliation.
     ApproveDelegationRequestBody:
@@ -1022,7 +1022,7 @@ components:
       properties:
         approverIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier approving the delegation.
       description: Request body for approving a delegation.
     ApproveVerificationRequestBody:
@@ -1032,7 +1032,7 @@ components:
       properties:
         reviewerAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Reviewer account identifier.
       description: Request body for approving account verification.
     CreateAccountRequestBody:
@@ -1054,7 +1054,7 @@ components:
         identityIdentifier:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Identity identifier to attach to the account.
       description: Request body for creating an account.
@@ -1067,7 +1067,7 @@ components:
       properties:
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Owning account identifier.
         name:
           type: string
@@ -1085,11 +1085,11 @@ components:
       properties:
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier that owns the invitations.
         inviterIdentityIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier sending the invitations.
         emails:
           type: array
@@ -1115,7 +1115,7 @@ components:
       properties:
         createdAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the identity group was created.
       allOf:
         - $ref: '#/components/schemas/IdentityGroupSummary'
@@ -1131,23 +1131,23 @@ components:
       properties:
         delegationPermissionIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Delegation permission identifier.
         identityGroupIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity group identifier that owns the permission.
         targetAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Target account identifier.
         affiliationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Affiliation identifier covered by the permission.
         createdAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the permission was created.
       description: Delegation permission state.
     DelegationSummary:
@@ -1163,19 +1163,19 @@ components:
       properties:
         delegationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Delegation identifier.
         affiliationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Affiliation identifier backing the delegation.
         delegateIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Delegate identity identifier.
         delegatorIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Delegator identity identifier.
         status:
           type: string
@@ -1185,18 +1185,18 @@ components:
           description: Delegation direction.
         requestedAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the delegation was requested.
         approvedAt:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
           description: Timestamp when the delegation was approved.
         revokedAt:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
           description: Timestamp when the delegation was revoked.
       description: Delegation state.
@@ -1209,15 +1209,15 @@ components:
       properties:
         identityGroupIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity group identifier receiving the permission.
         targetAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier that can be delegated.
         affiliationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Affiliation identifier covered by the permission.
       description: Request body for granting a delegation permission.
     IdentityGroupSummary:
@@ -1231,11 +1231,11 @@ components:
       properties:
         identityGroupIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity group identifier.
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Owning account identifier.
         name:
           type: string
@@ -1249,7 +1249,7 @@ components:
         members:
           type: array
           items:
-            $ref: '#/components/schemas/Uuid'
+            $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifiers currently assigned to the group.
       description: Identity group snapshot returned after updates.
     InvitationSummary:
@@ -1266,15 +1266,15 @@ components:
       properties:
         invitationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Invitation identifier.
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Target account identifier.
         invitedByIdentityIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier that created the invitation.
         email:
           type: string
@@ -1287,11 +1287,11 @@ components:
           description: Invitation status.
         expiresAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Invitation expiration timestamp.
         createdAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Invitation creation timestamp.
       description: Invitation state.
     KPool.Common.ProblemDetails:
@@ -1314,6 +1314,13 @@ components:
           type: string
           description: URI reference identifying the specific occurrence.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
+    KPool.Common.Timestamp:
+      type: string
+      description: Timestamp in ISO 8601 format.
+    KPool.Common.Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
     MutateIdentityGroupMemberRequestBody:
       type: object
       required:
@@ -1321,7 +1328,7 @@ components:
       properties:
         identityIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier to add or remove.
       description: Request body for mutating identity group membership.
     RejectAffiliationRequestBody:
@@ -1331,7 +1338,7 @@ components:
       properties:
         rejectorAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Rejector account identifier.
       description: Request body for rejecting an affiliation.
     RejectVerificationRequestBody:
@@ -1342,7 +1349,7 @@ components:
       properties:
         reviewerAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Reviewer account identifier.
         rejectionReasonCode:
           type: string
@@ -1361,15 +1368,15 @@ components:
       properties:
         agencyAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Agency account identifier.
         talentAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Talent account identifier.
         requestedBy:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier that requested the affiliation.
         terms:
           type: object
@@ -1387,15 +1394,15 @@ components:
       properties:
         affiliationIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Affiliation identifier used for delegation.
         delegateIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier of the delegate.
         delegatorIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier of the delegator.
       description: Request body for requesting a delegation.
     RequestVerificationRequestBody:
@@ -1408,7 +1415,7 @@ components:
       properties:
         accountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Account identifier under review.
         verificationType:
           type: string
@@ -1429,7 +1436,7 @@ components:
       properties:
         revokerIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier revoking the delegation.
       description: Request body for revoking a delegation.
     TerminateAffiliationRequestBody:
@@ -1439,16 +1446,9 @@ components:
       properties:
         terminatorAccountIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Terminator account identifier.
       description: Request body for terminating an affiliation.
-    Timestamp:
-      type: string
-      description: Timestamp in ISO 8601 format.
-    Uuid:
-      type: string
-      format: uuid
-      description: UUID identifier.
     VerificationDocumentSummary:
       type: object
       required:
@@ -1461,7 +1461,7 @@ components:
       properties:
         documentIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Document identifier.
         documentType:
           type: string
@@ -1478,7 +1478,7 @@ components:
           description: Document size in bytes.
         uploadedAt:
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Timestamp when the document was uploaded.
       description: Verification document state.
     VerificationDocumentUploadRequestBody:

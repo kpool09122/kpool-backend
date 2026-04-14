@@ -3,8 +3,1239 @@ info:
   title: k-pool Monetization API
   version: 0.0.0
 tags: []
-paths: {}
-components: {}
+paths:
+  /accounts:
+    post:
+      operationId: MonetizationAccountOperations_provisionMonetizationAccount
+      description: Provision a monetization account for an existing account.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a monetization account is provisioned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonetizationAccountSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProvisionMonetizationAccountRequestBody'
+  /accounts/sync-payout-account:
+    post:
+      operationId: MonetizationAccountOperations_syncPayoutAccount
+      description: Synchronize payout account data from a gateway event payload.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when a command succeeds without a payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncPayoutAccountRequestBody'
+  /accounts/{monetizationAccountId}/onboard-seller:
+    post:
+      operationId: MonetizationAccountOperations_onboardSeller
+      description: Create a seller onboarding URL for the specified monetization account.
+      parameters:
+        - name: monetizationAccountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when seller onboarding succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerOnboardingSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnboardSellerRequestBody'
+  /accounts/{monetizationAccountId}/register-payment-method:
+    post:
+      operationId: MonetizationAccountOperations_registerPaymentMethod
+      description: Register a payment method on the specified monetization account.
+      parameters:
+        - name: monetizationAccountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '201':
+          description: Response returned when a payment method is registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredPaymentMethodSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPaymentMethodRequestBody'
+  /invoices:
+    post:
+      operationId: MonetizationBillingOperations_createInvoice
+      description: Create an invoice for an order.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an invoice is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvoiceRequestBody'
+  /invoices/{invoiceId}/record-payment:
+    post:
+      operationId: MonetizationBillingOperations_recordPayment
+      description: Record a captured payment against an invoice.
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an invoice command succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordPaymentRequestBody'
+  /payments/authorize:
+    post:
+      operationId: MonetizationPaymentOperations_authorizePayment
+      description: Authorize a payment for an order.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a payment command creates a payment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizePaymentRequestBody'
+  /payments/{paymentId}/capture:
+    post:
+      operationId: MonetizationPaymentOperations_capturePayment
+      description: Capture a previously authorized payment.
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when a payment command succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /payments/{paymentId}/refund:
+    post:
+      operationId: MonetizationPaymentOperations_refundPayment
+      description: Refund a captured payment.
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when a payment command succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequestBody'
+  /settlements/settle-revenue:
+    post:
+      operationId: MonetizationSettlementOperations_settleRevenue
+      description: Create a settlement batch and transfer from paid amounts.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when revenue settlement succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementResultSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettleRevenueRequestBody'
+  /transfers/{transferId}/execute:
+    post:
+      operationId: MonetizationSettlementOperations_executeTransfer
+      description: Execute a pending transfer.
+      parameters:
+        - name: transferId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when a command succeeds without a payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+components:
+  schemas:
+    AccountHolderType:
+      type: string
+      enum:
+        - individual
+        - company
+      description: Account holder classification for payout accounts.
+    AccountPaymentMethodType:
+      type: string
+      enum:
+        - card
+      description: Account payment method type accepted by registration.
+    AuthorizePaymentRequestBody:
+      type: object
+      required:
+        - orderId
+        - buyerMonetizationAccountId
+        - amount
+        - currency
+        - paymentMethodId
+        - paymentMethodType
+        - paymentMethodLabel
+        - paymentMethodRecurringEnabled
+      properties:
+        orderId:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Order identifier.
+        buyerMonetizationAccountId:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Buyer monetization account identifier.
+        amount:
+          type: integer
+          format: int32
+          description: Payment amount.
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Payment currency.
+        paymentMethodId:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Payment method identifier.
+        paymentMethodType:
+          allOf:
+            - $ref: '#/components/schemas/PaymentMethodType'
+          description: Payment method type.
+        paymentMethodLabel:
+          type: string
+          description: Human-readable payment method label.
+        paymentMethodRecurringEnabled:
+          type: boolean
+          description: Whether recurring usage is enabled.
+      description: Request body for authorizing a payment.
+    CreateInvoiceRequestBody:
+      type: object
+      required:
+        - orderIdentifier
+        - buyerMonetizationAccountIdentifier
+        - lines
+        - shippingCostAmount
+        - currency
+        - sellerCountry
+        - sellerRegistered
+        - qualifiedInvoiceRequired
+        - buyerCountry
+        - buyerIsBusiness
+        - paidByCard
+      properties:
+        orderIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Order identifier.
+        buyerMonetizationAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Buyer monetization account identifier.
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineRequestItem'
+          description: Invoice lines.
+        shippingCostAmount:
+          type: integer
+          format: int32
+          description: Shipping cost amount.
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Invoice currency.
+        discountPercentage:
+          type: integer
+          format: int32
+          nullable: true
+          description: Optional discount percentage.
+        discountCode:
+          type: string
+          nullable: true
+          description: Optional discount code.
+        taxLines:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceTaxLineRequestItem'
+          nullable: true
+          description: Optional tax lines.
+        sellerCountry:
+          type: string
+          description: Seller country code.
+        sellerRegistered:
+          type: boolean
+          description: Whether the seller is tax registered.
+        qualifiedInvoiceRequired:
+          type: boolean
+          description: Whether a qualified invoice is required.
+        buyerCountry:
+          type: string
+          description: Buyer country code.
+        buyerIsBusiness:
+          type: boolean
+          description: Whether the buyer is a business.
+        paidByCard:
+          type: boolean
+          description: Whether the invoice is paid by card.
+        registrationNumber:
+          type: string
+          nullable: true
+          description: Optional seller registration number.
+      description: Request body for creating an invoice.
+    CurrencyCode:
+      type: string
+      enum:
+        - JPY
+        - USD
+        - KRW
+      description: Supported currency codes used by monetization value objects.
+    InvoiceLineRequestItem:
+      type: object
+      required:
+        - description
+        - unitPriceAmount
+        - quantity
+      properties:
+        description:
+          type: string
+          description: Line item description.
+        unitPriceAmount:
+          type: integer
+          format: int32
+          description: Unit price amount.
+        quantity:
+          type: integer
+          format: int32
+          description: Purchased quantity.
+      description: Invoice line request item.
+    InvoiceStatus:
+      type: string
+      description: Invoice lifecycle status.
+    InvoiceSummary:
+      type: object
+      required:
+        - invoiceIdentifier
+        - orderIdentifier
+        - buyerMonetizationAccountIdentifier
+        - subtotal
+        - discountAmount
+        - taxAmount
+        - total
+        - currency
+        - status
+        - issuedAt
+        - dueDate
+      properties:
+        invoiceIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Invoice identifier.
+        orderIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Order identifier.
+        buyerMonetizationAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Buyer monetization account identifier.
+        subtotal:
+          type: integer
+          format: int32
+          description: Subtotal amount before discount and tax.
+        discountAmount:
+          type: integer
+          format: int32
+          description: Discount amount applied to the invoice.
+        taxAmount:
+          type: integer
+          format: int32
+          description: Tax amount applied to the invoice.
+        total:
+          type: integer
+          format: int32
+          description: Total invoice amount.
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Invoice currency.
+        status:
+          allOf:
+            - $ref: '#/components/schemas/InvoiceStatus'
+          description: Current invoice status.
+        issuedAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Issuance timestamp.
+        dueDate:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Payment due timestamp.
+        paidAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Payment completion timestamp.
+      description: Invoice snapshot returned by create/record-payment commands.
+    InvoiceTaxLineRequestItem:
+      type: object
+      required:
+        - label
+        - rate
+        - inclusive
+      properties:
+        label:
+          type: string
+          description: Tax label.
+        rate:
+          type: integer
+          format: int32
+          description: Tax rate percentage.
+        inclusive:
+          type: boolean
+          description: Whether the tax is inclusive.
+      description: Tax line request item.
+    KPool.Common.DateString:
+      type: string
+      description: ISO 8601 date string.
+    KPool.Common.ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        title:
+          type: string
+          description: Short error title.
+        detail:
+          type: string
+          description: Human-readable error detail.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence.
+      description: RFC 9457 Problem Details payload shared by JSON error responses.
+    KPool.Common.Timestamp:
+      type: string
+      description: Timestamp in ISO 8601 format.
+    KPool.Common.Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
+    MonetizationAccountSummary:
+      type: object
+      required:
+        - monetizationAccountIdentifier
+        - accountIdentifier
+        - capabilities
+      properties:
+        monetizationAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Monetization account identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Owning account identifier.
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonetizationCapability'
+          description: Granted capabilities.
+        stripeCustomerId:
+          type: string
+          nullable: true
+          description: Stripe customer identifier, when available.
+        stripeConnectedAccountId:
+          type: string
+          nullable: true
+          description: Stripe connected account identifier, when available.
+      description: Monetization account snapshot returned after provisioning.
+    MonetizationCapability:
+      type: string
+      enum:
+        - purchase
+        - sell
+        - receive_payout
+      description: Capabilities granted to a monetization account.
+    OnboardSellerRequestBody:
+      type: object
+      required:
+        - email
+        - countryCode
+        - refreshUrl
+        - returnUrl
+      properties:
+        email:
+          type: string
+          description: Seller email address.
+        countryCode:
+          allOf:
+            - $ref: '#/components/schemas/SellerOnboardingCountryCode'
+          description: Country code used for Stripe onboarding.
+        refreshUrl:
+          type: string
+          description: Refresh URL returned to Stripe Connect.
+        returnUrl:
+          type: string
+          description: Return URL returned to Stripe Connect.
+      description: Request body for onboarding a seller.
+    PaidAmountRequestItem:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: integer
+          format: int32
+          description: Paid amount.
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Currency for the paid amount.
+      description: Paid amount entry used during settlement.
+    PaymentMethodType:
+      type: string
+      enum:
+        - card
+        - bank_transfer
+        - wallet
+      description: Supported payment method types.
+    PaymentStatus:
+      type: string
+      enum:
+        - pending
+        - authorized
+        - captured
+        - partially_refunded
+        - refunded
+        - failed
+      description: Payment lifecycle status.
+    PaymentSummary:
+      type: object
+      required:
+        - paymentId
+        - orderIdentifier
+        - buyerMonetizationAccountIdentifier
+        - amount
+        - currency
+        - paymentMethodIdentifier
+        - paymentMethodType
+        - paymentMethodLabel
+        - paymentMethodRecurringEnabled
+        - status
+        - createdAt
+        - refundedAmount
+        - refundedCurrency
+      properties:
+        paymentId:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Payment identifier.
+        orderIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Order identifier.
+        buyerMonetizationAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Buyer monetization account identifier.
+        amount:
+          type: integer
+          format: int32
+          description: Authorized payment amount.
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Currency for the payment amount.
+        paymentMethodIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Payment method identifier.
+        paymentMethodType:
+          allOf:
+            - $ref: '#/components/schemas/PaymentMethodType'
+          description: Payment method type.
+        paymentMethodLabel:
+          type: string
+          description: Human-readable payment method label.
+        paymentMethodRecurringEnabled:
+          type: boolean
+          description: Whether recurring usage is enabled.
+        status:
+          allOf:
+            - $ref: '#/components/schemas/PaymentStatus'
+          description: Current payment status.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Creation timestamp.
+        authorizedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Authorization timestamp.
+        capturedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Capture timestamp.
+        failedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Failure timestamp.
+        failureReason:
+          type: string
+          nullable: true
+          description: Failure reason when the payment failed.
+        refundedAmount:
+          type: integer
+          format: int32
+          description: Total refunded amount.
+        refundedCurrency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Currency for the refunded amount.
+        lastRefundedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+          description: Timestamp of the latest refund.
+        lastRefundReason:
+          type: string
+          nullable: true
+          description: Reason for the latest refund.
+      description: Payment snapshot returned by authorize/capture/refund commands.
+    ProvisionMonetizationAccountRequestBody:
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier to provision.
+      description: Request body for provisioning a monetization account.
+    RecordPaymentRequestBody:
+      type: object
+      required:
+        - paymentIdentifier
+      properties:
+        paymentIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Captured payment identifier.
+      description: Request body for recording a payment against an invoice.
+    RefundPaymentRequestBody:
+      type: object
+      required:
+        - refundAmount
+        - refundCurrency
+        - reason
+      properties:
+        refundAmount:
+          type: integer
+          format: int32
+          description: Refund amount.
+        refundCurrency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Refund currency.
+        reason:
+          type: string
+          description: Refund reason.
+      description: Request body for refunding a payment.
+    RegisterPaymentMethodRequestBody:
+      type: object
+      required:
+        - paymentMethodId
+        - type
+      properties:
+        paymentMethodId:
+          type: string
+          description: Gateway payment method identifier.
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AccountPaymentMethodType'
+          description: Payment method type.
+      description: Request body for registering a payment method.
+    RegisteredPaymentMethodSummary:
+      type: object
+      required:
+        - registeredPaymentMethodIdentifier
+        - paymentMethodId
+        - type
+        - isDefault
+        - skipped
+      properties:
+        registeredPaymentMethodIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Registered payment method identifier.
+        paymentMethodId:
+          type: string
+          description: Gateway payment method identifier.
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AccountPaymentMethodType'
+          description: Registered payment method type.
+        brand:
+          type: string
+          nullable: true
+          description: Card brand returned from metadata.
+        last4:
+          type: string
+          nullable: true
+          description: Last four digits returned from metadata.
+        expMonth:
+          type: integer
+          format: int32
+          nullable: true
+          description: Expiration month returned from metadata.
+        expYear:
+          type: integer
+          format: int32
+          nullable: true
+          description: Expiration year returned from metadata.
+        isDefault:
+          type: boolean
+          description: Whether the method is the default one.
+        skipped:
+          type: boolean
+          description: Whether registration was skipped because the method already existed.
+      description: Registered payment method snapshot.
+    SellerOnboardingCountryCode:
+      type: string
+      enum:
+        - JP
+        - KR
+        - US
+      description: Country codes accepted by seller onboarding.
+    SellerOnboardingSummary:
+      type: object
+      properties:
+        onboardingUrl:
+          type: string
+          nullable: true
+          description: Stripe onboarding URL.
+      description: Seller onboarding URL payload.
+    SettleRevenueRequestBody:
+      type: object
+      required:
+        - settlementScheduleId
+        - paidAmounts
+        - gatewayFeeRate
+        - platformFeeRate
+        - periodStart
+        - periodEnd
+      properties:
+        settlementScheduleId:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Settlement schedule identifier.
+        paidAmounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaidAmountRequestItem'
+          description: Paid amount breakdown used for settlement.
+        gatewayFeeRate:
+          type: integer
+          format: int32
+          description: Gateway fee rate percentage.
+        platformFeeRate:
+          type: integer
+          format: int32
+          description: Platform fee rate percentage.
+        fixedFeeAmount:
+          type: integer
+          format: int32
+          nullable: true
+          description: Optional fixed fee amount.
+        fixedFeeCurrency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          nullable: true
+          description: Currency for the optional fixed fee.
+        periodStart:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          description: Settlement period start date.
+        periodEnd:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.DateString'
+          description: Settlement period end date.
+      description: Request body for settling revenue.
+    SettlementResultSummary:
+      type: object
+      required:
+        - settlementBatchIdentifier
+        - monetizationAccountIdentifier
+        - currency
+        - grossAmount
+        - feeAmount
+        - netAmount
+        - status
+        - periodStart
+        - periodEnd
+        - transferIdentifier
+        - transferStatus
+      properties:
+        settlementBatchIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Settlement batch identifier.
+        monetizationAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Beneficiary monetization account identifier.
+        currency:
+          allOf:
+            - $ref: '#/components/schemas/CurrencyCode'
+          description: Settlement currency.
+        grossAmount:
+          type: integer
+          format: int32
+          description: Gross settled amount.
+        feeAmount:
+          type: integer
+          format: int32
+          description: Aggregated fee amount.
+        netAmount:
+          type: integer
+          format: int32
+          description: Net amount to transfer.
+        status:
+          allOf:
+            - $ref: '#/components/schemas/SettlementStatus'
+          description: Settlement batch status.
+        periodStart:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Settlement period start timestamp.
+        periodEnd:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          description: Settlement period end timestamp.
+        transferIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Transfer identifier created for the batch.
+        transferStatus:
+          allOf:
+            - $ref: '#/components/schemas/TransferStatus'
+          description: Transfer status.
+      description: Settlement batch result returned after settling revenue.
+    SettlementStatus:
+      type: string
+      enum:
+        - pending
+        - processing
+        - paid
+        - failed
+      description: Settlement batch status.
+    SyncPayoutAccountRequestBody:
+      type: object
+      required:
+        - connectedAccountId
+        - externalAccountId
+        - eventType
+      properties:
+        connectedAccountId:
+          type: string
+          description: Connected account identifier from the payment gateway.
+        externalAccountId:
+          type: string
+          description: External account identifier from the payment gateway.
+        eventType:
+          type: string
+          description: Gateway event type.
+        bankName:
+          type: string
+          nullable: true
+          description: Bank name.
+        last4:
+          type: string
+          nullable: true
+          description: Last four digits of the payout account.
+        country:
+          type: string
+          nullable: true
+          description: Country code reported by the gateway.
+        currency:
+          type: string
+          nullable: true
+          description: Currency reported by the gateway.
+        accountHolderType:
+          allOf:
+            - $ref: '#/components/schemas/AccountHolderType'
+          nullable: true
+          description: Account holder type reported by the gateway.
+        isDefault:
+          type: boolean
+          description: Whether the payout account is the default one.
+      description: Request body for syncing a payout account webhook payload.
+    TransferStatus:
+      type: string
+      enum:
+        - pending
+        - sent
+        - failed
+      description: Transfer execution status.
 servers:
   - url: /api/monetization
     description: Laravel route prefix from bootstrap/app.php.

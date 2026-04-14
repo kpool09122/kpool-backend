@@ -51,7 +51,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyJsonObject'
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
         '401':
           description: Access is unauthorized.
           content:
@@ -123,7 +123,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EmptyJsonObject'
+                $ref: '#/components/schemas/KPool.Common.EmptyJsonObject'
         '422':
           description: Client error
           content:
@@ -333,9 +333,6 @@ components:
           nullable: true
           description: Invitation token used during signup.
       description: Request body for registering a new identity.
-    EmptyJsonObject:
-      type: object
-      description: Empty JSON object returned by endpoints with no payload.
     IdentitySummary:
       type: object
       required:
@@ -346,7 +343,7 @@ components:
       properties:
         identityIdentifier:
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier.
         username:
           type: string
@@ -362,6 +359,9 @@ components:
           nullable: true
           description: Profile image path.
       description: Identity summary returned after authentication-related operations.
+    KPool.Common.EmptyJsonObject:
+      type: object
+      description: Empty JSON object returned by endpoints with no payload.
     KPool.Common.ProblemDetails:
       type: object
       properties:
@@ -382,6 +382,13 @@ components:
           type: string
           description: URI reference identifying the specific occurrence.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
+    KPool.Common.Timestamp:
+      type: string
+      description: Timestamp in ISO 8601 format.
+    KPool.Common.Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
     LoginRequestBody:
       type: object
       required:
@@ -419,7 +426,7 @@ components:
         targetDelegationIdentifier:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Uuid'
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Delegation identifier to switch into. Null means returning to the original identity.
       description: Request body for switching the active identity.
@@ -434,13 +441,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Identity summary returned after switching active identity.
-    Timestamp:
-      type: string
-      description: Timestamp in ISO 8601 format.
-    Uuid:
-      type: string
-      format: uuid
-      description: UUID identifier.
     VerifyEmailRequestBody:
       type: object
       required:
@@ -465,7 +465,7 @@ components:
         verifiedAt:
           type: string
           allOf:
-            - $ref: '#/components/schemas/Timestamp'
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
           nullable: true
           description: Timestamp when the email was verified.
       description: Email verification result.

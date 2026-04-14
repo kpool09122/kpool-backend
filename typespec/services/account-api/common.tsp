@@ -1,18 +1,7 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.AccountApi;
-
-@format("uuid")
-@doc("UUID identifier.")
-scalar Uuid extends string;
-
-@doc("Timestamp in ISO 8601 format.")
-scalar Timestamp extends string;
-
-@doc("Response with no content.")
-model NoContentResponse {
-  @statusCode statusCode: 204;
-}
 
 @doc("Current account state.")
 model AccountSummary {

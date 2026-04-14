@@ -1,15 +1,7 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.WikiPrivateApi;
-
-@format("uuid")
-@doc("UUID identifier.")
-scalar Uuid extends string;
-
-@doc("Response with no content.")
-model NoContentResponse {
-  @statusCode statusCode: 204;
-}
 
 @doc("Association targets that link a wiki to related agencies, groups, or talents.")
 model WikiAssociationTargets {

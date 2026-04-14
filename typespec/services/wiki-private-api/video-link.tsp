@@ -1,4 +1,5 @@
 using TypeSpec.Http;
+using KPool.Common;
 
 namespace KPool.WikiPrivateApi;
 
@@ -35,5 +36,5 @@ interface VideoLinkOperations {
   @doc("Save video links for a wiki.")
   saveVideoLinks(
     @body body: SaveVideoLinksRequestBody,
-  ): NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
