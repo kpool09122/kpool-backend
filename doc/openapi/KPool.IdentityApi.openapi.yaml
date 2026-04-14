@@ -3,8 +3,472 @@ info:
   title: k-pool Identity API
   version: 0.0.0
 tags: []
-paths: {}
-components: {}
+paths:
+  /auth/login:
+    post:
+      operationId: IdentityAuthOperations_login
+      description: Authenticate with email and password.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an identity operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentitySummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestBody'
+  /auth/logout:
+    post:
+      operationId: IdentityAuthOperations_logout
+      description: Log out the current authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyJsonObject'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/register:
+    post:
+      operationId: IdentityAuthOperations_createIdentity
+      description: Register a new identity.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an identity is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentitySummary'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIdentityRequestBody'
+  /auth/send-auth-code:
+    post:
+      operationId: IdentityAuthOperations_sendAuthCode
+      description: Send an auth code to the specified email address.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyJsonObject'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAuthCodeRequestBody'
+  /auth/social/{provider}/callback:
+    get:
+      operationId: IdentityAuthOperations_socialLoginCallback
+      description: Handle the social login callback and return the client redirect URL.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned by social login endpoints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/social/{provider}/redirect:
+    get:
+      operationId: IdentityAuthOperations_socialLoginRedirect
+      description: Create an OAuth redirect URL for the selected social provider.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: accountType
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: invitationToken
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned by social login endpoints.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RedirectUrlResult'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/switch-identity:
+    post:
+      operationId: IdentityAuthOperations_switchIdentity
+      description: Switch the current authenticated identity or clear delegation.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when identity switching succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwitchedIdentitySummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchIdentityRequestBody'
+  /auth/verify-email:
+    post:
+      operationId: IdentityAuthOperations_verifyEmail
+      description: Verify an email address using the issued auth code.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when email verification succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyEmailResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequestBody'
+components:
+  schemas:
+    CreateIdentityRequestBody:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - confirmedPassword
+      properties:
+        username:
+          type: string
+          description: Requested username.
+        email:
+          type: string
+          description: Email address.
+        password:
+          type: string
+          description: Plain text password.
+        confirmedPassword:
+          type: string
+          description: Password confirmation.
+        base64EncodedImage:
+          type: string
+          nullable: true
+          description: Base64-encoded profile image.
+        invitationToken:
+          type: string
+          nullable: true
+          description: Invitation token used during signup.
+      description: Request body for registering a new identity.
+    EmptyJsonObject:
+      type: object
+      description: Empty JSON object returned by endpoints with no payload.
+    IdentitySummary:
+      type: object
+      required:
+        - identityIdentifier
+        - username
+        - email
+        - language
+      properties:
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier.
+        username:
+          type: string
+          description: Username.
+        email:
+          type: string
+          description: Email address.
+        language:
+          type: string
+          description: Language code associated with the identity.
+        profileImage:
+          type: string
+          nullable: true
+          description: Profile image path.
+      description: Identity summary returned after authentication-related operations.
+    KPool.Common.ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        title:
+          type: string
+          description: Short error title.
+        detail:
+          type: string
+          description: Human-readable error detail.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence.
+      description: RFC 9457 Problem Details payload shared by JSON error responses.
+    LoginRequestBody:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: Email address.
+        password:
+          type: string
+          description: Plain text password.
+      description: Request body for logging in.
+    RedirectUrlResult:
+      type: object
+      required:
+        - redirectUrl
+      properties:
+        redirectUrl:
+          type: string
+          description: Client redirect URL returned by the backend.
+      description: Redirect URL payload used by social login endpoints.
+    SendAuthCodeRequestBody:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: Email address that will receive the auth code.
+      description: Request body for sending an auth code.
+    SwitchIdentityRequestBody:
+      type: object
+      properties:
+        targetDelegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          nullable: true
+          description: Delegation identifier to switch into. Null means returning to the original identity.
+      description: Request body for switching the active identity.
+    SwitchedIdentitySummary:
+      type: object
+      required:
+        - isDelegated
+      properties:
+        isDelegated:
+          type: boolean
+          description: Whether the active identity is delegated.
+      allOf:
+        - $ref: '#/components/schemas/IdentitySummary'
+      description: Identity summary returned after switching active identity.
+    Timestamp:
+      type: string
+      description: Timestamp in ISO 8601 format.
+    Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
+    VerifyEmailRequestBody:
+      type: object
+      required:
+        - email
+        - authCode
+      properties:
+        email:
+          type: string
+          description: Email address being verified.
+        authCode:
+          type: string
+          description: Auth code delivered to the email address.
+      description: Request body for verifying an auth code.
+    VerifyEmailResult:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: Verified email address.
+        verifiedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          description: Timestamp when the email was verified.
+      description: Email verification result.
 servers:
   - url: /api/identity
     description: Laravel route prefix from bootstrap/app.php.
