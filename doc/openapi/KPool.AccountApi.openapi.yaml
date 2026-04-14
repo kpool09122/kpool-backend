@@ -3,8 +3,1519 @@ info:
   title: k-pool Account API
   version: 0.0.0
 tags: []
-paths: {}
-components: {}
+paths:
+  /account-verifications:
+    post:
+      operationId: AccountVerificationOperations_requestVerification
+      description: Request account verification.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an account verification is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountVerificationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestVerificationRequestBody'
+  /account-verifications/{verificationId}/approve:
+    post:
+      operationId: AccountVerificationOperations_approveVerification
+      description: Approve account verification.
+      parameters:
+        - name: verificationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an account verification operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountVerificationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveVerificationRequestBody'
+  /account-verifications/{verificationId}/reject:
+    post:
+      operationId: AccountVerificationOperations_rejectVerification
+      description: Reject account verification.
+      parameters:
+        - name: verificationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an account verification operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountVerificationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectVerificationRequestBody'
+  /accounts:
+    post:
+      operationId: AccountOperations_createAccount
+      description: Create an account.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an account is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedAccountSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequestBody'
+  /accounts/{accountId}:
+    delete:
+      operationId: AccountOperations_deleteAccount
+      description: Delete an account.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an account operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /affiliations:
+    post:
+      operationId: AffiliationOperations_requestAffiliation
+      description: Request an affiliation.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an affiliation is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAffiliationRequestBody'
+  /affiliations/{affiliationId}/approve:
+    post:
+      operationId: AffiliationOperations_approveAffiliation
+      description: Approve an affiliation.
+      parameters:
+        - name: affiliationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an affiliation operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveAffiliationRequestBody'
+  /affiliations/{affiliationId}/reject:
+    post:
+      operationId: AffiliationOperations_rejectAffiliation
+      description: Reject an affiliation.
+      parameters:
+        - name: affiliationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectAffiliationRequestBody'
+  /affiliations/{affiliationId}/terminate:
+    post:
+      operationId: AffiliationOperations_terminateAffiliation
+      description: Terminate an affiliation.
+      parameters:
+        - name: affiliationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an affiliation operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerminateAffiliationRequestBody'
+  /delegation-permissions:
+    post:
+      operationId: DelegationPermissionOperations_grantDelegationPermission
+      description: Grant a delegation permission.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a delegation permission is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationPermissionSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantDelegationPermissionRequestBody'
+  /delegation-permissions/{delegationPermissionId}:
+    delete:
+      operationId: DelegationPermissionOperations_revokeDelegationPermission
+      description: Revoke a delegation permission.
+      parameters:
+        - name: delegationPermissionId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /delegations:
+    post:
+      operationId: DelegationOperations_requestDelegation
+      description: Request a delegation.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when a delegation is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestDelegationRequestBody'
+  /delegations/{delegationId}/approve:
+    post:
+      operationId: DelegationOperations_approveDelegation
+      description: Approve a delegation.
+      parameters:
+        - name: delegationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when a delegation operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveDelegationRequestBody'
+  /delegations/{delegationId}/revoke:
+    post:
+      operationId: DelegationOperations_revokeDelegation
+      description: Revoke a delegation.
+      parameters:
+        - name: delegationId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when a delegation operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeDelegationRequestBody'
+  /identity-groups:
+    post:
+      operationId: IdentityGroupOperations_createIdentityGroup
+      description: Create an identity group.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an identity group is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedIdentityGroupSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIdentityGroupRequestBody'
+  /identity-groups/{identityGroupId}:
+    delete:
+      operationId: IdentityGroupOperations_deleteIdentityGroup
+      description: Delete an identity group.
+      parameters:
+        - name: identityGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /identity-groups/{identityGroupId}/add-member:
+    post:
+      operationId: IdentityGroupOperations_addIdentityToIdentityGroup
+      description: Add an identity to an identity group.
+      parameters:
+        - name: identityGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an identity group operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityGroupSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutateIdentityGroupMemberRequestBody'
+  /identity-groups/{identityGroupId}/remove-member:
+    post:
+      operationId: IdentityGroupOperations_removeIdentityFromIdentityGroup
+      description: Remove an identity from an identity group.
+      parameters:
+        - name: identityGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Response returned when an identity group operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityGroupSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutateIdentityGroupMemberRequestBody'
+  /invitations:
+    post:
+      operationId: InvitationOperations_createInvitation
+      description: Create invitations for one or more email addresses.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when invitations are created.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvitationSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitationRequestBody'
+components:
+  schemas:
+    AccountSummary:
+      type: object
+      required:
+        - accountIdentifier
+        - email
+        - type
+        - name
+        - status
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier.
+        email:
+          type: string
+          description: Account email address.
+        type:
+          type: string
+          description: Account type.
+        name:
+          type: string
+          description: Account display name.
+        status:
+          type: string
+          description: Account status.
+      description: Current account state.
+    AccountVerificationSummary:
+      type: object
+      required:
+        - verificationIdentifier
+        - accountIdentifier
+        - verificationType
+        - status
+        - applicantName
+        - requestedAt
+        - documents
+      properties:
+        verificationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Verification identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier under review.
+        verificationType:
+          type: string
+          description: Verification type.
+        status:
+          type: string
+          description: Verification status.
+        applicantName:
+          type: string
+          description: Applicant full name.
+        requestedAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Timestamp when the verification was requested.
+        reviewedBy:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          nullable: true
+          description: Reviewer account identifier.
+        reviewedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          description: Timestamp when the verification was reviewed.
+        rejectionReason:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/VerificationRejectionReasonSummary'
+          nullable: true
+          description: Optional rejection reason.
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationDocumentSummary'
+          description: Submitted documents.
+      description: Account verification state.
+    AffiliationSummary:
+      type: object
+      required:
+        - affiliationIdentifier
+        - agencyAccountIdentifier
+        - talentAccountIdentifier
+        - requestedBy
+        - status
+        - requestedAt
+      properties:
+        affiliationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Affiliation identifier.
+        agencyAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Agency account identifier.
+        talentAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Talent account identifier.
+        requestedBy:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account that initiated the affiliation workflow.
+        status:
+          type: string
+          description: Affiliation status.
+        terms:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AffiliationTermsSummary'
+          nullable: true
+          description: Optional affiliation terms.
+        requestedAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Timestamp when the affiliation was requested.
+        activatedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          description: Timestamp when the affiliation was activated.
+        terminatedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          description: Timestamp when the affiliation was terminated.
+      description: Affiliation state.
+    AffiliationTermsSummary:
+      type: object
+      properties:
+        revenueSharePercentage:
+          type: integer
+          format: int32
+          description: Revenue share percentage.
+        contractNotes:
+          type: string
+          description: Free-form contract notes.
+      description: Affiliation contract terms.
+    ApproveAffiliationRequestBody:
+      type: object
+      required:
+        - approverAccountIdentifier
+      properties:
+        approverAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Approver account identifier.
+      description: Request body for approving an affiliation.
+    ApproveDelegationRequestBody:
+      type: object
+      required:
+        - approverIdentifier
+      properties:
+        approverIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier approving the delegation.
+      description: Request body for approving a delegation.
+    ApproveVerificationRequestBody:
+      type: object
+      required:
+        - reviewerAccountIdentifier
+      properties:
+        reviewerAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Reviewer account identifier.
+      description: Request body for approving account verification.
+    CreateAccountRequestBody:
+      type: object
+      required:
+        - email
+        - accountType
+        - accountName
+      properties:
+        email:
+          type: string
+          description: Account email address.
+        accountType:
+          type: string
+          description: Account type.
+        accountName:
+          type: string
+          description: Account display name.
+        identityIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          nullable: true
+          description: Identity identifier to attach to the account.
+      description: Request body for creating an account.
+    CreateIdentityGroupRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - name
+        - role
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Owning account identifier.
+        name:
+          type: string
+          description: Identity group name.
+        role:
+          type: string
+          description: Role assigned to the identity group.
+      description: Request body for creating an identity group.
+    CreateInvitationRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - inviterIdentityIdentifier
+        - emails
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier that owns the invitations.
+        inviterIdentityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier sending the invitations.
+        emails:
+          type: array
+          items:
+            type: string
+          description: Invitee email addresses.
+      description: Request body for creating invitations.
+    CreatedAccountSummary:
+      type: object
+      required:
+        - accountCategory
+      properties:
+        accountCategory:
+          type: string
+          description: Account category assigned during creation.
+      allOf:
+        - $ref: '#/components/schemas/AccountSummary'
+      description: Account creation result.
+    CreatedIdentityGroupSummary:
+      type: object
+      required:
+        - createdAt
+      properties:
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Timestamp when the identity group was created.
+      allOf:
+        - $ref: '#/components/schemas/IdentityGroupSummary'
+      description: Identity group snapshot returned immediately after creation.
+    DelegationPermissionSummary:
+      type: object
+      required:
+        - delegationPermissionIdentifier
+        - identityGroupIdentifier
+        - targetAccountIdentifier
+        - affiliationIdentifier
+        - createdAt
+      properties:
+        delegationPermissionIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Delegation permission identifier.
+        identityGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity group identifier that owns the permission.
+        targetAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Target account identifier.
+        affiliationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Affiliation identifier covered by the permission.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Timestamp when the permission was created.
+      description: Delegation permission state.
+    DelegationSummary:
+      type: object
+      required:
+        - delegationIdentifier
+        - affiliationIdentifier
+        - delegateIdentifier
+        - delegatorIdentifier
+        - status
+        - direction
+        - requestedAt
+      properties:
+        delegationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Delegation identifier.
+        affiliationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Affiliation identifier backing the delegation.
+        delegateIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Delegate identity identifier.
+        delegatorIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Delegator identity identifier.
+        status:
+          type: string
+          description: Delegation status.
+        direction:
+          type: string
+          description: Delegation direction.
+        requestedAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Timestamp when the delegation was requested.
+        approvedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          description: Timestamp when the delegation was approved.
+        revokedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          description: Timestamp when the delegation was revoked.
+      description: Delegation state.
+    GrantDelegationPermissionRequestBody:
+      type: object
+      required:
+        - identityGroupIdentifier
+        - targetAccountIdentifier
+        - affiliationIdentifier
+      properties:
+        identityGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity group identifier receiving the permission.
+        targetAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier that can be delegated.
+        affiliationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Affiliation identifier covered by the permission.
+      description: Request body for granting a delegation permission.
+    IdentityGroupSummary:
+      type: object
+      required:
+        - identityGroupIdentifier
+        - accountIdentifier
+        - name
+        - role
+        - isDefault
+      properties:
+        identityGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity group identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Owning account identifier.
+        name:
+          type: string
+          description: Identity group name.
+        role:
+          type: string
+          description: Identity group role.
+        isDefault:
+          type: boolean
+          description: Whether this is the default identity group.
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/Uuid'
+          description: Identity identifiers currently assigned to the group.
+      description: Identity group snapshot returned after updates.
+    InvitationSummary:
+      type: object
+      required:
+        - invitationIdentifier
+        - accountIdentifier
+        - invitedByIdentityIdentifier
+        - email
+        - token
+        - status
+        - expiresAt
+        - createdAt
+      properties:
+        invitationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Invitation identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Target account identifier.
+        invitedByIdentityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier that created the invitation.
+        email:
+          type: string
+          description: Invitee email address.
+        token:
+          type: string
+          description: Invitation token.
+        status:
+          type: string
+          description: Invitation status.
+        expiresAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Invitation expiration timestamp.
+        createdAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Invitation creation timestamp.
+      description: Invitation state.
+    KPool.Common.ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        title:
+          type: string
+          description: Short error title.
+        detail:
+          type: string
+          description: Human-readable error detail.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence.
+      description: RFC 9457 Problem Details payload shared by JSON error responses.
+    MutateIdentityGroupMemberRequestBody:
+      type: object
+      required:
+        - identityIdentifier
+      properties:
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier to add or remove.
+      description: Request body for mutating identity group membership.
+    RejectAffiliationRequestBody:
+      type: object
+      required:
+        - rejectorAccountIdentifier
+      properties:
+        rejectorAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Rejector account identifier.
+      description: Request body for rejecting an affiliation.
+    RejectVerificationRequestBody:
+      type: object
+      required:
+        - reviewerAccountIdentifier
+        - rejectionReasonCode
+      properties:
+        reviewerAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Reviewer account identifier.
+        rejectionReasonCode:
+          type: string
+          description: Rejection reason code.
+        rejectionReasonDetail:
+          type: string
+          nullable: true
+          description: Optional rejection detail.
+      description: Request body for rejecting account verification.
+    RequestAffiliationRequestBody:
+      type: object
+      required:
+        - agencyAccountIdentifier
+        - talentAccountIdentifier
+        - requestedBy
+      properties:
+        agencyAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Agency account identifier.
+        talentAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Talent account identifier.
+        requestedBy:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier that requested the affiliation.
+        terms:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AffiliationTermsSummary'
+          nullable: true
+          description: Optional contract terms.
+      description: Request body for requesting an affiliation.
+    RequestDelegationRequestBody:
+      type: object
+      required:
+        - affiliationIdentifier
+        - delegateIdentifier
+        - delegatorIdentifier
+      properties:
+        affiliationIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Affiliation identifier used for delegation.
+        delegateIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier of the delegate.
+        delegatorIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier of the delegator.
+      description: Request body for requesting a delegation.
+    RequestVerificationRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - verificationType
+        - applicantName
+        - documents
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Account identifier under review.
+        verificationType:
+          type: string
+          description: Verification type.
+        applicantName:
+          type: string
+          description: Applicant full name.
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationDocumentUploadRequestBody'
+          description: Documents submitted for review.
+      description: Request body for requesting account verification.
+    RevokeDelegationRequestBody:
+      type: object
+      required:
+        - revokerIdentifier
+      properties:
+        revokerIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Identity identifier revoking the delegation.
+      description: Request body for revoking a delegation.
+    TerminateAffiliationRequestBody:
+      type: object
+      required:
+        - terminatorAccountIdentifier
+      properties:
+        terminatorAccountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Terminator account identifier.
+      description: Request body for terminating an affiliation.
+    Timestamp:
+      type: string
+      description: Timestamp in ISO 8601 format.
+    Uuid:
+      type: string
+      format: uuid
+      description: UUID identifier.
+    VerificationDocumentSummary:
+      type: object
+      required:
+        - documentIdentifier
+        - documentType
+        - documentPath
+        - originalFileName
+        - fileSizeBytes
+        - uploadedAt
+      properties:
+        documentIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: Document identifier.
+        documentType:
+          type: string
+          description: Document type.
+        documentPath:
+          type: string
+          description: Stored document path.
+        originalFileName:
+          type: string
+          description: Original file name.
+        fileSizeBytes:
+          type: integer
+          format: int32
+          description: Document size in bytes.
+        uploadedAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          description: Timestamp when the document was uploaded.
+      description: Verification document state.
+    VerificationDocumentUploadRequestBody:
+      type: object
+      required:
+        - documentType
+        - fileName
+        - fileContents
+        - fileSizeBytes
+      properties:
+        documentType:
+          type: string
+          description: Document type.
+        fileName:
+          type: string
+          description: Original file name.
+        fileContents:
+          type: string
+          description: Base64-encoded file contents.
+        fileSizeBytes:
+          type: integer
+          format: int32
+          description: Document size in bytes.
+      description: Verification document submitted by the applicant.
+    VerificationRejectionReasonSummary:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Reason code.
+        detail:
+          type: string
+          nullable: true
+          description: Optional reviewer detail.
+      description: Verification rejection reason.
 servers:
   - url: /api/account
     description: Laravel route prefix from bootstrap/app.php.
