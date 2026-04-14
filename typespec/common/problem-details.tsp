@@ -4,6 +4,9 @@ namespace KPool.Common;
 
 @doc("RFC 9457 Problem Details payload shared by JSON error responses.")
 model ProblemDetails {
+  @doc("URI reference identifying the problem type.")
+  type?: string;
+
   @doc("HTTP status code.")
   status?: int32;
 
@@ -12,6 +15,14 @@ model ProblemDetails {
 
   @doc("Human-readable error detail.")
   detail?: string;
+
+  @doc("URI reference identifying the specific occurrence.")
+  instance?: string;
+}
+
+model UnauthorizedProblemResponse {
+  @statusCode statusCode: 401;
+  @body body: ProblemDetails;
 }
 
 model ForbiddenProblemResponse {

@@ -1740,6 +1740,9 @@ components:
     KPool.Common.ProblemDetails:
       type: object
       properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type.
         status:
           type: integer
           format: int32
@@ -1750,6 +1753,9 @@ components:
         detail:
           type: string
           description: Human-readable error detail.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence.
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     MutatePrincipalGroupMemberRequestBody:
       type: object
