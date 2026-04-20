@@ -16,6 +16,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
@@ -84,8 +85,12 @@ final class SectionContentMapper
                         TableBlock::class => [
                             'block_type' => $content->blockType()->value,
                             'display_order' => $content->displayOrder(),
-                            'rows' => $content->rows(),
-                            'headers' => $content->headers(),
+                            'header_cells' => self::tableCellsToArray($content->headerCells()),
+                            'row_cells' => array_map(
+                                static fn (array $rowCells): array => self::tableCellsToArray($rowCells) ?? [],
+                                $content->rowCells(),
+                            ),
+                            'table_width' => $content->tableWidth(),
                         ],
                         ProfileCardListBlock::class => [
                             'block_type' => $content->blockType()->value,
@@ -158,8 +163,12 @@ final class SectionContentMapper
                     ),
                     BlockType::TABLE => new TableBlock(
                         displayOrder: $contentData['display_order'] ?? 0,
-                        rows: $contentData['rows'] ?? [],
-                        headers: $contentData['headers'] ?? null,
+                        rowCells: array_map(
+                            static fn (array $rowCells): array => self::tableCellsFromArray($rowCells) ?? [],
+                            $contentData['row_cells'] ?? [],
+                        ),
+                        headerCells: self::tableCellsFromArray($contentData['header_cells'] ?? null),
+                        tableWidth: $contentData['table_width'] ?? null,
                     ),
                     BlockType::PROFILE_CARD_LIST => new ProfileCardListBlock(
                         displayOrder: $contentData['display_order'] ?? 0,
@@ -175,5 +184,37 @@ final class SectionContentMapper
         );
 
         return new SectionContentCollection($contents);
+    }
+
+    /**
+     * @param array<TableCell>|null $cells
+     * @return array<array{content: string, colspan?: int}>|null
+     */
+    private static function tableCellsToArray(?array $cells): ?array
+    {
+        if ($cells === null) {
+            return null;
+        }
+
+        return array_map(
+            static fn (TableCell $cell): array => $cell->toArray(),
+            $cells,
+        );
+    }
+
+    /**
+     * @param array<array{content?: string, colspan?: int}>|null $cells
+     * @return array<TableCell>|null
+     */
+    private static function tableCellsFromArray(?array $cells): ?array
+    {
+        if ($cells === null) {
+            return null;
+        }
+
+        return array_map(
+            static fn (array $cell): TableCell => TableCell::fromArray($cell),
+            $cells,
+        );
     }
 }

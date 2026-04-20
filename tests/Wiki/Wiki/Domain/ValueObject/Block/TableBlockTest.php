@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Block;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 
 class TableBlockTest extends TestCase
 {
@@ -16,22 +17,36 @@ class TableBlockTest extends TestCase
     public function test__constructWithHeaders(): void
     {
         $displayOrder = 1;
-        $rows = [
-            ['2018-06-13', 'デビュー', 'ミニアルバム発売'],
-            ['2020-02-21', '1stアルバム', 'フルアルバム発売'],
+        $rowCells = [
+            [
+                new TableCell('2018-06-13'),
+                new TableCell('デビュー'),
+                new TableCell('ミニアルバム発売'),
+            ],
+            [
+                new TableCell('2020-02-21'),
+                new TableCell('1stアルバム', 2),
+            ],
         ];
-        $headers = ['日付', 'タイトル', '説明'];
+        $headerCells = [
+            new TableCell('日付'),
+            new TableCell('タイトル'),
+            new TableCell('説明'),
+        ];
+        $tableWidth = '80%';
 
         $block = new TableBlock(
             displayOrder: $displayOrder,
-            rows: $rows,
-            headers: $headers,
+            rowCells: $rowCells,
+            headerCells: $headerCells,
+            tableWidth: $tableWidth,
         );
 
         $this->assertSame($displayOrder, $block->displayOrder());
         $this->assertSame(BlockType::TABLE, $block->blockType());
-        $this->assertSame($rows, $block->rows());
-        $this->assertSame($headers, $block->headers());
+        $this->assertSame($rowCells, $block->rowCells());
+        $this->assertSame($headerCells, $block->headerCells());
+        $this->assertSame($tableWidth, $block->tableWidth());
     }
 
     /**
@@ -41,10 +56,11 @@ class TableBlockTest extends TestCase
     {
         $block = new TableBlock(
             displayOrder: 0,
-            rows: [['セル1', 'セル2']],
+            rowCells: [[new TableCell('セル1'), new TableCell('セル2')]],
         );
 
-        $this->assertNull($block->headers());
+        $this->assertNull($block->headerCells());
+        $this->assertNull($block->tableWidth());
     }
 
     /**
@@ -54,9 +70,9 @@ class TableBlockTest extends TestCase
     {
         $block = new TableBlock(
             displayOrder: 0,
-            rows: [],
+            rowCells: [],
         );
 
-        $this->assertEmpty($block->rows());
+        $this->assertEmpty($block->rowCells());
     }
 }

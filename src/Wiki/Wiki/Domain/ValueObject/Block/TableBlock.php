@@ -7,13 +7,14 @@ namespace Source\Wiki\Wiki\Domain\ValueObject\Block;
 final readonly class TableBlock implements BlockInterface
 {
     /**
-     * @param array<array<string>> $rows
-     * @param array<string>|null $headers
+     * @param array<array<TableCell>> $rowCells
+     * @param array<TableCell>|null $headerCells
      */
     public function __construct(
         private int $displayOrder,
-        private array $rows,
-        private ?array $headers = null,
+        private array $rowCells,
+        private ?array $headerCells = null,
+        private ?string $tableWidth = null,
     ) {
     }
 
@@ -28,18 +29,23 @@ final readonly class TableBlock implements BlockInterface
     }
 
     /**
-     * @return array<array<string>>
+     * @return array<array<TableCell>>
      */
-    public function rows(): array
+    public function rowCells(): array
     {
-        return $this->rows;
+        return $this->rowCells;
     }
 
     /**
-     * @return array<string>|null
+     * @return array<TableCell>|null
      */
-    public function headers(): ?array
+    public function headerCells(): ?array
     {
-        return $this->headers;
+        return $this->headerCells;
+    }
+
+    public function tableWidth(): ?string
+    {
+        return $this->tableWidth;
     }
 }
