@@ -45,7 +45,7 @@ cat > "${OUTPUT_FILE}" <<'EOF'
 
 ## 🔍 レビューのポイント
 
-- OpenAPI 由来の `src/types/*.ts` が API ごとに更新されていること
+- OpenAPI 由来の `packages/types/src/*.ts` が API ごとに更新されていること
 - `zod` と `@zodios/core` の依存追加または更新内容が妥当であること
 - 生成ファイルの差分がバックエンドの最新 API 仕様と整合していること
 
