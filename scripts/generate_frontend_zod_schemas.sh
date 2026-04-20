@@ -9,7 +9,7 @@ fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FRONTEND_DIR="$1"
-OUTPUT_DIR="${FRONTEND_DIR}/src/types"
+OUTPUT_DIR="${FRONTEND_DIR}/packages/types/src"
 OPENAPI_ZOD_CLIENT_VERSION="${OPENAPI_ZOD_CLIENT_VERSION:-1.18.3}"
 
 if [[ -n "${OPENAPI_ZOD_CLIENT_BIN:-}" ]]; then

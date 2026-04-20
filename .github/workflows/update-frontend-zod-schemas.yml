@@ -88,7 +88,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "${{ steps.changes.outputs.branch_name }}"
-          git add package.json package-lock.json src/types
+          git add package.json package-lock.json packages/types/src
           git commit -m "chore: update generated zod schemas"
           git push --set-upstream origin "${{ steps.changes.outputs.branch_name }}"
 

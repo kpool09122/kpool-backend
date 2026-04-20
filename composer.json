@@ -23,7 +23,6 @@
         "illuminate/console": "*",
         "illuminate/support": "*",
         "illuminate/database": "*",
-        "phpunit/php-code-coverage": "^13.0",
         "larastan/larastan": "^3.9",
         "barryvdh/laravel-ide-helper": "^3.6",
         "driftingly/rector-laravel": "^2.3",
