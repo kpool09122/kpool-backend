@@ -31,6 +31,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
@@ -224,7 +225,12 @@ class TranslationServiceTest extends TestCase
                 new SectionContentCollection([
                     new QuoteBlock(0, '음악은 세계 공통 언어입니다.', '채영'),
                     new ListBlock(1, ListType::BULLET, ['항목1', '항목2']),
-                    new TableBlock(2, [['셀1', '셀2']], ['헤더1', '헤더2']),
+                    new TableBlock(
+                        2,
+                        [[new TableCell('셀1'), new TableCell('셀2', 2)]],
+                        [new TableCell('헤더1'), new TableCell('헤더2')],
+                        '75%',
+                    ),
                 ]),
             ),
         ]);
@@ -266,8 +272,12 @@ class TranslationServiceTest extends TestCase
 
         /** @var TableBlock $tableBlock */
         $tableBlock = $blocks[2];
-        $this->assertSame(['ヘッダー1', 'ヘッダー2'], $tableBlock->headers());
-        $this->assertSame([['セル1', 'セル2']], $tableBlock->rows());
+        $this->assertEquals([new TableCell('ヘッダー1'), new TableCell('ヘッダー2')], $tableBlock->headerCells());
+        $this->assertEquals(
+            [[new TableCell('セル1'), new TableCell('セル2', 2)]],
+            $tableBlock->rowCells()
+        );
+        $this->assertSame('75%', $tableBlock->tableWidth());
     }
 
     /**

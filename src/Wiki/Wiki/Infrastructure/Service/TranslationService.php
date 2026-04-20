@@ -18,6 +18,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
@@ -98,15 +99,9 @@ readonly class TranslationService implements TranslationServiceInterface
                     $texts[] = $item;
                 }
             } elseif ($content instanceof TableBlock) {
-                if ($content->headers() !== null) {
-                    foreach ($content->headers() as $header) {
-                        $texts[] = $header;
-                    }
-                }
-                foreach ($content->rows() as $row) {
-                    foreach ($row as $cell) {
-                        $texts[] = $cell;
-                    }
+                $this->collectTableCellTexts($content->headerCells(), $texts);
+                foreach ($content->rowCells() as $row) {
+                    $this->collectTableCellTexts($row, $texts);
                 }
             }
         }
@@ -174,28 +169,56 @@ readonly class TranslationService implements TranslationServiceInterface
         }
 
         if ($content instanceof TableBlock) {
-            $translatedHeaders = null;
-            if ($content->headers() !== null) {
-                $translatedHeaders = [];
-                foreach ($content->headers() as $header) {
-                    $translatedHeaders[] = $translations[$offset] ?? $header;
-                    $offset++;
-                }
-            }
-            $translatedRows = [];
-            foreach ($content->rows() as $row) {
-                $translatedRow = [];
-                foreach ($row as $cell) {
-                    $translatedRow[] = $translations[$offset] ?? $cell;
-                    $offset++;
-                }
-                $translatedRows[] = $translatedRow;
+            $translatedHeaderCells = $this->translateTableCells($content->headerCells(), $translations, $offset);
+            $translatedRowCells = [];
+            foreach ($content->rowCells() as $row) {
+                $translatedRowCells[] = $this->translateTableCells($row, $translations, $offset) ?? [];
             }
 
-            return new TableBlock($content->displayOrder(), $translatedRows, $translatedHeaders);
+            return new TableBlock(
+                $content->displayOrder(),
+                $translatedRowCells,
+                $translatedHeaderCells,
+                $content->tableWidth(),
+            );
         }
 
         // 翻訳不要なブロック（ImageBlock, EmbedBlock等）はそのまま返す
         return $content;
+    }
+
+    /**
+     * @param array<TableCell>|null $cells
+     * @param string[] &$texts
+     */
+    private function collectTableCellTexts(?array $cells, array &$texts): void
+    {
+        if ($cells === null) {
+            return;
+        }
+
+        foreach ($cells as $cell) {
+            $texts[] = $cell->content();
+        }
+    }
+
+    /**
+     * @param array<TableCell>|null $cells
+     * @param string[] $translations
+     * @return array<TableCell>|null
+     */
+    private function translateTableCells(?array $cells, array $translations, int &$offset): ?array
+    {
+        if ($cells === null) {
+            return null;
+        }
+
+        $translatedCells = [];
+        foreach ($cells as $cell) {
+            $translatedCells[] = $cell->withContent($translations[$offset] ?? $cell->content());
+            $offset++;
+        }
+
+        return $translatedCells;
     }
 }

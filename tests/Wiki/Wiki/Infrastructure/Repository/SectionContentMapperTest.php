@@ -15,6 +15,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\QuoteBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableCell;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
@@ -148,7 +149,15 @@ class SectionContentMapperTest extends TestCase
     public function testTableBlockRoundTrip(): void
     {
         $collection = new SectionContentCollection([
-            new TableBlock(displayOrder: 1, rows: [['A1', 'B1'], ['A2', 'B2']], headers: ['列A', '列B']),
+            new TableBlock(
+                displayOrder: 1,
+                rowCells: [
+                    [new TableCell('A1'), new TableCell('B1', 2)],
+                    [new TableCell('A2'), new TableCell('B2')],
+                ],
+                headerCells: [new TableCell('列A'), new TableCell('列B')],
+                tableWidth: '640px',
+            ),
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
@@ -156,8 +165,15 @@ class SectionContentMapperTest extends TestCase
 
         $block = $restored->sorted()[0];
         $this->assertInstanceOf(TableBlock::class, $block);
-        $this->assertSame([['A1', 'B1'], ['A2', 'B2']], $block->rows());
-        $this->assertSame(['列A', '列B'], $block->headers());
+        $this->assertEquals(
+            [
+                [new TableCell('A1'), new TableCell('B1', 2)],
+                [new TableCell('A2'), new TableCell('B2')],
+            ],
+            $block->rowCells()
+        );
+        $this->assertEquals([new TableCell('列A'), new TableCell('列B')], $block->headerCells());
+        $this->assertSame('640px', $block->tableWidth());
     }
 
     /**
