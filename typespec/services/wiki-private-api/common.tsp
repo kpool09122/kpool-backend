@@ -37,6 +37,34 @@ model PublishedWikiSummary {
   version: int32;
 }
 
+@doc("Hero image payload for a draft wiki.")
+model DraftWikiHeroImage {
+  @doc("Image identifier shown as the hero image.")
+  imageIdentifier?: Uuid;
+}
+
+@doc("Detailed draft wiki payload used by the editor.")
+model DraftWikiDetail {
+  @doc("Draft wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number associated with the draft.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor?: string;
+  @doc("Hero image payload for the editor.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic wiki content payload.")
+  basic: unknown;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
 @doc("Summary of a draft image.")
 model ImageDraftSummary {
   @doc("Image identifier.")

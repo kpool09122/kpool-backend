@@ -6,6 +6,7 @@ vars:
   API_SERVICES: php nginx db redis mail
   TEST_SERVICES: testing_db redis
   PHP_RUN: docker-compose run --rm --no-deps php
+  PHP_RUN_TEST: docker-compose run --rm --no-deps -e DB_HOST=testing_db php
   PHP_EXEC: docker-compose exec php
 
 tasks:
@@ -22,7 +23,7 @@ tasks:
       - docker-compose up -d {{.TEST_SERVICES}}
       - task: wait-for-db
       - defer: '{{if not .keepdb}}docker-compose stop testing_db redis && docker-compose rm -v -f testing_db redis{{end}}'
-      - '{{.PHP_RUN}} bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --coverage-html coverage-html"'
+      - '{{.PHP_RUN_TEST}} bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --coverage-html coverage-html"'
 
   test-no-db:
     desc: "Run PHPUnit tests excluding 'useDb' group. Usage: task test-no-db [filter=TestClassName]"
