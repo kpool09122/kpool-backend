@@ -71,6 +71,12 @@ model CreateDraftWikiResponse {
   @body body: DraftWikiSummary;
 }
 
+@doc("Response returned when a group draft wiki is fetched.")
+model GetGroupDraftWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: DraftWikiDetail;
+}
+
 @doc("Response returned when a wiki is published.")
 model CreatePublishedWikiResponse {
   @statusCode statusCode: 201;
@@ -180,4 +186,12 @@ interface WikiOperations {
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,
   ): TranslateWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/group/{slug}/draft")
+  @doc("Fetch the group draft wiki used by the editor.")
+  getGroupDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -31,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property-read ?DraftWikiGroupBasic $groupBasic
  * @property-read ?DraftWikiAgencyBasic $agencyBasic
  * @property-read ?DraftWikiSongBasic $songBasic
+ * @property-read ?Wiki $publishedWiki
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -96,5 +98,13 @@ class DraftWiki extends Model
     public function songBasic(): HasOne
     {
         return $this->hasOne(DraftWikiSongBasic::class, 'wiki_id', 'id');
+    }
+
+    /**
+     * @return BelongsTo<Wiki, DraftWiki>
+     */
+    public function publishedWiki(): BelongsTo
+    {
+        return $this->belongsTo(Wiki::class, 'published_wiki_id', 'id');
     }
 }

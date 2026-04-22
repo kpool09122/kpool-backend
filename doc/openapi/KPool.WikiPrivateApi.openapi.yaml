@@ -1066,6 +1066,46 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateWikiRequestBody'
+  /wiki/{language}/group/{slug}/draft:
+    get:
+      operationId: WikiOperations_getGroupDraftWiki
+      description: Fetch the group draft wiki used by the editor.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when a group draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{wikiId}/approve:
     post:
       operationId: WikiOperations_approveWiki
@@ -1624,6 +1664,57 @@ components:
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for creating a wiki draft.
+    DraftWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number associated with the draft.
+        themeColor:
+          type: string
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload for the editor.
+        basic:
+          description: Basic wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed draft wiki payload used by the editor.
+    DraftWikiHeroImage:
+      type: object
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Image identifier shown as the hero image.
+      description: Hero image payload for a draft wiki.
     DraftWikiSummary:
       type: object
       required:
