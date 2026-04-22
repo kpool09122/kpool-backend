@@ -3,16 +3,16 @@ version: '3'
 vars:
   PHPUNIT: ./vendor/bin/phpunit
   SLEEP_SECONDS: 5
-  API_SERVICES: php nginx testing_db redis mail
+  API_SERVICES: php nginx db redis mail
   TEST_SERVICES: testing_db redis
-  PHP_RUN: docker-compose run --rm php
+  PHP_RUN: docker-compose run --rm --no-deps php
   PHP_EXEC: docker-compose exec php
 
 tasks:
-  wait-for-test-db:
-    desc: Wait for testing database to be ready
+  wait-for-db:
+    desc: Wait for database to be ready
     cmds:
-      - echo "Waiting for testing database to be ready..."
+      - echo "Waiting for database to be ready..."
       - '{{if eq OS "windows"}}powershell -Command "Start-Sleep -Seconds {{.SLEEP_SECONDS}}"{{else}}sleep {{.SLEEP_SECONDS}}{{end}}'
     silent: true
 
@@ -20,7 +20,7 @@ tasks:
     desc: "Run all PHPUnit tests (DB tests + non-DB tests). Usage: task test [filter=TestClassName] [keepdb=1]"
     cmds:
       - docker-compose up -d {{.TEST_SERVICES}}
-      - task: wait-for-test-db
+      - task: wait-for-db
       - defer: '{{if not .keepdb}}docker-compose stop testing_db redis && docker-compose rm -v -f testing_db redis{{end}}'
       - '{{.PHP_RUN}} bash -c "{{.PHPUNIT}}{{if .filter}} --filter={{.filter}}{{end}} --coverage-html coverage-html"'
 
@@ -41,6 +41,9 @@ tasks:
     desc: Start Laravel API server with nginx + php-fpm
     cmds:
       - docker-compose up -d {{.API_SERVICES}}
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan migrate --force'
+      - '{{.PHP_RUN}} php artisan db:seed'
 
   down:
     desc: Stop the API stack
@@ -106,9 +109,24 @@ tasks:
   process-due-transfers:
     desc: "Execute due transfer batch processing. Usage: task process-due-transfers [date=2024-02-10] [dry-run=1]"
     cmds:
-      - docker-compose up -d {{.TEST_SERVICES}}
-      - task: wait-for-test-db
+      - docker-compose up -d db redis
+      - task: wait-for-db
       - '{{.PHP_RUN}} php artisan settlement:process-due-transfers {{if .date}}--date={{.date}}{{end}} {{if (index . "dry-run")}}--dry-run{{end}}'
+
+  migrate:
+    desc: "Run database migrations on db. Usage: task migrate"
+    cmds:
+      - docker-compose up -d db
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan migrate --force'
+
+  seed:
+    desc: "Run database seeders. Usage: task seed [class=Database\\\\Seeders\\\\WikiEditorSampleSeeder]"
+    cmds:
+      - docker-compose up -d db
+      - task: wait-for-db
+      - 'docker-compose run --rm --no-deps php php artisan migrate --force'
+      - 'docker-compose run --rm --no-deps php php artisan db:seed{{if .class}} --class="{{.class}}"{{end}}'
 
   help:
     desc: Show available tasks
