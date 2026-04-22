@@ -33,6 +33,7 @@ use Application\Http\Action\Wiki\Wiki\Command\RejectWiki\RejectWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\RollbackWiki\RollbackWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\SubmitWiki\SubmitWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetGroupDraftWiki\GetGroupDraftWikiAction;
+use Application\Http\Action\Wiki\Wiki\Query\GetSongDraftWiki\GetSongDraftWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentDraftWiki\GetTalentDraftWikiAction;
 use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
@@ -52,6 +53,7 @@ Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
 Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
 Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
 Route::get('/wiki/{language}/group/{slug}/draft', GetGroupDraftWikiAction::class);
+Route::get('/wiki/{language}/song/{slug}/draft', GetSongDraftWikiAction::class);
 Route::get('/wiki/{language}/talent/{slug}/draft', GetTalentDraftWikiAction::class);
 
 // Image
