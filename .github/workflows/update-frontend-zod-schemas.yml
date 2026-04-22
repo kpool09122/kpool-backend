@@ -58,7 +58,7 @@ jobs:
 
       - name: Install frontend runtime dependencies for generated schemas
         working-directory: ${{ env.FRONTEND_CHECKOUT_PATH }}
-        run: pnpm add --save-exact -w zod@${FRONTEND_ZOD_VERSION} @zodios/core@${FRONTEND_ZODIOS_CORE_VERSION}
+        run: pnpm --config.minimumReleaseAge=0 add --save-exact -w zod@${FRONTEND_ZOD_VERSION} @zodios/core@${FRONTEND_ZODIOS_CORE_VERSION}
 
       - name: Generate frontend Zod schemas
         run: ./scripts/generate_frontend_zod_schemas.sh "${GITHUB_WORKSPACE}/${FRONTEND_CHECKOUT_PATH}"
