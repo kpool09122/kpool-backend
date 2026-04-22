@@ -1106,6 +1106,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/talent/{slug}/draft:
+    get:
+      operationId: WikiOperations_getTalentDraftWiki
+      description: Fetch the talent draft wiki used by the editor.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when a talent draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TalentDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{wikiId}/approve:
     post:
       operationId: WikiOperations_approveWiki
@@ -2164,6 +2204,191 @@ components:
             $ref: '#/components/schemas/VideoLinkInput'
           description: Video links to save.
       description: Request body for saving video links.
+    TalentDraftWikiBasic:
+      type: object
+      required:
+        - name
+        - normalizedName
+        - realName
+        - normalizedRealName
+        - emoji
+        - representativeSymbol
+        - position
+        - fandomName
+        - groups
+      properties:
+        name:
+          type: string
+          description: Display name of the talent.
+        normalizedName:
+          type: string
+          description: Normalized name of the talent.
+        realName:
+          type: string
+          description: Real name of the talent.
+        normalizedRealName:
+          type: string
+          description: Normalized real name of the talent.
+        birthday:
+          type: string
+          format: date
+          description: Birthday of the talent.
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        emoji:
+          type: string
+          description: Emoji representing the talent.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the talent.
+        position:
+          type: string
+          description: Position of the talent.
+        mbti:
+          type: string
+          description: MBTI of the talent.
+        zodiacSign:
+          type: string
+          description: Zodiac sign of the talent.
+        englishLevel:
+          type: string
+          description: English proficiency level of the talent.
+        height:
+          type: integer
+          format: int32
+          description: Height of the talent in centimeters.
+        bloodType:
+          type: string
+          description: Blood type of the talent.
+        fandomName:
+          type: string
+          description: Fandom name of the talent.
+        profileImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Profile image identifier of the talent.
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/TalentDraftWikiGroupSummary'
+          description: Related published groups linked to the talent.
+      description: Basic payload for a talent draft wiki.
+    TalentDraftWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number associated with the draft.
+        themeColor:
+          type: string
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload for the editor.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/TalentDraftWikiBasic'
+          description: Basic talent wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed talent draft wiki payload used by the editor.
+    TalentDraftWikiGroupSummary:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - name
+        - normalizedName
+        - fandomName
+        - officialColors
+        - emoji
+        - representativeSymbol
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published group wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the published group wiki.
+        language:
+          type: string
+          description: Language of the published group wiki.
+        name:
+          type: string
+          description: Display name of the group.
+        normalizedName:
+          type: string
+          description: Normalized name of the group.
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        groupType:
+          type: string
+          description: Group type.
+        status:
+          type: string
+          description: Current activity status of the group.
+        generation:
+          type: string
+          description: Generation label of the group.
+        debutDate:
+          type: string
+          format: date
+          description: Debut date of the group.
+        disbandDate:
+          type: string
+          format: date
+          description: Disband date of the group.
+        fandomName:
+          type: string
+          description: Fandom name of the group.
+        officialColors:
+          type: array
+          items:
+            type: string
+          description: Official color palette of the group.
+        emoji:
+          type: string
+          description: Emoji representing the group.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the group.
+        mainImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Main image identifier of the group.
+      description: Summary of a published group linked from a talent draft wiki.
     TranslateWikiResponseBody:
       type: object
       required:

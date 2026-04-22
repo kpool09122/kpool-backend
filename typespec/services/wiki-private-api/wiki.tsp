@@ -77,6 +77,12 @@ model GetGroupDraftWikiResponse {
   @body body: DraftWikiDetail;
 }
 
+@doc("Response returned when a talent draft wiki is fetched.")
+model GetTalentDraftWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: TalentDraftWikiDetail;
+}
+
 @doc("Response returned when a wiki is published.")
 model CreatePublishedWikiResponse {
   @statusCode statusCode: 201;
@@ -194,4 +200,12 @@ interface WikiOperations {
     @path language: string,
     @path slug: string,
   ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/talent/{slug}/draft")
+  @doc("Fetch the talent draft wiki used by the editor.")
+  getTalentDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

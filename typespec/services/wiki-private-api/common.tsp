@@ -65,6 +65,102 @@ model DraftWikiDetail {
   sections: unknown[];
 }
 
+@doc("Summary of a published group linked from a talent draft wiki.")
+model TalentDraftWikiGroupSummary {
+  @doc("Published group wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the published group wiki.")
+  slug: string;
+  @doc("Language of the published group wiki.")
+  language: string;
+  @doc("Display name of the group.")
+  name: string;
+  @doc("Normalized name of the group.")
+  normalizedName: string;
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Group type.")
+  groupType?: string;
+  @doc("Current activity status of the group.")
+  status?: string;
+  @doc("Generation label of the group.")
+  generation?: string;
+  @doc("Debut date of the group.")
+  debutDate?: plainDate;
+  @doc("Disband date of the group.")
+  disbandDate?: plainDate;
+  @doc("Fandom name of the group.")
+  fandomName: string;
+  @doc("Official color palette of the group.")
+  officialColors: string[];
+  @doc("Emoji representing the group.")
+  emoji: string;
+  @doc("Representative symbol of the group.")
+  representativeSymbol: string;
+  @doc("Main image identifier of the group.")
+  mainImageIdentifier?: Uuid;
+}
+
+@doc("Basic payload for a talent draft wiki.")
+model TalentDraftWikiBasic {
+  @doc("Display name of the talent.")
+  name: string;
+  @doc("Normalized name of the talent.")
+  normalizedName: string;
+  @doc("Real name of the talent.")
+  realName: string;
+  @doc("Normalized real name of the talent.")
+  normalizedRealName: string;
+  @doc("Birthday of the talent.")
+  birthday?: plainDate;
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Emoji representing the talent.")
+  emoji: string;
+  @doc("Representative symbol of the talent.")
+  representativeSymbol: string;
+  @doc("Position of the talent.")
+  position: string;
+  @doc("MBTI of the talent.")
+  mbti?: string;
+  @doc("Zodiac sign of the talent.")
+  zodiacSign?: string;
+  @doc("English proficiency level of the talent.")
+  englishLevel?: string;
+  @doc("Height of the talent in centimeters.")
+  height?: int32;
+  @doc("Blood type of the talent.")
+  bloodType?: string;
+  @doc("Fandom name of the talent.")
+  fandomName: string;
+  @doc("Profile image identifier of the talent.")
+  profileImageIdentifier?: Uuid;
+  @doc("Related published groups linked to the talent.")
+  groups: TalentDraftWikiGroupSummary[];
+}
+
+@doc("Detailed talent draft wiki payload used by the editor.")
+model TalentDraftWikiDetail {
+  @doc("Draft wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number associated with the draft.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor?: string;
+  @doc("Hero image payload for the editor.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic talent wiki content payload.")
+  basic: TalentDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
 @doc("Summary of a draft image.")
 model ImageDraftSummary {
   @doc("Image identifier.")

@@ -457,7 +457,7 @@ class WikiEditorSampleSeeder extends Seeder
         DB::table('draft_wiki_talent_basic_groups')->upsert([
             [
                 'wiki_id' => $talent['draft_wiki_id'],
-                'group_identifier' => self::GROUP_DRAFT_WIKI_ID,
+                'group_identifier' => self::GROUP_PUBLISHED_WIKI_ID,
             ],
         ], ['wiki_id', 'group_identifier']);
     }
