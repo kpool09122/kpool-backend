@@ -58,7 +58,7 @@ jobs:
 
       - name: Install frontend runtime dependencies for generated schemas
         working-directory: ${{ env.FRONTEND_CHECKOUT_PATH }}
-        run: npm install --save-exact zod@${FRONTEND_ZOD_VERSION} @zodios/core@${FRONTEND_ZODIOS_CORE_VERSION}
+        run: pnpm add --save-exact -w zod@${FRONTEND_ZOD_VERSION} @zodios/core@${FRONTEND_ZODIOS_CORE_VERSION}
 
       - name: Generate frontend Zod schemas
         run: ./scripts/generate_frontend_zod_schemas.sh "${GITHUB_WORKSPACE}/${FRONTEND_CHECKOUT_PATH}"
@@ -66,8 +66,8 @@ jobs:
       - name: Verify frontend lint and build
         working-directory: ${{ env.FRONTEND_CHECKOUT_PATH }}
         run: |
-          npm run lint
-          npm run build
+          pnpm run lint
+          pnpm run build
 
       - name: Detect frontend changes
         id: changes
@@ -88,7 +88,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "${{ steps.changes.outputs.branch_name }}"
-          git add package.json package-lock.json packages/types/src
+          git add package.json pnpm-lock.yaml packages/types/src
           git commit -m "chore: update generated zod schemas"
           git push --set-upstream origin "${{ steps.changes.outputs.branch_name }}"
 
