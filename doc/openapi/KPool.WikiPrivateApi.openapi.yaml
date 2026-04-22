@@ -1066,6 +1066,46 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateWikiRequestBody'
+  /wiki/{language}/agency/{slug}/draft:
+    get:
+      operationId: WikiOperations_getAgencyDraftWiki
+      description: Fetch the agency draft wiki used by the editor.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when an agency draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgencyDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{language}/group/{slug}/draft:
     get:
       operationId: WikiOperations_getGroupDraftWiki
@@ -1088,6 +1128,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/song/{slug}/draft:
+    get:
+      operationId: WikiOperations_getSongDraftWiki
+      description: Fetch the song draft wiki used by the editor.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when a song draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongDraftWikiDetail'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -1566,6 +1646,97 @@ paths:
               $ref: '#/components/schemas/WikiWorkflowRequestBody'
 components:
   schemas:
+    AgencyDraftWikiBasic:
+      type: object
+      required:
+        - name
+        - normalizedName
+        - ceo
+        - normalizedCeo
+        - officialWebsite
+        - socialLinks
+      properties:
+        name:
+          type: string
+          description: Display name of the agency.
+        normalizedName:
+          type: string
+          description: Normalized name of the agency.
+        ceo:
+          type: string
+          description: Chief executive officer of the agency.
+        normalizedCeo:
+          type: string
+          description: Normalized chief executive officer name.
+        foundedIn:
+          type: string
+          format: date
+          description: Date when the agency was founded.
+        parentAgencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Parent agency identifier.
+        status:
+          type: string
+          description: Current activity status of the agency.
+        logoImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Logo image identifier of the agency.
+        officialWebsite:
+          type: string
+          description: Official website of the agency.
+        socialLinks:
+          type: array
+          items:
+            type: string
+          description: Social links of the agency.
+      description: Basic payload for an agency draft wiki.
+    AgencyDraftWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number associated with the draft.
+        themeColor:
+          type: string
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload for the editor.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/AgencyDraftWikiBasic'
+          description: Basic agency wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed agency draft wiki payload used by the editor.
     AttachPolicyToRoleRequestBody:
       type: object
       required:
@@ -2204,6 +2375,273 @@ components:
             $ref: '#/components/schemas/VideoLinkInput'
           description: Video links to save.
       description: Request body for saving video links.
+    SongDraftWikiBasic:
+      type: object
+      required:
+        - name
+        - normalizedName
+        - songType
+        - genres
+        - albumName
+        - lyricist
+        - normalizedLyricist
+        - composer
+        - normalizedComposer
+        - arranger
+        - normalizedArranger
+        - groups
+        - talents
+      properties:
+        name:
+          type: string
+          description: Display name of the song.
+        normalizedName:
+          type: string
+          description: Normalized name of the song.
+        songType:
+          type: string
+          description: Song type.
+        genres:
+          type: array
+          items:
+            type: string
+          description: Genres associated with the song.
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        releaseDate:
+          type: string
+          format: date
+          description: Release date of the song.
+        albumName:
+          type: string
+          description: Album name.
+        coverImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Cover image identifier of the song.
+        lyricist:
+          type: string
+          description: Lyricist name.
+        normalizedLyricist:
+          type: string
+          description: Normalized lyricist name.
+        composer:
+          type: string
+          description: Composer name.
+        normalizedComposer:
+          type: string
+          description: Normalized composer name.
+        arranger:
+          type: string
+          description: Arranger name.
+        normalizedArranger:
+          type: string
+          description: Normalized arranger name.
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/SongDraftWikiGroupSummary'
+          description: Related published groups linked to the song.
+        talents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SongDraftWikiTalentSummary'
+          description: Related published talents linked to the song.
+      description: Basic payload for a song draft wiki.
+    SongDraftWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number associated with the draft.
+        themeColor:
+          type: string
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload for the editor.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/SongDraftWikiBasic'
+          description: Basic song wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed song draft wiki payload used by the editor.
+    SongDraftWikiGroupSummary:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - name
+        - normalizedName
+        - fandomName
+        - officialColors
+        - emoji
+        - representativeSymbol
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published group wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the published group wiki.
+        language:
+          type: string
+          description: Language of the published group wiki.
+        name:
+          type: string
+          description: Display name of the group.
+        normalizedName:
+          type: string
+          description: Normalized name of the group.
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        groupType:
+          type: string
+          description: Group type.
+        status:
+          type: string
+          description: Current activity status of the group.
+        generation:
+          type: string
+          description: Generation label of the group.
+        debutDate:
+          type: string
+          format: date
+          description: Debut date of the group.
+        disbandDate:
+          type: string
+          format: date
+          description: Disband date of the group.
+        fandomName:
+          type: string
+          description: Fandom name of the group.
+        officialColors:
+          type: array
+          items:
+            type: string
+          description: Official color palette of the group.
+        emoji:
+          type: string
+          description: Emoji representing the group.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the group.
+        mainImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Main image identifier of the group.
+      description: Summary of a published group linked from a song draft wiki.
+    SongDraftWikiTalentSummary:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - name
+        - normalizedName
+        - realName
+        - normalizedRealName
+        - emoji
+        - representativeSymbol
+        - position
+        - fandomName
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published talent wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the published talent wiki.
+        language:
+          type: string
+          description: Language of the published talent wiki.
+        name:
+          type: string
+          description: Display name of the talent.
+        normalizedName:
+          type: string
+          description: Normalized name of the talent.
+        realName:
+          type: string
+          description: Real name of the talent.
+        normalizedRealName:
+          type: string
+          description: Normalized real name of the talent.
+        birthday:
+          type: string
+          format: date
+          description: Birthday of the talent.
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        emoji:
+          type: string
+          description: Emoji representing the talent.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the talent.
+        position:
+          type: string
+          description: Position of the talent.
+        mbti:
+          type: string
+          description: MBTI of the talent.
+        zodiacSign:
+          type: string
+          description: Zodiac sign of the talent.
+        englishLevel:
+          type: string
+          description: English proficiency level of the talent.
+        height:
+          type: integer
+          format: int32
+          description: Height of the talent in centimeters.
+        bloodType:
+          type: string
+          description: Blood type of the talent.
+        fandomName:
+          type: string
+          description: Fandom name of the talent.
+        profileImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Profile image identifier of the talent.
+      description: Summary of a published talent linked from a song draft wiki.
     TalentDraftWikiBasic:
       type: object
       required:

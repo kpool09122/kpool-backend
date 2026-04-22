@@ -161,6 +161,188 @@ model TalentDraftWikiDetail {
   sections: unknown[];
 }
 
+@doc("Summary of a published group linked from a song draft wiki.")
+model SongDraftWikiGroupSummary {
+  @doc("Published group wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the published group wiki.")
+  slug: string;
+  @doc("Language of the published group wiki.")
+  language: string;
+  @doc("Display name of the group.")
+  name: string;
+  @doc("Normalized name of the group.")
+  normalizedName: string;
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Group type.")
+  groupType?: string;
+  @doc("Current activity status of the group.")
+  status?: string;
+  @doc("Generation label of the group.")
+  generation?: string;
+  @doc("Debut date of the group.")
+  debutDate?: plainDate;
+  @doc("Disband date of the group.")
+  disbandDate?: plainDate;
+  @doc("Fandom name of the group.")
+  fandomName: string;
+  @doc("Official color palette of the group.")
+  officialColors: string[];
+  @doc("Emoji representing the group.")
+  emoji: string;
+  @doc("Representative symbol of the group.")
+  representativeSymbol: string;
+  @doc("Main image identifier of the group.")
+  mainImageIdentifier?: Uuid;
+}
+
+@doc("Summary of a published talent linked from a song draft wiki.")
+model SongDraftWikiTalentSummary {
+  @doc("Published talent wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the published talent wiki.")
+  slug: string;
+  @doc("Language of the published talent wiki.")
+  language: string;
+  @doc("Display name of the talent.")
+  name: string;
+  @doc("Normalized name of the talent.")
+  normalizedName: string;
+  @doc("Real name of the talent.")
+  realName: string;
+  @doc("Normalized real name of the talent.")
+  normalizedRealName: string;
+  @doc("Birthday of the talent.")
+  birthday?: plainDate;
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Emoji representing the talent.")
+  emoji: string;
+  @doc("Representative symbol of the talent.")
+  representativeSymbol: string;
+  @doc("Position of the talent.")
+  position: string;
+  @doc("MBTI of the talent.")
+  mbti?: string;
+  @doc("Zodiac sign of the talent.")
+  zodiacSign?: string;
+  @doc("English proficiency level of the talent.")
+  englishLevel?: string;
+  @doc("Height of the talent in centimeters.")
+  height?: int32;
+  @doc("Blood type of the talent.")
+  bloodType?: string;
+  @doc("Fandom name of the talent.")
+  fandomName: string;
+  @doc("Profile image identifier of the talent.")
+  profileImageIdentifier?: Uuid;
+}
+
+@doc("Basic payload for a song draft wiki.")
+model SongDraftWikiBasic {
+  @doc("Display name of the song.")
+  name: string;
+  @doc("Normalized name of the song.")
+  normalizedName: string;
+  @doc("Song type.")
+  songType: string;
+  @doc("Genres associated with the song.")
+  genres: string[];
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Release date of the song.")
+  releaseDate?: plainDate;
+  @doc("Album name.")
+  albumName: string;
+  @doc("Cover image identifier of the song.")
+  coverImageIdentifier?: Uuid;
+  @doc("Lyricist name.")
+  lyricist: string;
+  @doc("Normalized lyricist name.")
+  normalizedLyricist: string;
+  @doc("Composer name.")
+  composer: string;
+  @doc("Normalized composer name.")
+  normalizedComposer: string;
+  @doc("Arranger name.")
+  arranger: string;
+  @doc("Normalized arranger name.")
+  normalizedArranger: string;
+  @doc("Related published groups linked to the song.")
+  groups: SongDraftWikiGroupSummary[];
+  @doc("Related published talents linked to the song.")
+  talents: SongDraftWikiTalentSummary[];
+}
+
+@doc("Detailed song draft wiki payload used by the editor.")
+model SongDraftWikiDetail {
+  @doc("Draft wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number associated with the draft.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor?: string;
+  @doc("Hero image payload for the editor.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic song wiki content payload.")
+  basic: SongDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
+@doc("Basic payload for an agency draft wiki.")
+model AgencyDraftWikiBasic {
+  @doc("Display name of the agency.")
+  name: string;
+  @doc("Normalized name of the agency.")
+  normalizedName: string;
+  @doc("Chief executive officer of the agency.")
+  ceo: string;
+  @doc("Normalized chief executive officer name.")
+  normalizedCeo: string;
+  @doc("Date when the agency was founded.")
+  foundedIn?: plainDate;
+  @doc("Parent agency identifier.")
+  parentAgencyIdentifier?: Uuid;
+  @doc("Current activity status of the agency.")
+  status?: string;
+  @doc("Logo image identifier of the agency.")
+  logoImageIdentifier?: Uuid;
+  @doc("Official website of the agency.")
+  officialWebsite: string;
+  @doc("Social links of the agency.")
+  socialLinks: string[];
+}
+
+@doc("Detailed agency draft wiki payload used by the editor.")
+model AgencyDraftWikiDetail {
+  @doc("Draft wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number associated with the draft.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor?: string;
+  @doc("Hero image payload for the editor.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic agency wiki content payload.")
+  basic: AgencyDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
 @doc("Summary of a draft image.")
 model ImageDraftSummary {
   @doc("Image identifier.")
