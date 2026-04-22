@@ -83,6 +83,18 @@ model GetTalentDraftWikiResponse {
   @body body: TalentDraftWikiDetail;
 }
 
+@doc("Response returned when a song draft wiki is fetched.")
+model GetSongDraftWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: SongDraftWikiDetail;
+}
+
+@doc("Response returned when an agency draft wiki is fetched.")
+model GetAgencyDraftWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: AgencyDraftWikiDetail;
+}
+
 @doc("Response returned when a wiki is published.")
 model CreatePublishedWikiResponse {
   @statusCode statusCode: 201;
@@ -208,4 +220,20 @@ interface WikiOperations {
     @path language: string,
     @path slug: string,
   ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/song/{slug}/draft")
+  @doc("Fetch the song draft wiki used by the editor.")
+  getSongDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/agency/{slug}/draft")
+  @doc("Fetch the agency draft wiki used by the editor.")
+  getAgencyDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
