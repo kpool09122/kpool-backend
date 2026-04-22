@@ -40,8 +40,8 @@ cat > "${OUTPUT_FILE}" <<'EOF'
 
 ### 動作確認
 
-- `npm run lint`
-- `npm run build`
+- `pnpm run lint`
+- `pnpm run build`
 
 ## 🔍 レビューのポイント
 
