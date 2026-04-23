@@ -634,7 +634,7 @@ class RollbackWikiTest extends TestCase
         return new Wiki(
             $identifier,
             $translationSetIdentifier,
-            new Slug('test-slug'),
+            new Slug('gr-test-slug'),
             $language,
             ResourceType::GROUP,
             $basic,
@@ -670,7 +670,7 @@ class RollbackWikiTest extends TestCase
             new WikiSnapshotIdentifier(StrTestHelper::generateUuid()),
             $identifier,
             $translationSetIdentifier,
-            new Slug('test-slug'),
+            new Slug('gr-test-slug'),
             $language,
             ResourceType::GROUP,
             $basic,

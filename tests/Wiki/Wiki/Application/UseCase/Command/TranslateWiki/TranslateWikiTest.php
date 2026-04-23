@@ -151,7 +151,6 @@ class TranslateWikiTest extends TestCase
             ->with(
                 Mockery::on(fn ($arg) => $arg === null),
                 Language::JAPANESE,
-                ResourceType::TALENT,
                 $jaTranslatedBasic,
                 $testData->slug,
                 $testData->translationSetIdentifier,
@@ -162,7 +161,6 @@ class TranslateWikiTest extends TestCase
             ->with(
                 Mockery::on(fn ($arg) => $arg === null),
                 Language::ENGLISH,
-                ResourceType::TALENT,
                 $enTranslatedBasic,
                 $testData->slug,
                 $testData->translationSetIdentifier,
@@ -337,7 +335,7 @@ class TranslateWikiTest extends TestCase
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $slug = new Slug('test-wiki');
+        $slug = new Slug('gr-test-wiki');
         $language = Language::KOREAN;
 
         $basic = $this->createTalentBasic('테스트 위키');

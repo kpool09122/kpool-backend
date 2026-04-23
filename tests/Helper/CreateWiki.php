@@ -34,7 +34,7 @@ class CreateWiki
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
-            'slug' => $overrides['slug'] ?? 'test-wiki-' . substr($wikiId, 0, 8),
+            'slug' => $overrides['slug'] ?? self::defaultSlug($resourceType, 'test-wiki-' . substr($wikiId, 0, 8)),
             'language' => $overrides['language'] ?? 'ko',
             'resource_type' => $resourceType,
             'sections' => $overrides['sections'] ?? json_encode([]),
@@ -56,6 +56,22 @@ class CreateWiki
             'talent' => self::createTalentBasic($wikiId, $basicOverrides),
             'agency' => self::createAgencyBasic($wikiId, $basicOverrides),
             'song' => self::createSongBasic($wikiId, $basicOverrides),
+            default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
+        };
+    }
+
+    private static function defaultSlug(string $resourceType, string $body): string
+    {
+        return self::slugPrefix($resourceType) . '-' . $body;
+    }
+
+    private static function slugPrefix(string $resourceType): string
+    {
+        return match ($resourceType) {
+            'agency' => 'ag',
+            'group' => 'gr',
+            'song' => 'sg',
+            'talent' => 'tl',
             default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
         };
     }

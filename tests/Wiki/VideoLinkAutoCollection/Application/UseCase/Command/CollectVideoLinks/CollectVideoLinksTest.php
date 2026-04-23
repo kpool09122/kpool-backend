@@ -708,7 +708,7 @@ class CollectVideoLinksTest extends TestCase
         return new Wiki(
             new WikiIdentifier($resourceId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('test-slug'),
+            new Slug('gr-test-slug'),
             Language::KOREAN,
             $resourceType,
             $basic, /** @phpstan-ignore argument.type */

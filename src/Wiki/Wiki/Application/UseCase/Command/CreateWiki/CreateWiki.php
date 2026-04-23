@@ -66,7 +66,6 @@ readonly class CreateWiki implements CreateWikiInterface
         $wiki = $this->wikiFactory->create(
             $input->principalIdentifier(),
             $input->language(),
-            $input->resourceType(),
             $input->basic(),
             $input->slug(),
         );

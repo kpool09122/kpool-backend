@@ -13,7 +13,7 @@ class DraftWikiReadModelTest extends TestCase
     {
         $readModel = new DraftWikiReadModel(
             wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
-            slug: 'twice',
+            slug: 'gr-twice',
             language: 'ko',
             resourceType: 'group',
             version: 1,
@@ -47,7 +47,7 @@ class DraftWikiReadModelTest extends TestCase
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
-        $this->assertSame('twice', $readModel->slug());
+        $this->assertSame('gr-twice', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -57,7 +57,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('overview', $readModel->sections()[0]['id']);
         $this->assertSame([
             'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
-            'slug' => 'twice',
+            'slug' => 'gr-twice',
             'language' => 'ko',
             'resourceType' => 'group',
             'version' => 1,

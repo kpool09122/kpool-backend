@@ -423,7 +423,7 @@ class WikiServiceTest extends TestCase
         return new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
-            new Slug('twice'),
+            new Slug('gr-twice'),
             $language,
             ResourceType::GROUP,
             new GroupBasic(
@@ -466,7 +466,7 @@ class WikiServiceTest extends TestCase
             $wikiIdentifier ?? new DraftWikiIdentifier(StrTestHelper::generateUuid()),
             null,
             $translationSetIdentifier,
-            new Slug('twice'),
+            new Slug('gr-twice'),
             $language,
             ResourceType::GROUP,
             new GroupBasic(

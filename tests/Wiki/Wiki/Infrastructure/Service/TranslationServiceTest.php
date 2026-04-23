@@ -401,7 +401,7 @@ class TranslationServiceTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('test-wiki'),
+            new Slug('gr-test-wiki'),
             Language::KOREAN,
             ResourceType::TALENT,
             $basic,
@@ -436,7 +436,7 @@ class TranslationServiceTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('test-wiki'),
+            new Slug('gr-test-wiki'),
             Language::KOREAN,
             ResourceType::TALENT,
             $basic,
@@ -495,7 +495,7 @@ class TranslationServiceTest extends TestCase
         return new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('chaeyoung'),
+            new Slug('tl-chaeyoung'),
             Language::KOREAN,
             ResourceType::TALENT,
             $basic,
@@ -520,7 +520,7 @@ class TranslationServiceTest extends TestCase
         return new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::KOREAN,
             ResourceType::GROUP,
             $basic,
@@ -547,7 +547,7 @@ class TranslationServiceTest extends TestCase
         return new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice-tt'),
+            new Slug('sg-twice-tt'),
             Language::KOREAN,
             ResourceType::SONG,
             $basic,
@@ -576,7 +576,7 @@ class TranslationServiceTest extends TestCase
         return new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('jyp-entertainment'),
+            new Slug('ag-jyp-entertainment'),
             Language::KOREAN,
             ResourceType::AGENCY,
             $basic,

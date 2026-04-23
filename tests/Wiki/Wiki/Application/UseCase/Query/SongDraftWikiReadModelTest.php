@@ -13,7 +13,7 @@ class SongDraftWikiReadModelTest extends TestCase
     {
         $readModel = new SongDraftWikiReadModel(
             wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f301',
-            slug: 'tt',
+            slug: 'sg-tt',
             language: 'ko',
             resourceType: 'song',
             version: 1,
@@ -39,7 +39,7 @@ class SongDraftWikiReadModelTest extends TestCase
                 'groups' => [
                     [
                         'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
-                        'slug' => 'twice',
+                        'slug' => 'gr-twice',
                         'language' => 'ko',
                         'name' => 'TWICE',
                         'normalizedName' => 'twice',
@@ -59,7 +59,7 @@ class SongDraftWikiReadModelTest extends TestCase
                 'talents' => [
                     [
                         'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
-                        'slug' => 'chaeyoung',
+                        'slug' => 'tl-chaeyoung',
                         'language' => 'ko',
                         'name' => '채영',
                         'normalizedName' => 'chaeyoung',
@@ -91,7 +91,7 @@ class SongDraftWikiReadModelTest extends TestCase
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f301', $readModel->wikiIdentifier());
-        $this->assertSame('tt', $readModel->slug());
+        $this->assertSame('sg-tt', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('song', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -103,7 +103,7 @@ class SongDraftWikiReadModelTest extends TestCase
         $this->assertSame('overview', $readModel->sections()[0]['id']);
         $this->assertSame([
             'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f301',
-            'slug' => 'tt',
+            'slug' => 'sg-tt',
             'language' => 'ko',
             'resourceType' => 'song',
             'version' => 1,
@@ -129,7 +129,7 @@ class SongDraftWikiReadModelTest extends TestCase
                 'groups' => [
                     [
                         'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
-                        'slug' => 'twice',
+                        'slug' => 'gr-twice',
                         'language' => 'ko',
                         'name' => 'TWICE',
                         'normalizedName' => 'twice',
@@ -149,7 +149,7 @@ class SongDraftWikiReadModelTest extends TestCase
                 'talents' => [
                     [
                         'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
-                        'slug' => 'chaeyoung',
+                        'slug' => 'tl-chaeyoung',
                         'language' => 'ko',
                         'name' => '채영',
                         'normalizedName' => 'chaeyoung',

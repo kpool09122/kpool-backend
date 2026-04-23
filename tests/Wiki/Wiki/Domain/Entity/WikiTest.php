@@ -188,7 +188,7 @@ class WikiTest extends TestCase
         $wiki = new Wiki(
             $wikiIdentifier,
             $translationSetIdentifier,
-            new Slug('jyp-entertainment'),
+            new Slug('ag-jyp-entertainment'),
             Language::KOREAN,
             ResourceType::AGENCY,
             $basic,
@@ -419,7 +419,7 @@ class WikiTest extends TestCase
     ): WikiTestData {
         $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $slug = new Slug('jyp-entertainment');
+        $slug = new Slug('ag-jyp-entertainment');
         $language = Language::KOREAN;
         $resourceType = ResourceType::AGENCY;
         $basic = AgencyBasic::fromArray([

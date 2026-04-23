@@ -21,10 +21,10 @@ class GetGroupDraftWikiTest extends TestCase
         $this->seed(WikiEditorSampleSeeder::class);
 
         $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetGroupDraftWikiInput(new Slug('twice'), Language::KOREAN));
+        $readModel = $useCase->process(new GetGroupDraftWikiInput(new Slug('gr-twice'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
-        $this->assertSame('twice', $readModel->slug());
+        $this->assertSame('gr-twice', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -43,6 +43,6 @@ class GetGroupDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetGroupDraftWikiInput(new Slug('twice'), Language::KOREAN));
+        $useCase->process(new GetGroupDraftWikiInput(new Slug('gr-twice'), Language::KOREAN));
     }
 }

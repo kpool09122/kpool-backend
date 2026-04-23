@@ -35,7 +35,7 @@ class CreateDraftWiki
             'id' => $draftWikiId,
             'published_wiki_id' => $overrides['published_wiki_id'] ?? null,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
-            'slug' => $overrides['slug'] ?? 'test-draft-wiki-' . substr($draftWikiId, 0, 8),
+            'slug' => $overrides['slug'] ?? self::defaultSlug($resourceType, 'test-draft-wiki-' . substr($draftWikiId, 0, 8)),
             'language' => $overrides['language'] ?? 'ko',
             'resource_type' => $resourceType,
             'sections' => $overrides['sections'] ?? json_encode([]),
@@ -55,6 +55,22 @@ class CreateDraftWiki
             'talent' => self::createTalentBasic($draftWikiId, $basicOverrides),
             'agency' => self::createAgencyBasic($draftWikiId, $basicOverrides),
             'song' => self::createSongBasic($draftWikiId, $basicOverrides),
+            default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
+        };
+    }
+
+    private static function defaultSlug(string $resourceType, string $body): string
+    {
+        return self::slugPrefix($resourceType) . '-' . $body;
+    }
+
+    private static function slugPrefix(string $resourceType): string
+    {
+        return match ($resourceType) {
+            'agency' => 'ag',
+            'group' => 'gr',
+            'song' => 'sg',
+            'talent' => 'tl',
             default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
         };
     }

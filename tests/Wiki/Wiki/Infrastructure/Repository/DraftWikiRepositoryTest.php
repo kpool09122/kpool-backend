@@ -71,7 +71,7 @@ class DraftWikiRepositoryTest extends TestCase
 
         CreateDraftWiki::create($wikiId, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice',
+            'slug' => 'gr-twice',
             'language' => Language::KOREAN->value,
             'status' => ApprovalStatus::Pending->value,
             'editor_id' => $editorId,
@@ -90,7 +90,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->assertSame($wikiId, (string)$found->wikiIdentifier());
         $this->assertNull($found->publishedWikiIdentifier());
         $this->assertSame($translationSetId, (string)$found->translationSetIdentifier());
-        $this->assertSame('twice', (string)$found->slug());
+        $this->assertSame('gr-twice', (string)$found->slug());
         $this->assertSame(Language::KOREAN, $found->language());
         $this->assertSame(ResourceType::GROUP, $found->resourceType());
         $this->assertSame('TWICE', (string)$found->basic()->name());
@@ -117,7 +117,7 @@ class DraftWikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId, 'talent', [
-            'slug' => 'chaeyoung',
+            'slug' => 'tl-chaeyoung',
             'language' => Language::KOREAN->value,
             'editor_id' => $editorId,
         ], [
@@ -149,7 +149,7 @@ class DraftWikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId, 'agency', [
-            'slug' => 'jyp-entertainment',
+            'slug' => 'ag-jyp-entertainment',
             'language' => Language::ENGLISH->value,
             'editor_id' => $editorId,
         ], [
@@ -181,7 +181,7 @@ class DraftWikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId, 'song', [
-            'slug' => 'tt-song',
+            'slug' => 'sg-tt-song',
             'language' => Language::KOREAN->value,
             'editor_id' => $editorId,
         ], [
@@ -221,7 +221,7 @@ class DraftWikiRepositoryTest extends TestCase
             new DraftWikiIdentifier($wikiId),
             null,
             new TranslationSetIdentifier($translationSetId),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::KOREAN,
             ResourceType::GROUP,
             new GroupBasic(
@@ -252,7 +252,7 @@ class DraftWikiRepositoryTest extends TestCase
             'id' => $wikiId,
             'published_wiki_id' => null,
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice',
+            'slug' => 'gr-twice',
             'language' => Language::KOREAN->value,
             'resource_type' => ResourceType::GROUP->value,
             'status' => ApprovalStatus::Pending->value,
@@ -285,7 +285,7 @@ class DraftWikiRepositoryTest extends TestCase
             new DraftWikiIdentifier($wikiId),
             null,
             new TranslationSetIdentifier($translationSetId),
-            new Slug('chaeyoung'),
+            new Slug('tl-chaeyoung'),
             Language::KOREAN,
             ResourceType::TALENT,
             new TalentBasic(
@@ -346,7 +346,7 @@ class DraftWikiRepositoryTest extends TestCase
             new DraftWikiIdentifier($wikiId),
             null,
             new TranslationSetIdentifier($translationSetId),
-            new Slug('jyp-entertainment'),
+            new Slug('ag-jyp-entertainment'),
             Language::ENGLISH,
             ResourceType::AGENCY,
             new AgencyBasic(
@@ -400,7 +400,7 @@ class DraftWikiRepositoryTest extends TestCase
             new DraftWikiIdentifier($wikiId),
             null,
             new TranslationSetIdentifier($translationSetId),
-            new Slug('tt-song'),
+            new Slug('sg-tt-song'),
             Language::KOREAN,
             ResourceType::SONG,
             new SongBasic(
@@ -462,7 +462,7 @@ class DraftWikiRepositoryTest extends TestCase
             'id' => $wikiId,
             'published_wiki_id' => null,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'test-image',
+            'slug' => 'gr-test-image',
             'language' => 'ko',
             'resource_type' => 'image',
             'sections' => json_encode([]),
@@ -494,12 +494,12 @@ class DraftWikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId, 'group', [
-            'slug' => 'twice-slug',
+            'slug' => 'gr-twice-slug',
             'language' => Language::KOREAN->value,
         ]);
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
-        $found = $repository->findBySlugAndLanguage(new Slug('twice-slug'), Language::KOREAN);
+        $found = $repository->findBySlugAndLanguage(new Slug('gr-twice-slug'), Language::KOREAN);
 
         $this->assertInstanceOf(DraftWiki::class, $found);
         $this->assertSame($wikiId, (string) $found->wikiIdentifier());
@@ -514,7 +514,7 @@ class DraftWikiRepositoryTest extends TestCase
     public function testFindBySlugAndLanguageWhenNotExist(): void
     {
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
-        $found = $repository->findBySlugAndLanguage(new Slug('not-exist'), Language::KOREAN);
+        $found = $repository->findBySlugAndLanguage(new Slug('gr-not-exist'), Language::KOREAN);
 
         $this->assertNull($found);
     }
@@ -573,16 +573,16 @@ class DraftWikiRepositoryTest extends TestCase
 
         CreateDraftWiki::create($wikiId1, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-ko',
+            'slug' => 'gr-twice-ko',
             'language' => Language::KOREAN->value,
         ]);
         CreateDraftWiki::create($wikiId2, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-en',
+            'slug' => 'gr-twice-en',
             'language' => Language::ENGLISH->value,
         ]);
         CreateDraftWiki::create($otherWikiId, 'group', [
-            'slug' => 'other-group',
+            'slug' => 'gr-other-group',
         ]);
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -626,15 +626,15 @@ class DraftWikiRepositoryTest extends TestCase
         $otherWikiId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId1, 'group', [
-            'slug' => 'editor-wiki-1',
+            'slug' => 'gr-editor-wiki-1',
             'editor_id' => $editorId,
         ]);
         CreateDraftWiki::create($wikiId2, 'talent', [
-            'slug' => 'editor-wiki-2',
+            'slug' => 'tl-editor-wiki-2',
             'editor_id' => $editorId,
         ]);
         CreateDraftWiki::create($otherWikiId, 'group', [
-            'slug' => 'other-editor-wiki',
+            'slug' => 'gr-other-editor-wiki',
         ]);
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -660,15 +660,15 @@ class DraftWikiRepositoryTest extends TestCase
         $otherWikiId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId1, 'group', [
-            'slug' => 'pending-wiki-1',
+            'slug' => 'gr-pending-wiki-1',
             'status' => ApprovalStatus::Pending->value,
         ]);
         CreateDraftWiki::create($wikiId2, 'talent', [
-            'slug' => 'pending-wiki-2',
+            'slug' => 'tl-pending-wiki-2',
             'status' => ApprovalStatus::Pending->value,
         ]);
         CreateDraftWiki::create($otherWikiId, 'group', [
-            'slug' => 'approved-wiki',
+            'slug' => 'gr-approved-wiki',
             'status' => ApprovalStatus::Approved->value,
             'approver_id' => StrTestHelper::generateUuid(),
         ]);
@@ -696,13 +696,13 @@ class DraftWikiRepositoryTest extends TestCase
         $otherWikiId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId1, 'group', [
-            'slug' => 'group-wiki-1',
+            'slug' => 'gr-group-wiki-1',
         ]);
         CreateDraftWiki::create($wikiId2, 'group', [
-            'slug' => 'group-wiki-2',
+            'slug' => 'gr-group-wiki-2',
         ]);
         CreateDraftWiki::create($otherWikiId, 'talent', [
-            'slug' => 'talent-wiki',
+            'slug' => 'tl-talent-wiki',
         ]);
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -726,7 +726,7 @@ class DraftWikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
 
         CreateDraftWiki::create($wikiId, 'group', [
-            'slug' => 'delete-target',
+            'slug' => 'gr-delete-target',
         ]);
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -759,7 +759,7 @@ class DraftWikiRepositoryTest extends TestCase
             new DraftWikiIdentifier($wikiId),
             new WikiIdentifier($publishedWikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('twice-edit'),
+            new Slug('gr-twice-edit'),
             Language::KOREAN,
             ResourceType::GROUP,
             new GroupBasic(
@@ -816,7 +816,7 @@ class DraftWikiRepositoryTest extends TestCase
             new DraftWikiIdentifier($wikiId),
             null,
             new TranslationSetIdentifier($translationSetId),
-            new Slug('test-image'),
+            new Slug('gr-test-image'),
             Language::KOREAN,
             ResourceType::IMAGE,
             $basic,
@@ -847,7 +847,7 @@ class DraftWikiRepositoryTest extends TestCase
             'id' => $wikiId,
             'published_wiki_id' => null,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-talent-basic',
+            'slug' => 'tl-missing-talent-basic',
             'language' => 'ko',
             'resource_type' => 'talent',
             'sections' => json_encode([]),
@@ -876,7 +876,7 @@ class DraftWikiRepositoryTest extends TestCase
             'id' => $wikiId,
             'published_wiki_id' => null,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-group-basic',
+            'slug' => 'gr-missing-group-basic',
             'language' => 'ko',
             'resource_type' => 'group',
             'sections' => json_encode([]),
@@ -905,7 +905,7 @@ class DraftWikiRepositoryTest extends TestCase
             'id' => $wikiId,
             'published_wiki_id' => null,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-agency-basic',
+            'slug' => 'ag-missing-agency-basic',
             'language' => 'ko',
             'resource_type' => 'agency',
             'sections' => json_encode([]),
@@ -934,7 +934,7 @@ class DraftWikiRepositoryTest extends TestCase
             'id' => $wikiId,
             'published_wiki_id' => null,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-song-basic',
+            'slug' => 'sg-missing-song-basic',
             'language' => 'ko',
             'resource_type' => 'song',
             'sections' => json_encode([]),

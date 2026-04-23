@@ -344,7 +344,7 @@ class SubmitWikiTest extends TestCase
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
         $resourceType = ResourceType::GROUP;
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $name = new Name('TWICE');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];

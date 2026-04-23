@@ -43,7 +43,7 @@ class WikiFactoryTest extends TestCase
     public function testCreate(): void
     {
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $language = Language::KOREAN;
         $resourceType = ResourceType::GROUP;
         $basic = new GroupBasic(

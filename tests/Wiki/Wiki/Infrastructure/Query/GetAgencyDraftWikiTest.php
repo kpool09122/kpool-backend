@@ -23,7 +23,7 @@ class GetAgencyDraftWikiTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
             'agency',
             [
-                'slug' => 'jyp-entertainment',
+                'slug' => 'ag-jyp-entertainment',
                 'language' => 'ko',
                 'version' => 3,
             ],
@@ -34,7 +34,7 @@ class GetAgencyDraftWikiTest extends TestCase
             'agency',
             [
                 'published_wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
-                'slug' => 'jyp-entertainment',
+                'slug' => 'ag-jyp-entertainment',
                 'language' => 'ko',
                 'theme_color' => '#1A1A1A',
                 'sections' => json_encode([
@@ -64,10 +64,10 @@ class GetAgencyDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app->make(GetAgencyDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetAgencyDraftWikiInput(new Slug('jyp-entertainment'), Language::KOREAN));
+        $readModel = $useCase->process(new GetAgencyDraftWikiInput(new Slug('ag-jyp-entertainment'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f402', $readModel->wikiIdentifier());
-        $this->assertSame('jyp-entertainment', $readModel->slug());
+        $this->assertSame('ag-jyp-entertainment', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());
         $this->assertSame(3, $readModel->version());
@@ -87,6 +87,6 @@ class GetAgencyDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetAgencyDraftWikiInput(new Slug('jyp-entertainment'), Language::KOREAN));
+        $useCase->process(new GetAgencyDraftWikiInput(new Slug('ag-jyp-entertainment'), Language::KOREAN));
     }
 }

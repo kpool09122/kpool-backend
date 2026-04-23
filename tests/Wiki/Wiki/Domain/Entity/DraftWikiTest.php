@@ -325,7 +325,7 @@ class DraftWikiTest extends TestCase
         $hasPublishedWiki ??= true;
         $publishedWikiIdentifier = $hasPublishedWiki ? new WikiIdentifier(StrTestHelper::generateUuid()) : null;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $slug = new Slug('jyp-entertainment');
+        $slug = new Slug('ag-jyp-entertainment');
         $language = Language::KOREAN;
         $resourceType = ResourceType::AGENCY;
         $basic = AgencyBasic::fromArray([

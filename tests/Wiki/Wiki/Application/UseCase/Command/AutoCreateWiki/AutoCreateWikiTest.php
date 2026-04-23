@@ -75,8 +75,8 @@ class AutoCreateWikiTest extends TestCase
         $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $slugGeneratorService->shouldReceive('generate')
             ->once()
-            ->with('TWICE')
-            ->andReturn(new Slug('twice'));
+            ->with('TWICE', ResourceType::GROUP)
+            ->andReturn(new Slug('gr-twice'));
 
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
@@ -136,8 +136,8 @@ class AutoCreateWikiTest extends TestCase
         $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $slugGeneratorService->shouldReceive('generate')
             ->once()
-            ->with('TWICE')
-            ->andReturn(new Slug('twice'));
+            ->with('TWICE', ResourceType::GROUP)
+            ->andReturn(new Slug('gr-twice'));
 
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
@@ -276,8 +276,8 @@ class AutoCreateWikiTest extends TestCase
         $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $slugGeneratorService->shouldReceive('generate')
             ->once()
-            ->with('트와이스')
-            ->andReturn(new Slug('twice'));
+            ->with('트와이스', ResourceType::GROUP)
+            ->andReturn(new Slug('gr-twice'));
 
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')

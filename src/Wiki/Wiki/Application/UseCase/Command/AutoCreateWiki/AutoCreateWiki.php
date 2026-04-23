@@ -66,7 +66,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         $generatedData = $this->automaticDraftWikiCreationService->generate($payload);
 
         $slugSource = $generatedData->alphabetName() ?? (string) $payload->name();
-        $slug = $this->slugGeneratorService->generate($slugSource);
+        $slug = $this->slugGeneratorService->generate($slugSource, $payload->resourceType());
 
         $generatedBasic = $generatedData->basic();
         $basicArray = $generatedBasic->toArray();
@@ -81,7 +81,6 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         $draftWiki = $this->draftWikiFactory->create(
             editorIdentifier: null,
             language: $payload->language(),
-            resourceType: $payload->resourceType(),
             basic: $basic,
             slug: $slug,
         );

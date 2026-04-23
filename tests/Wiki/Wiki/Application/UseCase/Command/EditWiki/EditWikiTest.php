@@ -358,7 +358,7 @@ class EditWikiTest extends TestCase
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];
         $talentIdentifiers = [];

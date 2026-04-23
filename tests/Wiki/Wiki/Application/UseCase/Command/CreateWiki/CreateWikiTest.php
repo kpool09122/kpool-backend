@@ -263,7 +263,7 @@ class CreateWikiTest extends TestCase
         $wikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
         $wikiFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $testData->language, $testData->resourceType, $testData->basic, $testData->slug)
+            ->with($principalIdentifier, $testData->language, $testData->basic, $testData->slug)
             ->andReturn($testData->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
@@ -327,7 +327,7 @@ class CreateWikiTest extends TestCase
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];
         $talentIdentifiers = [];

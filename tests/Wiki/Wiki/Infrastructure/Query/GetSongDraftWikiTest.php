@@ -23,7 +23,7 @@ class GetSongDraftWikiTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
             'group',
             [
-                'slug' => 'twice',
+                'slug' => 'gr-twice',
                 'language' => 'ko',
                 'version' => 1,
             ],
@@ -43,7 +43,7 @@ class GetSongDraftWikiTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
             'talent',
             [
-                'slug' => 'chaeyoung',
+                'slug' => 'tl-chaeyoung',
                 'language' => 'ko',
                 'version' => 1,
             ],
@@ -66,7 +66,7 @@ class GetSongDraftWikiTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
             'song',
             [
-                'slug' => 'signal',
+                'slug' => 'sg-signal',
                 'language' => 'ko',
                 'version' => 1,
             ],
@@ -92,7 +92,7 @@ class GetSongDraftWikiTest extends TestCase
             'song',
             [
                 'published_wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
-                'slug' => 'signal',
+                'slug' => 'sg-signal',
                 'language' => 'ko',
                 'theme_color' => '#FE5F8F',
                 'sections' => json_encode([
@@ -123,10 +123,10 @@ class GetSongDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app->make(GetSongDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetSongDraftWikiInput(new Slug('signal'), Language::KOREAN));
+        $readModel = $useCase->process(new GetSongDraftWikiInput(new Slug('sg-signal'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f301', $readModel->wikiIdentifier());
-        $this->assertSame('signal', $readModel->slug());
+        $this->assertSame('sg-signal', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('song', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -149,6 +149,6 @@ class GetSongDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetSongDraftWikiInput(new Slug('signal'), Language::KOREAN));
+        $useCase->process(new GetSongDraftWikiInput(new Slug('sg-signal'), Language::KOREAN));
     }
 }

@@ -36,7 +36,7 @@ class TranslateWikiOutputTest extends TestCase
             new DraftWikiIdentifier(StrTestHelper::generateUuid()),
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::JAPANESE,
             ResourceType::GROUP,
             new GroupBasic(
@@ -64,7 +64,7 @@ class TranslateWikiOutputTest extends TestCase
             new DraftWikiIdentifier(StrTestHelper::generateUuid()),
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::ENGLISH,
             ResourceType::GROUP,
             new GroupBasic(
