@@ -13,7 +13,7 @@ class GetAgencyDraftWikiInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $slug = new Slug('jyp-entertainment');
+        $slug = new Slug('ag-jyp-entertainment');
         $language = Language::KOREAN;
         $input = new GetAgencyDraftWikiInput($slug, $language);
 

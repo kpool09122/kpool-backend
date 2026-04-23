@@ -70,7 +70,7 @@ class WikiRepositoryTest extends TestCase
 
         CreateWiki::create($wikiId, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice',
+            'slug' => 'gr-twice',
             'language' => Language::KOREAN->value,
             'editor_id' => $editorId,
             'approver_id' => $approverId,
@@ -87,7 +87,7 @@ class WikiRepositoryTest extends TestCase
         $this->assertInstanceOf(Wiki::class, $found);
         $this->assertSame($wikiId, (string) $found->wikiIdentifier());
         $this->assertSame($translationSetId, (string) $found->translationSetIdentifier());
-        $this->assertSame('twice', (string) $found->slug());
+        $this->assertSame('gr-twice', (string) $found->slug());
         $this->assertSame(Language::KOREAN, $found->language());
         $this->assertSame(ResourceType::GROUP, $found->resourceType());
         $this->assertSame('TWICE', (string) $found->basic()->name());
@@ -113,7 +113,7 @@ class WikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'talent', [
-            'slug' => 'chaeyoung',
+            'slug' => 'tl-chaeyoung',
             'language' => Language::KOREAN->value,
             'editor_id' => $editorId,
         ], [
@@ -145,7 +145,7 @@ class WikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'agency', [
-            'slug' => 'jyp-entertainment',
+            'slug' => 'ag-jyp-entertainment',
             'language' => Language::ENGLISH->value,
             'editor_id' => $editorId,
         ], [
@@ -177,7 +177,7 @@ class WikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'song', [
-            'slug' => 'tt-song',
+            'slug' => 'sg-tt-song',
             'language' => Language::KOREAN->value,
             'editor_id' => $editorId,
         ], [
@@ -216,7 +216,7 @@ class WikiRepositoryTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::KOREAN,
             ResourceType::GROUP,
             new GroupBasic(
@@ -247,7 +247,7 @@ class WikiRepositoryTest extends TestCase
         $this->assertDatabaseHas('wikis', [
             'id' => $wikiId,
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice',
+            'slug' => 'gr-twice',
             'language' => Language::KOREAN->value,
             'resource_type' => ResourceType::GROUP->value,
             'version' => 1,
@@ -279,7 +279,7 @@ class WikiRepositoryTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('chaeyoung'),
+            new Slug('tl-chaeyoung'),
             Language::KOREAN,
             ResourceType::TALENT,
             new TalentBasic(
@@ -340,7 +340,7 @@ class WikiRepositoryTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('jyp-entertainment'),
+            new Slug('ag-jyp-entertainment'),
             Language::ENGLISH,
             ResourceType::AGENCY,
             new AgencyBasic(
@@ -394,7 +394,7 @@ class WikiRepositoryTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('tt-song'),
+            new Slug('sg-tt-song'),
             Language::KOREAN,
             ResourceType::SONG,
             new SongBasic(
@@ -456,7 +456,7 @@ class WikiRepositoryTest extends TestCase
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'test-image',
+            'slug' => 'gr-test-image',
             'language' => 'ko',
             'resource_type' => 'image',
             'sections' => json_encode([]),
@@ -489,12 +489,12 @@ class WikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'group', [
-            'slug' => 'twice-slug',
+            'slug' => 'gr-twice-slug',
             'language' => Language::KOREAN->value,
         ]);
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
-        $found = $repository->findBySlugAndLanguage(new Slug('twice-slug'), Language::KOREAN);
+        $found = $repository->findBySlugAndLanguage(new Slug('gr-twice-slug'), Language::KOREAN);
 
         $this->assertInstanceOf(Wiki::class, $found);
         $this->assertSame($wikiId, (string) $found->wikiIdentifier());
@@ -509,7 +509,7 @@ class WikiRepositoryTest extends TestCase
     public function testFindBySlugAndLanguageWhenNotExist(): void
     {
         $repository = $this->app->make(WikiRepositoryInterface::class);
-        $found = $repository->findBySlugAndLanguage(new Slug('not-exist'), Language::KOREAN);
+        $found = $repository->findBySlugAndLanguage(new Slug('gr-not-exist'), Language::KOREAN);
 
         $this->assertNull($found);
     }
@@ -525,11 +525,11 @@ class WikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'group', [
-            'slug' => 'exists-slug',
+            'slug' => 'gr-exists-slug',
         ]);
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
-        $exists = $repository->existsBySlug(new Slug('exists-slug'));
+        $exists = $repository->existsBySlug(new Slug('gr-exists-slug'));
 
         $this->assertTrue($exists);
     }
@@ -543,7 +543,7 @@ class WikiRepositoryTest extends TestCase
     public function testExistsBySlugWhenNotExist(): void
     {
         $repository = $this->app->make(WikiRepositoryInterface::class);
-        $exists = $repository->existsBySlug(new Slug('not-exist-slug'));
+        $exists = $repository->existsBySlug(new Slug('gr-not-exist-slug'));
 
         $this->assertFalse($exists);
     }
@@ -563,16 +563,16 @@ class WikiRepositoryTest extends TestCase
 
         CreateWiki::create($wikiId1, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-ko',
+            'slug' => 'gr-twice-ko',
             'language' => Language::KOREAN->value,
         ]);
         CreateWiki::create($wikiId2, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-en',
+            'slug' => 'gr-twice-en',
             'language' => Language::ENGLISH->value,
         ]);
         CreateWiki::create($otherWikiId, 'group', [
-            'slug' => 'other-group',
+            'slug' => 'gr-other-group',
         ]);
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
@@ -615,13 +615,13 @@ class WikiRepositoryTest extends TestCase
         $otherWikiId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId1, 'group', [
-            'slug' => 'group-wiki-1',
+            'slug' => 'gr-group-wiki-1',
         ]);
         CreateWiki::create($wikiId2, 'group', [
-            'slug' => 'group-wiki-2',
+            'slug' => 'gr-group-wiki-2',
         ]);
         CreateWiki::create($otherWikiId, 'talent', [
-            'slug' => 'talent-wiki',
+            'slug' => 'tl-talent-wiki',
         ]);
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
@@ -647,13 +647,13 @@ class WikiRepositoryTest extends TestCase
         $wikiId3 = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId1, 'group', [
-            'slug' => 'group-limit-1',
+            'slug' => 'gr-group-limit-1',
         ]);
         CreateWiki::create($wikiId2, 'group', [
-            'slug' => 'group-limit-2',
+            'slug' => 'gr-group-limit-2',
         ]);
         CreateWiki::create($wikiId3, 'group', [
-            'slug' => 'group-limit-3',
+            'slug' => 'gr-group-limit-3',
         ]);
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
@@ -674,7 +674,7 @@ class WikiRepositoryTest extends TestCase
         $ownerAccountId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'talent', [
-            'slug' => 'owner-talent',
+            'slug' => 'tl-owner-talent',
             'owner_account_id' => $ownerAccountId,
         ]);
 
@@ -719,7 +719,7 @@ class WikiRepositoryTest extends TestCase
         $ownerAccountId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'group', [
-            'slug' => 'owner-group',
+            'slug' => 'gr-owner-group',
             'owner_account_id' => $ownerAccountId,
         ]);
 
@@ -743,7 +743,7 @@ class WikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
 
         CreateWiki::create($wikiId, 'group', [
-            'slug' => 'delete-target',
+            'slug' => 'gr-delete-target',
         ]);
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
@@ -774,7 +774,7 @@ class WikiRepositoryTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('test-image-save'),
+            new Slug('gr-test-image-save'),
             Language::KOREAN,
             ResourceType::IMAGE,
             $basic,
@@ -805,7 +805,7 @@ class WikiRepositoryTest extends TestCase
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-talent-basic',
+            'slug' => 'tl-missing-talent-basic',
             'language' => 'ko',
             'resource_type' => 'talent',
             'sections' => json_encode([]),
@@ -833,7 +833,7 @@ class WikiRepositoryTest extends TestCase
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-group-basic',
+            'slug' => 'gr-missing-group-basic',
             'language' => 'ko',
             'resource_type' => 'group',
             'sections' => json_encode([]),
@@ -861,7 +861,7 @@ class WikiRepositoryTest extends TestCase
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-agency-basic',
+            'slug' => 'ag-missing-agency-basic',
             'language' => 'ko',
             'resource_type' => 'agency',
             'sections' => json_encode([]),
@@ -889,7 +889,7 @@ class WikiRepositoryTest extends TestCase
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-song-basic',
+            'slug' => 'sg-missing-song-basic',
             'language' => 'ko',
             'resource_type' => 'song',
             'sections' => json_encode([]),

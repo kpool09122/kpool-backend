@@ -51,7 +51,7 @@ class WikiSnapshotFactoryTest extends TestCase
     {
         $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $language = Language::KOREAN;
         $resourceType = ResourceType::GROUP;
         $basic = new GroupBasic(
@@ -134,7 +134,7 @@ class WikiSnapshotFactoryTest extends TestCase
         $wiki = new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('newjeans'),
+            new Slug('gr-newjeans'),
             Language::ENGLISH,
             ResourceType::GROUP,
             new GroupBasic(

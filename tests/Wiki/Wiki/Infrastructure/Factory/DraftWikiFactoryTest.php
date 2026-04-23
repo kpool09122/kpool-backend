@@ -46,7 +46,6 @@ class DraftWikiFactoryTest extends TestCase
     {
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $language = Language::KOREAN;
-        $resourceType = ResourceType::GROUP;
         $basic = new GroupBasic(
             name: new Name('TWICE'),
             normalizedName: 'twice',
@@ -62,15 +61,15 @@ class DraftWikiFactoryTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
             mainImageIdentifier: null,
         );
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);
-        $wiki = $wikiFactory->create($editorIdentifier, $language, $resourceType, $basic, $slug);
+        $wiki = $wikiFactory->create($editorIdentifier, $language, $basic, $slug);
         $this->assertTrue(UuidValidator::isValid((string)$wiki->wikiIdentifier()));
         $this->assertNull($wiki->publishedWikiIdentifier());
         $this->assertTrue(UuidValidator::isValid((string)$wiki->translationSetIdentifier()));
         $this->assertSame((string)$slug, (string)$wiki->slug());
         $this->assertSame($language->value, $wiki->language()->value);
-        $this->assertSame($resourceType, $wiki->resourceType());
+        $this->assertSame(ResourceType::GROUP, $wiki->resourceType());
         $this->assertSame($basic, $wiki->basic());
         $this->assertTrue($wiki->sections()->isEmpty());
         $this->assertNull($wiki->themeColor());
@@ -84,7 +83,7 @@ class DraftWikiFactoryTest extends TestCase
         $this->assertNull($wiki->approvedAt());
 
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $wiki = $wikiFactory->create($editorIdentifier, $language, $resourceType, $basic, $slug, $translationSetIdentifier);
+        $wiki = $wikiFactory->create($editorIdentifier, $language, $basic, $slug, $translationSetIdentifier);
         $this->assertSame((string)$translationSetIdentifier, (string)$wiki->translationSetIdentifier());
     }
 
@@ -97,7 +96,6 @@ class DraftWikiFactoryTest extends TestCase
     public function testCreateWithNullEditorIdentifier(): void
     {
         $language = Language::ENGLISH;
-        $resourceType = ResourceType::GROUP;
         $basic = new GroupBasic(
             name: new Name('NewJeans'),
             normalizedName: 'newjeans',
@@ -113,16 +111,16 @@ class DraftWikiFactoryTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
             mainImageIdentifier: null,
         );
-        $slug = new Slug('newjeans');
+        $slug = new Slug('gr-newjeans');
         $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);
-        $wiki = $wikiFactory->create(null, $language, $resourceType, $basic, $slug);
+        $wiki = $wikiFactory->create(null, $language, $basic, $slug);
         $this->assertTrue(UuidValidator::isValid((string)$wiki->wikiIdentifier()));
         $this->assertNull($wiki->publishedWikiIdentifier());
         $this->assertTrue(UuidValidator::isValid((string)$wiki->translationSetIdentifier()));
         $this->assertSame((string)$slug, (string)$wiki->slug());
         $this->assertNull($wiki->editorIdentifier());
         $this->assertSame($language->value, $wiki->language()->value);
-        $this->assertSame($resourceType, $wiki->resourceType());
+        $this->assertSame(ResourceType::GROUP, $wiki->resourceType());
         $this->assertSame($basic, $wiki->basic());
         $this->assertTrue($wiki->sections()->isEmpty());
         $this->assertNull($wiki->themeColor());

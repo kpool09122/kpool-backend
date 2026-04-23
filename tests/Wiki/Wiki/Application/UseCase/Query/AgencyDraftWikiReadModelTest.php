@@ -13,7 +13,7 @@ class AgencyDraftWikiReadModelTest extends TestCase
     {
         $readModel = new AgencyDraftWikiReadModel(
             wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
-            slug: 'jyp-entertainment',
+            slug: 'ag-jyp-entertainment',
             language: 'ko',
             resourceType: 'agency',
             version: 1,
@@ -47,7 +47,7 @@ class AgencyDraftWikiReadModelTest extends TestCase
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f201', $readModel->wikiIdentifier());
-        $this->assertSame('jyp-entertainment', $readModel->slug());
+        $this->assertSame('ag-jyp-entertainment', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -59,7 +59,7 @@ class AgencyDraftWikiReadModelTest extends TestCase
         $this->assertSame('overview', $readModel->sections()[0]['id']);
         $this->assertSame([
             'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
-            'slug' => 'jyp-entertainment',
+            'slug' => 'ag-jyp-entertainment',
             'language' => 'ko',
             'resourceType' => 'agency',
             'version' => 1,

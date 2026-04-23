@@ -264,7 +264,7 @@ class OfficialResourceUpdaterTest extends TestCase
         return new Wiki(
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('test-slug'),
+            new Slug('gr-test-slug'),
             Language::ENGLISH,
             $resourceType,
             $basic, /** @phpstan-ignore argument.type */

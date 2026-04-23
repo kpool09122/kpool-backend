@@ -33,7 +33,7 @@ class RollbackWikiOutputTest extends TestCase
         $wiki1 = new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::KOREAN,
             ResourceType::GROUP,
             new GroupBasic(
@@ -59,7 +59,7 @@ class RollbackWikiOutputTest extends TestCase
         $wiki2 = new Wiki(
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice-ja'),
+            new Slug('gr-twice-ja'),
             Language::JAPANESE,
             ResourceType::GROUP,
             new GroupBasic(

@@ -13,7 +13,7 @@ class GetTalentDraftWikiInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $slug = new Slug('chaeyoung');
+        $slug = new Slug('tl-chaeyoung');
         $language = Language::KOREAN;
         $input = new GetTalentDraftWikiInput($slug, $language);
 

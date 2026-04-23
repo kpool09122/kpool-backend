@@ -13,7 +13,7 @@ class GetGroupDraftWikiInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $slug = new Slug('twice');
+        $slug = new Slug('gr-twice');
         $language = Language::KOREAN;
         $input = new GetGroupDraftWikiInput($slug, $language);
 

@@ -21,10 +21,10 @@ class GetTalentDraftWikiTest extends TestCase
         $this->seed(WikiEditorSampleSeeder::class);
 
         $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetTalentDraftWikiInput(new Slug('chaeyoung'), Language::KOREAN));
+        $readModel = $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-chaeyoung'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f172', $readModel->wikiIdentifier());
-        $this->assertSame('chaeyoung', $readModel->slug());
+        $this->assertSame('tl-chaeyoung', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -45,6 +45,6 @@ class GetTalentDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetTalentDraftWikiInput(new Slug('chaeyoung'), Language::KOREAN));
+        $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-chaeyoung'), Language::KOREAN));
     }
 }

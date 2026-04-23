@@ -11,6 +11,7 @@ class Slug extends StringBaseValue
 {
     public const int MIN_LENGTH = 3;
     public const int MAX_LENGTH = 80;
+    private const string PREFIX_PATTERN = '(ag|gr|sg|tl)';
 
     private const array RESERVED_WORDS = [
         'admin',
@@ -43,6 +44,10 @@ class Slug extends StringBaseValue
 
         if (! preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $value)) {
             throw new InvalidArgumentException('Slug must contain only lowercase letters, numbers, and hyphens. Cannot start or end with hyphen, and cannot have consecutive hyphens.');
+        }
+
+        if (! preg_match('/^' . self::PREFIX_PATTERN . '-[a-z0-9]+(-[a-z0-9]+)*$/', $value)) {
+            throw new InvalidArgumentException('Slug must start with a valid resource prefix: ag-, gr-, sg-, or tl-.');
         }
 
         if (in_array($value, self::RESERVED_WORDS, true)) {

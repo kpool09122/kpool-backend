@@ -27,7 +27,6 @@ readonly class DraftWikiFactory implements DraftWikiFactoryInterface
     public function create(
         ?PrincipalIdentifier $editorIdentifier,
         Language $language,
-        ResourceType $resourceType,
         BasicInterface $basic,
         Slug $slug,
         ?TranslationSetIdentifier $translationSetIdentifier = null,
@@ -38,7 +37,7 @@ readonly class DraftWikiFactory implements DraftWikiFactoryInterface
             $translationSetIdentifier ?? new TranslationSetIdentifier($this->generator->generate()),
             $slug,
             $language,
-            $resourceType,
+            ResourceType::fromSlug($slug),
             $basic,
             new SectionContentCollection([], allowBlocks: false),
             null,

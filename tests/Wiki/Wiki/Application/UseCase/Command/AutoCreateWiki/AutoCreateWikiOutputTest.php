@@ -36,7 +36,7 @@ class AutoCreateWikiOutputTest extends TestCase
             new DraftWikiIdentifier(StrTestHelper::generateUuid()),
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::KOREAN,
             ResourceType::GROUP,
             new GroupBasic(

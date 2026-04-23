@@ -608,7 +608,7 @@ class AffiliationActivatedHandlerTest extends TestCase
         return new Wiki(
             $wikiIdentifier,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            new Slug('chaeyoung'),
+            new Slug('tl-chaeyoung'),
             Language::KOREAN,
             ResourceType::TALENT,
             $basic, /** @phpstan-ignore argument.type */

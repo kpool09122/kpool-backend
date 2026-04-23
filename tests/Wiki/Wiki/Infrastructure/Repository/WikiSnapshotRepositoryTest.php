@@ -55,13 +55,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'group', ['slug' => 'twice-wiki']);
+        CreateWiki::create($wikiId, 'group', ['slug' => 'gr-twice-wiki']);
 
         $snapshot = new WikiSnapshot(
             new WikiSnapshotIdentifier($snapshotId),
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('twice'),
+            new Slug('gr-twice'),
             Language::KOREAN,
             ResourceType::GROUP,
             new GroupBasic(
@@ -99,7 +99,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice',
+            'slug' => 'gr-twice',
             'language' => Language::KOREAN->value,
             'resource_type' => ResourceType::GROUP->value,
             'version' => 1,
@@ -129,13 +129,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'talent', ['slug' => 'chaeyoung-wiki']);
+        CreateWiki::create($wikiId, 'talent', ['slug' => 'tl-chaeyoung-wiki']);
 
         $snapshot = new WikiSnapshot(
             new WikiSnapshotIdentifier($snapshotId),
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('chaeyoung'),
+            new Slug('tl-chaeyoung'),
             Language::KOREAN,
             ResourceType::TALENT,
             new TalentBasic(
@@ -200,13 +200,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'agency', ['slug' => 'jyp-wiki']);
+        CreateWiki::create($wikiId, 'agency', ['slug' => 'ag-jyp-wiki']);
 
         $snapshot = new WikiSnapshot(
             new WikiSnapshotIdentifier($snapshotId),
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('jyp-entertainment'),
+            new Slug('ag-jyp-entertainment'),
             Language::ENGLISH,
             ResourceType::AGENCY,
             new AgencyBasic(
@@ -264,13 +264,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'song', ['slug' => 'tt-wiki']);
+        CreateWiki::create($wikiId, 'song', ['slug' => 'sg-tt-wiki']);
 
         $snapshot = new WikiSnapshot(
             new WikiSnapshotIdentifier($snapshotId),
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('tt-song'),
+            new Slug('sg-tt-song'),
             Language::KOREAN,
             ResourceType::SONG,
             new SongBasic(
@@ -340,16 +340,16 @@ class WikiSnapshotRepositoryTest extends TestCase
 
         CreateWikiSnapshot::create($snapshotId1, 'group', [
             'wiki_id' => $wikiId,
-            'slug' => 'twice-v1',
+            'slug' => 'gr-twice-v1',
             'version' => 1,
         ]);
         CreateWikiSnapshot::create($snapshotId2, 'group', [
             'wiki_id' => $wikiId,
-            'slug' => 'twice-v2',
+            'slug' => 'gr-twice-v2',
             'version' => 2,
         ]);
         CreateWikiSnapshot::create($otherSnapshotId, 'group', [
-            'slug' => 'other-snapshot',
+            'slug' => 'gr-other-snapshot',
         ]);
 
         $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
@@ -394,12 +394,12 @@ class WikiSnapshotRepositoryTest extends TestCase
 
         CreateWikiSnapshot::create($snapshotIdV1, 'group', [
             'wiki_id' => $wikiId,
-            'slug' => 'twice-v1',
+            'slug' => 'gr-twice-v1',
             'version' => 1,
         ]);
         CreateWikiSnapshot::create($snapshotIdV2, 'group', [
             'wiki_id' => $wikiId,
-            'slug' => 'twice-v2',
+            'slug' => 'gr-twice-v2',
             'version' => 2,
         ], [
             'name' => 'TWICE',
@@ -432,12 +432,12 @@ class WikiSnapshotRepositoryTest extends TestCase
 
         CreateWikiSnapshot::create($snapshotIdV1, 'talent', [
             'wiki_id' => $wikiId,
-            'slug' => 'chaeyoung-v1',
+            'slug' => 'tl-chaeyoung-v1',
             'version' => 1,
         ]);
         CreateWikiSnapshot::create($snapshotIdV2, 'talent', [
             'wiki_id' => $wikiId,
-            'slug' => 'chaeyoung-v2',
+            'slug' => 'tl-chaeyoung-v2',
             'version' => 2,
         ], [
             'name' => '채영',
@@ -471,12 +471,12 @@ class WikiSnapshotRepositoryTest extends TestCase
 
         CreateWikiSnapshot::create($snapshotIdV1, 'agency', [
             'wiki_id' => $wikiId,
-            'slug' => 'jyp-v1',
+            'slug' => 'ag-jyp-v1',
             'version' => 1,
         ]);
         CreateWikiSnapshot::create($snapshotIdV2, 'agency', [
             'wiki_id' => $wikiId,
-            'slug' => 'jyp-v2',
+            'slug' => 'ag-jyp-v2',
             'version' => 2,
         ], [
             'name' => 'JYP Entertainment',
@@ -510,12 +510,12 @@ class WikiSnapshotRepositoryTest extends TestCase
 
         CreateWikiSnapshot::create($snapshotIdV1, 'song', [
             'wiki_id' => $wikiId,
-            'slug' => 'tt-v1',
+            'slug' => 'sg-tt-v1',
             'version' => 1,
         ]);
         CreateWikiSnapshot::create($snapshotIdV2, 'song', [
             'wiki_id' => $wikiId,
-            'slug' => 'tt-v2',
+            'slug' => 'sg-tt-v2',
             'version' => 2,
         ], [
             'name' => 'TT',
@@ -571,19 +571,19 @@ class WikiSnapshotRepositoryTest extends TestCase
 
         CreateWikiSnapshot::create($snapshotId1, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-ko',
+            'slug' => 'gr-twice-ko',
             'language' => Language::KOREAN->value,
             'version' => 2,
         ]);
         CreateWikiSnapshot::create($snapshotId2, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-en',
+            'slug' => 'gr-twice-en',
             'language' => Language::ENGLISH->value,
             'version' => 2,
         ]);
         CreateWikiSnapshot::create($otherSnapshotId, 'group', [
             'translation_set_identifier' => $translationSetId,
-            'slug' => 'twice-v1',
+            'slug' => 'gr-twice-v1',
             'version' => 1,
         ]);
 
@@ -633,7 +633,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'group', ['slug' => 'image-save-wiki']);
+        CreateWiki::create($wikiId, 'group', ['slug' => 'gr-image-save-wiki']);
 
         $basic = $this->createStub(BasicInterface::class);
         $basic->method('toArray')->willReturn(['type' => 'image']);
@@ -642,7 +642,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             new WikiSnapshotIdentifier($snapshotId),
             new WikiIdentifier($wikiId),
             new TranslationSetIdentifier($translationSetId),
-            new Slug('image-snapshot'),
+            new Slug('gr-image-snapshot'),
             Language::KOREAN,
             ResourceType::IMAGE,
             $basic,
@@ -680,7 +680,7 @@ class WikiSnapshotRepositoryTest extends TestCase
         DB::table('wikis')->insert([
             'id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'image-find-wiki',
+            'slug' => 'gr-image-find-wiki',
             'language' => 'ko',
             'resource_type' => 'image',
             'sections' => json_encode([]),
@@ -691,7 +691,7 @@ class WikiSnapshotRepositoryTest extends TestCase
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'image-snapshot-find',
+            'slug' => 'gr-image-snapshot-find',
             'language' => 'ko',
             'resource_type' => 'image',
             'sections' => json_encode([]),
@@ -716,13 +716,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $snapshotId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'talent', ['slug' => 'missing-talent-snap-wiki']);
+        CreateWiki::create($wikiId, 'talent', ['slug' => 'tl-missing-talent-snap-wiki']);
 
         DB::table('wiki_snapshots')->insert([
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-talent-snap',
+            'slug' => 'tl-missing-talent-snap',
             'language' => 'ko',
             'resource_type' => 'talent',
             'sections' => json_encode([]),
@@ -748,13 +748,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $snapshotId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'group', ['slug' => 'missing-group-snap-wiki']);
+        CreateWiki::create($wikiId, 'group', ['slug' => 'gr-missing-group-snap-wiki']);
 
         DB::table('wiki_snapshots')->insert([
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-group-snap',
+            'slug' => 'gr-missing-group-snap',
             'language' => 'ko',
             'resource_type' => 'group',
             'sections' => json_encode([]),
@@ -780,13 +780,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $snapshotId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'agency', ['slug' => 'missing-agency-snap-wiki']);
+        CreateWiki::create($wikiId, 'agency', ['slug' => 'ag-missing-agency-snap-wiki']);
 
         DB::table('wiki_snapshots')->insert([
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-agency-snap',
+            'slug' => 'ag-missing-agency-snap',
             'language' => 'ko',
             'resource_type' => 'agency',
             'sections' => json_encode([]),
@@ -812,13 +812,13 @@ class WikiSnapshotRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $snapshotId = StrTestHelper::generateUuid();
 
-        CreateWiki::create($wikiId, 'song', ['slug' => 'missing-song-snap-wiki']);
+        CreateWiki::create($wikiId, 'song', ['slug' => 'sg-missing-song-snap-wiki']);
 
         DB::table('wiki_snapshots')->insert([
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
-            'slug' => 'missing-song-snap',
+            'slug' => 'sg-missing-song-snap',
             'language' => 'ko',
             'resource_type' => 'song',
             'sections' => json_encode([]),

@@ -32,7 +32,7 @@ class WikiSnapshotTest extends TestCase
         $snapshotIdentifier = new WikiSnapshotIdentifier(StrTestHelper::generateUuid());
         $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
-        $slug = new Slug('test-slug');
+        $slug = new Slug('gr-test-slug');
         $language = Language::KOREAN;
         $resourceType = ResourceType::AGENCY;
         $basic = new AgencyBasic(
@@ -109,7 +109,7 @@ class WikiSnapshotTest extends TestCase
             snapshotIdentifier: new WikiSnapshotIdentifier(StrTestHelper::generateUuid()),
             wikiIdentifier: new WikiIdentifier(StrTestHelper::generateUuid()),
             translationSetIdentifier: new TranslationSetIdentifier(StrTestHelper::generateUuid()),
-            slug: new Slug('test-slug'),
+            slug: new Slug('gr-test-slug'),
             language: Language::KOREAN,
             resourceType: ResourceType::AGENCY,
             basic: new AgencyBasic(

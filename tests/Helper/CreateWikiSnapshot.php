@@ -36,7 +36,9 @@ class CreateWikiSnapshot
         $wikiExists = DB::table('wikis')->where('id', $wikiId)->exists();
         if (! $wikiExists) {
             CreateWiki::create($wikiId, $resourceType, [
-                'slug' => ($overrides['slug'] ?? 'test-snapshot-' . substr($snapshotId, 0, 8)) . '-wiki',
+                'slug' => isset($overrides['slug'])
+                    ? $overrides['slug'] . '-wiki'
+                    : self::defaultSlug($resourceType, 'test-snapshot-' . substr($snapshotId, 0, 8) . '-wiki'),
             ]);
         }
 
@@ -44,7 +46,7 @@ class CreateWikiSnapshot
             'id' => $snapshotId,
             'wiki_id' => $wikiId,
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
-            'slug' => $overrides['slug'] ?? 'test-snapshot-' . substr($snapshotId, 0, 8),
+            'slug' => $overrides['slug'] ?? self::defaultSlug($resourceType, 'test-snapshot-' . substr($snapshotId, 0, 8)),
             'language' => $overrides['language'] ?? 'ko',
             'resource_type' => $resourceType,
             'sections' => $overrides['sections'] ?? json_encode([]),
@@ -65,6 +67,22 @@ class CreateWikiSnapshot
             'talent' => self::createTalentBasic($snapshotId, $basicOverrides),
             'agency' => self::createAgencyBasic($snapshotId, $basicOverrides),
             'song' => self::createSongBasic($snapshotId, $basicOverrides),
+            default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
+        };
+    }
+
+    private static function defaultSlug(string $resourceType, string $body): string
+    {
+        return self::slugPrefix($resourceType) . '-' . $body;
+    }
+
+    private static function slugPrefix(string $resourceType): string
+    {
+        return match ($resourceType) {
+            'agency' => 'ag',
+            'group' => 'gr',
+            'song' => 'sg',
+            'talent' => 'tl',
             default => throw new InvalidArgumentException("Unknown resource type: {$resourceType}"),
         };
     }

@@ -13,7 +13,7 @@ class TalentDraftWikiReadModelTest extends TestCase
     {
         $readModel = new TalentDraftWikiReadModel(
             wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
-            slug: 'chaeyoung',
+            slug: 'tl-chaeyoung',
             language: 'ko',
             resourceType: 'talent',
             version: 1,
@@ -41,7 +41,7 @@ class TalentDraftWikiReadModelTest extends TestCase
                 'groups' => [
                     [
                         'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
-                        'slug' => 'twice',
+                        'slug' => 'gr-twice',
                         'language' => 'ko',
                         'name' => 'TWICE',
                         'normalizedName' => 'twice',
@@ -70,7 +70,7 @@ class TalentDraftWikiReadModelTest extends TestCase
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', $readModel->wikiIdentifier());
-        $this->assertSame('chaeyoung', $readModel->slug());
+        $this->assertSame('tl-chaeyoung', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
@@ -81,7 +81,7 @@ class TalentDraftWikiReadModelTest extends TestCase
         $this->assertSame('overview', $readModel->sections()[0]['id']);
         $this->assertSame([
             'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
-            'slug' => 'chaeyoung',
+            'slug' => 'tl-chaeyoung',
             'language' => 'ko',
             'resourceType' => 'talent',
             'version' => 1,
@@ -109,7 +109,7 @@ class TalentDraftWikiReadModelTest extends TestCase
                 'groups' => [
                     [
                         'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
-                        'slug' => 'twice',
+                        'slug' => 'gr-twice',
                         'language' => 'ko',
                         'name' => 'TWICE',
                         'normalizedName' => 'twice',

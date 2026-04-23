@@ -13,7 +13,7 @@ class GetSongDraftWikiInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $slug = new Slug('signal');
+        $slug = new Slug('sg-signal');
         $language = Language::KOREAN;
         $input = new GetSongDraftWikiInput($slug, $language);
 
