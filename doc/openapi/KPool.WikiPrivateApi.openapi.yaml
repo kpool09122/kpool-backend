@@ -1920,10 +1920,14 @@ components:
       description: Detailed draft wiki payload used by the editor.
     DraftWikiHeroImage:
       type: object
+      required:
+        - imageIdentifier
       properties:
         imageIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Image identifier shown as the hero image.
       description: Hero image payload for a draft wiki.
     DraftWikiSummary:

@@ -11,6 +11,18 @@ class GetTalentDraftWikiRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
+    public function validationData(): array
+    {
+        return [
+            ...parent::validationData(),
+            'language' => $this->route('language'),
+            'slug' => $this->route('slug'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [

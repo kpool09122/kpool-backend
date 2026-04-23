@@ -23,7 +23,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['api', 'auth.api', 'resolve.actor'])
                 ->prefix('api/account')
                 ->group(base_path('routes/account_api.php'));
-            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
+//            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
+            Route::middleware(['api'])
                 ->prefix('api/wiki')
                 ->group(base_path('routes/wiki_private_api.php'));
             Route::prefix('webhook')
