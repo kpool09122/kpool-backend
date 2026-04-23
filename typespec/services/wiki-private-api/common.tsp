@@ -40,7 +40,7 @@ model PublishedWikiSummary {
 @doc("Hero image payload for a draft wiki.")
 model DraftWikiHeroImage {
   @doc("Image identifier shown as the hero image.")
-  imageIdentifier?: Uuid;
+  imageIdentifier: Uuid | null;
 }
 
 @doc("Detailed draft wiki payload used by the editor.")
