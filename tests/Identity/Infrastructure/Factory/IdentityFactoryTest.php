@@ -70,8 +70,8 @@ class IdentityFactoryTest extends TestCase
         $providerUserId = 'google-user-1';
         $email = new Email('user@example.com');
         $name = 'Google User';
-        $avatarPath = 'images/avatars/google-user.png';
-        $profile = new SocialProfile($provider, $providerUserId, $email, $name, $avatarPath);
+        $avatarUrl = 'https://lh3.googleusercontent.com/avatar.jpg';
+        $profile = new SocialProfile($provider, $providerUserId, $email, $name, $avatarUrl);
 
         $identityFactory = $this->app->make(IdentityFactoryInterface::class);
 
@@ -81,7 +81,7 @@ class IdentityFactoryTest extends TestCase
         $this->assertSame((string)$email, (string)$identity->email());
         $this->assertSame(Language::ENGLISH, $identity->language());
         $this->assertSame($name, (string)$identity->username());
-        $this->assertSame($avatarPath, (string)$identity->profileImage());
+        $this->assertNull($identity->profileImage());
         $this->assertNull($identity->emailVerifiedAt());
         $this->assertTrue($identity->hasSocialConnection(new SocialConnection($provider, $providerUserId)));
         $this->assertNotEmpty((string)$identity->hashedPassword());

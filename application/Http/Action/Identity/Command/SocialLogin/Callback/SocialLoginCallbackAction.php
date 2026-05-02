@@ -6,7 +6,9 @@ namespace Application\Http\Action\Identity\Command\SocialLogin\Callback;
 
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
+use DateTimeImmutable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -18,7 +20,6 @@ use Source\Identity\Domain\Exception\SocialOAuthException;
 use Source\Identity\Domain\ValueObject\OAuthCode;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 readonly class SocialLoginCallbackAction
@@ -31,17 +32,17 @@ readonly class SocialLoginCallbackAction
 
     /**
      * @param SocialLoginCallbackRequest $request
-     * @return JsonResponse
+     * @return JsonResponse|RedirectResponse
      * @throws InternalServerErrorHttpException
      */
-    public function __invoke(SocialLoginCallbackRequest $request): JsonResponse
+    public function __invoke(SocialLoginCallbackRequest $request): JsonResponse|RedirectResponse
     {
         try {
             try {
                 $input = new SocialLoginCallbackInput(
                     provider: SocialProvider::fromString($request->provider()),
                     code: new OAuthCode($request->code()),
-                    state: new OAuthState($request->state()),
+                    state: new OAuthState($request->state(), new DateTimeImmutable('+10 minutes')),
                 );
                 $output = new SocialLoginCallbackOutput();
             } catch (InvalidArgumentException $e) {
@@ -78,6 +79,6 @@ readonly class SocialLoginCallbackAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json(['redirectUrl' => $output->redirectUrl()], Response::HTTP_OK);
+        return redirect()->away(rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/'));
     }
 }

@@ -10,6 +10,7 @@ use Application\Http\Action\Identity\Command\SocialLogin\Callback\SocialLoginCal
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\SwitchIdentity\SwitchIdentityAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
+use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
 use Illuminate\Support\Facades\Route;
 
 // Public Auth
@@ -24,6 +25,7 @@ Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class)
 
 // Authenticated
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
+    Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
     Route::post('/auth/logout', LogoutAction::class);
     Route::post('/auth/switch-identity', SwitchIdentityAction::class);
 });
