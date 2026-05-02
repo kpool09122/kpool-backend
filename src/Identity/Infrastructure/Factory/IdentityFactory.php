@@ -15,7 +15,6 @@ use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 
 readonly class IdentityFactory implements IdentityFactoryInterface
@@ -46,14 +45,13 @@ readonly class IdentityFactory implements IdentityFactoryInterface
     {
         $username = $this->buildUserName($profile);
         $password = $this->generateRandomPassword();
-        $profileImage = $profile->avatarUrl() ? new ImagePath($profile->avatarUrl()) : null;
 
         return new Identity(
             new IdentityIdentifier($this->ulidGenerator->generate()),
             $username,
             $profile->email(),
             Language::ENGLISH,
-            $profileImage,
+            null,
             HashedPassword::fromPlain($password),
             null,
             [new SocialConnection($profile->provider(), $profile->providerUserId())],
