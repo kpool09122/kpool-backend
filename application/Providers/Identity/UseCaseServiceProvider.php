@@ -21,6 +21,8 @@ use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentity;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityInterface;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmail;
 use Source\Identity\Application\UseCase\Command\VerifyEmail\VerifyEmailInterface;
+use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
+use Source\Identity\Infrastructure\Query\GetAuthenticatedIdentity;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -34,5 +36,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(SocialLoginRedirectInterface::class, SocialLoginRedirect::class);
         $this->app->singleton(SocialLoginCallbackInterface::class, SocialLoginCallback::class);
         $this->app->singleton(SwitchIdentityInterface::class, SwitchIdentity::class);
+        $this->app->singleton(GetAuthenticatedIdentityInterface::class, GetAuthenticatedIdentity::class);
     }
 }
