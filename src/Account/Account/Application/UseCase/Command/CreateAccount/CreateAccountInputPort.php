@@ -8,6 +8,7 @@ use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 
 interface CreateAccountInputPort
 {
@@ -18,4 +19,6 @@ interface CreateAccountInputPort
     public function accountName(): AccountName;
 
     public function identityIdentifier(): ?IdentityIdentifier;
+
+    public function language(): Language;
 }

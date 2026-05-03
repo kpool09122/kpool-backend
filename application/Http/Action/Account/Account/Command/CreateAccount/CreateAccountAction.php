@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Account\Command\CreateAccount;
 
-use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Account\Application\Exception\AccountAlreadyExistsException;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
@@ -19,6 +17,7 @@ use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
@@ -47,6 +46,7 @@ readonly class CreateAccountAction
                     identityIdentifier: $request->identityIdentifier() !== null
                         ? new IdentityIdentifier($request->identityIdentifier())
                         : null,
+                    language: Language::from($request->language()),
                 );
                 $output = new CreateAccountOutput();
             } catch (InvalidArgumentException|ValueError $e) {
@@ -55,21 +55,15 @@ readonly class CreateAccountAction
 
             DB::beginTransaction();
 
-            $language = $request->language();
-
             try {
                 $this->createAccount->process($input, $output);
                 DB::commit();
-            } catch (AccountAlreadyExistsException $e) {
-                DB::rollBack();
-
-                throw new ConflictHttpException(detail: error_message('account_already_exists', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 
                 throw $e;
             }
-        } catch (ConflictHttpException|UnprocessableEntityHttpException $e) {
+        } catch (UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

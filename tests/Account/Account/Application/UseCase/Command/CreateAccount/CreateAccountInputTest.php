@@ -10,6 +10,7 @@ use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\StrTestHelper;
 
 class CreateAccountInputTest extends TestCase
@@ -37,6 +38,7 @@ class CreateAccountInputTest extends TestCase
         $this->assertSame($accountType, $input->accountType());
         $this->assertSame($accountName, $input->accountName());
         $this->assertSame($identityIdentifier, $input->identityIdentifier());
+        $this->assertSame(Language::ENGLISH, $input->language());
     }
 
     /**
@@ -49,16 +51,20 @@ class CreateAccountInputTest extends TestCase
         $email = new Email('test@test.com');
         $accountType = AccountType::INDIVIDUAL;
         $accountName = new AccountName('test-account');
+        $language = Language::KOREAN;
 
         $input = new CreateAccountInput(
             $email,
             $accountType,
             $accountName,
+            null,
+            $language,
         );
 
         $this->assertSame($email, $input->email());
         $this->assertSame($accountType, $input->accountType());
         $this->assertSame($accountName, $input->accountName());
         $this->assertNull($input->identityIdentifier());
+        $this->assertSame($language, $input->language());
     }
 }

@@ -6,12 +6,13 @@ namespace Tests\Account\Account\Application\UseCase\Command\CreateAccount;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Account\Application\Exception\AccountAlreadyExistsException;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInput;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Event\AccountCreationConflicted;
+use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountName;
@@ -24,9 +25,11 @@ use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterf
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -43,10 +46,12 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $identityGroupFactory = Mockery::mock(IdentityGroupFactoryInterface::class);
         $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
         $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $useCase = $this->app->make(CreateAccountInterface::class);
         $this->assertInstanceOf(CreateAccount::class, $useCase);
     }
@@ -54,7 +59,6 @@ class CreateAccountTest extends TestCase
     /**
      * 正常系: 正しくアカウントを作成できること（identityIdentifierあり）.
      *
-     * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
      */
     public function testProcess(): void
@@ -89,10 +93,22 @@ class CreateAccountTest extends TestCase
             ->with($testData->identityGroup)
             ->andReturnNull();
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn (object $event): bool => $event instanceof AccountCreated
+                    && (string) $event->accountIdentifier === (string) $testData->identifier
+                    && (string) $event->email === (string) $testData->email
+                    && (string) $event->identityIdentifier === (string) $testData->identityIdentifier
+                    && $event->language === $testData->language
+            ));
+
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
         $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
@@ -110,7 +126,6 @@ class CreateAccountTest extends TestCase
     /**
      * 正常系: identityIdentifierがnullの場合もアカウントとデフォルトIdentityGroupが作成されること.
      *
-     * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
      */
     public function testProcessWithoutIdentityIdentifier(): void
@@ -145,10 +160,22 @@ class CreateAccountTest extends TestCase
             ->with($testData->identityGroup)
             ->andReturnNull();
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn (object $event): bool => $event instanceof AccountCreated
+                    && (string) $event->accountIdentifier === (string) $testData->identifier
+                    && (string) $event->email === (string) $testData->email
+                    && $event->identityIdentifier === null
+                    && $event->language === $testData->language
+            ));
+
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
         $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
@@ -161,12 +188,11 @@ class CreateAccountTest extends TestCase
     }
 
     /**
-     * 異常系: アカウントが重複した時に、例外がスローされること.
+     * 正常系: アカウントが重複した時に、通知イベントを発火して早期returnすること.
      *
-     * @throws AccountAlreadyExistsException
      * @throws BindingResolutionException
      */
-    public function testThrowsWhenDuplicate(): void
+    public function testProcessDispatchesConflictEventWhenDuplicate(): void
     {
         $testData = $this->createDummyAccountTestData();
         $input = $testData->input;
@@ -187,17 +213,27 @@ class CreateAccountTest extends TestCase
         $identityGroupRepository = Mockery::mock(IdentityGroupRepositoryInterface::class);
         $identityGroupRepository->shouldNotReceive('save');
 
+        $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $eventDispatcher->shouldReceive('dispatch')
+            ->once()
+            ->with(Mockery::on(
+                static fn (object $event): bool => $event instanceof AccountCreationConflicted
+                    && (string) $event->email === (string) $testData->email
+                    && $event->language === $testData->language
+            ));
+
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
         $this->app->instance(IdentityGroupFactoryInterface::class, $identityGroupFactory);
         $this->app->instance(IdentityGroupRepositoryInterface::class, $identityGroupRepository);
+        $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
 
         $useCase = $this->app->make(CreateAccountInterface::class);
 
-        $this->expectException(AccountAlreadyExistsException::class);
-
         $output = new CreateAccountOutput();
         $useCase->process($input, $output);
+
+        $this->assertSame([], $output->toArray());
     }
 
     private function createDummyAccountTestData(bool $includeIdentityIdentifier = true): CreateAccountTestData
@@ -206,6 +242,7 @@ class CreateAccountTest extends TestCase
         $email = new Email('test@test.com');
         $accountType = AccountType::CORPORATION;
         $accountName = new AccountName('Example Inc');
+        $language = Language::JAPANESE;
 
         $status = AccountStatus::ACTIVE;
         $accountCategory = AccountCategory::GENERAL;
@@ -236,6 +273,7 @@ class CreateAccountTest extends TestCase
             $accountType,
             $accountName,
             $includeIdentityIdentifier ? $identityIdentifier : null,
+            $language,
         );
 
         return new CreateAccountTestData(
@@ -248,6 +286,7 @@ class CreateAccountTest extends TestCase
             $input,
             $identityIdentifier,
             $identityGroup,
+            $language,
         );
     }
 }
@@ -264,6 +303,7 @@ readonly class CreateAccountTestData
         public CreateAccountInput $input,
         public IdentityIdentifier $identityIdentifier,
         public IdentityGroup $identityGroup,
+        public Language $language,
     ) {
     }
 }

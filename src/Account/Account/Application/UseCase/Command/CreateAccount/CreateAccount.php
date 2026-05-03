@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
-use Source\Account\Account\Application\Exception\AccountAlreadyExistsException;
+use Source\Account\Account\Domain\Event\AccountCreationConflicted;
+use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
 use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
+use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class CreateAccount implements CreateAccountInterface
 {
@@ -20,6 +22,7 @@ readonly class CreateAccount implements CreateAccountInterface
         private AccountFactoryInterface $accountFactory,
         private IdentityGroupFactoryInterface $identityGroupFactory,
         private IdentityGroupRepositoryInterface $identityGroupRepository,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -27,14 +30,18 @@ readonly class CreateAccount implements CreateAccountInterface
      * @param CreateAccountInputPort $input
      * @param CreateAccountOutputPort $output
      * @return void
-     * @throws AccountAlreadyExistsException
      */
     public function process(CreateAccountInputPort $input, CreateAccountOutputPort $output): void
     {
         $account = $this->accountRepository->findByEmail($input->email());
 
         if ($account) {
-            throw new AccountAlreadyExistsException('Account already exists.');
+            $this->eventDispatcher->dispatch(new AccountCreationConflicted(
+                email: $input->email(),
+                language: $input->language(),
+            ));
+
+            return;
         }
 
         $account = $this->accountFactory->create(
@@ -57,6 +64,13 @@ readonly class CreateAccount implements CreateAccountInterface
         }
 
         $this->identityGroupRepository->save($identityGroup);
+
+        $this->eventDispatcher->dispatch(new AccountCreated(
+            accountIdentifier: $account->accountIdentifier(),
+            email: $account->email(),
+            identityIdentifier: $input->identityIdentifier(),
+            language: $input->language(),
+        ));
 
         $output->setAccount($account);
     }
