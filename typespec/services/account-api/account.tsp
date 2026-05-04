@@ -18,7 +18,7 @@ model CreateAccountRequestBody {
 @doc("Response returned when an account is created.")
 model CreateAccountResponse {
   @statusCode statusCode: 201;
-  @body body: CreatedAccountSummary;
+  @body body: CreateAccountResult;
 }
 
 @doc("Response returned when an account operation succeeds.")
@@ -33,7 +33,7 @@ interface AccountOperations {
   @doc("Create an account.")
   createAccount(
     @body body: CreateAccountRequestBody,
-  ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @delete
   @route("/{accountId}")

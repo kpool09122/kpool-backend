@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Application\UseCase\Command\CreateAccount;
 
-use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Event\AccountCreated;
+use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;

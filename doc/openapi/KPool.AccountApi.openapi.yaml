@@ -145,15 +145,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatedAccountSummary'
+                $ref: '#/components/schemas/CreateAccountResult'
         '401':
           description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '409':
-          description: The request conflicts with the current state of the server.
           content:
             application/json:
               schema:
@@ -1058,6 +1052,29 @@ components:
           nullable: true
           description: Identity identifier to attach to the account.
       description: Request body for creating an account.
+    CreateAccountResult:
+      type: object
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier when a new account was created.
+        email:
+          type: string
+          description: Account email address when a new account was created.
+        type:
+          type: string
+          description: Account type when a new account was created.
+        name:
+          type: string
+          description: Account display name when a new account was created.
+        status:
+          type: string
+          description: Account status when a new account was created.
+        accountCategory:
+          type: string
+          description: Account category assigned during creation.
+      description: Account creation request result. Empty when the request is accepted without exposing whether an account already exists.
     CreateIdentityGroupRequestBody:
       type: object
       required:

@@ -23,6 +23,22 @@ model CreatedAccountSummary extends AccountSummary {
   accountCategory: string;
 }
 
+@doc("Account creation request result. Empty when the request is accepted without exposing whether an account already exists.")
+model CreateAccountResult {
+  @doc("Account identifier when a new account was created.")
+  accountIdentifier?: Uuid;
+  @doc("Account email address when a new account was created.")
+  email?: string;
+  @doc("Account type when a new account was created.")
+  type?: string;
+  @doc("Account display name when a new account was created.")
+  name?: string;
+  @doc("Account status when a new account was created.")
+  status?: string;
+  @doc("Account category assigned during creation.")
+  accountCategory?: string;
+}
+
 @doc("Affiliation contract terms.")
 model AffiliationTermsSummary {
   @doc("Revenue share percentage.")
