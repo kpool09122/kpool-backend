@@ -21,7 +21,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['api', 'session', 'auth.api', 'resolve.actor'])
                 ->prefix('api/monetization')
                 ->group(base_path('routes/monetization_api.php'));
-            Route::middleware(['api', 'session', 'auth.api', 'resolve.actor'])
+            Route::middleware(['api', 'session'])
                 ->prefix('api/account')
                 ->group(base_path('routes/account_api.php'));
 //            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])

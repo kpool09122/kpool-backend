@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Exceptions;
 
-use Exception;
+use Throwable;
 
 /**
  * 422 Unprocessable Entity例外
@@ -19,7 +19,7 @@ class UnprocessableEntityHttpException extends HttpException
         ?string $detail = null,
         ?string $instance = null,
         array $extensions = [],
-        ?Exception $previous = null
+        ?Throwable $previous = null
     ) {
         parent::__construct(
             httpStatus: 422,

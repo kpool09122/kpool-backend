@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Domain\Entity;
+namespace Tests\Account\Account\Domain\Entity;
 
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\Account;

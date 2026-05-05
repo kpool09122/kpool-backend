@@ -6,7 +6,11 @@ namespace Application\Providers\Account;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
+use Source\Account\Account\Application\EventHandler\AccountCreatedHandler;
+use Source\Account\Account\Application\EventHandler\AccountCreationConflictedHandler;
 use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
+use Source\Account\Account\Domain\Event\AccountCreated;
+use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Invitation\Application\EventHandler\IdentityCreatedViaInvitationHandler;
 use Source\Account\Invitation\Application\EventHandler\InvitationCreatedHandler;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
@@ -19,6 +23,16 @@ class EventServiceProvider extends ServiceProvider
     {
         /** @var Dispatcher $events */
         $events = $this->app->make(Dispatcher::class);
+
+        $events->listen(
+            AccountCreationConflicted::class,
+            [AccountCreationConflictedHandler::class, 'handle'],
+        );
+
+        $events->listen(
+            AccountCreated::class,
+            [AccountCreatedHandler::class, 'handle'],
+        );
 
         $events->listen(
             IdentityCreated::class,

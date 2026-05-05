@@ -25,33 +25,37 @@ use Illuminate\Support\Facades\Route;
 
 // Account
 Route::post('/accounts', CreateAccountAction::class);
-Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
 
-// Delegation
-Route::post('/delegations', RequestDelegationAction::class);
-Route::post('/delegations/{delegationId}/approve', ApproveDelegationAction::class);
-Route::post('/delegations/{delegationId}/revoke', RevokeDelegationAction::class);
+Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
+    // Account
+    Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
 
-// DelegationPermission
-Route::post('/delegation-permissions', GrantDelegationPermissionAction::class);
-Route::delete('/delegation-permissions/{delegationPermissionId}', RevokeDelegationPermissionAction::class);
+    // Delegation
+    Route::post('/delegations', RequestDelegationAction::class);
+    Route::post('/delegations/{delegationId}/approve', ApproveDelegationAction::class);
+    Route::post('/delegations/{delegationId}/revoke', RevokeDelegationAction::class);
 
-// IdentityGroup
-Route::post('/identity-groups', CreateIdentityGroupAction::class);
-Route::post('/identity-groups/{identityGroupId}/add-member', AddIdentityToIdentityGroupAction::class);
-Route::post('/identity-groups/{identityGroupId}/remove-member', RemoveIdentityFromIdentityGroupAction::class);
-Route::delete('/identity-groups/{identityGroupId}', DeleteIdentityGroupAction::class);
+    // DelegationPermission
+    Route::post('/delegation-permissions', GrantDelegationPermissionAction::class);
+    Route::delete('/delegation-permissions/{delegationPermissionId}', RevokeDelegationPermissionAction::class);
 
-// Invitation
-Route::post('/invitations', CreateInvitationAction::class);
+    // IdentityGroup
+    Route::post('/identity-groups', CreateIdentityGroupAction::class);
+    Route::post('/identity-groups/{identityGroupId}/add-member', AddIdentityToIdentityGroupAction::class);
+    Route::post('/identity-groups/{identityGroupId}/remove-member', RemoveIdentityFromIdentityGroupAction::class);
+    Route::delete('/identity-groups/{identityGroupId}', DeleteIdentityGroupAction::class);
 
-// AccountVerification
-Route::post('/account-verifications', RequestVerificationAction::class);
-Route::post('/account-verifications/{verificationId}/approve', ApproveVerificationAction::class);
-Route::post('/account-verifications/{verificationId}/reject', RejectVerificationAction::class);
+    // Invitation
+    Route::post('/invitations', CreateInvitationAction::class);
 
-// Affiliation
-Route::post('/affiliations', RequestAffiliationAction::class);
-Route::post('/affiliations/{affiliationId}/approve', ApproveAffiliationAction::class);
-Route::post('/affiliations/{affiliationId}/reject', RejectAffiliationAction::class);
-Route::post('/affiliations/{affiliationId}/terminate', TerminateAffiliationAction::class);
+    // AccountVerification
+    Route::post('/account-verifications', RequestVerificationAction::class);
+    Route::post('/account-verifications/{verificationId}/approve', ApproveVerificationAction::class);
+    Route::post('/account-verifications/{verificationId}/reject', RejectVerificationAction::class);
+
+    // Affiliation
+    Route::post('/affiliations', RequestAffiliationAction::class);
+    Route::post('/affiliations/{affiliationId}/approve', ApproveAffiliationAction::class);
+    Route::post('/affiliations/{affiliationId}/reject', RejectAffiliationAction::class);
+    Route::post('/affiliations/{affiliationId}/terminate', TerminateAffiliationAction::class);
+});

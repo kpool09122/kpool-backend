@@ -8,6 +8,7 @@ use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 
 readonly class CreateAccountInput implements CreateAccountInputPort
 {
@@ -16,6 +17,7 @@ readonly class CreateAccountInput implements CreateAccountInputPort
         private AccountType $accountType,
         private AccountName $accountName,
         private ?IdentityIdentifier $identityIdentifier = null,
+        private Language $language = Language::ENGLISH,
     ) {
     }
 
@@ -37,5 +39,10 @@ readonly class CreateAccountInput implements CreateAccountInputPort
     public function identityIdentifier(): ?IdentityIdentifier
     {
         return $this->identityIdentifier;
+    }
+
+    public function language(): Language
+    {
+        return $this->language;
     }
 }

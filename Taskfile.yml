@@ -61,6 +61,13 @@ tasks:
     cmds:
       - docker-compose logs -f {{.API_SERVICES}}
 
+  queue-work:
+    desc: "Start Laravel queue worker. Usage: task queue-work [queue=default] [once=1]"
+    cmds:
+      - docker-compose up -d php db redis mail
+      - task: wait-for-db
+      - '{{.PHP_EXEC}} php artisan queue:work {{if .queue}}--queue={{.queue}}{{end}} {{if (index . "once")}}--once{{end}}'
+
   shell:
     desc: Open a shell in the php container
     cmds:
