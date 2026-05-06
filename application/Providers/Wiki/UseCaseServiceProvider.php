@@ -74,13 +74,21 @@ use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyWiki\GetAgencyWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki\GetSongDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInterface;
 use Source\Wiki\Wiki\Infrastructure\Query\GetAgencyDraftWiki;
+use Source\Wiki\Wiki\Infrastructure\Query\GetAgencyWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetGroupDraftWiki;
+use Source\Wiki\Wiki\Infrastructure\Query\GetGroupWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetSongDraftWiki;
+use Source\Wiki\Wiki\Infrastructure\Query\GetSongWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetTalentDraftWiki;
+use Source\Wiki\Wiki\Infrastructure\Query\GetTalentWiki;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -121,8 +129,12 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RollbackWikiInterface::class, RollbackWiki::class);
         $this->app->singleton(TranslateWikiInterface::class, TranslateWiki::class);
         $this->app->singleton(GetAgencyDraftWikiInterface::class, GetAgencyDraftWiki::class);
+        $this->app->singleton(GetAgencyWikiInterface::class, GetAgencyWiki::class);
         $this->app->singleton(GetGroupDraftWikiInterface::class, GetGroupDraftWiki::class);
+        $this->app->singleton(GetGroupWikiInterface::class, GetGroupWiki::class);
         $this->app->singleton(GetSongDraftWikiInterface::class, GetSongDraftWiki::class);
+        $this->app->singleton(GetSongWikiInterface::class, GetSongWiki::class);
         $this->app->singleton(GetTalentDraftWikiInterface::class, GetTalentDraftWiki::class);
+        $this->app->singleton(GetTalentWikiInterface::class, GetTalentWiki::class);
     }
 }
