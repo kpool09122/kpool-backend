@@ -40,6 +40,7 @@ use Application\Http\Action\Wiki\Wiki\Query\GetSongDraftWiki\GetSongDraftWikiAct
 use Application\Http\Action\Wiki\Wiki\Query\GetSongWiki\GetSongWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentDraftWiki\GetTalentDraftWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentWiki\GetTalentWikiAction;
+use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
 use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\RequestImageHide\RequestImageHideAction;
@@ -57,6 +58,7 @@ Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
 Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
 Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
 Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
+Route::get('/wikis', ListWikisAction::class);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
 Route::get('/wiki/{language}/agency/{slug}/draft', GetAgencyDraftWikiAction::class);
 Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);

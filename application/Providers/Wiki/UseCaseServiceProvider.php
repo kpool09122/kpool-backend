@@ -81,6 +81,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki\GetSongDraftWiki
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
 use Source\Wiki\Wiki\Infrastructure\Query\GetAgencyDraftWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetAgencyWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetGroupDraftWiki;
@@ -89,6 +90,7 @@ use Source\Wiki\Wiki\Infrastructure\Query\GetSongDraftWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetSongWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetTalentDraftWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetTalentWiki;
+use Source\Wiki\Wiki\Infrastructure\Query\ListWikis;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
@@ -136,5 +138,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GetSongWikiInterface::class, GetSongWiki::class);
         $this->app->singleton(GetTalentDraftWikiInterface::class, GetTalentDraftWiki::class);
         $this->app->singleton(GetTalentWikiInterface::class, GetTalentWiki::class);
+        $this->app->singleton(ListWikisInterface::class, ListWikis::class);
     }
 }
