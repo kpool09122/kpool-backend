@@ -365,6 +365,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /images:
+    get:
+      operationId: ImageListOperations_listUploadedImages
+      description: List uploaded images.
+      parameters:
+        - name: wikiIdentifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+      responses:
+        '200':
+          description: Response returned when uploaded image list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUploadedImagesResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /official-certification/request:
     post:
       operationId: OfficialCertificationOperations_requestCertification
@@ -2187,6 +2230,37 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    ListUploadedImagesResponseBody:
+      type: object
+      required:
+        - images
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadedImageListItem'
+          description: Uploaded images for the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of uploaded images.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of images per page.
+      description: Response body for the uploaded image list endpoint.
     ListWikisResponseBody:
       type: object
       required:
@@ -3061,6 +3135,59 @@ components:
           type: string
           description: Timestamp when the uploader agreed to the terms.
       description: Request body for uploading an image.
+    UploadedImageListItem:
+      type: object
+      required:
+        - imageIdentifier
+        - url
+        - resourceType
+        - wikiIdentifier
+        - imageUsage
+        - displayOrder
+        - sourceUrl
+        - sourceName
+        - altText
+        - isHidden
+        - uploadedAt
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Image identifier.
+        url:
+          type: string
+          description: Absolute image URL.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Wiki identifier that the image belongs to.
+        imageUsage:
+          type: string
+          description: Usage category of the image.
+        displayOrder:
+          type: integer
+          format: int32
+          description: Display order of the image.
+        sourceUrl:
+          type: string
+          description: Original source URL of the image.
+        sourceName:
+          type: string
+          description: Original source name of the image.
+        altText:
+          type: string
+          description: Alternative text for the image.
+        isHidden:
+          type: boolean
+          description: Whether the image is hidden.
+        uploadedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the image was uploaded.
+      description: Uploaded image item returned by the uploaded image list endpoint.
     VideoLinkInput:
       type: object
       required:
