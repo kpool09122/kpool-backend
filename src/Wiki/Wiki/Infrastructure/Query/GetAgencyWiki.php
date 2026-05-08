@@ -9,6 +9,7 @@ use Application\Models\Wiki\WikiAgencyBasic as WikiAgencyBasicModel;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyWiki\GetAgencyWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyWiki\GetAgencyWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
@@ -43,18 +44,18 @@ readonly class GetAgencyWiki implements GetAgencyWikiInterface
             heroImage: [
                 'imageIdentifier' => $basic->logo_image_identifier,
             ],
-            basic: [
-                'name' => $basic->name,
-                'normalizedName' => $basic->normalized_name,
-                'ceo' => $basic->ceo,
-                'normalizedCeo' => $basic->normalized_ceo,
-                'foundedIn' => $basic->founded_in,
-                'parentAgencyIdentifier' => $basic->parent_agency_identifier,
-                'status' => $basic->status,
-                'logoImageIdentifier' => $basic->logo_image_identifier,
-                'officialWebsite' => $basic->official_website,
-                'socialLinks' => $basic->social_links,
-            ],
+            basic: new AgencyWikiBasicReadModel(
+                name: $basic->name,
+                normalizedName: $basic->normalized_name,
+                ceo: $basic->ceo,
+                normalizedCeo: $basic->normalized_ceo,
+                foundedIn: $basic->founded_in,
+                parentAgencyIdentifier: $basic->parent_agency_identifier,
+                status: $basic->status,
+                logoImageIdentifier: $basic->logo_image_identifier,
+                officialWebsite: $basic->official_website,
+                socialLinks: $basic->social_links,
+            ),
             sections: $model->sections,
         );
     }

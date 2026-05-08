@@ -9,7 +9,8 @@ use Application\Models\Wiki\DraftWikiAgencyBasic as DraftWikiAgencyBasicModel;
 use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Application\UseCase\Query\AgencyDraftWikiReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
 
@@ -18,7 +19,7 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
     /**
      * @throws WikiNotFoundException
      */
-    public function process(GetAgencyDraftWikiInputPort $input): AgencyDraftWikiReadModel
+    public function process(GetAgencyDraftWikiInputPort $input): DraftWikiReadModel
     {
         $model = DraftWikiModel::query()
             ->with(['agencyBasic', 'publishedWiki'])
@@ -33,7 +34,7 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
 
         $basic = $this->agencyBasic($model->agencyBasic);
 
-        return new AgencyDraftWikiReadModel(
+        return new DraftWikiReadModel(
             wikiIdentifier: $model->id,
             slug: $model->slug,
             language: $model->language,
@@ -43,18 +44,18 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
             heroImage: [
                 'imageIdentifier' => $basic->logo_image_identifier,
             ],
-            basic: [
-                'name' => $basic->name,
-                'normalizedName' => $basic->normalized_name,
-                'ceo' => $basic->ceo,
-                'normalizedCeo' => $basic->normalized_ceo,
-                'foundedIn' => $basic->founded_in,
-                'parentAgencyIdentifier' => $basic->parent_agency_identifier,
-                'status' => $basic->status,
-                'logoImageIdentifier' => $basic->logo_image_identifier,
-                'officialWebsite' => $basic->official_website,
-                'socialLinks' => $basic->social_links,
-            ],
+            basic: new AgencyWikiBasicReadModel(
+                name: $basic->name,
+                normalizedName: $basic->normalized_name,
+                ceo: $basic->ceo,
+                normalizedCeo: $basic->normalized_ceo,
+                foundedIn: $basic->founded_in,
+                parentAgencyIdentifier: $basic->parent_agency_identifier,
+                status: $basic->status,
+                logoImageIdentifier: $basic->logo_image_identifier,
+                officialWebsite: $basic->official_website,
+                socialLinks: $basic->social_links,
+            ),
             sections: $model->sections,
         );
     }

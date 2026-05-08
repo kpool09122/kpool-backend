@@ -43,6 +43,36 @@ model DraftWikiHeroImage {
   imageIdentifier: Uuid | null;
 }
 
+@doc("Basic payload for a group draft wiki.")
+model GroupDraftWikiBasic {
+  @doc("Display name of the group.")
+  name: string;
+  @doc("Normalized name of the group.")
+  normalizedName: string;
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Group type.")
+  groupType: string;
+  @doc("Current activity status of the group.")
+  status?: string;
+  @doc("Generation label of the group.")
+  generation: string;
+  @doc("Debut date of the group.")
+  debutDate?: plainDate;
+  @doc("Disband date of the group.")
+  disbandDate?: plainDate;
+  @doc("Fandom name of the group.")
+  fandomName: string;
+  @doc("Official colors of the group.")
+  officialColors: string[];
+  @doc("Representative emoji of the group.")
+  emoji: string;
+  @doc("Representative symbol of the group.")
+  representativeSymbol: string;
+  @doc("Main image identifier of the group.")
+  mainImageIdentifier?: Uuid;
+}
+
 @doc("Detailed draft wiki payload used by the editor.")
 model DraftWikiDetail {
   @doc("Draft wiki identifier.")
@@ -60,7 +90,7 @@ model DraftWikiDetail {
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic wiki content payload.")
-  basic: unknown;
+  basic: GroupDraftWikiBasic;
   @doc("Section content payloads.")
   sections: unknown[];
 }

@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Tests\TestCase;
 
 class GetGroupDraftWikiTest extends TestCase
@@ -30,6 +31,7 @@ class GetGroupDraftWikiTest extends TestCase
         $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('girl_group', $readModel->basic()['groupType']);
         $this->assertSame(['#FE5F8F', '#FEE500'], $readModel->basic()['officialColors']);

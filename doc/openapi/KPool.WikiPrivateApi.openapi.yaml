@@ -1912,6 +1912,8 @@ components:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
           description: Hero image payload for the editor.
         basic:
+          allOf:
+            - $ref: '#/components/schemas/GroupDraftWikiBasic'
           description: Basic wiki content payload.
         sections:
           type: array
@@ -1951,6 +1953,64 @@ components:
           type: string
           description: Current workflow status of the draft wiki.
       description: Summary of a draft wiki.
+    GroupDraftWikiBasic:
+      type: object
+      required:
+        - name
+        - normalizedName
+        - groupType
+        - generation
+        - fandomName
+        - officialColors
+        - emoji
+        - representativeSymbol
+      properties:
+        name:
+          type: string
+          description: Display name of the group.
+        normalizedName:
+          type: string
+          description: Normalized name of the group.
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        groupType:
+          type: string
+          description: Group type.
+        status:
+          type: string
+          description: Current activity status of the group.
+        generation:
+          type: string
+          description: Generation label of the group.
+        debutDate:
+          type: string
+          format: date
+          description: Debut date of the group.
+        disbandDate:
+          type: string
+          format: date
+          description: Disband date of the group.
+        fandomName:
+          type: string
+          description: Fandom name of the group.
+        officialColors:
+          type: array
+          items:
+            type: string
+          description: Official colors of the group.
+        emoji:
+          type: string
+          description: Representative emoji of the group.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the group.
+        mainImageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Main image identifier of the group.
+      description: Basic payload for a group draft wiki.
     ImageDraftSummary:
       type: object
       required:
