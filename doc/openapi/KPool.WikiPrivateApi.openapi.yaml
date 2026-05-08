@@ -1644,6 +1644,66 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/WikiWorkflowRequestBody'
+  /wikis/{language}:
+    get:
+      operationId: WikiListOperations_listWikis
+      description: List published wikis by language.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned when wiki list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWikisResponseBody'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
 components:
   schemas:
     AgencyDraftWikiBasic:
@@ -2127,6 +2187,37 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    ListWikisResponseBody:
+      type: object
+      required:
+        - wikis
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiListItem'
+          description: Wiki list for the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of matching wikis.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of wikis per page.
+      description: Response body for the wiki list endpoint.
     MutatePrincipalGroupMemberRequestBody:
       type: object
       required:
@@ -3015,6 +3106,56 @@ components:
             $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Associated talent identifiers.
       description: Association targets that link a wiki to related agencies, groups, or talents.
+    WikiListItem:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - themeColor
+        - name
+        - normalizedName
+        - publishedAt
+        - updatedAt
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Wiki identifier.
+        slug:
+          type: string
+          description: Unique slug for the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number.
+        themeColor:
+          type: string
+          nullable: true
+          description: Theme color applied to the wiki.
+        name:
+          type: string
+          description: Display name of the wiki.
+        normalizedName:
+          type: string
+          description: Normalized name used for search.
+        publishedAt:
+          type: string
+          nullable: true
+          description: Published timestamp.
+        updatedAt:
+          type: string
+          nullable: true
+          description: Last updated timestamp.
+      description: Wiki list item returned by the wiki list endpoint.
     WikiWorkflowRequestBody:
       type: object
       required:

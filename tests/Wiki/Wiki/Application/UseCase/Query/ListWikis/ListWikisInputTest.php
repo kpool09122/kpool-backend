@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Application\UseCase\Query\ListWikis;
 
+use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInput;
 use Tests\TestCase;
 
@@ -11,8 +13,9 @@ class ListWikisInputTest extends TestCase
 {
     public function testDefaults(): void
     {
-        $input = new ListWikisInput();
+        $input = new ListWikisInput(Language::KOREAN);
 
+        $this->assertSame(Language::KOREAN, $input->language());
         $this->assertSame(10, $input->perPage());
         $this->assertNull($input->resourceType());
         $this->assertNull($input->keyword());
@@ -23,15 +26,17 @@ class ListWikisInputTest extends TestCase
     public function testAccessors(): void
     {
         $input = new ListWikisInput(
+            language: Language::JAPANESE,
             perPage: 20,
-            resourceType: 'talent',
+            resourceType: ResourceType::TALENT,
             keyword: 'chae',
             sort: 'name',
             order: 'asc',
         );
 
+        $this->assertSame(Language::JAPANESE, $input->language());
         $this->assertSame(20, $input->perPage());
-        $this->assertSame('talent', $input->resourceType());
+        $this->assertSame(ResourceType::TALENT, $input->resourceType());
         $this->assertSame('chae', $input->keyword());
         $this->assertSame('name', $input->sort());
         $this->assertSame('asc', $input->order());

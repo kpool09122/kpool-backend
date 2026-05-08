@@ -125,6 +125,65 @@ model RollbackWikiResponse {
   @body body: RollbackWikiResponseBody;
 }
 
+@doc("Wiki list item returned by the wiki list endpoint.")
+model WikiListItem {
+  @doc("Wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug for the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor: string | null;
+  @doc("Display name of the wiki.")
+  name: string;
+  @doc("Normalized name used for search.")
+  normalizedName: string;
+  @doc("Published timestamp.")
+  publishedAt: string | null;
+  @doc("Last updated timestamp.")
+  updatedAt: string | null;
+}
+
+@doc("Response body for the wiki list endpoint.")
+model ListWikisResponseBody {
+  @doc("Wiki list for the requested page.")
+  wikis: WikiListItem[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of matching wikis.")
+  total: int32;
+  @doc("Number of wikis per page.")
+  per_page: int32;
+}
+
+@doc("Response returned when wiki list retrieval succeeds.")
+model ListWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: ListWikisResponseBody;
+}
+
+@route("/wikis")
+interface WikiListOperations {
+  @get
+  @route("/{language}")
+  @doc("List published wikis by language.")
+  listWikis(
+    @path language: string,
+    @query perPage?: int32,
+    @query resourceType?: string,
+    @query keyword?: string,
+    @query sort?: string,
+    @query order?: string,
+  ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/wiki")
 interface WikiOperations {
   @post

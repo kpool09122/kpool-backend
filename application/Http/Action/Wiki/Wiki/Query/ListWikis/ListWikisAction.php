@@ -9,6 +9,8 @@ use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisOutput;
@@ -32,8 +34,9 @@ readonly class ListWikisAction
         try {
             try {
                 $input = new ListWikisInput(
+                    language: Language::from($request->language()),
                     perPage: $request->perPage(),
-                    resourceType: $request->resourceType(),
+                    resourceType: $request->resourceType() === null ? null : ResourceType::from($request->resourceType()),
                     keyword: $request->keyword(),
                     sort: $request->sort(),
                     order: $request->order(),
