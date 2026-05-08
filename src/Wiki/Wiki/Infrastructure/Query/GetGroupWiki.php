@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
 
 readonly class GetGroupWiki implements GetGroupWikiInterface
@@ -43,21 +44,21 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
             heroImage: [
                 'imageIdentifier' => $basic->main_image_identifier,
             ],
-            basic: [
-                'name' => $basic->name,
-                'normalizedName' => $basic->normalized_name,
-                'agencyIdentifier' => $basic->agency_identifier,
-                'groupType' => $basic->group_type,
-                'status' => $basic->status,
-                'generation' => $basic->generation,
-                'debutDate' => $basic->debut_date,
-                'disbandDate' => $basic->disband_date,
-                'fandomName' => $basic->fandom_name,
-                'officialColors' => $basic->official_colors,
-                'emoji' => $basic->emoji,
-                'representativeSymbol' => $basic->representative_symbol,
-                'mainImageIdentifier' => $basic->main_image_identifier,
-            ],
+            basic: new GroupWikiBasicReadModel(
+                name: $basic->name,
+                normalizedName: $basic->normalized_name,
+                agencyIdentifier: $basic->agency_identifier,
+                groupType: $basic->group_type,
+                status: $basic->status,
+                generation: $basic->generation,
+                debutDate: $basic->debut_date,
+                disbandDate: $basic->disband_date,
+                fandomName: $basic->fandom_name,
+                officialColors: $basic->official_colors,
+                emoji: $basic->emoji,
+                representativeSymbol: $basic->representative_symbol,
+                mainImageIdentifier: $basic->main_image_identifier,
+            ),
             sections: $model->sections,
         );
     }

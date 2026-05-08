@@ -11,6 +11,9 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiBasicReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiTalentSummaryReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiGroupSummaryReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
 
 readonly class GetSongWiki implements GetSongWikiInterface
@@ -43,24 +46,24 @@ readonly class GetSongWiki implements GetSongWikiInterface
             heroImage: [
                 'imageIdentifier' => $basic->cover_image_identifier,
             ],
-            basic: [
-                'name' => $basic->name,
-                'normalizedName' => $basic->normalized_name,
-                'songType' => $basic->song_type,
-                'genres' => $basic->genres,
-                'agencyIdentifier' => $basic->agency_identifier,
-                'releaseDate' => $basic->release_date,
-                'albumName' => $basic->album_name,
-                'coverImageIdentifier' => $basic->cover_image_identifier,
-                'lyricist' => $basic->lyricist,
-                'normalizedLyricist' => $basic->normalized_lyricist,
-                'composer' => $basic->composer,
-                'normalizedComposer' => $basic->normalized_composer,
-                'arranger' => $basic->arranger,
-                'normalizedArranger' => $basic->normalized_arranger,
-                'groups' => $basic->groups->map(fn (WikiModel $group) => $this->groupToArray($group))->values()->all(),
-                'talents' => $basic->talents->map(fn (WikiModel $talent) => $this->talentToArray($talent))->values()->all(),
-            ],
+            basic: new SongWikiBasicReadModel(
+                name: $basic->name,
+                normalizedName: $basic->normalized_name,
+                songType: $basic->song_type,
+                genres: $basic->genres,
+                agencyIdentifier: $basic->agency_identifier,
+                releaseDate: $basic->release_date,
+                albumName: $basic->album_name,
+                coverImageIdentifier: $basic->cover_image_identifier,
+                lyricist: $basic->lyricist,
+                normalizedLyricist: $basic->normalized_lyricist,
+                composer: $basic->composer,
+                normalizedComposer: $basic->normalized_composer,
+                arranger: $basic->arranger,
+                normalizedArranger: $basic->normalized_arranger,
+                groups: $basic->groups->map(fn (WikiModel $group) => $this->groupSummary($group))->values()->all(),
+                talents: $basic->talents->map(fn (WikiModel $talent) => $this->talentSummary($talent))->values()->all(),
+            ),
             sections: $model->sections,
         );
     }
@@ -75,65 +78,63 @@ readonly class GetSongWiki implements GetSongWikiInterface
     }
 
     /**
-     * @return array<string, mixed>
      */
-    private function groupToArray(WikiModel $group): array
+    private function groupSummary(WikiModel $group): TalentWikiGroupSummaryReadModel
     {
         $basic = $group->groupBasic;
         if ($basic === null) {
             throw new InvalidArgumentException('GroupBasic not found for Wiki.');
         }
 
-        return [
-            'wikiIdentifier' => $group->id,
-            'slug' => $group->slug,
-            'language' => $group->language,
-            'name' => $basic->name,
-            'normalizedName' => $basic->normalized_name,
-            'agencyIdentifier' => $basic->agency_identifier,
-            'groupType' => $basic->group_type,
-            'status' => $basic->status,
-            'generation' => $basic->generation,
-            'debutDate' => $basic->debut_date,
-            'disbandDate' => $basic->disband_date,
-            'fandomName' => $basic->fandom_name,
-            'officialColors' => $basic->official_colors,
-            'emoji' => $basic->emoji,
-            'representativeSymbol' => $basic->representative_symbol,
-            'mainImageIdentifier' => $basic->main_image_identifier,
-        ];
+        return new TalentWikiGroupSummaryReadModel(
+            wikiIdentifier: $group->id,
+            slug: $group->slug,
+            language: $group->language,
+            name: $basic->name,
+            normalizedName: $basic->normalized_name,
+            agencyIdentifier: $basic->agency_identifier,
+            groupType: $basic->group_type,
+            status: $basic->status,
+            generation: $basic->generation,
+            debutDate: $basic->debut_date,
+            disbandDate: $basic->disband_date,
+            fandomName: $basic->fandom_name,
+            officialColors: $basic->official_colors,
+            emoji: $basic->emoji,
+            representativeSymbol: $basic->representative_symbol,
+            mainImageIdentifier: $basic->main_image_identifier,
+        );
     }
 
     /**
-     * @return array<string, mixed>
      */
-    private function talentToArray(WikiModel $talent): array
+    private function talentSummary(WikiModel $talent): SongWikiTalentSummaryReadModel
     {
         $basic = $talent->talentBasic;
         if ($basic === null) {
             throw new InvalidArgumentException('TalentBasic not found for Wiki.');
         }
 
-        return [
-            'wikiIdentifier' => $talent->id,
-            'slug' => $talent->slug,
-            'language' => $talent->language,
-            'name' => $basic->name,
-            'normalizedName' => $basic->normalized_name,
-            'realName' => $basic->real_name,
-            'normalizedRealName' => $basic->normalized_real_name,
-            'birthday' => $basic->birthday,
-            'agencyIdentifier' => $basic->agency_identifier,
-            'emoji' => $basic->emoji,
-            'representativeSymbol' => $basic->representative_symbol,
-            'position' => $basic->position,
-            'mbti' => $basic->mbti,
-            'zodiacSign' => $basic->zodiac_sign,
-            'englishLevel' => $basic->english_level,
-            'height' => $basic->height,
-            'bloodType' => $basic->blood_type,
-            'fandomName' => $basic->fandom_name,
-            'profileImageIdentifier' => $basic->profile_image_identifier,
-        ];
+        return new SongWikiTalentSummaryReadModel(
+            wikiIdentifier: $talent->id,
+            slug: $talent->slug,
+            language: $talent->language,
+            name: $basic->name,
+            normalizedName: $basic->normalized_name,
+            realName: $basic->real_name,
+            normalizedRealName: $basic->normalized_real_name,
+            birthday: $basic->birthday,
+            agencyIdentifier: $basic->agency_identifier,
+            emoji: $basic->emoji,
+            representativeSymbol: $basic->representative_symbol,
+            position: $basic->position,
+            mbti: $basic->mbti,
+            zodiacSign: $basic->zodiac_sign,
+            englishLevel: $basic->english_level,
+            height: $basic->height,
+            bloodType: $basic->blood_type,
+            fandomName: $basic->fandom_name,
+            profileImageIdentifier: $basic->profile_image_identifier,
+        );
     }
 }

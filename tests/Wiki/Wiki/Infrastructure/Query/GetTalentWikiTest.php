@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
@@ -83,6 +84,7 @@ class GetTalentWikiTest extends TestCase
         $this->assertSame(4, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('채영', $readModel->basic()['name']);
         $this->assertSame('손채영', $readModel->basic()['realName']);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->basic()['groups'][0]['wikiIdentifier']);

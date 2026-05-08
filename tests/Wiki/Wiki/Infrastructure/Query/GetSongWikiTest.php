@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
@@ -106,6 +107,7 @@ class GetSongWikiTest extends TestCase
         $this->assertSame(5, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertInstanceOf(SongWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TT', $readModel->basic()['name']);
         $this->assertSame('title_track', $readModel->basic()['songType']);
         $this->assertSame(['dance_pop'], $readModel->basic()['genres']);

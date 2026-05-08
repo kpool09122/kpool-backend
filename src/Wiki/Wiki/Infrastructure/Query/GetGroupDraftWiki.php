@@ -12,6 +12,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 
 readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
 {
@@ -45,21 +46,21 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
             heroImage: [
                 'imageIdentifier' => $basic->main_image_identifier,
             ],
-            basic: [
-                'name' => $basic->name,
-                'normalizedName' => $basic->normalized_name,
-                'agencyIdentifier' => $basic->agency_identifier,
-                'groupType' => $basic->group_type,
-                'status' => $basic->status,
-                'generation' => $basic->generation,
-                'debutDate' => $basic->debut_date,
-                'disbandDate' => $basic->disband_date,
-                'fandomName' => $basic->fandom_name,
-                'officialColors' => $basic->official_colors,
-                'emoji' => $basic->emoji,
-                'representativeSymbol' => $basic->representative_symbol,
-                'mainImageIdentifier' => $basic->main_image_identifier,
-            ],
+            basic: new GroupWikiBasicReadModel(
+                name: $basic->name,
+                normalizedName: $basic->normalized_name,
+                agencyIdentifier: $basic->agency_identifier,
+                groupType: $basic->group_type,
+                status: $basic->status,
+                generation: $basic->generation,
+                debutDate: $basic->debut_date,
+                disbandDate: $basic->disband_date,
+                fandomName: $basic->fandom_name,
+                officialColors: $basic->official_colors,
+                emoji: $basic->emoji,
+                representativeSymbol: $basic->representative_symbol,
+                mainImageIdentifier: $basic->main_image_identifier,
+            ),
             sections: $model->sections,
         );
     }

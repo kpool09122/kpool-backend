@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
 use Tests\Helper\CreateDraftWiki;
@@ -73,6 +74,7 @@ class GetAgencyDraftWikiTest extends TestCase
         $this->assertSame(3, $readModel->version());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404'], $readModel->heroImage());
+        $this->assertInstanceOf(AgencyWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('JYP Entertainment', $readModel->basic()['name']);
         $this->assertSame('J.Y. Park', $readModel->basic()['ceo']);
         $this->assertSame('1997-04-25', $readModel->basic()['foundedIn']);

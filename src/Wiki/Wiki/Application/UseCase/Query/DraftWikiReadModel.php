@@ -6,22 +6,49 @@ namespace Source\Wiki\Wiki\Application\UseCase\Query;
 
 readonly class DraftWikiReadModel
 {
+    private string $wikiIdentifier;
+    private string $slug;
+    private string $language;
+    private string $resourceType;
+    private int $version;
+    private ?string $themeColor;
+    /** @var array<string, mixed> */
+    private array $heroImage;
+    private WikiBasicReadModel $basic;
+    /** @var list<array<string, mixed>> */
+    private array $sections;
+
     /**
      * @param array<string, mixed> $heroImage
-     * @param array<string, mixed> $basic
+     * @param array<string, mixed>|WikiBasicReadModel $basic
      * @param list<array<string, mixed>> $sections
      */
     public function __construct(
-        private string $wikiIdentifier,
-        private string $slug,
-        private string $language,
-        private string $resourceType,
-        private int $version,
-        private ?string $themeColor,
-        private array $heroImage,
-        private array $basic,
-        private array $sections,
+        string $wikiIdentifier,
+        string $slug,
+        string $language,
+        string $resourceType,
+        int $version,
+        ?string $themeColor,
+        array $heroImage,
+        array|WikiBasicReadModel $basic,
+        array $sections,
     ) {
+        $this->wikiIdentifier = $wikiIdentifier;
+        $this->slug = $slug;
+        $this->language = $language;
+        $this->resourceType = $resourceType;
+        $this->version = $version;
+        $this->themeColor = $themeColor;
+        $this->heroImage = $heroImage;
+        $this->basic = is_array($basic) ? match ($resourceType) {
+            'group' => WikiBasicReadModelFactory::group($basic),
+            'talent' => WikiBasicReadModelFactory::talent($basic),
+            'song' => WikiBasicReadModelFactory::song($basic),
+            'agency' => WikiBasicReadModelFactory::agency($basic),
+            default => throw new \InvalidArgumentException("Unsupported resource type: {$resourceType}"),
+        } : $basic;
+        $this->sections = $sections;
     }
 
     public function wikiIdentifier(): string
@@ -63,9 +90,8 @@ readonly class DraftWikiReadModel
     }
 
     /**
-     * @return array<string, mixed>
      */
-    public function basic(): array
+    public function basic(): WikiBasicReadModel
     {
         return $this->basic;
     }
@@ -91,7 +117,7 @@ readonly class DraftWikiReadModel
             'version' => $this->version,
             'themeColor' => $this->themeColor,
             'heroImage' => $this->heroImage,
-            'basic' => $this->basic,
+            'basic' => $this->basic->toArray(),
             'sections' => $this->sections,
         ];
     }

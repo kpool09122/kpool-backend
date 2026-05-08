@@ -10,6 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
@@ -60,6 +61,7 @@ class GetGroupWikiTest extends TestCase
         $this->assertSame(2, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('girl_group', $readModel->basic()['groupType']);
         $this->assertSame(['#FE5F8F', '#FEE500'], $readModel->basic()['officialColors']);

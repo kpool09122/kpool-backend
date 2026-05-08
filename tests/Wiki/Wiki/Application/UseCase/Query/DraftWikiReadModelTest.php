@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Application\UseCase\Query;
 
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Tests\TestCase;
 
 class DraftWikiReadModelTest extends TestCase
@@ -53,6 +54,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('overview', $readModel->sections()[0]['id']);
         $this->assertSame([
