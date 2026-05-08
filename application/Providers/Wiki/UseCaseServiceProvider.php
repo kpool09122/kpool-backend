@@ -21,6 +21,8 @@ use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImage;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
+use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
+use Source\Wiki\Image\Infrastructure\Query\ListUploadedImages;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInterface;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\RejectCertification\RejectCertification;
@@ -120,6 +122,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestImageHideInterface::class, RequestImageHide::class);
         $this->app->singleton(ApproveImageHideRequestInterface::class, ApproveImageHideRequest::class);
         $this->app->singleton(RejectImageHideRequestInterface::class, RejectImageHideRequest::class);
+        $this->app->singleton(ListUploadedImagesInterface::class, ListUploadedImages::class);
         $this->app->singleton(CreateWikiInterface::class, CreateWiki::class);
         $this->app->singleton(AutoCreateWikiInterface::class, AutoCreateWiki::class);
         $this->app->singleton(EditWikiInterface::class, EditWiki::class);

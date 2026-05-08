@@ -43,6 +43,52 @@ model ReviewImageHideRequestBody {
   reviewerComment: string;
 }
 
+@doc("Uploaded image item returned by the uploaded image list endpoint.")
+model UploadedImageListItem {
+  @doc("Image identifier.")
+  imageIdentifier: Uuid;
+  @doc("Absolute image URL.")
+  url: string;
+  @doc("Resource type that the image belongs to.")
+  resourceType: string;
+  @doc("Wiki identifier that the image belongs to.")
+  wikiIdentifier: Uuid;
+  @doc("Usage category of the image.")
+  imageUsage: string;
+  @doc("Display order of the image.")
+  displayOrder: int32;
+  @doc("Original source URL of the image.")
+  sourceUrl: string;
+  @doc("Original source name of the image.")
+  sourceName: string;
+  @doc("Alternative text for the image.")
+  altText: string;
+  @doc("Whether the image is hidden.")
+  isHidden: boolean;
+  @doc("Timestamp when the image was uploaded.")
+  uploadedAt: string | null;
+}
+
+@doc("Response body for the uploaded image list endpoint.")
+model ListUploadedImagesResponseBody {
+  @doc("Uploaded images for the requested page.")
+  images: UploadedImageListItem[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of uploaded images.")
+  total: int32;
+  @doc("Number of images per page.")
+  per_page: int32;
+}
+
+@doc("Response returned when uploaded image list retrieval succeeds.")
+model ListUploadedImagesResponse {
+  @statusCode statusCode: 200;
+  @body body: ListUploadedImagesResponseBody;
+}
+
 @doc("Response returned when a draft image is created.")
 model CreateDraftImageResponse {
   @statusCode statusCode: 201;
@@ -127,4 +173,14 @@ interface ImageOperations {
     @path imageId: Uuid,
     @body body: ReviewImageHideRequestBody,
   ): ReviewImageHideRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/images")
+interface ImageListOperations {
+  @get
+  @doc("List uploaded images.")
+  listUploadedImages(
+    @query wikiIdentifier: Uuid,
+    @query perPage?: int32,
+  ): ListUploadedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
