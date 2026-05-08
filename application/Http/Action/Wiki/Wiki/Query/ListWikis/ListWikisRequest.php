@@ -13,9 +13,21 @@ class ListWikisRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
+    public function validationData(): array
+    {
+        return [
+            ...parent::validationData(),
+            'language' => $this->route('language'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
+            'language' => ['required', 'string', 'in:ja,ko,en'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'resourceType' => ['nullable', 'string', Rule::in([
                 ResourceType::AGENCY->value,
@@ -27,6 +39,11 @@ class ListWikisRequest extends FormRequest
             'sort' => ['nullable', 'string', Rule::in(['updatedAt', 'name'])],
             'order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
         ];
+    }
+
+    public function language(): string
+    {
+        return (string) $this->route('language');
     }
 
     public function perPage(): ?int

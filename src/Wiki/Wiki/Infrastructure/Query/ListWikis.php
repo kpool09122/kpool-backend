@@ -35,18 +35,19 @@ readonly class ListWikis implements ListWikisInterface
     {
         $query = WikiModel::query()
             ->select('wikis.*')
-            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic']);
+            ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
+            ->where('wikis.language', $input->language()->value);
 
         $this->joinBasicTables($query);
 
         if ($input->resourceType() !== null) {
-            $query->where('wikis.resource_type', $input->resourceType());
+            $query->where('wikis.resource_type', $input->resourceType()->value);
         } else {
             $query->whereIn('wikis.resource_type', array_keys(self::BASIC_TABLES));
         }
 
         if ($input->keyword() !== null && $input->keyword() !== '') {
-            $this->applyKeywordSearch($query, $input->keyword(), $input->resourceType());
+            $this->applyKeywordSearch($query, $input->keyword(), $input->resourceType()?->value);
         }
 
         $this->applySort($query, $input->sort(), $input->order());

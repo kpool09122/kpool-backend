@@ -58,7 +58,7 @@ Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
 Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
 Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
 Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
-Route::get('/wikis', ListWikisAction::class);
+Route::get('/wikis/{language}', ListWikisAction::class);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
 Route::get('/wiki/{language}/agency/{slug}/draft', GetAgencyDraftWikiAction::class);
 Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);
