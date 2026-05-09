@@ -2075,8 +2075,10 @@ components:
           type: string
           description: Normalized name of the group.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         groupType:
           type: string
@@ -2094,6 +2096,7 @@ components:
         disbandDate:
           type: string
           format: date
+          nullable: true
           description: Disband date of the group.
         fandomName:
           type: string
@@ -2110,8 +2113,10 @@ components:
           type: string
           description: Representative symbol of the group.
         mainImageIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Main image identifier of the group.
       description: Basic payload for a group draft wiki.
     ImageDraftSummary:

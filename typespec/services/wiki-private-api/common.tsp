@@ -50,7 +50,7 @@ model GroupDraftWikiBasic {
   @doc("Normalized name of the group.")
   normalizedName: string;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier?: Uuid | null;
   @doc("Group type.")
   groupType: string;
   @doc("Current activity status of the group.")
@@ -60,7 +60,7 @@ model GroupDraftWikiBasic {
   @doc("Debut date of the group.")
   debutDate?: plainDate;
   @doc("Disband date of the group.")
-  disbandDate?: plainDate;
+  disbandDate?: plainDate | null;
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official colors of the group.")
@@ -70,7 +70,7 @@ model GroupDraftWikiBasic {
   @doc("Representative symbol of the group.")
   representativeSymbol: string;
   @doc("Main image identifier of the group.")
-  mainImageIdentifier?: Uuid;
+  mainImageIdentifier?: Uuid | null;
 }
 
 @doc("Detailed draft wiki payload used by the editor.")
