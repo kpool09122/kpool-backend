@@ -4,6 +4,58 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /draft-images:
+    get:
+      operationId: DraftImageListOperations_listDraftImages
+      description: List draft images.
+      parameters:
+        - name: wikiIdentifier
+          in: query
+          required: false
+          schema:
+            type: string
+            allOf:
+              - $ref: '#/components/schemas/KPool.Common.Uuid'
+            nullable: true
+          explode: false
+        - name: status
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/DraftImageStatus'
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+      responses:
+        '200':
+          description: Response returned when draft image list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDraftImagesResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /image/upload:
     post:
       operationId: ImageOperations_uploadImage
@@ -1978,6 +2030,75 @@ components:
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for creating a wiki draft.
+    DraftImageListItem:
+      type: object
+      required:
+        - imageIdentifier
+        - publishedImageIdentifier
+        - url
+        - resourceType
+        - wikiIdentifier
+        - imageUsage
+        - displayOrder
+        - sourceUrl
+        - sourceName
+        - altText
+        - status
+        - uploadedAt
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft image identifier.
+        publishedImageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Published image identifier linked to this draft.
+        url:
+          type: string
+          description: Absolute image URL.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Wiki identifier that the image belongs to.
+        imageUsage:
+          type: string
+          description: Usage category of the image.
+        displayOrder:
+          type: integer
+          format: int32
+          description: Display order of the image.
+        sourceUrl:
+          type: string
+          description: Original source URL of the image.
+        sourceName:
+          type: string
+          description: Original source name of the image.
+        altText:
+          type: string
+          description: Alternative text for the image.
+        status:
+          allOf:
+            - $ref: '#/components/schemas/DraftImageStatus'
+          description: Approval status of the draft image.
+        uploadedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the image was uploaded.
+      description: Draft image item returned by the draft image list endpoint.
+    DraftImageStatus:
+      type: string
+      enum:
+        - approved
+        - pending
+        - rejected
+        - under_review
+      description: Approval status assigned to a draft image.
     DraftWikiDetail:
       type: object
       required:
@@ -2235,6 +2356,37 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    ListDraftImagesResponseBody:
+      type: object
+      required:
+        - images
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftImageListItem'
+          description: Draft images for the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of draft images.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of images per page.
+      description: Response body for the draft image list endpoint.
     ListUploadedImagesResponseBody:
       type: object
       required:

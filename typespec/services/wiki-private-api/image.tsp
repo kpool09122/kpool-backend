@@ -69,6 +69,42 @@ model UploadedImageListItem {
   uploadedAt: string | null;
 }
 
+@doc("Approval status assigned to a draft image.")
+union DraftImageStatus {
+  "approved",
+  "pending",
+  "rejected",
+  "under_review",
+}
+
+@doc("Draft image item returned by the draft image list endpoint.")
+model DraftImageListItem {
+  @doc("Draft image identifier.")
+  imageIdentifier: Uuid;
+  @doc("Published image identifier linked to this draft.")
+  publishedImageIdentifier: Uuid | null;
+  @doc("Absolute image URL.")
+  url: string;
+  @doc("Resource type that the image belongs to.")
+  resourceType: string;
+  @doc("Wiki identifier that the image belongs to.")
+  wikiIdentifier: Uuid;
+  @doc("Usage category of the image.")
+  imageUsage: string;
+  @doc("Display order of the image.")
+  displayOrder: int32;
+  @doc("Original source URL of the image.")
+  sourceUrl: string;
+  @doc("Original source name of the image.")
+  sourceName: string;
+  @doc("Alternative text for the image.")
+  altText: string;
+  @doc("Approval status of the draft image.")
+  status: DraftImageStatus;
+  @doc("Timestamp when the image was uploaded.")
+  uploadedAt: string | null;
+}
+
 @doc("Response body for the uploaded image list endpoint.")
 model ListUploadedImagesResponseBody {
   @doc("Uploaded images for the requested page.")
@@ -83,10 +119,30 @@ model ListUploadedImagesResponseBody {
   per_page: int32;
 }
 
+@doc("Response body for the draft image list endpoint.")
+model ListDraftImagesResponseBody {
+  @doc("Draft images for the requested page.")
+  images: DraftImageListItem[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of draft images.")
+  total: int32;
+  @doc("Number of images per page.")
+  per_page: int32;
+}
+
 @doc("Response returned when uploaded image list retrieval succeeds.")
 model ListUploadedImagesResponse {
   @statusCode statusCode: 200;
   @body body: ListUploadedImagesResponseBody;
+}
+
+@doc("Response returned when draft image list retrieval succeeds.")
+model ListDraftImagesResponse {
+  @statusCode statusCode: 200;
+  @body body: ListDraftImagesResponseBody;
 }
 
 @doc("Response returned when a draft image is created.")
@@ -183,4 +239,15 @@ interface ImageListOperations {
     @query wikiIdentifier: Uuid,
     @query perPage?: int32,
   ): ListUploadedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/draft-images")
+interface DraftImageListOperations {
+  @get
+  @doc("List draft images.")
+  listDraftImages(
+    @query wikiIdentifier?: Uuid | null,
+    @query status: DraftImageStatus,
+    @query perPage?: int32,
+  ): ListDraftImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

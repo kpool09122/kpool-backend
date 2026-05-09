@@ -7,6 +7,7 @@ use Application\Http\Action\Wiki\Image\Command\DeleteImage\DeleteImageAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImage\RejectImageAction;
 use Application\Http\Action\Wiki\Image\Command\UnhideImage\UnhideImageAction;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
+use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
 use Application\Http\Action\Wiki\Image\Query\ListUploadedImages\ListUploadedImagesAction;
 use Application\Http\Action\Wiki\Principal\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\AttachPolicyToRole\AttachPolicyToRoleAction;
@@ -70,6 +71,7 @@ Route::get('/wiki/{language}/talent/{slug}', GetTalentWikiAction::class);
 Route::get('/wiki/{language}/talent/{slug}/draft', GetTalentDraftWikiAction::class);
 
 // Image
+Route::get('/draft-images', ListDraftImagesAction::class)->middleware('auth.api');
 Route::get('/images', ListUploadedImagesAction::class)->middleware('auth.api');
 Route::post('/image/{imageId}/approve', ApproveImageAction::class);
 Route::delete('/image/{imageId}', DeleteImageAction::class);
