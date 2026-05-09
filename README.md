@@ -29,8 +29,9 @@ APP_URL=http://localhost:8080
 FRONTEND_URL=http://localhost:3000
 
 # Logging
-LOG_CHANNEL=stack
+LOG_CHANNEL=daily
 LOG_LEVEL=debug
+LOG_DAILY_DAYS=10
 ```
 
 ### Running with Docker
