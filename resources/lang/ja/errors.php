@@ -93,6 +93,7 @@ return [
 
     // Wiki Principal
     'principal_group_not_found' => '指定されたプリンシパルグループが見つかりません。',
+    'principal_not_found' => '指定されたプリンシパルが見つかりません。',
     'policy_not_found' => '指定されたポリシーが見つかりません。',
     'role_not_found' => '指定されたロールが見つかりません。',
     'principal_already_exists' => 'このアイデンティティにはプリンシパルが既に存在します。',

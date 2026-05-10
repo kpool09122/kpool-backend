@@ -93,6 +93,7 @@ return [
 
     // Wiki Principal
     'principal_group_not_found' => '找不到指定的主體群組。',
+    'principal_not_found' => '找不到指定的主體。',
     'policy_not_found' => '找不到指定的政策。',
     'role_not_found' => '找不到指定的角色。',
     'principal_already_exists' => '此身分已存在主體。',

@@ -93,6 +93,7 @@ return [
 
     // Wiki Principal
     'principal_group_not_found' => '지정된 프린시펄 그룹을 찾을 수 없습니다.',
+    'principal_not_found' => '지정된 프린시펄을 찾을 수 없습니다.',
     'policy_not_found' => '지정된 정책을 찾을 수 없습니다.',
     'role_not_found' => '지정된 역할을 찾을 수 없습니다.',
     'principal_already_exists' => '이 아이덴티티에는 이미 프린시펄이 존재합니다.',

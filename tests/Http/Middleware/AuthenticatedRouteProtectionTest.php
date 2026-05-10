@@ -45,6 +45,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
             // Wiki (all routes require auth)
             'wiki: create wiki' => ['POST', '/api/wiki/wiki/create'],
+            'wiki: current principal' => ['GET', '/api/wiki/principal/me'],
         ];
     }
 }
