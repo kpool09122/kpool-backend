@@ -19,6 +19,12 @@ model IdentitySummary {
   profileImage?: string | null;
 }
 
+@doc("Authenticated identity summary returned for the current identity.")
+model AuthenticatedIdentitySummary extends IdentitySummary {
+  @doc("Account identifier associated with the authenticated identity.")
+  accountIdentifier: Uuid | null;
+}
+
 @doc("Identity summary returned after switching active identity.")
 model SwitchedIdentitySummary extends IdentitySummary {
   @doc("Whether the active identity is delegated.")
@@ -101,6 +107,12 @@ model OkIdentityResponse {
   @body body: IdentitySummary;
 }
 
+@doc("Response returned when fetching the current authenticated identity succeeds.")
+model AuthenticatedIdentityResponse {
+  @statusCode statusCode: 200;
+  @body body: AuthenticatedIdentitySummary;
+}
+
 @doc("Response returned when email verification succeeds.")
 model VerifyEmailResponse {
   @statusCode statusCode: 200;
@@ -171,6 +183,11 @@ interface IdentityAuthOperations {
   @route("/logout")
   @doc("Log out the current authenticated identity.")
   logout(): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/me")
+  @doc("Get the current authenticated identity.")
+  getAuthenticatedIdentity(): AuthenticatedIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/switch-identity")

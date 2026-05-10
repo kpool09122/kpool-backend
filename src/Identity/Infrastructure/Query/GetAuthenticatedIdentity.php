@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Query;
 
+use Application\Models\Account\IdentityGroup as IdentityGroupModel;
 use Application\Models\Identity\Identity as IdentityModel;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
@@ -25,12 +26,23 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             throw new IdentityNotFoundException();
         }
 
+        $accountIdentifier = IdentityGroupModel::query()
+            ->join(
+                'identity_group_memberships',
+                'identity_groups.id',
+                '=',
+                'identity_group_memberships.identity_group_id'
+            )
+            ->where('identity_group_memberships.identity_id', (string) $input->identityIdentifier())
+            ->value('identity_groups.account_id');
+
         return new AuthenticatedIdentityReadModel(
             identityIdentifier: $model->id,
             username: $model->username,
             email: $model->email,
             language: $model->language,
             profileImage: $model->profile_image,
+            accountIdentifier: $accountIdentifier === null ? null : (string) $accountIdentifier,
         );
     }
 }
