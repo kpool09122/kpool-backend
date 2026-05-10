@@ -25,6 +25,7 @@ use Application\Http\Action\Wiki\Principal\Command\DeleteRole\DeleteRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\DetachPolicyFromRole\DetachPolicyFromRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
+use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\CreateWiki\CreateWikiAction;
@@ -80,6 +81,7 @@ Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
 Route::post('/image/upload', UploadImageAction::class);
 
 // Principal
+Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::post('/principal/create', CreatePrincipalAction::class);
 Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
 Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);

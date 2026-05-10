@@ -93,6 +93,7 @@ return [
 
     // Wiki Principal
     'principal_group_not_found' => 'The specified principal group was not found.',
+    'principal_not_found' => 'The specified principal was not found.',
     'policy_not_found' => 'The specified policy was not found.',
     'role_not_found' => 'The specified role was not found.',
     'principal_already_exists' => 'A principal already exists for this identity.',

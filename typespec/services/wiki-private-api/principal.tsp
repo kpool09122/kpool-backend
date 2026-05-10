@@ -63,6 +63,12 @@ model CreatePrincipalResponse {
   @body body: PrincipalSummary;
 }
 
+@doc("Response returned for the authenticated identity's principal.")
+model GetCurrentPrincipalResponse {
+  @statusCode statusCode: 200;
+  @body body: PrincipalSummary;
+}
+
 @doc("Response returned when a principal group is created.")
 model CreatePrincipalGroupResponse {
   @statusCode statusCode: 201;
@@ -89,6 +95,11 @@ model CreatePolicyResponse {
 
 @route("/")
 interface PrincipalOperations {
+  @get
+  @route("/principal/me")
+  @doc("Get the principal associated with the authenticated identity.")
+  getCurrentPrincipal(): GetCurrentPrincipalResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/principal/create")
   @doc("Create a principal.")

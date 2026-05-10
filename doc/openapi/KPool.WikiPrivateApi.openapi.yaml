@@ -916,6 +916,30 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePrincipalRequestBody'
+  /principal/me:
+    get:
+      operationId: PrincipalOperations_getCurrentPrincipal
+      description: Get the principal associated with the authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned for the authenticated identity's principal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalSummary'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /role/create:
     post:
       operationId: PrincipalOperations_createRole
