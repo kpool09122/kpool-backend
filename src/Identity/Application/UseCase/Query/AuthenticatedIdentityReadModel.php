@@ -12,6 +12,7 @@ readonly class AuthenticatedIdentityReadModel
         private string $email,
         private string $language,
         private ?string $profileImage,
+        private ?string $accountIdentifier,
     ) {
     }
 
@@ -40,6 +41,11 @@ readonly class AuthenticatedIdentityReadModel
         return $this->profileImage;
     }
 
+    public function accountIdentifier(): ?string
+    {
+        return $this->accountIdentifier;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -51,6 +57,7 @@ readonly class AuthenticatedIdentityReadModel
             'email' => $this->email,
             'language' => $this->language,
             'profileImage' => $this->profileImage,
+            'accountIdentifier' => $this->accountIdentifier,
         ];
     }
 }

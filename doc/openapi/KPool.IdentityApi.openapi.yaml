@@ -64,6 +64,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /auth/me:
+    get:
+      operationId: IdentityAuthOperations_getAuthenticatedIdentity
+      description: Get the current authenticated identity.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when fetching the current authenticated identity succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedIdentitySummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/register:
     post:
       operationId: IdentityAuthOperations_createIdentity
@@ -304,6 +334,20 @@ paths:
               $ref: '#/components/schemas/VerifyEmailRequestBody'
 components:
   schemas:
+    AuthenticatedIdentitySummary:
+      type: object
+      required:
+        - accountIdentifier
+      properties:
+        accountIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Account identifier associated with the authenticated identity.
+      allOf:
+        - $ref: '#/components/schemas/IdentitySummary'
+      description: Authenticated identity summary returned for the current identity.
     CreateIdentityRequestBody:
       type: object
       required:
