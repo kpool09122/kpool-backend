@@ -247,7 +247,7 @@ class WikiEditorSampleSeeder extends Seeder
                 'agency_identifier' => null,
                 'group_type' => 'girl_group',
                 'status' => 'active',
-                'generation' => '3',
+                'generation' => '3rd',
                 'debut_date' => '2015-10-20',
                 'disband_date' => null,
                 'fandom_name' => 'ONCE',
@@ -295,7 +295,7 @@ class WikiEditorSampleSeeder extends Seeder
                 'agency_identifier' => null,
                 'group_type' => 'girl_group',
                 'status' => 'active',
-                'generation' => '3',
+                'generation' => '3rd',
                 'debut_date' => '2015-10-20',
                 'disband_date' => null,
                 'fandom_name' => 'ONCE',
@@ -467,9 +467,16 @@ class WikiEditorSampleSeeder extends Seeder
         return json_encode([
             [
                 'id' => 'overview',
-                'type' => 'plaintext',
+                'type' => 'section',
                 'title' => 'Overview',
-                'content' => $summary,
+                'display_order' => 1,
+                'contents' => [
+                    [
+                        'block_type' => 'text',
+                        'display_order' => 1,
+                        'content' => $summary,
+                    ],
+                ],
             ],
         ], JSON_THROW_ON_ERROR);
     }
@@ -479,11 +486,18 @@ class WikiEditorSampleSeeder extends Seeder
         return json_encode([
             [
                 'id' => 'overview',
-                'type' => 'plaintext',
+                'type' => 'section',
                 'title' => 'Overview',
-                'content' => $isDraft
-                    ? "{$name} draft profile linked to the TWICE editor sample."
-                    : "{$name} published profile linked to the TWICE group sample.",
+                'display_order' => 1,
+                'contents' => [
+                    [
+                        'block_type' => 'text',
+                        'display_order' => 1,
+                        'content' => $isDraft
+                            ? "{$name} draft profile linked to the TWICE editor sample."
+                            : "{$name} published profile linked to the TWICE group sample.",
+                    ],
+                ],
             ],
         ], JSON_THROW_ON_ERROR);
     }

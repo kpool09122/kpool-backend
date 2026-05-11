@@ -112,7 +112,7 @@ class ListUploadedImagesTest extends TestCase
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f501', [
             'resource_type' => 'group',
             'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
-            'image_path' => '/images/groups/cover.jpg',
+            'image_path' => 'images/groups/cover.jpg',
             'image_usage' => 'cover',
             'display_order' => 2,
             'source_url' => 'https://example.com/source-image',
@@ -127,7 +127,7 @@ class ListUploadedImagesTest extends TestCase
 
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f501',
-            'url' => 'http://localhost:8080/images/groups/cover.jpg',
+            'url' => 'http://localhost:8080/storage/images/groups/cover.jpg',
             'resourceType' => 'group',
             'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
             'imageUsage' => 'cover',

@@ -34,7 +34,7 @@ class ImageService implements ImageServiceInterface
             throw new InvalidBase64ImageException();
         }
 
-        $baseFileName = Str::uuid()->toString();
+        $baseFileName = 'images/' . Str::uuid();
 
         // オリジナル画像をwebpで保存
         $originalPath = $this->saveAsWebp($gdImage, $baseFileName . '_original.webp');
@@ -62,7 +62,7 @@ class ImageService implements ImageServiceInterface
         imagewebp($image);
         $webpData = ob_get_clean();
 
-        Storage::disk('s3')->put($fileName, $webpData);
+        Storage::disk((string) config('filesystems.image_disk', 'public'))->put($fileName, $webpData);
 
         return $fileName;
     }

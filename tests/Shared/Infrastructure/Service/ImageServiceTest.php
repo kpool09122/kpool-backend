@@ -14,6 +14,13 @@ use Tests\TestCase;
 
 class ImageServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['filesystems.image_disk' => 's3']);
+    }
+
     /**
      * 正常系: DIコンテナからImageServiceInterfaceを解決できること.
      *

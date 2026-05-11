@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SwitchIdentity;
 
+use Application\Http\Action\Identity\Support\IdentityResponsePayload;
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -80,6 +81,6 @@ readonly class SwitchIdentityAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json($output->toArray(), Response::HTTP_OK);
+        return response()->json(IdentityResponsePayload::normalizeProfileImage($output->toArray()), Response::HTTP_OK);
     }
 }

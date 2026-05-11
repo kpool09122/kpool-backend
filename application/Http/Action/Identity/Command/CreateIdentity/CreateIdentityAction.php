@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\CreateIdentity;
 
+use Application\Http\Action\Identity\Support\IdentityResponsePayload;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -104,6 +105,6 @@ readonly class CreateIdentityAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json($output->toArray(), Response::HTTP_CREATED);
+        return response()->json(IdentityResponsePayload::normalizeProfileImage($output->toArray()), Response::HTTP_CREATED);
     }
 }
