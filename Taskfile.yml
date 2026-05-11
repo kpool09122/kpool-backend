@@ -128,6 +128,13 @@ tasks:
       - task: wait-for-db
       - '{{.PHP_RUN}} php artisan migrate --force'
 
+  migrate-fresh:
+    desc: "Drop all tables, run migrations, and seed the database. Usage: task migrate-fresh"
+    cmds:
+      - docker-compose up -d db
+      - task: wait-for-db
+      - '{{.PHP_RUN}} php artisan migrate:fresh --seed --force'
+
   seed:
     desc: "Run database seeders. Usage: task seed [class=Database\\\\Seeders\\\\WikiEditorSampleSeeder]"
     cmds:
