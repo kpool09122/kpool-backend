@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Infrastructure\Query;
 use Application\Models\Wiki\WikiImage;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInputPort;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesOutputPort;
@@ -38,7 +39,7 @@ readonly class ListUploadedImages implements ListUploadedImagesInterface
     {
         return new UploadedImageReadModel(
             imageIdentifier: $image->id,
-            url: url($image->image_path),
+            url: ImageUrl::fromPath($image->image_path) ?? '',
             resourceType: $image->resource_type,
             wikiIdentifier: $image->wiki_id,
             imageUsage: $image->image_usage,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\Login;
 
+use Application\Http\Action\Identity\Support\IdentityResponsePayload;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -77,6 +78,6 @@ readonly class LoginAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json($output->toArray(), Response::HTTP_OK);
+        return response()->json(IdentityResponsePayload::normalizeProfileImage($output->toArray()), Response::HTTP_OK);
     }
 }

@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Infrastructure\Query;
 use Application\Models\Wiki\DraftWikiImage;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Image\Application\UseCase\Query\DraftImageReadModel;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInputPort;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInterface;
@@ -44,7 +45,7 @@ readonly class ListDraftImages implements ListDraftImagesInterface
         return new DraftImageReadModel(
             imageIdentifier: $image->id,
             publishedImageIdentifier: $image->published_id,
-            url: url($image->image_path),
+            url: ImageUrl::fromPath($image->image_path) ?? '',
             resourceType: $image->resource_type,
             wikiIdentifier: $image->wiki_id,
             imageUsage: $image->image_usage,

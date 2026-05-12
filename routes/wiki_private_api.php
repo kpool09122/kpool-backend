@@ -51,16 +51,18 @@ use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinks
 use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/wiki/create', CreateWikiAction::class);
-Route::post('/wiki/auto-create', AutoCreateWikiAction::class);
-Route::post('/wiki/{wikiId}/approve', ApproveWikiAction::class);
-Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
-Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
-Route::post('/wiki/{wikiId}/publish', PublishWikiAction::class);
-Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
-Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
-Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
-Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
+    Route::post('/wiki/create', CreateWikiAction::class);
+    Route::post('/wiki/auto-create', AutoCreateWikiAction::class);
+    Route::post('/wiki/{wikiId}/approve', ApproveWikiAction::class);
+    Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
+    Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);
+    Route::post('/wiki/{wikiId}/publish', PublishWikiAction::class);
+    Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
+    Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
+    Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
+    Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
+});
 Route::get('/wikis/{language}', ListWikisAction::class);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
 Route::get('/wiki/{language}/agency/{slug}/draft', GetAgencyDraftWikiAction::class);
@@ -74,11 +76,13 @@ Route::get('/wiki/{language}/talent/{slug}/draft', GetTalentDraftWikiAction::cla
 // Image
 Route::get('/draft-images', ListDraftImagesAction::class)->middleware('auth.api');
 Route::get('/images', ListUploadedImagesAction::class)->middleware('auth.api');
-Route::post('/image/{imageId}/approve', ApproveImageAction::class);
-Route::delete('/image/{imageId}', DeleteImageAction::class);
-Route::post('/image/{imageId}/reject', RejectImageAction::class);
-Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
-Route::post('/image/upload', UploadImageAction::class);
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
+    Route::post('/image/{imageId}/approve', ApproveImageAction::class);
+    Route::delete('/image/{imageId}', DeleteImageAction::class);
+    Route::post('/image/{imageId}/reject', RejectImageAction::class);
+    Route::post('/image/{imageId}/unhide', UnhideImageAction::class);
+    Route::post('/image/upload', UploadImageAction::class);
+});
 
 // Principal
 Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
@@ -97,9 +101,11 @@ Route::post('/policy/create', CreatePolicyAction::class);
 Route::delete('/policy/{policyId}', DeletePolicyAction::class);
 
 // ImageHideRequest
-Route::post('/image/{imageId}/request-hide', RequestImageHideAction::class);
-Route::post('/image/{imageId}/approve-hide-request', ApproveImageHideRequestAction::class);
-Route::post('/image/{imageId}/reject-hide-request', RejectImageHideRequestAction::class);
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
+    Route::post('/image/{imageId}/request-hide', RequestImageHideAction::class);
+    Route::post('/image/{imageId}/approve-hide-request', ApproveImageHideRequestAction::class);
+    Route::post('/image/{imageId}/reject-hide-request', RejectImageHideRequestAction::class);
+});
 
 // OfficialCertification
 Route::post('/official-certification/request', RequestCertificationAction::class);
@@ -107,4 +113,4 @@ Route::post('/official-certification/{certificationId}/approve', ApproveCertific
 Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);
 
 // VideoLink
-Route::post('/video-link/save', SaveVideoLinksAction::class);
+Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);

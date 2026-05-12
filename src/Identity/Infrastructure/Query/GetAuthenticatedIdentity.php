@@ -10,6 +10,7 @@ use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
+use Source\Shared\Infrastructure\Support\ImageUrl;
 
 readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInterface
 {
@@ -41,7 +42,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             username: $model->username,
             email: $model->email,
             language: $model->language,
-            profileImage: $model->profile_image,
+            profileImage: ImageUrl::fromPath($model->profile_image),
             accountIdentifier: $accountIdentifier === null ? null : (string) $accountIdentifier,
         );
     }
