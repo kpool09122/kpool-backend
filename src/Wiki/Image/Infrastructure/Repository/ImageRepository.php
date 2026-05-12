@@ -8,6 +8,7 @@ use Application\Models\Wiki\ImageHideRequest as ImageHideRequestModel;
 use Application\Models\Wiki\WikiImage;
 use Illuminate\Support\Str;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
@@ -16,7 +17,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class ImageRepository implements ImageRepositoryInterface
 {
@@ -37,12 +37,12 @@ final class ImageRepository implements ImageRepositoryInterface
     /**
      * @return Image[]
      */
-    public function findByResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array
+    public function findByResource(ResourceType $resourceType, TranslationSetIdentifier $translationSetIdentifier): array
     {
         $models = WikiImage::query()
             ->with('hideRequests')
             ->where('resource_type', $resourceType->value)
-            ->where('wiki_id', (string) $wikiIdentifier)
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->orderBy('display_order')
             ->get();
 
@@ -55,7 +55,7 @@ final class ImageRepository implements ImageRepositoryInterface
             ['id' => (string) $image->imageIdentifier()],
             [
                 'resource_type' => $image->resourceType()->value,
-                'wiki_id' => (string) $image->wikiIdentifier(),
+                'translation_set_identifier' => (string) $image->translationSetIdentifier(),
                 'image_path' => (string) $image->imagePath(),
                 'image_usage' => $image->imageUsage()->value,
                 'display_order' => $image->displayOrder(),
@@ -121,7 +121,7 @@ final class ImageRepository implements ImageRepositoryInterface
         return new Image(
             new ImageIdentifier($model->id),
             ResourceType::from($model->resource_type),
-            new WikiIdentifier($model->wiki_id),
+            new TranslationSetIdentifier($model->translation_set_identifier),
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,

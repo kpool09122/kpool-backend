@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $id
  * @property string $image_id
- * @property string $wiki_id
+ * @property string $translation_set_identifier
  * @property string $image_path
  * @property string $image_usage
  * @property int $display_order
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
     'image_id',
-    'wiki_id',
+    'translation_set_identifier',
     'image_path',
     'image_usage',
     'display_order',

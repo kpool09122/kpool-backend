@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use DateTimeImmutable;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class UploadImageInput implements UploadImageInputPort
 {
@@ -17,7 +17,7 @@ readonly class UploadImageInput implements UploadImageInputPort
         private PrincipalIdentifier $principalIdentifier,
         private ?ImageIdentifier    $publishedImageIdentifier,
         private ResourceType        $resourceType,
-        private WikiIdentifier      $draftWikiIdentifier,
+        private TranslationSetIdentifier      $draftTranslationSetIdentifier,
         private string              $base64EncodedImage,
         private ImageUsage          $imageUsage,
         private int                 $displayOrder,
@@ -43,9 +43,9 @@ readonly class UploadImageInput implements UploadImageInputPort
         return $this->resourceType;
     }
 
-    public function wikiIdentifier(): WikiIdentifier
+    public function translationSetIdentifier(): TranslationSetIdentifier
     {
-        return $this->draftWikiIdentifier;
+        return $this->draftTranslationSetIdentifier;
     }
 
     public function base64EncodedImage(): string

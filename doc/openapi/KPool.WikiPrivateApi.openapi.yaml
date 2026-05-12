@@ -9,7 +9,7 @@ paths:
       operationId: DraftImageListOperations_listDraftImages
       description: List draft images.
       parameters:
-        - name: wikiIdentifier
+        - name: translationSetIdentifier
           in: query
           required: false
           schema:
@@ -422,7 +422,7 @@ paths:
       operationId: ImageListOperations_listUploadedImages
       description: List uploaded images.
       parameters:
-        - name: wikiIdentifier
+        - name: translationSetIdentifier
           in: query
           required: true
           schema:
@@ -2061,7 +2061,7 @@ components:
         - publishedImageIdentifier
         - url
         - resourceType
-        - wikiIdentifier
+        - translationSetIdentifier
         - imageUsage
         - displayOrder
         - sourceUrl
@@ -2086,10 +2086,10 @@ components:
         resourceType:
           type: string
           description: Resource type that the image belongs to.
-        wikiIdentifier:
+        translationSetIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Wiki identifier that the image belongs to.
+          description: Translation set identifier that the image belongs to.
         imageUsage:
           type: string
           description: Usage category of the image.
@@ -3273,7 +3273,7 @@ components:
       type: object
       required:
         - resourceType
-        - wikiIdentifier
+        - translationSetIdentifier
         - base64EncodedImage
         - imageUsage
         - displayOrder
@@ -3289,10 +3289,10 @@ components:
         resourceType:
           type: string
           description: Resource type that the image belongs to.
-        wikiIdentifier:
+        translationSetIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Wiki identifier that the image belongs to.
+          description: Translation set identifier that the image belongs to.
         base64EncodedImage:
           type: string
           description: Image data encoded as base64.
@@ -3322,7 +3322,7 @@ components:
         - imageIdentifier
         - url
         - resourceType
-        - wikiIdentifier
+        - translationSetIdentifier
         - imageUsage
         - displayOrder
         - sourceUrl
@@ -3341,10 +3341,10 @@ components:
         resourceType:
           type: string
           description: Resource type that the image belongs to.
-        wikiIdentifier:
+        translationSetIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Wiki identifier that the image belongs to.
+          description: Translation set identifier that the image belongs to.
         imageUsage:
           type: string
           description: Usage category of the image.

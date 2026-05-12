@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface ImageRepositoryInterface
 {
@@ -16,7 +16,7 @@ interface ImageRepositoryInterface
     /**
      * @return Image[]
      */
-    public function findByResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array;
+    public function findByResource(ResourceType $resourceType, TranslationSetIdentifier $translationSetIdentifier): array;
 
     public function save(Image $image): void;
 

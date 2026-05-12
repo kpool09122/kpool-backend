@@ -21,7 +21,7 @@ class UploadImageRequest extends FormRequest
         return [
             'publishedImageIdentifier' => ['nullable', 'uuid'],
             'resourceType' => ['required', 'string'],
-            'wikiIdentifier' => ['required', 'uuid'],
+            'translationSetIdentifier' => ['required', 'uuid'],
             'base64EncodedImage' => ['required', 'string'],
             'imageUsage' => ['required', 'string', Rule::in(array_column(ImageUsage::cases(), 'value'))],
             'displayOrder' => ['required', 'integer'],
@@ -44,9 +44,9 @@ class UploadImageRequest extends FormRequest
         return (string) $this->input('resourceType');
     }
 
-    public function wikiIdentifier(): string
+    public function translationSetIdentifier(): string
     {
-        return (string) $this->input('wikiIdentifier');
+        return (string) $this->input('translationSetIdentifier');
     }
 
     public function base64EncodedImage(): string

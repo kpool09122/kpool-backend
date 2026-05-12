@@ -6,19 +6,19 @@ namespace Source\Wiki\Image\Domain\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface DraftImageFactoryInterface
 {
     public function create(
         ?ImageIdentifier    $publishedImageIdentifier,
         ResourceType        $resourceType,
-        WikiIdentifier      $wikiIdentifier,
+        TranslationSetIdentifier      $translationSetIdentifier,
         PrincipalIdentifier $uploaderIdentifier,
         ImagePath           $imagePath,
         ImageUsage          $imageUsage,

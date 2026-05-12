@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Application\UseCase\Query\ListDraftImages;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ListDraftImagesInput implements ListDraftImagesInputPort
 {
     public function __construct(
         private ApprovalStatus $status,
-        private ?WikiIdentifier $wikiIdentifier = null,
+        private ?TranslationSetIdentifier $translationSetIdentifier = null,
         private ?int $perPage = null,
     ) {
     }
@@ -21,9 +21,9 @@ readonly class ListDraftImagesInput implements ListDraftImagesInputPort
         return $this->perPage ?? 10;
     }
 
-    public function wikiIdentifier(): ?WikiIdentifier
+    public function translationSetIdentifier(): ?TranslationSetIdentifier
     {
-        return $this->wikiIdentifier;
+        return $this->translationSetIdentifier;
     }
 
     public function status(): ApprovalStatus

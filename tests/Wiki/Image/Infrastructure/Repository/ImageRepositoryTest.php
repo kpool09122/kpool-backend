@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
@@ -16,7 +17,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateImage;
 use Tests\Helper\CreateImageHideRequest;
 use Tests\Helper\StrTestHelper;
@@ -37,7 +37,7 @@ class ImageRepositoryTest extends TestCase
 
         CreateImage::create($imageId, [
             'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
@@ -49,7 +49,7 @@ class ImageRepositoryTest extends TestCase
         $this->assertInstanceOf(Image::class, $image);
         $this->assertSame($imageId, (string) $image->imageIdentifier());
         $this->assertSame(ResourceType::TALENT, $image->resourceType());
-        $this->assertSame($wikiId, (string) $image->wikiIdentifier());
+        $this->assertSame($wikiId, (string) $image->translationSetIdentifier());
         $this->assertSame('/images/talents/profile.jpg', (string) $image->imagePath());
         $this->assertSame(ImageUsage::PROFILE, $image->imageUsage());
         $this->assertSame(1, $image->displayOrder());
@@ -86,7 +86,7 @@ class ImageRepositoryTest extends TestCase
 
         CreateImage::create($imageId1, [
             'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
@@ -94,7 +94,7 @@ class ImageRepositoryTest extends TestCase
 
         CreateImage::create($imageId2, [
             'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/additional.jpg',
             'image_usage' => ImageUsage::ADDITIONAL->value,
             'display_order' => 2,
@@ -102,7 +102,7 @@ class ImageRepositoryTest extends TestCase
 
         CreateImage::create($otherImageId, [
             'resource_type' => ResourceType::GROUP->value,
-            'wiki_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'image_path' => '/images/groups/cover.jpg',
             'image_usage' => ImageUsage::COVER->value,
             'display_order' => 1,
@@ -111,7 +111,7 @@ class ImageRepositoryTest extends TestCase
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $images = $repository->findByResource(
             ResourceType::TALENT,
-            new WikiIdentifier($wikiId),
+            new TranslationSetIdentifier($wikiId),
         );
 
         $this->assertCount(2, $images);
@@ -139,7 +139,7 @@ class ImageRepositoryTest extends TestCase
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $images = $repository->findByResource(
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertIsArray($images);
@@ -161,7 +161,7 @@ class ImageRepositoryTest extends TestCase
         $image = new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('/images/talents/new-profile.jpg'),
             ImageUsage::PROFILE,
             1,
@@ -185,7 +185,7 @@ class ImageRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_images', [
             'id' => (string) $image->imageIdentifier(),
             'resource_type' => $image->resourceType()->value,
-            'wiki_id' => (string) $image->wikiIdentifier(),
+            'translation_set_identifier' => (string) $image->translationSetIdentifier(),
             'image_path' => (string) $image->imagePath(),
             'image_usage' => $image->imageUsage()->value,
             'display_order' => $image->displayOrder(),
@@ -210,7 +210,7 @@ class ImageRepositoryTest extends TestCase
 
         CreateImage::create($imageId, [
             'resource_type' => ResourceType::TALENT->value,
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/old.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
@@ -223,7 +223,7 @@ class ImageRepositoryTest extends TestCase
         $image = new Image(
             new ImageIdentifier($imageId),
             ResourceType::TALENT,
-            new WikiIdentifier($wikiId),
+            new TranslationSetIdentifier($wikiId),
             new ImagePath('/images/talents/updated.jpg'),
             ImageUsage::COVER,
             2,

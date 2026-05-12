@@ -6,17 +6,17 @@ namespace Source\Wiki\Image\Domain\Factory;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface ImageFactoryInterface
 {
     public function create(
         ResourceType        $resourceType,
-        WikiIdentifier      $wikiIdentifier,
+        TranslationSetIdentifier      $translationSetIdentifier,
         ImagePath           $imagePath,
         ImageUsage          $imageUsage,
         int                 $displayOrder,

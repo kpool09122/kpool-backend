@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+
 readonly class ListUploadedImagesInput implements ListUploadedImagesInputPort
 {
     public function __construct(
-        private string $wikiIdentifier,
+        private TranslationSetIdentifier $translationSetIdentifier,
         private ?int $perPage = null,
     ) {
     }
@@ -17,8 +19,8 @@ readonly class ListUploadedImagesInput implements ListUploadedImagesInputPort
         return $this->perPage ?? 10;
     }
 
-    public function wikiIdentifier(): string
+    public function translationSetIdentifier(): TranslationSetIdentifier
     {
-        return $this->wikiIdentifier;
+        return $this->translationSetIdentifier;
     }
 }

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageOutput;
@@ -22,7 +23,6 @@ use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -48,7 +48,7 @@ readonly class UploadImageAction
                     $this->wikiContext->principalIdentifier,
                     $request->publishedImageIdentifier() !== null ? new ImageIdentifier($request->publishedImageIdentifier()) : null,
                     ResourceType::from($request->resourceType()),
-                    new WikiIdentifier($request->wikiIdentifier()),
+                    new TranslationSetIdentifier($request->translationSetIdentifier()),
                     $request->base64EncodedImage(),
                     ImageUsage::from($request->imageUsage()),
                     (int) $request->displayOrder(),

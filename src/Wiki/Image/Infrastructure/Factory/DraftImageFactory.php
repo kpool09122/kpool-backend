@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
@@ -14,7 +15,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class DraftImageFactory implements DraftImageFactoryInterface
 {
@@ -26,7 +26,7 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
     public function create(
         ?ImageIdentifier    $publishedImageIdentifier,
         ResourceType        $resourceType,
-        WikiIdentifier      $wikiIdentifier,
+        TranslationSetIdentifier      $translationSetIdentifier,
         PrincipalIdentifier $uploaderIdentifier,
         ImagePath           $imagePath,
         ImageUsage          $imageUsage,
@@ -40,7 +40,7 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
             new ImageIdentifier($this->uuidGenerator->generate()),
             $publishedImageIdentifier,
             $resourceType,
-            $wikiIdentifier,
+            $translationSetIdentifier,
             $uploaderIdentifier,
             $imagePath,
             $imageUsage,

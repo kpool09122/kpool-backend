@@ -7,12 +7,12 @@ namespace Tests\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ImageSnapshotTest extends TestCase
@@ -24,7 +24,7 @@ class ImageSnapshotTest extends TestCase
     {
         $snapshotIdentifier = new ImageSnapshotIdentifier(StrTestHelper::generateUuid());
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
-        $resourceSnapshotIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $resourceSnapshotIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -58,7 +58,7 @@ class ImageSnapshotTest extends TestCase
 
         $this->assertSame((string) $snapshotIdentifier, (string) $imageSnapshot->snapshotIdentifier());
         $this->assertSame((string) $imageIdentifier, (string) $imageSnapshot->imageIdentifier());
-        $this->assertSame((string) $resourceSnapshotIdentifier, (string) $imageSnapshot->wikiIdentifier());
+        $this->assertSame((string) $resourceSnapshotIdentifier, (string) $imageSnapshot->translationSetIdentifier());
         $this->assertSame((string) $imagePath, (string) $imageSnapshot->imagePath());
         $this->assertSame($imageUsage, $imageSnapshot->imageUsage());
         $this->assertSame($displayOrder, $imageSnapshot->displayOrder());

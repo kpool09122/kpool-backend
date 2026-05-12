@@ -7,11 +7,11 @@ namespace Application\Http\Action\Wiki\Image\Query\ListDraftImages;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInput;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesOutput;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -30,7 +30,7 @@ readonly class ListDraftImagesAction
     {
         try {
             $input = new ListDraftImagesInput(
-                wikiIdentifier: $request->wikiIdentifier() !== null ? new WikiIdentifier($request->wikiIdentifier()) : null,
+                translationSetIdentifier: $request->translationSetIdentifier() !== null ? new TranslationSetIdentifier($request->translationSetIdentifier()) : null,
                 status: ApprovalStatus::from($request->status()),
                 perPage: $request->perPage(),
             );

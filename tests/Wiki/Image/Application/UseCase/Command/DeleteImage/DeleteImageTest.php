@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImage;
 use Source\Wiki\Image\Application\UseCase\Command\DeleteImage\DeleteImageInput;
@@ -27,7 +28,6 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as SharedPrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -231,7 +231,7 @@ class DeleteImageTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -246,7 +246,7 @@ class DeleteImageTest extends TestCase
         $image = new Image(
             $imageIdentifier,
             $resourceType,
-            $wikiIdentifier,
+            $translationSetIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,

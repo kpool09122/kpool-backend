@@ -6,6 +6,7 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\ApproveImageHideRequest;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImageHideRequest\ApproveImageHideRequestOutput;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
@@ -14,7 +15,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,7 +44,7 @@ class ApproveImageHideRequestOutputTest extends TestCase
         $image = new Image(
             $imageIdentifier,
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
             ImageUsage::PROFILE,
             1,
