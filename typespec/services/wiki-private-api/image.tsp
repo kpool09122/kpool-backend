@@ -79,6 +79,14 @@ union DraftImageStatus {
   "under_review",
 }
 
+@doc("Wiki display information linked to a draft image through its translation set.")
+model DraftImageWikiDisplayInformation {
+  @doc("Display names keyed by language.")
+  names: Record<string>;
+  @doc("Representative slug of the first linked wiki.")
+  slug: string;
+}
+
 @doc("Draft image item returned by the draft image list endpoint.")
 model DraftImageListItem {
   @doc("Draft image identifier.")
@@ -101,6 +109,8 @@ model DraftImageListItem {
   sourceName: string;
   @doc("Alternative text for the image.")
   altText: string;
+  @doc("Wiki display information linked to this image through its translation set.")
+  wiki: DraftImageWikiDisplayInformation;
   @doc("Approval status of the draft image.")
   status: DraftImageStatus;
   @doc("Timestamp when the image was uploaded.")

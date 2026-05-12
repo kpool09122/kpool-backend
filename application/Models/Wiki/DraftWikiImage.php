@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property string $id
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon $agreed_to_terms_at
  * @property bool $rights_confirmation_agreed
  * @property Carbon $uploaded_at
+ * @property-read Collection<int, Wiki> $wikis
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -57,4 +60,12 @@ class DraftWikiImage extends Model
         'rights_confirmation_agreed' => 'boolean',
         'uploaded_at' => 'datetime',
     ];
+
+    /**
+     * @return HasMany<Wiki>
+     */
+    public function wikis(): HasMany
+    {
+        return $this->hasMany(Wiki::class, 'translation_set_identifier', 'translation_set_identifier');
+    }
 }

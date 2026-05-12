@@ -2067,6 +2067,7 @@ components:
         - sourceUrl
         - sourceName
         - altText
+        - wiki
         - status
         - uploadedAt
       properties:
@@ -2106,6 +2107,10 @@ components:
         altText:
           type: string
           description: Alternative text for the image.
+        wiki:
+          allOf:
+            - $ref: '#/components/schemas/DraftImageWikiDisplayInformation'
+          description: Wiki display information linked to this image through its translation set.
         status:
           allOf:
             - $ref: '#/components/schemas/DraftImageStatus'
@@ -2123,6 +2128,21 @@ components:
         - rejected
         - under_review
       description: Approval status assigned to a draft image.
+    DraftImageWikiDisplayInformation:
+      type: object
+      required:
+        - names
+        - slug
+      properties:
+        names:
+          type: object
+          additionalProperties:
+            type: string
+          description: Display names keyed by language.
+        slug:
+          type: string
+          description: Representative slug of the first linked wiki.
+      description: Wiki display information linked to a draft image through its translation set.
     DraftWikiDetail:
       type: object
       required:

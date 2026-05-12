@@ -24,6 +24,12 @@ class ListDraftImagesOutputTest extends TestCase
             sourceUrl: 'https://example.com/source',
             sourceName: 'Example Source',
             altText: 'Profile image',
+            wiki: [
+                'names' => [
+                    'ko' => 'Chaeyoung',
+                ],
+                'slug' => 'tl-chaeyoung',
+            ],
             status: ApprovalStatus::Pending->value,
             uploadedAt: '2026-05-01T00:00:00+00:00',
         );

@@ -23,6 +23,12 @@ class DraftImageReadModelTest extends TestCase
             sourceUrl: 'https://example.com/source',
             sourceName: 'Example Source',
             altText: 'Profile image',
+            wiki: [
+                'names' => [
+                    'ko' => 'TWICE',
+                ],
+                'slug' => 'gr-twice',
+            ],
             status: ApprovalStatus::UnderReview->value,
             uploadedAt: '2026-05-01T00:00:00+00:00',
         );
@@ -38,6 +44,12 @@ class DraftImageReadModelTest extends TestCase
             'sourceUrl' => 'https://example.com/source',
             'sourceName' => 'Example Source',
             'altText' => 'Profile image',
+            'wiki' => [
+                'names' => [
+                    'ko' => 'TWICE',
+                ],
+                'slug' => 'gr-twice',
+            ],
             'status' => ApprovalStatus::UnderReview->value,
             'uploadedAt' => '2026-05-01T00:00:00+00:00',
         ], $readModel->toArray());
