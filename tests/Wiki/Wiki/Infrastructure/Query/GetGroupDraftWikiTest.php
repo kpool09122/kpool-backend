@@ -25,6 +25,7 @@ class GetGroupDraftWikiTest extends TestCase
         $readModel = $useCase->process(new GetGroupDraftWikiInput(new Slug('gr-twice'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f003', $readModel->translationSetIdentifier());
         $this->assertSame('gr-twice', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());

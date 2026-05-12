@@ -25,6 +25,7 @@ class GetTalentDraftWikiTest extends TestCase
         $readModel = $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-chaeyoung'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f172', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f173', $readModel->translationSetIdentifier());
         $this->assertSame('tl-chaeyoung', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());

@@ -38,6 +38,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
 
         return new DraftWikiReadModel(
             wikiIdentifier: $model->id,
+            translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::GROUP->value,
