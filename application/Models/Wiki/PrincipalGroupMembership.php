@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Models\Wiki;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -12,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $principal_id
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
+ * @property-read PrincipalGroup|null $principalGroup
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'principal_group_id',
@@ -37,5 +39,13 @@ class PrincipalGroupMembership extends Model
     {
         return $query->where('principal_group_id', $this->principal_group_id)
             ->where('principal_id', $this->principal_id);
+    }
+
+    /**
+     * @return BelongsTo<PrincipalGroup, $this>
+     */
+    public function principalGroup(): BelongsTo
+    {
+        return $this->belongsTo(PrincipalGroup::class, 'principal_group_id', 'id');
     }
 }
