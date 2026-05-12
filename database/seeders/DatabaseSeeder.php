@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SystemPolicySeeder::class,
             SystemRoleSeeder::class,
+            FullAccessTestAccountSeeder::class,
             WikiEditorSampleSeeder::class,
         ]);
     }
