@@ -12,6 +12,7 @@ use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -40,6 +41,7 @@ class Image
         private ?DateTimeImmutable $approvedAt,
         private ?PrincipalIdentifier $updaterIdentifier,
         private ?DateTimeImmutable $updatedAt,
+        private RightsConfirmationAgreed $rightsConfirmationAgreed,
         private array $hideRequests = [],
     ) {
     }
@@ -97,6 +99,16 @@ class Image
     public function uploadedAt(): DateTimeImmutable
     {
         return $this->uploadedAt;
+    }
+
+    public function rightsConfirmationAgreed(): RightsConfirmationAgreed
+    {
+        return $this->rightsConfirmationAgreed;
+    }
+
+    public function setRightsConfirmationAgreed(RightsConfirmationAgreed $rightsConfirmationAgreed): void
+    {
+        $this->rightsConfirmationAgreed = $rightsConfirmationAgreed;
     }
 
     public function approverIdentifier(): ?PrincipalIdentifier

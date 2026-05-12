@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -197,6 +198,7 @@ class DraftImageRepositoryTest extends TestCase
             ApprovalStatus::UnderReview,
             new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
+            new RightsConfirmationAgreed(true),
         );
 
         $repository = $this->app->make(DraftImageRepositoryInterface::class);
@@ -241,6 +243,7 @@ class DraftImageRepositoryTest extends TestCase
             ApprovalStatus::UnderReview,
             new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
+            new RightsConfirmationAgreed(true),
         );
 
         $repository = $this->app->make(DraftImageRepositoryInterface::class);
@@ -289,6 +292,7 @@ class DraftImageRepositoryTest extends TestCase
             ApprovalStatus::UnderReview,
             new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(),
+            new RightsConfirmationAgreed(true),
         );
 
         $repository = $this->app->make(DraftImageRepositoryInterface::class);

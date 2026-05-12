@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -34,4 +35,6 @@ interface UploadImageInputPort
     public function altText(): string;
 
     public function agreedToTermsAt(): DateTimeImmutable;
+
+    public function rightsConfirmationAgreed(): RightsConfirmationAgreed;
 }

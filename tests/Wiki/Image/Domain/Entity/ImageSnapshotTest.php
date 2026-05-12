@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -54,6 +55,7 @@ class ImageSnapshotTest extends TestCase
             $approvedAt,
             $updaterIdentifier,
             $updatedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $this->assertSame((string) $snapshotIdentifier, (string) $imageSnapshot->snapshotIdentifier());

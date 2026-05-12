@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $alt_text
  * @property string $status
  * @property Carbon $agreed_to_terms_at
+ * @property bool $rights_confirmation_agreed
  * @property Carbon $uploaded_at
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
@@ -37,6 +38,7 @@ use Illuminate\Database\Eloquent\Model;
     'alt_text',
     'status',
     'agreed_to_terms_at',
+    'rights_confirmation_agreed',
     'uploaded_at',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wiki_images', keyType: 'string')]
@@ -52,6 +54,7 @@ class DraftWikiImage extends Model
     protected $casts = [
         'display_order' => 'integer',
         'agreed_to_terms_at' => 'datetime',
+        'rights_confirmation_agreed' => 'boolean',
         'uploaded_at' => 'datetime',
     ];
 }

@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\ImageFactory;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -48,6 +49,7 @@ class ImageFactoryTest extends TestCase
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approvedAt = new DateTimeImmutable();
+        $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
         $factory = $this->app->make(ImageFactoryInterface::class);
         $image = $factory->create(
@@ -62,6 +64,7 @@ class ImageFactoryTest extends TestCase
             $uploaderIdentifier,
             $approverIdentifier,
             $approvedAt,
+            $rightsConfirmationAgreed,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $image->imageIdentifier()));

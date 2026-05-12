@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -30,6 +31,7 @@ class DraftImage
         private ApprovalStatus               $status,
         private readonly DateTimeImmutable   $agreedToTermsAt,
         private readonly DateTimeImmutable   $uploadedAt,
+        private readonly RightsConfirmationAgreed $rightsConfirmationAgreed,
     ) {
     }
 
@@ -136,5 +138,10 @@ class DraftImage
     public function agreedToTermsAt(): DateTimeImmutable
     {
         return $this->agreedToTermsAt;
+    }
+
+    public function rightsConfirmationAgreed(): RightsConfirmationAgreed
+    {
+        return $this->rightsConfirmationAgreed;
     }
 }

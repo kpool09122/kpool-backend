@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -35,6 +36,7 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
         string              $sourceName,
         string              $altText,
         DateTimeImmutable   $agreedToTermsAt,
+        RightsConfirmationAgreed $rightsConfirmationAgreed,
     ): DraftImage {
         return new DraftImage(
             new ImageIdentifier($this->uuidGenerator->generate()),
@@ -51,6 +53,7 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
             new DateTimeImmutable(),
+            $rightsConfirmationAgreed,
         );
     }
 }

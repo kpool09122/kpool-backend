@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?Carbon $hidden_at
  * @property string $uploader_id
  * @property Carbon $uploaded_at
+ * @property bool $rights_confirmation_agreed
  * @property ?string $approver_id
  * @property ?Carbon $approved_at
  * @property ?string $updater_id
@@ -46,6 +47,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'hidden_at',
     'uploader_id',
     'uploaded_at',
+    'rights_confirmation_agreed',
     'approver_id',
     'approved_at',
     'updater_id',
@@ -66,6 +68,7 @@ class WikiImage extends Model
         'is_hidden' => 'boolean',
         'hidden_at' => 'datetime',
         'uploaded_at' => 'datetime',
+        'rights_confirmation_agreed' => 'boolean',
         'approved_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

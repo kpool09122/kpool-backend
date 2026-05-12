@@ -11,6 +11,7 @@ use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
@@ -56,6 +57,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             'alt_text' => $imageSnapshot->altText(),
             'uploader_id' => (string) $imageSnapshot->uploaderIdentifier(),
             'uploaded_at' => $imageSnapshot->uploadedAt(),
+            'rights_confirmation_agreed' => $imageSnapshot->rightsConfirmationAgreed()->value(),
             'approver_id' => $imageSnapshot->approverIdentifier() ? (string) $imageSnapshot->approverIdentifier() : null,
             'approved_at' => $imageSnapshot->approvedAt(),
             'updater_id' => $imageSnapshot->updaterIdentifier() ? (string) $imageSnapshot->updaterIdentifier() : null,
@@ -81,6 +83,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             $model->approved_at?->toDateTimeImmutable(),
             $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
             $model->updated_at?->toDateTimeImmutable(),
+            new RightsConfirmationAgreed($model->rights_confirmation_agreed),
         );
     }
 }

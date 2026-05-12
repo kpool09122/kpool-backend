@@ -19,6 +19,7 @@ use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -273,6 +274,7 @@ class UnhideImageTest extends TestCase
             null,
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
 
         return new UnhideImageTestData(

@@ -67,6 +67,7 @@ readonly class UploadImage implements UploadImageInterface
             $input->sourceName(),
             $input->altText(),
             $input->agreedToTermsAt(),
+            $input->rightsConfirmationAgreed(),
         );
 
         $this->draftImageRepository->save($draftImage);

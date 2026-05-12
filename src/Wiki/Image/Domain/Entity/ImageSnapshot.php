@@ -9,6 +9,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 
@@ -30,6 +31,7 @@ readonly class ImageSnapshot
         private ?DateTimeImmutable      $approvedAt,
         private ?PrincipalIdentifier    $updaterIdentifier,
         private ?DateTimeImmutable      $updatedAt,
+        private RightsConfirmationAgreed $rightsConfirmationAgreed,
     ) {
     }
 
@@ -71,6 +73,11 @@ readonly class ImageSnapshot
     public function uploadedAt(): DateTimeImmutable
     {
         return $this->uploadedAt;
+    }
+
+    public function rightsConfirmationAgreed(): RightsConfirmationAgreed
+    {
+        return $this->rightsConfirmationAgreed;
     }
 
     public function approverIdentifier(): ?PrincipalIdentifier
