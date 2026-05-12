@@ -11,6 +11,7 @@ use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesI
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesOutput;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Tests\Helper\CreateDraftImage;
+use Tests\Helper\CreateWiki;
 use Tests\TestCase;
 
 class ListDraftImagesTest extends TestCase
@@ -142,6 +143,20 @@ class ListDraftImagesTest extends TestCase
             'status' => ApprovalStatus::Approved->value,
             'uploaded_at' => '2026-05-01 00:00:00',
         ]);
+        CreateWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f701', 'group', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
+            'slug' => 'gr-twice',
+            'language' => 'ko',
+        ], [
+            'name' => 'TWICE',
+        ]);
+        CreateWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f702', 'group', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
+            'slug' => 'gr-twice',
+            'language' => 'ja',
+        ], [
+            'name' => 'トゥワイス',
+        ]);
 
         $payload = $this->process(new ListDraftImagesInput(
             status: ApprovalStatus::Approved,
@@ -159,6 +174,13 @@ class ListDraftImagesTest extends TestCase
             'sourceUrl' => 'https://example.com/source-image',
             'sourceName' => 'Source Name',
             'altText' => 'Cover image',
+            'wiki' => [
+                'names' => [
+                    'ko' => 'TWICE',
+                    'ja' => 'トゥワイス',
+                ],
+                'slug' => 'gr-twice',
+            ],
             'status' => ApprovalStatus::Approved->value,
             'uploadedAt' => '2026-05-01T00:00:00+00:00',
         ], $payload['images'][0]);

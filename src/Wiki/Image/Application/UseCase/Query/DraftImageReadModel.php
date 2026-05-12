@@ -17,6 +17,8 @@ readonly class DraftImageReadModel
         private string $sourceUrl,
         private string $sourceName,
         private string $altText,
+        /** @var array{names: array<string, string>, slug: string} */
+        private array $wiki,
         private string $status,
         private ?string $uploadedAt,
     ) {
@@ -38,6 +40,7 @@ readonly class DraftImageReadModel
             'sourceUrl' => $this->sourceUrl,
             'sourceName' => $this->sourceName,
             'altText' => $this->altText,
+            'wiki' => $this->wiki,
             'status' => $this->status,
             'uploadedAt' => $this->uploadedAt,
         ];
