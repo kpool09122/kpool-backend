@@ -433,6 +433,8 @@ model PrincipalSummary {
   isDelegatedPrincipal: boolean;
   @doc("Whether the principal is enabled.")
   isEnabled: boolean;
+  @doc("Effective policies granted to the principal through principal groups and roles.")
+  policies: EffectivePolicySummary[];
 }
 
 @doc("Summary of a principal group.")
@@ -475,6 +477,18 @@ model PolicySummary {
   createdAt: string;
 }
 
+@doc("Effective policy summary returned for the current principal.")
+model EffectivePolicySummary {
+  @doc("Policy identifier.")
+  policyIdentifier: Uuid;
+  @doc("Policy name.")
+  name: string;
+  @doc("Whether this is a system policy.")
+  isSystemPolicy: boolean;
+  @doc("Statements that define the effective policy.")
+  statements: PolicyStatement[];
+}
+
 @doc("Summary of an official certification request.")
 model OfficialCertificationSummary {
   @doc("Certification identifier.")
@@ -494,7 +508,7 @@ model PolicyConditionClause {
   @doc("Operator used for the comparison.")
   operator: string;
   @doc("Value to compare against.")
-  value: string;
+  value: string | boolean;
 }
 
 @doc("Conditional constraints for a policy statement.")
@@ -512,5 +526,5 @@ model PolicyStatement {
   @doc("Resource types covered by this statement.")
   resourceTypes: string[];
   @doc("Optional condition attached to the statement.")
-  condition?: PolicyCondition;
+  condition?: PolicyCondition | null;
 }

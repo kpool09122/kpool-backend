@@ -2221,6 +2221,30 @@ components:
           type: string
           description: Current workflow status of the draft wiki.
       description: Summary of a draft wiki.
+    EffectivePolicySummary:
+      type: object
+      required:
+        - policyIdentifier
+        - name
+        - isSystemPolicy
+        - statements
+      properties:
+        policyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Policy identifier.
+        name:
+          type: string
+          description: Policy name.
+        isSystemPolicy:
+          type: boolean
+          description: Whether this is a system policy.
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyStatement'
+          description: Statements that define the effective policy.
+      description: Effective policy summary returned for the current principal.
     GroupDraftWikiBasic:
       type: object
       required:
@@ -2549,7 +2573,9 @@ components:
           type: string
           description: Operator used for the comparison.
         value:
-          type: string
+          anyOf:
+            - type: string
+            - type: boolean
           description: Value to compare against.
       description: Single condition clause in a policy.
     PolicyStatement:
@@ -2573,8 +2599,10 @@ components:
             type: string
           description: Resource types covered by this statement.
         condition:
+          type: object
           allOf:
             - $ref: '#/components/schemas/PolicyCondition'
+          nullable: true
           description: Optional condition attached to the statement.
       description: Statement that grants or denies actions on resource types.
     PolicySummary:
@@ -2638,6 +2666,7 @@ components:
         - identityIdentifier
         - isDelegatedPrincipal
         - isEnabled
+        - policies
       properties:
         principalIdentifier:
           allOf:
@@ -2653,6 +2682,11 @@ components:
         isEnabled:
           type: boolean
           description: Whether the principal is enabled.
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectivePolicySummary'
+          description: Effective policies granted to the principal through principal groups and roles.
       description: Summary of a principal.
     PublishWikiRequestBody:
       type: object
