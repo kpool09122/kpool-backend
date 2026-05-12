@@ -7,6 +7,7 @@ namespace Application\Http\Action\Wiki\Image\Query\ListUploadedImages;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInput;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesOutput;
@@ -29,7 +30,7 @@ readonly class ListUploadedImagesAction
         try {
             $input = new ListUploadedImagesInput(
                 perPage: $request->perPage(),
-                wikiIdentifier: $request->wikiIdentifier(),
+                translationSetIdentifier: new TranslationSetIdentifier($request->translationSetIdentifier()),
             );
             $output = new ListUploadedImagesOutput();
             $this->listUploadedImages->process($input, $output);

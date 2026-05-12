@@ -8,13 +8,13 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateImageSnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -48,7 +48,7 @@ class ImageSnapshotRepositoryTest extends TestCase
         $snapshot = new ImageSnapshot(
             new ImageSnapshotIdentifier($snapshotId),
             new ImageIdentifier($imageId),
-            new WikiIdentifier($wikiId),
+            new TranslationSetIdentifier($wikiId),
             new ImagePath($imagePath),
             $imageUsage,
             $displayOrder,
@@ -69,7 +69,7 @@ class ImageSnapshotRepositoryTest extends TestCase
         $this->assertDatabaseHas('wiki_image_snapshots', [
             'id' => $snapshotId,
             'image_id' => $imageId,
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => $imagePath,
             'image_usage' => $imageUsage->value,
             'display_order' => $displayOrder,
@@ -96,7 +96,7 @@ class ImageSnapshotRepositoryTest extends TestCase
 
         CreateImageSnapshot::create($snapshotId, [
             'image_id' => $imageId,
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
@@ -108,7 +108,7 @@ class ImageSnapshotRepositoryTest extends TestCase
         $this->assertInstanceOf(ImageSnapshot::class, $snapshot);
         $this->assertSame($snapshotId, (string) $snapshot->snapshotIdentifier());
         $this->assertSame($imageId, (string) $snapshot->imageIdentifier());
-        $this->assertSame($wikiId, (string) $snapshot->wikiIdentifier());
+        $this->assertSame($wikiId, (string) $snapshot->translationSetIdentifier());
         $this->assertSame('/images/talents/profile.jpg', (string) $snapshot->imagePath());
         $this->assertSame(ImageUsage::PROFILE, $snapshot->imageUsage());
         $this->assertSame(1, $snapshot->displayOrder());
@@ -143,28 +143,28 @@ class ImageSnapshotRepositoryTest extends TestCase
         $otherSnapshotId = StrTestHelper::generateUuid();
 
         CreateImageSnapshot::create($snapshotId1, [
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile.jpg',
             'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
         ]);
 
         CreateImageSnapshot::create($snapshotId2, [
-            'wiki_id' => $wikiId,
+            'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/additional.jpg',
             'image_usage' => ImageUsage::ADDITIONAL->value,
             'display_order' => 2,
         ]);
 
         CreateImageSnapshot::create($otherSnapshotId, [
-            'wiki_id' => StrTestHelper::generateUuid(),
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
             'image_path' => '/images/groups/cover.jpg',
             'image_usage' => ImageUsage::COVER->value,
             'display_order' => 1,
         ]);
 
         $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
-        $snapshots = $repository->findByResourceSnapshot(new WikiIdentifier($wikiId));
+        $snapshots = $repository->findByResourceSnapshot(new TranslationSetIdentifier($wikiId));
 
         $this->assertCount(2, $snapshots);
         $snapshotIds = array_map(
@@ -190,7 +190,7 @@ class ImageSnapshotRepositoryTest extends TestCase
     {
         $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);
         $snapshots = $repository->findByResourceSnapshot(
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertIsArray($snapshots);

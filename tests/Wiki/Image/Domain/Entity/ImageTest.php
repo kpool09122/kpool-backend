@@ -7,6 +7,7 @@ namespace Tests\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Exception\ImageHideRequestAlreadyPendingException;
 use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
@@ -16,7 +17,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class ImageTest extends TestCase
@@ -28,7 +28,7 @@ class ImageTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -68,7 +68,7 @@ class ImageTest extends TestCase
 
         $this->assertSame((string) $imageIdentifier, (string) $image->imageIdentifier());
         $this->assertSame($resourceType, $image->resourceType());
-        $this->assertSame((string) $resourceIdentifier, (string) $image->wikiIdentifier());
+        $this->assertSame((string) $resourceIdentifier, (string) $image->translationSetIdentifier());
         $this->assertSame((string) $imagePath, (string) $image->imagePath());
         $this->assertSame($imageUsage, $image->imageUsage());
         $this->assertSame($displayOrder, $image->displayOrder());
@@ -313,7 +313,7 @@ class ImageTest extends TestCase
         return new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('/resources/public/images/test.webp'),
             ImageUsage::PROFILE,
             1,

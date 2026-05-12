@@ -61,13 +61,13 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithAgency(): void
     {
         $agencyId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($agencyId);
+        $wikiIdentifier = new TranslationSetIdentifier($agencyId);
         $draftWiki = $this->createDraftWiki($agencyId, ResourceType::AGENCY, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -89,12 +89,12 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithAgencyNotFound(): void
     {
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -116,7 +116,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     {
         $groupId = StrTestHelper::generateUuid();
         $agencyId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($groupId);
+        $wikiIdentifier = new TranslationSetIdentifier($groupId);
 
         $basic = GroupBasic::fromArray([
             'name' => 'test',
@@ -126,9 +126,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($groupId, ResourceType::GROUP, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -151,7 +151,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithGroupWithoutAgency(): void
     {
         $groupId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($groupId);
+        $wikiIdentifier = new TranslationSetIdentifier($groupId);
 
         $basic = GroupBasic::fromArray([
             'name' => 'test',
@@ -161,9 +161,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($groupId, ResourceType::GROUP, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -184,12 +184,12 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithGroupNotFound(): void
     {
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -214,7 +214,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $agencyId = StrTestHelper::generateUuid();
         $groupId1 = StrTestHelper::generateUuid();
         $groupId2 = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($talentId);
+        $wikiIdentifier = new TranslationSetIdentifier($talentId);
 
         $basic = TalentBasic::fromArray([
             'name' => 'test',
@@ -225,9 +225,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($talentId, ResourceType::TALENT, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -250,7 +250,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithTalentWithoutOptionalFields(): void
     {
         $talentId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($talentId);
+        $wikiIdentifier = new TranslationSetIdentifier($talentId);
 
         $basic = TalentBasic::fromArray([
             'name' => 'test',
@@ -261,9 +261,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($talentId, ResourceType::TALENT, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -285,12 +285,12 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithTalentNotFound(): void
     {
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -314,7 +314,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $agencyId = StrTestHelper::generateUuid();
         $groupId = StrTestHelper::generateUuid();
         $talentId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($songId);
+        $wikiIdentifier = new TranslationSetIdentifier($songId);
 
         $basic = SongBasic::fromArray([
             'name' => 'test',
@@ -326,9 +326,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($songId, ResourceType::SONG, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -351,7 +351,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     public function testBuildFromDraftResourceWithSongWithoutOptionalFields(): void
     {
         $songId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($songId);
+        $wikiIdentifier = new TranslationSetIdentifier($songId);
 
         $basic = SongBasic::fromArray([
             'name' => 'test',
@@ -363,9 +363,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($songId, ResourceType::SONG, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -387,12 +387,12 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithSongNotFound(): void
     {
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -414,13 +414,13 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
     {
         $draftWikiId = StrTestHelper::generateUuid();
         $publishedWikiId = StrTestHelper::generateUuid();
-        $wikiIdentifier = new WikiIdentifier($draftWikiId);
+        $wikiIdentifier = new TranslationSetIdentifier($draftWikiId);
         $draftWiki = $this->createDraftWiki($draftWikiId, ResourceType::AGENCY, $publishedWikiId);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -440,12 +440,12 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
      */
     public function testBuildFromDraftResourceWithImage(): void
     {
-        $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $wikiIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -480,9 +480,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $draftWiki = $this->createDraftWikiWithBasic($talentId, ResourceType::TALENT, $basic, null);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldReceive('findById')
+        $draftWikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($draftWiki);
+            ->andReturn([$draftWiki]);
 
         $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
         $this->app->instance(WikiRepositoryInterface::class, Mockery::mock(WikiRepositoryInterface::class));
@@ -508,9 +508,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $wiki = $this->createWiki($agencyId, ResourceType::AGENCY);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($wiki);
+            ->andReturn([$wiki]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -542,9 +542,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $wiki = $this->createWikiWithBasic($groupId, ResourceType::GROUP, $basic);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($wiki);
+            ->andReturn([$wiki]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -579,9 +579,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $wiki = $this->createWikiWithBasic($talentId, ResourceType::TALENT, $basic);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($wiki);
+            ->andReturn([$wiki]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -619,9 +619,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $wiki = $this->createWikiWithBasic($songId, ResourceType::SONG, $basic);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn($wiki);
+            ->andReturn([$wiki]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -647,9 +647,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $image = $this->createImage(ResourceType::AGENCY, $agencyId);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -673,9 +673,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $image = $this->createImage(ResourceType::GROUP, $groupId);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -700,9 +700,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $image = $this->createImage(ResourceType::TALENT, $talentId);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -728,9 +728,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $image = $this->createImage(ResourceType::SONG, $songId);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -756,9 +756,9 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         $image = $this->createImage(ResourceType::IMAGE, $imageId);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('findById')
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
             ->once()
-            ->andReturn(null);
+            ->andReturn([]);
 
         $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
         $this->app->instance(DraftWikiRepositoryInterface::class, Mockery::mock(DraftWikiRepositoryInterface::class));
@@ -850,7 +850,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             new ImageIdentifier(StrTestHelper::generateUuid()),
             null,
             $resourceType,
-            new WikiIdentifier($resourceId),
+            new TranslationSetIdentifier($resourceId),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.webp'),
             ImageUsage::PROFILE,
@@ -869,7 +869,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
         return new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             $resourceType,
-            new WikiIdentifier($resourceId),
+            new TranslationSetIdentifier($resourceId),
             new ImagePath('images/test.webp'),
             ImageUsage::PROFILE,
             1,

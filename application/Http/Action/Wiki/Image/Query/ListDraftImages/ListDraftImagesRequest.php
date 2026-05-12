@@ -17,7 +17,7 @@ class ListDraftImagesRequest extends FormRequest
     {
         return [
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'wikiIdentifier' => ['nullable', 'uuid'],
+            'translationSetIdentifier' => ['nullable', 'uuid'],
             'status' => ['required', 'string', Rule::in(array_column(ApprovalStatus::cases(), 'value'))],
         ];
     }
@@ -29,11 +29,11 @@ class ListDraftImagesRequest extends FormRequest
         return $perPage === null ? null : (int) $perPage;
     }
 
-    public function wikiIdentifier(): ?string
+    public function translationSetIdentifier(): ?string
     {
-        $wikiIdentifier = $this->query('wikiIdentifier');
+        $translationSetIdentifier = $this->query('translationSetIdentifier');
 
-        return $wikiIdentifier === null ? null : (string) $wikiIdentifier;
+        return $translationSetIdentifier === null ? null : (string) $translationSetIdentifier;
     }
 
     public function status(): string

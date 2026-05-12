@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Image\Infrastructure\Query;
 
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInput;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesOutput;
@@ -17,23 +18,23 @@ class ListUploadedImagesTest extends TestCase
     public function testProcessReturnsDefaultPaginationSortedByUploadedAtDesc(): void
     {
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f101', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
             'image_path' => '/images/talents/alpha.jpg',
             'uploaded_at' => '2026-05-01 00:00:00',
         ]);
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f102', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
             'image_path' => '/images/talents/beta.jpg',
             'uploaded_at' => '2026-05-03 00:00:00',
         ]);
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f103', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
             'image_path' => '/images/talents/gamma.jpg',
             'uploaded_at' => '2026-05-02 00:00:00',
         ]);
 
         $payload = $this->process(new ListUploadedImagesInput(
-            wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f901'),
         ))->toArray();
 
         $this->assertSame(1, $payload['current_page']);
@@ -52,20 +53,20 @@ class ListUploadedImagesTest extends TestCase
     public function testProcessAppliesPerPage(): void
     {
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f201', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
             'uploaded_at' => '2026-05-01 00:00:00',
         ]);
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f202', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
             'uploaded_at' => '2026-05-02 00:00:00',
         ]);
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f203', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
             'uploaded_at' => '2026-05-03 00:00:00',
         ]);
 
         $payload = $this->process(new ListUploadedImagesInput(
-            wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f902',
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f902'),
             perPage: 2,
         ))->toArray();
 
@@ -76,23 +77,23 @@ class ListUploadedImagesTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessFiltersByWikiIdentifier(): void
+    public function testProcessFiltersByTranslationSetIdentifier(): void
     {
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f301', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
             'uploaded_at' => '2026-05-01 00:00:00',
         ]);
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f302', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f402',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f402',
             'uploaded_at' => '2026-05-02 00:00:00',
         ]);
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f303', [
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
             'uploaded_at' => '2026-05-03 00:00:00',
         ]);
 
         $payload = $this->process(new ListUploadedImagesInput(
-            wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f401'),
         ))->toArray();
 
         $this->assertSame(2, $payload['total']);
@@ -103,7 +104,7 @@ class ListUploadedImagesTest extends TestCase
         $this->assertSame([
             '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
             '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
-        ], array_column($payload['images'], 'wikiIdentifier'));
+        ], array_column($payload['images'], 'translationSetIdentifier'));
     }
 
     #[Group('useDb')]
@@ -111,7 +112,7 @@ class ListUploadedImagesTest extends TestCase
     {
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f501', [
             'resource_type' => 'group',
-            'wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
             'image_path' => 'images/groups/cover.jpg',
             'image_usage' => 'cover',
             'display_order' => 2,
@@ -122,14 +123,14 @@ class ListUploadedImagesTest extends TestCase
         ]);
 
         $payload = $this->process(new ListUploadedImagesInput(
-            wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f601'),
         ))->toArray();
 
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f501',
             'url' => 'http://localhost:8080/storage/images/groups/cover.jpg',
             'resourceType' => 'group',
-            'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
+            'translationSetIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
             'imageUsage' => 'cover',
             'displayOrder' => 2,
             'sourceUrl' => 'https://example.com/source-image',

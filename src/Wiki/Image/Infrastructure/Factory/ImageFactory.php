@@ -7,13 +7,13 @@ namespace Source\Wiki\Image\Infrastructure\Factory;
 use DateTimeImmutable;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ImageFactory implements ImageFactoryInterface
 {
@@ -24,7 +24,7 @@ readonly class ImageFactory implements ImageFactoryInterface
 
     public function create(
         ResourceType        $resourceType,
-        WikiIdentifier      $wikiIdentifier,
+        TranslationSetIdentifier      $translationSetIdentifier,
         ImagePath           $imagePath,
         ImageUsage          $imageUsage,
         int                 $displayOrder,
@@ -38,7 +38,7 @@ readonly class ImageFactory implements ImageFactoryInterface
         return new Image(
             new ImageIdentifier($this->uuidGenerator->generate()),
             $resourceType,
-            $wikiIdentifier,
+            $translationSetIdentifier,
             $imagePath,
             $imageUsage,
             $displayOrder,

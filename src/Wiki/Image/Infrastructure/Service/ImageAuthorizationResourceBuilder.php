@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Infrastructure\Service;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
+use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationResourceBuilderInterface
 {
@@ -26,11 +27,11 @@ readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationRe
     ) {
     }
 
-    public function buildFromDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): Resource
-    {
-        $draftWiki = $this->draftWikiRepository->findById(
-            new DraftWikiIdentifier((string) $wikiIdentifier)
-        );
+    public function buildFromDraftResource(
+        ResourceType $resourceType,
+        TranslationSetIdentifier $translationSetIdentifier,
+    ): Resource {
+        $draftWiki = $this->findFirstDraftWikiByTranslationSetIdentifier($translationSetIdentifier, $resourceType);
 
         if ($draftWiki === null) {
             return new Resource(type: ResourceType::IMAGE);
@@ -51,14 +52,15 @@ readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationRe
     {
         return $this->buildFromDraftResource(
             $draftImage->resourceType(),
-            $draftImage->wikiIdentifier(),
+            $draftImage->translationSetIdentifier(),
         );
     }
 
     public function buildFromImage(Image $image): Resource
     {
-        $wiki = $this->wikiRepository->findById(
-            $image->wikiIdentifier()
+        $wiki = $this->findFirstWikiByTranslationSetIdentifier(
+            $image->translationSetIdentifier(),
+            $image->resourceType(),
         );
 
         if ($wiki === null) {
@@ -110,5 +112,31 @@ readonly class ImageAuthorizationResourceBuilder implements ImageAuthorizationRe
             ),
             default => new Resource(type: ResourceType::IMAGE),
         };
+    }
+
+    private function findFirstDraftWikiByTranslationSetIdentifier(
+        TranslationSetIdentifier $translationSetIdentifier,
+        ResourceType $resourceType,
+    ): ?DraftWiki {
+        foreach ($this->draftWikiRepository->findByTranslationSetIdentifier($translationSetIdentifier) as $draftWiki) {
+            if ($draftWiki->resourceType() === $resourceType) {
+                return $draftWiki;
+            }
+        }
+
+        return null;
+    }
+
+    private function findFirstWikiByTranslationSetIdentifier(
+        TranslationSetIdentifier $translationSetIdentifier,
+        ResourceType $resourceType,
+    ): ?Wiki {
+        foreach ($this->wikiRepository->findByTranslationSetIdentifier($translationSetIdentifier) as $wiki) {
+            if ($wiki->resourceType() === $resourceType) {
+                return $wiki;
+            }
+        }
+
+        return null;
     }
 }

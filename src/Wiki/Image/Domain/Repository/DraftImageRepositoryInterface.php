@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Domain\Repository;
 
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface DraftImageRepositoryInterface
 {
@@ -16,7 +16,7 @@ interface DraftImageRepositoryInterface
     /**
      * @return DraftImage[]
      */
-    public function findByDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): array;
+    public function findByDraftResource(ResourceType $resourceType, TranslationSetIdentifier $translationSetIdentifier): array;
 
     public function save(DraftImage $draftImage): void;
 
@@ -24,7 +24,7 @@ interface DraftImageRepositoryInterface
 
     /**
      * @param ResourceType $resourceType
-     * @param WikiIdentifier $wikiIdentifier
+     * @param TranslationSetIdentifier $translationSetIdentifier
      */
-    public function deleteByDraftResource(ResourceType $resourceType, WikiIdentifier $wikiIdentifier): void;
+    public function deleteByDraftResource(ResourceType $resourceType, TranslationSetIdentifier $translationSetIdentifier): void;
 }

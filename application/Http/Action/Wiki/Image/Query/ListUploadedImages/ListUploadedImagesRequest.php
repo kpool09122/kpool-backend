@@ -15,7 +15,7 @@ class ListUploadedImagesRequest extends FormRequest
     {
         return [
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'wikiIdentifier' => ['required', 'uuid'],
+            'translationSetIdentifier' => ['required', 'uuid'],
         ];
     }
 
@@ -26,8 +26,8 @@ class ListUploadedImagesRequest extends FormRequest
         return $perPage === null ? null : (int) $perPage;
     }
 
-    public function wikiIdentifier(): string
+    public function translationSetIdentifier(): string
     {
-        return (string) $this->query('wikiIdentifier');
+        return (string) $this->query('translationSetIdentifier');
     }
 }

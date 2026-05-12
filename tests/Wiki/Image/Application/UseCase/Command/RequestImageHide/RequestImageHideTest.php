@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\RequestImageHide\RequestImageHide;
 use Source\Wiki\Image\Application\UseCase\Command\RequestImageHide\RequestImageHideInput;
@@ -22,7 +23,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -146,7 +146,7 @@ class RequestImageHideTest extends TestCase
         return new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
             ImageUsage::PROFILE,
             1,
@@ -181,7 +181,7 @@ class RequestImageHideTest extends TestCase
         return new Image(
             new ImageIdentifier(StrTestHelper::generateUuid()),
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
             ImageUsage::PROFILE,
             1,

@@ -46,7 +46,7 @@ readonly class UploadImage implements UploadImageInterface
         $action = $input->publishedImageIdentifier() === null ? Action::CREATE : Action::EDIT;
         $resource = $this->imageAuthorizationResourceBuilder->buildFromDraftResource(
             $input->resourceType(),
-            $input->wikiIdentifier(),
+            $input->translationSetIdentifier(),
         );
 
         if (! $this->policyEvaluator->evaluate($principal, $action, $resource)) {
@@ -58,7 +58,7 @@ readonly class UploadImage implements UploadImageInterface
         $draftImage = $this->draftImageFactory->create(
             $input->publishedImageIdentifier(),
             $input->resourceType(),
-            $input->wikiIdentifier(),
+            $input->translationSetIdentifier(),
             $input->principalIdentifier(),
             $uploadResult->resized,
             $input->imageUsage(),

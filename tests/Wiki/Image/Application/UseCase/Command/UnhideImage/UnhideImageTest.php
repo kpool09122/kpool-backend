@@ -9,6 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\Exception\ImageNotFoundException;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImage;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInput;
@@ -27,7 +28,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -242,7 +242,7 @@ class UnhideImageTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;

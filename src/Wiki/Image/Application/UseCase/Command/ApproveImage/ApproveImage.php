@@ -75,7 +75,7 @@ readonly class ApproveImage implements ApproveImageInterface
                 // スナップショット作成
                 $snapshot = $this->imageSnapshotFactory->create(
                     $existingImage,
-                    $existingImage->wikiIdentifier(),
+                    $existingImage->translationSetIdentifier(),
                 );
                 $this->imageSnapshotRepository->save($snapshot);
 
@@ -103,7 +103,7 @@ readonly class ApproveImage implements ApproveImageInterface
         // 新規Image作成
         $image = $this->imageFactory->create(
             $draftImage->resourceType(),
-            $draftImage->wikiIdentifier(),
+            $draftImage->translationSetIdentifier(),
             $draftImage->imagePath(),
             $draftImage->imageUsage(),
             $draftImage->displayOrder(),

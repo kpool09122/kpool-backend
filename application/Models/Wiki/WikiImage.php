@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property string $id
  * @property string $resource_type
- * @property string $wiki_id
+ * @property string $translation_set_identifier
  * @property string $image_path
  * @property string $image_usage
  * @property int $display_order
@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
     'resource_type',
-    'wiki_id',
+    'translation_set_identifier',
     'image_path',
     'image_usage',
     'display_order',

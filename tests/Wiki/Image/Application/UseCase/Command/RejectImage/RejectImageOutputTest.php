@@ -6,6 +6,7 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\RejectImage;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
@@ -13,7 +14,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -31,7 +31,7 @@ class RejectImageOutputTest extends TestCase
             $imageIdentifier,
             null,
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
             ImageUsage::PROFILE,

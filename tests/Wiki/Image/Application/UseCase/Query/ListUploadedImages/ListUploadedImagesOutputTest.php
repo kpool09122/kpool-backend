@@ -16,7 +16,7 @@ class ListUploadedImagesOutputTest extends TestCase
             imageIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
             url: 'https://example.com/images/talents/profile.jpg',
             resourceType: 'talent',
-            wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
+            translationSetIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
             imageUsage: 'profile',
             displayOrder: 1,
             sourceUrl: 'https://example.com/source',

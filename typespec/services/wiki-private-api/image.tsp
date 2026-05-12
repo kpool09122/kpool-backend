@@ -9,8 +9,8 @@ model UploadImageRequestBody {
   publishedImageIdentifier?: Uuid;
   @doc("Resource type that the image belongs to.")
   resourceType: string;
-  @doc("Wiki identifier that the image belongs to.")
-  wikiIdentifier: Uuid;
+  @doc("Translation set identifier that the image belongs to.")
+  translationSetIdentifier: Uuid;
   @doc("Image data encoded as base64.")
   base64EncodedImage: string;
   @doc("Usage category of the image.")
@@ -51,8 +51,8 @@ model UploadedImageListItem {
   url: string;
   @doc("Resource type that the image belongs to.")
   resourceType: string;
-  @doc("Wiki identifier that the image belongs to.")
-  wikiIdentifier: Uuid;
+  @doc("Translation set identifier that the image belongs to.")
+  translationSetIdentifier: Uuid;
   @doc("Usage category of the image.")
   imageUsage: string;
   @doc("Display order of the image.")
@@ -87,8 +87,8 @@ model DraftImageListItem {
   url: string;
   @doc("Resource type that the image belongs to.")
   resourceType: string;
-  @doc("Wiki identifier that the image belongs to.")
-  wikiIdentifier: Uuid;
+  @doc("Translation set identifier that the image belongs to.")
+  translationSetIdentifier: Uuid;
   @doc("Usage category of the image.")
   imageUsage: string;
   @doc("Display order of the image.")
@@ -236,7 +236,7 @@ interface ImageListOperations {
   @get
   @doc("List uploaded images.")
   listUploadedImages(
-    @query wikiIdentifier: Uuid,
+    @query translationSetIdentifier: Uuid,
     @query perPage?: int32,
   ): ListUploadedImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
@@ -246,7 +246,7 @@ interface DraftImageListOperations {
   @get
   @doc("List draft images.")
   listDraftImages(
-    @query wikiIdentifier?: Uuid | null,
+    @query translationSetIdentifier?: Uuid | null,
     @query status: DraftImageStatus,
     @query perPage?: int32,
   ): ListDraftImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;

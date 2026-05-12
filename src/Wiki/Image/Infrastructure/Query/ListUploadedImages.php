@@ -19,7 +19,7 @@ readonly class ListUploadedImages implements ListUploadedImagesInterface
     {
         /** @var LengthAwarePaginator<int, WikiImage> $paginator */
         $paginator = WikiImage::query()
-            ->where('wiki_id', $input->wikiIdentifier())
+            ->where('translation_set_identifier', (string) $input->translationSetIdentifier())
             ->orderBy('uploaded_at', 'desc')
             ->paginate($input->perPage());
 
@@ -41,7 +41,7 @@ readonly class ListUploadedImages implements ListUploadedImagesInterface
             imageIdentifier: $image->id,
             url: ImageUrl::fromPath($image->image_path) ?? '',
             resourceType: $image->resource_type,
-            wikiIdentifier: $image->wiki_id,
+            translationSetIdentifier: $image->translation_set_identifier,
             imageUsage: $image->image_usage,
             displayOrder: $image->display_order,
             sourceUrl: $image->source_url,

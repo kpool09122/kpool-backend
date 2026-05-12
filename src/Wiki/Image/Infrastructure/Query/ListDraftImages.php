@@ -21,8 +21,8 @@ readonly class ListDraftImages implements ListDraftImagesInterface
             ->where('status', $input->status()->value)
             ->orderBy('uploaded_at', 'desc');
 
-        if ($input->wikiIdentifier() !== null) {
-            $query->where('wiki_id', (string) $input->wikiIdentifier());
+        if ($input->translationSetIdentifier() !== null) {
+            $query->where('translation_set_identifier', (string) $input->translationSetIdentifier());
         }
 
         /** @var LengthAwarePaginator<int, DraftWikiImage> $paginator */
@@ -47,7 +47,7 @@ readonly class ListDraftImages implements ListDraftImagesInterface
             publishedImageIdentifier: $image->published_id,
             url: ImageUrl::fromPath($image->image_path) ?? '',
             resourceType: $image->resource_type,
-            wikiIdentifier: $image->wiki_id,
+            translationSetIdentifier: $image->translation_set_identifier,
             imageUsage: $image->image_usage,
             displayOrder: $image->display_order,
             sourceUrl: $image->source_url,

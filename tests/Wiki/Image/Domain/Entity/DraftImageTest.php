@@ -7,13 +7,13 @@ namespace Tests\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class DraftImageTest extends TestCase
@@ -25,7 +25,7 @@ class DraftImageTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
@@ -57,7 +57,7 @@ class DraftImageTest extends TestCase
         $this->assertSame((string) $imageIdentifier, (string) $draftImage->imageIdentifier());
         $this->assertNull($draftImage->publishedImageIdentifier());
         $this->assertSame($resourceType, $draftImage->resourceType());
-        $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->wikiIdentifier());
+        $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->translationSetIdentifier());
         $this->assertSame((string) $uploaderIdentifier, (string) $draftImage->uploaderIdentifier());
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
         $this->assertSame($imageUsage, $draftImage->imageUsage());
@@ -78,7 +78,7 @@ class DraftImageTest extends TestCase
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::SONG;
-        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
         $imageUsage = ImageUsage::COVER;
@@ -192,7 +192,7 @@ class DraftImageTest extends TestCase
             new ImageIdentifier(StrTestHelper::generateUuid()),
             null,
             ResourceType::TALENT,
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('/resources/public/images/test.webp'),
             ImageUsage::PROFILE,

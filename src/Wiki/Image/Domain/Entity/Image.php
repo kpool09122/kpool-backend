@@ -6,6 +6,7 @@ namespace Source\Wiki\Image\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Exception\ImageHideRequestAlreadyPendingException;
 use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
@@ -14,7 +15,6 @@ use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class Image
 {
@@ -24,7 +24,7 @@ class Image
     public function __construct(
         private readonly ImageIdentifier     $imageIdentifier,
         private readonly ResourceType        $resourceType,
-        private readonly WikiIdentifier      $wikiIdentifier,
+        private readonly TranslationSetIdentifier      $translationSetIdentifier,
         private ImagePath                    $imagePath,
         private ImageUsage                   $imageUsage,
         private int                          $displayOrder,
@@ -54,9 +54,9 @@ class Image
         return $this->resourceType;
     }
 
-    public function wikiIdentifier(): WikiIdentifier
+    public function translationSetIdentifier(): TranslationSetIdentifier
     {
-        return $this->wikiIdentifier;
+        return $this->translationSetIdentifier;
     }
 
     public function imagePath(): ImagePath

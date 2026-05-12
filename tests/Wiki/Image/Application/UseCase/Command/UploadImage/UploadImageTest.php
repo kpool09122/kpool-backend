@@ -12,6 +12,7 @@ use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
@@ -31,7 +32,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -271,7 +271,7 @@ class UploadImageTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $publishedImageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $draftResourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -335,7 +335,7 @@ readonly class UploadImageTestData
         public PrincipalIdentifier $principalIdentifier,
         public ImageIdentifier $publishedImageIdentifier,
         public ResourceType $resourceType,
-        public WikiIdentifier $draftResourceIdentifier,
+        public TranslationSetIdentifier $draftResourceIdentifier,
         public string $base64EncodedImage,
         public ImageUsage $imageUsage,
         public int $displayOrder,

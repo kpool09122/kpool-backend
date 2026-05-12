@@ -6,13 +6,13 @@ namespace Source\Wiki\Image\Infrastructure\Repository;
 
 use Application\Models\Wiki\WikiImageSnapshot;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
 {
@@ -32,10 +32,10 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
     /**
      * @return ImageSnapshot[]
      */
-    public function findByResourceSnapshot(WikiIdentifier $wikiIdentifier): array
+    public function findByResourceSnapshot(TranslationSetIdentifier $translationSetIdentifier): array
     {
         $models = WikiImageSnapshot::query()
-            ->where('wiki_id', (string) $wikiIdentifier)
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->orderBy('display_order')
             ->get();
 
@@ -47,7 +47,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
         WikiImageSnapshot::query()->create([
             'id' => (string) $imageSnapshot->snapshotIdentifier(),
             'image_id' => (string) $imageSnapshot->imageIdentifier(),
-            'wiki_id' => (string) $imageSnapshot->wikiIdentifier(),
+            'translation_set_identifier' => (string) $imageSnapshot->translationSetIdentifier(),
             'image_path' => (string) $imageSnapshot->imagePath(),
             'image_usage' => $imageSnapshot->imageUsage()->value,
             'display_order' => $imageSnapshot->displayOrder(),
@@ -68,7 +68,7 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
         return new ImageSnapshot(
             new ImageSnapshotIdentifier($model->id),
             new ImageIdentifier($model->image_id),
-            new WikiIdentifier($model->wiki_id),
+            new TranslationSetIdentifier($model->translation_set_identifier),
             new ImagePath($model->image_path),
             ImageUsage::from($model->image_usage),
             $model->display_order,

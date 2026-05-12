@@ -6,12 +6,12 @@ namespace Source\Wiki\Image\Domain\Entity;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class DraftImage
 {
@@ -19,7 +19,7 @@ class DraftImage
         private readonly ImageIdentifier     $imageIdentifier,
         private readonly ?ImageIdentifier    $publishedImageIdentifier,
         private readonly ResourceType        $resourceType,
-        private readonly WikiIdentifier      $wikiIdentifier,
+        private readonly TranslationSetIdentifier      $translationSetIdentifier,
         private readonly PrincipalIdentifier $uploaderIdentifier,
         private ImagePath                    $imagePath,
         private ImageUsage                   $imageUsage,
@@ -48,9 +48,9 @@ class DraftImage
         return $this->resourceType;
     }
 
-    public function wikiIdentifier(): WikiIdentifier
+    public function translationSetIdentifier(): TranslationSetIdentifier
     {
-        return $this->wikiIdentifier;
+        return $this->translationSetIdentifier;
     }
 
     public function uploaderIdentifier(): PrincipalIdentifier

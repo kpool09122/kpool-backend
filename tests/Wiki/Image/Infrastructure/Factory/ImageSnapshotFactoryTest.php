@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
@@ -15,7 +16,6 @@ use Source\Wiki\Image\Infrastructure\Factory\ImageSnapshotFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -41,7 +41,7 @@ class ImageSnapshotFactoryTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::TALENT;
-        $resourceIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $resourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
         $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
@@ -76,14 +76,14 @@ class ImageSnapshotFactoryTest extends TestCase
             $updatedAt,
         );
 
-        $resourceSnapshotIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $resourceSnapshotIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
 
         $factory = $this->app->make(ImageSnapshotFactoryInterface::class);
         $snapshot = $factory->create($image, $resourceSnapshotIdentifier);
 
         $this->assertTrue(UuidValidator::isValid((string) $snapshot->snapshotIdentifier()));
         $this->assertSame((string) $imageIdentifier, (string) $snapshot->imageIdentifier());
-        $this->assertSame((string) $resourceSnapshotIdentifier, (string) $snapshot->wikiIdentifier());
+        $this->assertSame((string) $resourceSnapshotIdentifier, (string) $snapshot->translationSetIdentifier());
         $this->assertSame((string) $imagePath, (string) $snapshot->imagePath());
         $this->assertSame($imageUsage, $snapshot->imageUsage());
         $this->assertSame($displayOrder, $snapshot->displayOrder());
