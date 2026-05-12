@@ -7,6 +7,7 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -25,6 +26,7 @@ readonly class UploadImageInput implements UploadImageInputPort
         private string              $sourceName,
         private string              $altText,
         private DateTimeImmutable   $agreedToTermsAt,
+        private RightsConfirmationAgreed $rightsConfirmationAgreed,
     ) {
     }
 
@@ -81,5 +83,10 @@ readonly class UploadImageInput implements UploadImageInputPort
     public function agreedToTermsAt(): DateTimeImmutable
     {
         return $this->agreedToTermsAt;
+    }
+
+    public function rightsConfirmationAgreed(): RightsConfirmationAgreed
+    {
+        return $this->rightsConfirmationAgreed;
     }
 }

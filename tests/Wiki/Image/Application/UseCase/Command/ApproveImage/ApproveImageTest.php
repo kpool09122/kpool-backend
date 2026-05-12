@@ -26,6 +26,7 @@ use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -120,6 +121,7 @@ class ApproveImageTest extends TestCase
                 Mockery::type(PrincipalIdentifier::class),
                 Mockery::type(PrincipalIdentifier::class),
                 Mockery::type(\DateTimeImmutable::class),
+                $testData->draftImage->rightsConfirmationAgreed(),
             )
             ->andReturn($testData->image);
 
@@ -296,6 +298,7 @@ class ApproveImageTest extends TestCase
             $testData->existingImage->approvedAt(),
             $testData->existingImage->updaterIdentifier(),
             $testData->existingImage->updatedAt(),
+            $testData->existingImage->rightsConfirmationAgreed(),
         );
 
         $draftImageRepository = Mockery::mock(DraftImageRepositoryInterface::class);
@@ -509,6 +512,7 @@ class ApproveImageTest extends TestCase
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
@@ -533,6 +537,7 @@ class ApproveImageTest extends TestCase
             $approvedAt,
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
 
         return new ApproveImageTestData(
@@ -583,6 +588,7 @@ class ApproveImageTest extends TestCase
             ApprovalStatus::Pending, // UnderReviewではない
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         return new ApproveImageTestData(
@@ -650,6 +656,7 @@ class ApproveImageTest extends TestCase
             $existingApprovedAt,
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
 
         $draftImage = new DraftImage(
@@ -667,6 +674,7 @@ class ApproveImageTest extends TestCase
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         return new ApproveImageUpdateTestData(

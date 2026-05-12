@@ -3281,6 +3281,7 @@ components:
         - sourceName
         - altText
         - agreedToTermsAt
+        - rightsConfirmationAgreed
       properties:
         publishedImageIdentifier:
           allOf:
@@ -3315,6 +3316,9 @@ components:
         agreedToTermsAt:
           type: string
           description: Timestamp when the uploader agreed to the terms.
+        rightsConfirmationAgreed:
+          type: boolean
+          description: Whether the uploader confirmed there are no copyright or portrait rights issues.
       description: Request body for uploading an image.
     UploadedImageListItem:
       type: object

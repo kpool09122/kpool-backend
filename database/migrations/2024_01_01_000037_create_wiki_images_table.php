@@ -26,6 +26,7 @@ return new class extends Migration
             $table->timestamp('hidden_at')->nullable()->comment('非表示日時');
             $table->uuid('uploader_id')->comment('アップロード者ID');
             $table->timestamp('uploaded_at')->comment('アップロード日時');
+            $table->boolean('rights_confirmation_agreed')->comment('著作権・肖像権確認同意');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->timestamp('approved_at')->nullable()->comment('承認日時');
             $table->uuid('updater_id')->nullable()->comment('更新者ID');
@@ -49,6 +50,7 @@ return new class extends Migration
             $table->string('alt_text', 512)->comment('alt属性テキスト');
             $table->string('status', 16)->default('pending')->comment('承認ステータス (pending, under_review, approved, rejected)');
             $table->timestamp('agreed_to_terms_at')->comment('規約同意日時');
+            $table->boolean('rights_confirmation_agreed')->comment('著作権・肖像権確認同意');
             $table->timestamp('uploaded_at')->comment('アップロード日時');
 
             $table->index(['resource_type', 'translation_set_identifier'], 'idx_draft_resource');
@@ -66,6 +68,7 @@ return new class extends Migration
             $table->string('alt_text', 512)->comment('alt属性テキスト');
             $table->uuid('uploader_id')->comment('アップロード者ID');
             $table->timestamp('uploaded_at')->comment('アップロード日時');
+            $table->boolean('rights_confirmation_agreed')->comment('著作権・肖像権確認同意');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->timestamp('approved_at')->nullable()->comment('承認日時');
             $table->uuid('updater_id')->nullable()->comment('更新者ID');

@@ -25,6 +25,7 @@ class CreateDraftImage
      *     alt_text?: string,
      *     status?: string,
      *     agreed_to_terms_at?: string,
+     *     rights_confirmation_agreed?: bool,
      *     uploaded_at?: string,
      * } $overrides
      */
@@ -44,6 +45,7 @@ class CreateDraftImage
             'alt_text' => $overrides['alt_text'] ?? 'Test image',
             'status' => $overrides['status'] ?? ApprovalStatus::UnderReview->value,
             'agreed_to_terms_at' => $overrides['agreed_to_terms_at'] ?? '2024-01-01 00:00:00',
+            'rights_confirmation_agreed' => $overrides['rights_confirmation_agreed'] ?? true,
             'uploaded_at' => $overrides['uploaded_at'] ?? now(),
         ]);
     }

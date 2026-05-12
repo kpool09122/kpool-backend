@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -42,6 +43,7 @@ class RejectImageOutputTest extends TestCase
             ApprovalStatus::Rejected,
             new DateTimeImmutable(),
             new DateTimeImmutable(),
+            new RightsConfirmationAgreed(true),
         );
 
         $output = new RejectImageOutput();

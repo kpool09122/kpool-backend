@@ -13,6 +13,7 @@ use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Tests\Helper\CreateImageSnapshot;
@@ -61,6 +62,7 @@ class ImageSnapshotRepositoryTest extends TestCase
             $approvedAt,
             $updaterIdentifier,
             $updatedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $repository = $this->app->make(ImageSnapshotRepositoryInterface::class);

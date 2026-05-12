@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\DraftImageFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -49,6 +50,7 @@ class DraftImageFactoryTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
         $factory = $this->app->make(DraftImageFactoryInterface::class);
         $draftImage = $factory->create(
@@ -63,6 +65,7 @@ class DraftImageFactoryTest extends TestCase
             $sourceName,
             $altText,
             $agreedToTermsAt,
+            $rightsConfirmationAgreed,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $draftImage->imageIdentifier()));
@@ -98,6 +101,7 @@ class DraftImageFactoryTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Cover image of song';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
         $factory = $this->app->make(DraftImageFactoryInterface::class);
         $draftImage = $factory->create(
@@ -112,6 +116,7 @@ class DraftImageFactoryTest extends TestCase
             $sourceName,
             $altText,
             $agreedToTermsAt,
+            $rightsConfirmationAgreed,
         );
 
         $this->assertSame((string) $publishedImageIdentifier, (string) $draftImage->publishedImageIdentifier());

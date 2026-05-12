@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $alt_text
  * @property string $uploader_id
  * @property Carbon $uploaded_at
+ * @property bool $rights_confirmation_agreed
  * @property ?string $approver_id
  * @property ?Carbon $approved_at
  * @property ?string $updater_id
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\Model;
     'alt_text',
     'uploader_id',
     'uploaded_at',
+    'rights_confirmation_agreed',
     'approver_id',
     'approved_at',
     'updater_id',
@@ -54,6 +56,7 @@ class WikiImageSnapshot extends Model
     protected $casts = [
         'display_order' => 'integer',
         'uploaded_at' => 'datetime',
+        'rights_confirmation_agreed' => 'boolean',
         'approved_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

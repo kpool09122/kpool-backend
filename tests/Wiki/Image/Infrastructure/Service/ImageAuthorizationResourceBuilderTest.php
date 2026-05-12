@@ -14,6 +14,7 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Service\ImageAuthorizationResourceBuilder;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -861,6 +862,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             ApprovalStatus::UnderReview,
             new DateTimeImmutable(),
             new DateTimeImmutable(),
+            new RightsConfirmationAgreed(true),
         );
     }
 
@@ -885,6 +887,7 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             new DateTimeImmutable(),
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
     }
 }

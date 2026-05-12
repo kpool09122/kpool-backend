@@ -14,6 +14,7 @@ use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -67,6 +68,7 @@ final class ImageRepository implements ImageRepositoryInterface
                 'hidden_at' => $image->hiddenAt(),
                 'uploader_id' => (string) $image->uploaderIdentifier(),
                 'uploaded_at' => $image->uploadedAt(),
+                'rights_confirmation_agreed' => $image->rightsConfirmationAgreed()->value(),
                 'approver_id' => $image->approverIdentifier() ? (string) $image->approverIdentifier() : null,
                 'approved_at' => $image->approvedAt(),
                 'updater_id' => $image->updaterIdentifier() ? (string) $image->updaterIdentifier() : null,
@@ -137,6 +139,7 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->approved_at?->toDateTimeImmutable(),
             $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
             $model->updated_at?->toDateTimeImmutable(),
+            new RightsConfirmationAgreed($model->rights_confirmation_agreed),
             $model->hideRequests
                 ->map(fn (ImageHideRequestModel $hideRequestModel) => $this->toHideRequest($hideRequestModel))
                 ->all(),

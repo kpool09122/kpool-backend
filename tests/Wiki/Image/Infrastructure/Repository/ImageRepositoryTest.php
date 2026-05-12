@@ -14,6 +14,7 @@ use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -177,6 +178,7 @@ class ImageRepositoryTest extends TestCase
             $now,
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
@@ -239,6 +241,7 @@ class ImageRepositoryTest extends TestCase
             $now,
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
 
         $repository = $this->app->make(ImageRepositoryInterface::class);

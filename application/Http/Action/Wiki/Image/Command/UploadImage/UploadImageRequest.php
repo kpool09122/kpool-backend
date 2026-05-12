@@ -29,6 +29,14 @@ class UploadImageRequest extends FormRequest
             'sourceName' => ['required', 'string'],
             'altText' => ['required', 'string'],
             'agreedToTermsAt' => ['required', 'date'],
+            'rightsConfirmationAgreed' => [
+                'required',
+                static function (string $attribute, mixed $value, callable $fail): void {
+                    if ($value !== true) {
+                        $fail('The '.$attribute.' field must be true.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -82,5 +90,10 @@ class UploadImageRequest extends FormRequest
     public function agreedToTermsAt(): string
     {
         return (string) $this->input('agreedToTermsAt');
+    }
+
+    public function rightsConfirmationAgreed(): bool
+    {
+        return $this->boolean('rightsConfirmationAgreed');
     }
 }

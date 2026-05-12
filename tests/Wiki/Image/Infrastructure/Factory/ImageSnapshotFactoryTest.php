@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\ImageSnapshotFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -74,6 +75,7 @@ class ImageSnapshotFactoryTest extends TestCase
             $approvedAt,
             $updaterIdentifier,
             $updatedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $resourceSnapshotIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());

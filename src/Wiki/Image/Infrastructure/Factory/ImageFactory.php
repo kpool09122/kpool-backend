@@ -11,6 +11,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -34,6 +35,7 @@ readonly class ImageFactory implements ImageFactoryInterface
         PrincipalIdentifier $uploaderIdentifier,
         PrincipalIdentifier $approverIdentifier,
         DateTimeImmutable   $approvedAt,
+        RightsConfirmationAgreed $rightsConfirmationAgreed,
     ): Image {
         return new Image(
             new ImageIdentifier($this->uuidGenerator->generate()),
@@ -54,6 +56,7 @@ readonly class ImageFactory implements ImageFactoryInterface
             $approvedAt,
             null,
             null,
+            $rightsConfirmationAgreed,
         );
     }
 }

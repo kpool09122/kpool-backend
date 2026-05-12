@@ -14,6 +14,7 @@ use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -64,6 +65,7 @@ class ImageTest extends TestCase
             $approvedAt,
             $updaterIdentifier,
             $updatedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $this->assertSame((string) $imageIdentifier, (string) $image->imageIdentifier());
@@ -329,6 +331,7 @@ class ImageTest extends TestCase
             new DateTimeImmutable(),
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
     }
 }

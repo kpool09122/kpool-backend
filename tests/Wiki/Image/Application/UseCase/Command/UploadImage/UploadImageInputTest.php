@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -34,6 +35,7 @@ class UploadImageInputTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
         $input = new UploadImageInput(
             $principalIdentifier,
@@ -47,6 +49,7 @@ class UploadImageInputTest extends TestCase
             $sourceName,
             $altText,
             $agreedToTermsAt,
+            $rightsConfirmationAgreed,
         );
 
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
@@ -60,6 +63,7 @@ class UploadImageInputTest extends TestCase
         $this->assertSame($sourceName, $input->sourceName());
         $this->assertSame($altText, $input->altText());
         $this->assertSame($agreedToTermsAt, $input->agreedToTermsAt());
+        $this->assertSame($rightsConfirmationAgreed, $input->rightsConfirmationAgreed());
     }
 
     /**
@@ -79,6 +83,7 @@ class UploadImageInputTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
         $input = new UploadImageInput(
             $principalIdentifier,
@@ -92,6 +97,7 @@ class UploadImageInputTest extends TestCase
             $sourceName,
             $altText,
             $agreedToTermsAt,
+            $rightsConfirmationAgreed,
         );
 
         $this->assertNull($input->publishedImageIdentifier());

@@ -25,6 +25,8 @@ model UploadImageRequestBody {
   altText: string;
   @doc("Timestamp when the uploader agreed to the terms.")
   agreedToTermsAt: string;
+  @doc("Whether the uploader confirmed there are no copyright or portrait rights issues.")
+  rightsConfirmationAgreed: boolean;
 }
 
 @doc("Request body for creating an image hide request.")

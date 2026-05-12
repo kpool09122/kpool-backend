@@ -19,6 +19,7 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -322,6 +323,7 @@ class RejectImageTest extends TestCase
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         return new RejectImageTestData(
@@ -363,6 +365,7 @@ class RejectImageTest extends TestCase
             ApprovalStatus::Pending, // UnderReviewではない
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         return new RejectImageTestData(

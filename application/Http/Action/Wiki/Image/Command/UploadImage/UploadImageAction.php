@@ -19,6 +19,7 @@ use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageOutput;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -56,6 +57,7 @@ readonly class UploadImageAction
                     $request->sourceName(),
                     $request->altText(),
                     new DateTimeImmutable($request->agreedToTermsAt()),
+                    new RightsConfirmationAgreed($request->rightsConfirmationAgreed()),
                 );
                 $output = new UploadImageOutput();
             } catch (InvalidArgumentException $e) {

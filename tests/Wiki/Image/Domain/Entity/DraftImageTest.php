@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -52,6 +53,7 @@ class DraftImageTest extends TestCase
             $status,
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $this->assertSame((string) $imageIdentifier, (string) $draftImage->imageIdentifier());
@@ -105,6 +107,7 @@ class DraftImageTest extends TestCase
             $status,
             $agreedToTermsAt,
             $uploadedAt,
+            new RightsConfirmationAgreed(true),
         );
 
         $this->assertSame((string) $publishedImageIdentifier, (string) $draftImage->publishedImageIdentifier());
@@ -203,6 +206,7 @@ class DraftImageTest extends TestCase
             ApprovalStatus::UnderReview,
             new DateTimeImmutable('2024-01-01 00:00:00'),
             new DateTimeImmutable(), // uploadedAt
+            new RightsConfirmationAgreed(true),
         );
     }
 }

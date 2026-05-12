@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -61,6 +62,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
                 'alt_text' => $draftImage->altText(),
                 'status' => $draftImage->status()->value,
                 'agreed_to_terms_at' => $draftImage->agreedToTermsAt(),
+                'rights_confirmation_agreed' => $draftImage->rightsConfirmationAgreed()->value(),
                 'uploaded_at' => $draftImage->uploadedAt(),
             ],
         );
@@ -98,6 +100,7 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             ApprovalStatus::from($model->status),
             $model->agreed_to_terms_at->toDateTimeImmutable(),
             $model->uploaded_at->toDateTimeImmutable(),
+            new RightsConfirmationAgreed($model->rights_confirmation_agreed),
         );
     }
 }

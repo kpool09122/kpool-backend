@@ -22,6 +22,7 @@ use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -88,6 +89,7 @@ class UploadImageTest extends TestCase
             $testData->sourceName,
             $testData->altText,
             $testData->agreedToTermsAt,
+            $testData->rightsConfirmationAgreed,
         );
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -111,6 +113,7 @@ class UploadImageTest extends TestCase
                 $testData->sourceName,
                 $testData->altText,
                 $testData->agreedToTermsAt,
+                $testData->rightsConfirmationAgreed,
             )
             ->andReturn($testData->draftImage);
 
@@ -179,6 +182,7 @@ class UploadImageTest extends TestCase
             $testData->sourceName,
             $testData->altText,
             $testData->agreedToTermsAt,
+            $testData->rightsConfirmationAgreed,
         );
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -237,6 +241,7 @@ class UploadImageTest extends TestCase
             $testData->sourceName,
             $testData->altText,
             $testData->agreedToTermsAt,
+            $testData->rightsConfirmationAgreed,
         );
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -279,6 +284,7 @@ class UploadImageTest extends TestCase
         $sourceName = 'Example Source';
         $altText = 'Profile image of talent';
         $agreedToTermsAt = new DateTimeImmutable('2024-01-01 00:00:00');
+        $rightsConfirmationAgreed = new RightsConfirmationAgreed(true);
 
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.webp');
@@ -303,6 +309,7 @@ class UploadImageTest extends TestCase
             ApprovalStatus::UnderReview,
             $agreedToTermsAt,
             $uploadedAt,
+            $rightsConfirmationAgreed,
         );
 
         return new UploadImageTestData(
@@ -317,6 +324,7 @@ class UploadImageTest extends TestCase
             $sourceName,
             $altText,
             $agreedToTermsAt,
+            $rightsConfirmationAgreed,
             $imageIdentifier,
             $imagePath,
             $uploadResult,
@@ -343,6 +351,7 @@ readonly class UploadImageTestData
         public string $sourceName,
         public string $altText,
         public DateTimeImmutable $agreedToTermsAt,
+        public RightsConfirmationAgreed $rightsConfirmationAgreed,
         public ImageIdentifier $imageIdentifier,
         public ImagePath $imagePath,
         public ImageUploadResult $uploadResult,

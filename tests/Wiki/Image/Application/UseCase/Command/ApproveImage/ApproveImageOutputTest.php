@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\ApproveImage\ApproveImageOutput;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
+use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -45,6 +46,7 @@ class ApproveImageOutputTest extends TestCase
             null,
             null,
             null,
+            new RightsConfirmationAgreed(true),
         );
 
         $output = new ApproveImageOutput();
