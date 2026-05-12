@@ -35,6 +35,7 @@ class GetAgencyDraftWikiTest extends TestCase
             'agency',
             [
                 'published_wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f401',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f405',
                 'slug' => 'ag-jyp-entertainment',
                 'language' => 'ko',
                 'theme_color' => '#1A1A1A',
@@ -68,6 +69,7 @@ class GetAgencyDraftWikiTest extends TestCase
         $readModel = $useCase->process(new GetAgencyDraftWikiInput(new Slug('ag-jyp-entertainment'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f402', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f405', $readModel->translationSetIdentifier());
         $this->assertSame('ag-jyp-entertainment', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());

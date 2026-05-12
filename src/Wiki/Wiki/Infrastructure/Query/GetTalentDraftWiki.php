@@ -40,6 +40,7 @@ readonly class GetTalentDraftWiki implements GetTalentDraftWikiInterface
 
         return new DraftWikiReadModel(
             wikiIdentifier: $model->id,
+            translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::TALENT->value,

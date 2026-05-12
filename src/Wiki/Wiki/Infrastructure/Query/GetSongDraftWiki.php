@@ -39,6 +39,7 @@ readonly class GetSongDraftWiki implements GetSongDraftWikiInterface
 
         return new DraftWikiReadModel(
             wikiIdentifier: $model->id,
+            translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::SONG->value,

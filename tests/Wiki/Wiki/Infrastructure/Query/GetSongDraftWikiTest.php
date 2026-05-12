@@ -93,6 +93,7 @@ class GetSongDraftWikiTest extends TestCase
             'song',
             [
                 'published_wiki_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f302',
                 'slug' => 'sg-signal',
                 'language' => 'ko',
                 'theme_color' => '#FE5F8F',
@@ -127,6 +128,7 @@ class GetSongDraftWikiTest extends TestCase
         $readModel = $useCase->process(new GetSongDraftWikiInput(new Slug('sg-signal'), Language::KOREAN));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f301', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f302', $readModel->translationSetIdentifier());
         $this->assertSame('sg-signal', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('song', $readModel->resourceType());

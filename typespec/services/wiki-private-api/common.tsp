@@ -77,6 +77,8 @@ model GroupDraftWikiBasic {
 model DraftWikiDetail {
   @doc("Draft wiki identifier.")
   wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
   @doc("Unique slug of the wiki.")
   slug: string;
   @doc("Language of the wiki.")
@@ -173,6 +175,8 @@ model TalentDraftWikiBasic {
 model TalentDraftWikiDetail {
   @doc("Draft wiki identifier.")
   wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
   @doc("Unique slug of the wiki.")
   slug: string;
   @doc("Language of the wiki.")
@@ -309,6 +313,8 @@ model SongDraftWikiBasic {
 model SongDraftWikiDetail {
   @doc("Draft wiki identifier.")
   wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
   @doc("Unique slug of the wiki.")
   slug: string;
   @doc("Language of the wiki.")
@@ -355,6 +361,8 @@ model AgencyDraftWikiBasic {
 model AgencyDraftWikiDetail {
   @doc("Draft wiki identifier.")
   wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
   @doc("Unique slug of the wiki.")
   slug: string;
   @doc("Language of the wiki.")

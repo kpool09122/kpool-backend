@@ -1875,6 +1875,7 @@ components:
       type: object
       required:
         - wikiIdentifier
+        - translationSetIdentifier
         - slug
         - language
         - resourceType
@@ -1887,6 +1888,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Draft wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
         slug:
           type: string
           description: Unique slug of the wiki.
@@ -2147,6 +2152,7 @@ components:
       type: object
       required:
         - wikiIdentifier
+        - translationSetIdentifier
         - slug
         - language
         - resourceType
@@ -2159,6 +2165,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Draft wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
         slug:
           type: string
           description: Unique slug of the wiki.
@@ -2918,6 +2928,7 @@ components:
       type: object
       required:
         - wikiIdentifier
+        - translationSetIdentifier
         - slug
         - language
         - resourceType
@@ -2930,6 +2941,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Draft wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
         slug:
           type: string
           description: Unique slug of the wiki.
@@ -3181,6 +3196,7 @@ components:
       type: object
       required:
         - wikiIdentifier
+        - translationSetIdentifier
         - slug
         - language
         - resourceType
@@ -3193,6 +3209,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Draft wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
         slug:
           type: string
           description: Unique slug of the wiki.

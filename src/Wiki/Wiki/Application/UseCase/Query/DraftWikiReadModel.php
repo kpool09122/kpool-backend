@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Query;
 readonly class DraftWikiReadModel
 {
     private string $wikiIdentifier;
+    private string $translationSetIdentifier;
     private string $slug;
     private string $language;
     private string $resourceType;
@@ -25,6 +26,7 @@ readonly class DraftWikiReadModel
      */
     public function __construct(
         string $wikiIdentifier,
+        string $translationSetIdentifier,
         string $slug,
         string $language,
         string $resourceType,
@@ -35,6 +37,7 @@ readonly class DraftWikiReadModel
         array $sections,
     ) {
         $this->wikiIdentifier = $wikiIdentifier;
+        $this->translationSetIdentifier = $translationSetIdentifier;
         $this->slug = $slug;
         $this->language = $language;
         $this->resourceType = $resourceType;
@@ -54,6 +57,11 @@ readonly class DraftWikiReadModel
     public function wikiIdentifier(): string
     {
         return $this->wikiIdentifier;
+    }
+
+    public function translationSetIdentifier(): string
+    {
+        return $this->translationSetIdentifier;
     }
 
     public function slug(): string
@@ -111,6 +119,7 @@ readonly class DraftWikiReadModel
     {
         return [
             'wikiIdentifier' => $this->wikiIdentifier,
+            'translationSetIdentifier' => $this->translationSetIdentifier,
             'slug' => $this->slug,
             'language' => $this->language,
             'resourceType' => $this->resourceType,
