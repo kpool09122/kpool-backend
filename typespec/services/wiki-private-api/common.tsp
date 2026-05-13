@@ -541,6 +541,18 @@ model PrincipalSummary {
   policies: EffectivePolicySummary[];
 }
 
+@doc("Summary of a newly created principal.")
+model CreatedPrincipalSummary {
+  @doc("Principal identifier.")
+  principalIdentifier: Uuid;
+  @doc("Identity identifier linked to the principal.")
+  identityIdentifier: Uuid;
+  @doc("Whether the principal is delegated.")
+  isDelegatedPrincipal: boolean;
+  @doc("Whether the principal is enabled.")
+  isEnabled: boolean;
+}
+
 @doc("Summary of a principal group.")
 model PrincipalGroupSummary {
   @doc("Principal group identifier.")

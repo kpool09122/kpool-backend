@@ -891,7 +891,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PrincipalSummary'
+                $ref: '#/components/schemas/CreatedPrincipalSummary'
         '409':
           description: The request conflicts with the current state of the server.
           content:
@@ -2271,6 +2271,29 @@ components:
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for creating a wiki draft.
+    CreatedPrincipalSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - isDelegatedPrincipal
+        - isEnabled
+      properties:
+        principalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal identifier.
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier linked to the principal.
+        isDelegatedPrincipal:
+          type: boolean
+          description: Whether the principal is delegated.
+        isEnabled:
+          type: boolean
+          description: Whether the principal is enabled.
+      description: Summary of a newly created principal.
     DraftImageListItem:
       type: object
       required:
