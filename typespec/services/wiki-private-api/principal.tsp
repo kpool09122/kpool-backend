@@ -60,7 +60,7 @@ model CreatePolicyRequestBody {
 @doc("Response returned when a principal is created.")
 model CreatePrincipalResponse {
   @statusCode statusCode: 201;
-  @body body: PrincipalSummary;
+  @body body: CreatedPrincipalSummary;
 }
 
 @doc("Response returned for the authenticated identity's principal.")

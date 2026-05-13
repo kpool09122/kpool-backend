@@ -8,6 +8,7 @@ readonly class WikiListItemReadModel
 {
     public function __construct(
         private string $wikiIdentifier,
+        private string $translationSetIdentifier,
         private string $slug,
         private string $language,
         private string $resourceType,
@@ -37,6 +38,7 @@ readonly class WikiListItemReadModel
     {
         return [
             'wikiIdentifier' => $this->wikiIdentifier,
+            'translationSetIdentifier' => $this->translationSetIdentifier,
             'slug' => $this->slug,
             'language' => $this->language,
             'resourceType' => $this->resourceType,

@@ -67,6 +67,7 @@ class GetSongWikiTest extends TestCase
             [
                 'slug' => 'sg-signal',
                 'language' => 'ko',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f203',
                 'version' => 5,
                 'theme_color' => '#FE5F8F',
                 'sections' => json_encode([
@@ -101,6 +102,7 @@ class GetSongWikiTest extends TestCase
 
         $this->assertInstanceOf(WikiReadModel::class, $readModel);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f201', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f203', $readModel->translationSetIdentifier());
         $this->assertSame('sg-signal', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('song', $readModel->resourceType());

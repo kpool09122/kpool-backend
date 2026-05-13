@@ -34,6 +34,8 @@ class ListWikisTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
             '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
         ], array_column($payload['wikis'], 'wikiIdentifier'));
+        $this->assertArrayHasKey('translationSetIdentifier', $payload['wikis'][0]);
+        $this->assertIsString($payload['wikis'][0]['translationSetIdentifier']);
         $this->assertArrayNotHasKey('sections', $payload['wikis'][0]);
     }
 

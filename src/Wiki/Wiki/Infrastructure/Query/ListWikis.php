@@ -130,6 +130,7 @@ readonly class ListWikis implements ListWikisInterface
 
         return new WikiListItemReadModel(
             wikiIdentifier: $wiki->id,
+            translationSetIdentifier: $wiki->translation_set_identifier,
             slug: $wiki->slug,
             language: $wiki->language,
             resourceType: $wiki->resource_type,

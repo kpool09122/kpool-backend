@@ -77,10 +77,22 @@ model GetGroupDraftWikiResponse {
   @body body: DraftWikiDetail;
 }
 
+@doc("Response returned when a group published wiki is fetched.")
+model GetGroupWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: WikiDetail;
+}
+
 @doc("Response returned when a talent draft wiki is fetched.")
 model GetTalentDraftWikiResponse {
   @statusCode statusCode: 200;
   @body body: TalentDraftWikiDetail;
+}
+
+@doc("Response returned when a talent published wiki is fetched.")
+model GetTalentWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: TalentWikiDetail;
 }
 
 @doc("Response returned when a song draft wiki is fetched.")
@@ -89,10 +101,22 @@ model GetSongDraftWikiResponse {
   @body body: SongDraftWikiDetail;
 }
 
+@doc("Response returned when a song published wiki is fetched.")
+model GetSongWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: SongWikiDetail;
+}
+
 @doc("Response returned when an agency draft wiki is fetched.")
 model GetAgencyDraftWikiResponse {
   @statusCode statusCode: 200;
   @body body: AgencyDraftWikiDetail;
+}
+
+@doc("Response returned when an agency published wiki is fetched.")
+model GetAgencyWikiResponse {
+  @statusCode statusCode: 200;
+  @body body: AgencyWikiDetail;
 }
 
 @doc("Response returned when a wiki is published.")
@@ -129,6 +153,8 @@ model RollbackWikiResponse {
 model WikiListItem {
   @doc("Wiki identifier.")
   wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
   @doc("Unique slug for the wiki.")
   slug: string;
   @doc("Language of the wiki.")
@@ -265,12 +291,28 @@ interface WikiOperations {
   ): TranslateWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
+  @route("/{language}/group/{slug}")
+  @doc("Fetch the published group wiki.")
+  getGroupWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetGroupWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
   @route("/{language}/group/{slug}/draft")
   @doc("Fetch the group draft wiki used by the editor.")
   getGroupDraftWiki(
     @path language: string,
     @path slug: string,
   ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/talent/{slug}")
+  @doc("Fetch the published talent wiki.")
+  getTalentWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetTalentWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/{language}/talent/{slug}/draft")
@@ -281,12 +323,28 @@ interface WikiOperations {
   ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
+  @route("/{language}/song/{slug}")
+  @doc("Fetch the published song wiki.")
+  getSongWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetSongWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
   @route("/{language}/song/{slug}/draft")
   @doc("Fetch the song draft wiki used by the editor.")
   getSongDraftWiki(
     @path language: string,
     @path slug: string,
   ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/agency/{slug}")
+  @doc("Fetch the published agency wiki.")
+  getAgencyWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetAgencyWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/{language}/agency/{slug}/draft")

@@ -36,6 +36,7 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
 
         return new WikiReadModel(
             wikiIdentifier: $model->id,
+            translationSetIdentifier: $model->translation_set_identifier,
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::GROUP->value,

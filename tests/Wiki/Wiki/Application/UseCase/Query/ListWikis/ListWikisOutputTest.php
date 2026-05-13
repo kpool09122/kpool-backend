@@ -14,6 +14,7 @@ class ListWikisOutputTest extends TestCase
     {
         $item = new WikiListItemReadModel(
             wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
+            translationSetIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
             slug: 'tl-chaeyoung',
             language: 'ko',
             resourceType: 'talent',

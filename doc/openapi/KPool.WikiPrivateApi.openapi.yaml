@@ -891,7 +891,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PrincipalSummary'
+                $ref: '#/components/schemas/CreatedPrincipalSummary'
         '409':
           description: The request conflicts with the current state of the server.
           content:
@@ -1185,6 +1185,46 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateWikiRequestBody'
+  /wiki/{language}/agency/{slug}:
+    get:
+      operationId: WikiOperations_getAgencyWiki
+      description: Fetch the published agency wiki.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when an agency published wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgencyWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{language}/agency/{slug}/draft:
     get:
       operationId: WikiOperations_getAgencyDraftWiki
@@ -1207,6 +1247,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgencyDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/group/{slug}:
+    get:
+      operationId: WikiOperations_getGroupWiki
+      description: Fetch the published group wiki.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when a group published wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WikiDetail'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -1265,6 +1345,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/song/{slug}:
+    get:
+      operationId: WikiOperations_getSongWiki
+      description: Fetch the published song wiki.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when a song published wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{language}/song/{slug}/draft:
     get:
       operationId: WikiOperations_getSongDraftWiki
@@ -1287,6 +1407,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SongDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/talent/{slug}:
+    get:
+      operationId: WikiOperations_getTalentWiki
+      description: Fetch the published talent wiki.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when a talent published wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TalentWikiDetail'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -1921,6 +2081,58 @@ components:
           items: {}
           description: Section content payloads.
       description: Detailed agency draft wiki payload used by the editor.
+    AgencyWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - translationSetIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - themeColor
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number.
+        themeColor:
+          type: string
+          nullable: true
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/AgencyDraftWikiBasic'
+          description: Basic agency wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed published agency wiki payload.
     AttachPolicyToRoleRequestBody:
       type: object
       required:
@@ -2059,6 +2271,29 @@ components:
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for creating a wiki draft.
+    CreatedPrincipalSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - isDelegatedPrincipal
+        - isEnabled
+      properties:
+        principalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal identifier.
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier linked to the principal.
+        isDelegatedPrincipal:
+          type: boolean
+          description: Whether the principal is delegated.
+        isEnabled:
+          type: boolean
+          description: Whether the principal is enabled.
+      description: Summary of a newly created principal.
     DraftImageListItem:
       type: object
       required:
@@ -3121,6 +3356,58 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Profile image identifier of the talent.
       description: Summary of a published talent linked from a song draft wiki.
+    SongWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - translationSetIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - themeColor
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number.
+        themeColor:
+          type: string
+          nullable: true
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/SongDraftWikiBasic'
+          description: Basic song wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed published song wiki payload.
     TalentDraftWikiBasic:
       type: object
       required:
@@ -3311,6 +3598,58 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Main image identifier of the group.
       description: Summary of a published group linked from a talent draft wiki.
+    TalentWikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - translationSetIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - themeColor
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number.
+        themeColor:
+          type: string
+          nullable: true
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/TalentDraftWikiBasic'
+          description: Basic talent wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed published talent wiki payload.
     TranslateWikiResponseBody:
       type: object
       required:
@@ -3492,10 +3831,63 @@ components:
             $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Associated talent identifiers.
       description: Association targets that link a wiki to related agencies, groups, or talents.
+    WikiDetail:
+      type: object
+      required:
+        - wikiIdentifier
+        - translationSetIdentifier
+        - slug
+        - language
+        - resourceType
+        - version
+        - themeColor
+        - heroImage
+        - basic
+        - sections
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
+        slug:
+          type: string
+          description: Unique slug of the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        version:
+          type: integer
+          format: int32
+          description: Published version number.
+        themeColor:
+          type: string
+          nullable: true
+          description: Theme color applied to the wiki.
+        heroImage:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiHeroImage'
+          description: Hero image payload.
+        basic:
+          allOf:
+            - $ref: '#/components/schemas/GroupDraftWikiBasic'
+          description: Basic wiki content payload.
+        sections:
+          type: array
+          items: {}
+          description: Section content payloads.
+      description: Detailed published group wiki payload.
     WikiListItem:
       type: object
       required:
         - wikiIdentifier
+        - translationSetIdentifier
         - slug
         - language
         - resourceType
@@ -3510,6 +3902,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Wiki identifier.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
         slug:
           type: string
           description: Unique slug for the wiki.

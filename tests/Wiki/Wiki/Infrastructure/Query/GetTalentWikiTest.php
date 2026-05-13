@@ -45,6 +45,7 @@ class GetTalentWikiTest extends TestCase
             [
                 'slug' => 'tl-chaeyoung',
                 'language' => 'ko',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
                 'version' => 4,
                 'theme_color' => '#FE5F8F',
                 'sections' => json_encode([
@@ -78,6 +79,7 @@ class GetTalentWikiTest extends TestCase
 
         $this->assertInstanceOf(WikiReadModel::class, $readModel);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f103', $readModel->translationSetIdentifier());
         $this->assertSame('tl-chaeyoung', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());
