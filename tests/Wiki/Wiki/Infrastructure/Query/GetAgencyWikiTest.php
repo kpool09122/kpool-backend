@@ -26,6 +26,7 @@ class GetAgencyWikiTest extends TestCase
             [
                 'slug' => 'ag-jyp-entertainment',
                 'language' => 'ko',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f405',
                 'version' => 3,
                 'theme_color' => '#1A1A1A',
                 'sections' => json_encode([
@@ -59,6 +60,7 @@ class GetAgencyWikiTest extends TestCase
 
         $this->assertInstanceOf(WikiReadModel::class, $readModel);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f401', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f405', $readModel->translationSetIdentifier());
         $this->assertSame('ag-jyp-entertainment', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());

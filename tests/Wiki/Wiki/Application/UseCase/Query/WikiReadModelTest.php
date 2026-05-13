@@ -14,6 +14,7 @@ class WikiReadModelTest extends TestCase
     {
         $readModel = new WikiReadModel(
             wikiIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
+            translationSetIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f003',
             slug: 'gr-twice',
             language: 'ko',
             resourceType: 'group',
@@ -48,6 +49,7 @@ class WikiReadModelTest extends TestCase
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f003', $readModel->translationSetIdentifier());
         $this->assertSame('gr-twice', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
@@ -59,6 +61,7 @@ class WikiReadModelTest extends TestCase
         $this->assertSame('overview', $readModel->sections()[0]['id']);
         $this->assertSame([
             'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
+            'translationSetIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f003',
             'slug' => 'gr-twice',
             'language' => 'ko',
             'resourceType' => 'group',

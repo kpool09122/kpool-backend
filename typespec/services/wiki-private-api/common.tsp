@@ -97,6 +97,30 @@ model DraftWikiDetail {
   sections: unknown[];
 }
 
+@doc("Detailed published group wiki payload.")
+model WikiDetail {
+  @doc("Published wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor: string | null;
+  @doc("Hero image payload.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic wiki content payload.")
+  basic: GroupDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
 @doc("Summary of a published group linked from a talent draft wiki.")
 model TalentDraftWikiGroupSummary {
   @doc("Published group wiki identifier.")
@@ -188,6 +212,30 @@ model TalentDraftWikiDetail {
   @doc("Theme color applied to the wiki.")
   themeColor?: string;
   @doc("Hero image payload for the editor.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic talent wiki content payload.")
+  basic: TalentDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
+@doc("Detailed published talent wiki payload.")
+model TalentWikiDetail {
+  @doc("Published wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor: string | null;
+  @doc("Hero image payload.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic talent wiki content payload.")
   basic: TalentDraftWikiBasic;
@@ -333,6 +381,30 @@ model SongDraftWikiDetail {
   sections: unknown[];
 }
 
+@doc("Detailed published song wiki payload.")
+model SongWikiDetail {
+  @doc("Published wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor: string | null;
+  @doc("Hero image payload.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic song wiki content payload.")
+  basic: SongDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
 @doc("Basic payload for an agency draft wiki.")
 model AgencyDraftWikiBasic {
   @doc("Display name of the agency.")
@@ -374,6 +446,30 @@ model AgencyDraftWikiDetail {
   @doc("Theme color applied to the wiki.")
   themeColor?: string;
   @doc("Hero image payload for the editor.")
+  heroImage: DraftWikiHeroImage;
+  @doc("Basic agency wiki content payload.")
+  basic: AgencyDraftWikiBasic;
+  @doc("Section content payloads.")
+  sections: unknown[];
+}
+
+@doc("Detailed published agency wiki payload.")
+model AgencyWikiDetail {
+  @doc("Published wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
+  @doc("Unique slug of the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Published version number.")
+  version: int32;
+  @doc("Theme color applied to the wiki.")
+  themeColor: string | null;
+  @doc("Hero image payload.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic agency wiki content payload.")
   basic: AgencyDraftWikiBasic;
