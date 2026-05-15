@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\CreateWiki;
 
+use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
 use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
@@ -22,9 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiOutput;
-use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
-use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -48,9 +47,8 @@ readonly class CreateWikiAction
         try {
             try {
                 $resourceType = ResourceType::from($request->resourceType());
-                $basicClass = BasicInterface::resolveClass($resourceType);
-                $basic = $basicClass::fromArray($request->basic());
-                $sections = SectionContentCollection::fromArray($request->sections());
+                $basic = WikiCommandPayloadMapper::basic($resourceType, $request->basic());
+                $sections = WikiCommandPayloadMapper::sections($request->sections());
 
                 $input = new CreateWikiInput(
                     $request->publishedWikiIdentifier() !== null ? new WikiIdentifier($request->publishedWikiIdentifier()) : null,
