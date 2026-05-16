@@ -6,6 +6,7 @@ namespace Tests\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInput;
 use Tests\TestCase;
@@ -22,6 +23,7 @@ class ListDraftWikisInputTest extends TestCase
         $this->assertNull($input->translationSetIdentifier());
         $this->assertSame(ApprovalStatus::UnderReview, $input->status());
         $this->assertNull($input->resourceType());
+        $this->assertNull($input->editorIdentifier());
     }
 
     public function testAccessors(): void
@@ -30,6 +32,7 @@ class ListDraftWikisInputTest extends TestCase
             status: ApprovalStatus::Pending,
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f102'),
             resourceType: ResourceType::TALENT,
+            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f103'),
             perPage: 20,
         );
 
@@ -37,5 +40,6 @@ class ListDraftWikisInputTest extends TestCase
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f102', (string) $input->translationSetIdentifier());
         $this->assertSame(ApprovalStatus::Pending, $input->status());
         $this->assertSame(ResourceType::TALENT, $input->resourceType());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f103', (string) $input->editorIdentifier());
     }
 }

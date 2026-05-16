@@ -20,6 +20,7 @@ class ListDraftWikisRequest extends FormRequest
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'translationSetIdentifier' => ['nullable', 'uuid'],
             'status' => ['required', 'string', Rule::in(array_column(ApprovalStatus::cases(), 'value'))],
+            'onlyMine' => ['nullable', 'boolean'],
             'resourceType' => ['nullable', 'string', Rule::in([
                 ResourceType::AGENCY->value,
                 ResourceType::GROUP->value,
@@ -46,6 +47,11 @@ class ListDraftWikisRequest extends FormRequest
     public function status(): string
     {
         return (string) $this->query('status');
+    }
+
+    public function onlyMine(): bool
+    {
+        return $this->boolean('onlyMine');
     }
 
     public function resourceType(): ?string

@@ -41,6 +41,10 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             $query->where('translation_set_identifier', (string) $input->translationSetIdentifier());
         }
 
+        if ($input->editorIdentifier() !== null) {
+            $query->where('editor_id', (string) $input->editorIdentifier());
+        }
+
         if ($input->resourceType() !== null) {
             $query->where('resource_type', $input->resourceType()->value);
         } else {
