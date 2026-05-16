@@ -175,6 +175,48 @@ model WikiListItem {
   updatedAt: string | null;
 }
 
+@doc("Approval status assigned to a draft wiki.")
+union DraftWikiStatus {
+  "approved",
+  "pending",
+  "rejected",
+  "under_review",
+}
+
+@doc("Draft wiki list item returned by the draft wiki list endpoint.")
+model DraftWikiListItem {
+  @doc("Draft wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Published wiki identifier linked to this draft.")
+  publishedWikiIdentifier: Uuid | null;
+  @doc("Translation set identifier.")
+  translationSetIdentifier: Uuid;
+  @doc("Unique slug for the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Theme color applied to the wiki.")
+  themeColor: string | null;
+  @doc("Approval status of the draft wiki.")
+  status: DraftWikiStatus;
+  @doc("Display name of the wiki.")
+  name: string;
+  @doc("Normalized name used for search.")
+  normalizedName: string;
+  @doc("Timestamp when the draft was edited.")
+  editedAt: string | null;
+  @doc("Last updated timestamp.")
+  updatedAt: string | null;
+  @doc("Timestamp when the draft was approved.")
+  approvedAt: string | null;
+  @doc("Timestamp when the draft was translated.")
+  translatedAt: string | null;
+  @doc("Timestamp when the draft was merged.")
+  mergedAt: string | null;
+}
+
 @doc("Response body for the wiki list endpoint.")
 model ListWikisResponseBody {
   @doc("Wiki list for the requested page.")
@@ -189,10 +231,30 @@ model ListWikisResponseBody {
   per_page: int32;
 }
 
+@doc("Response body for the draft wiki list endpoint.")
+model ListDraftWikisResponseBody {
+  @doc("Draft wikis for the requested page.")
+  wikis: DraftWikiListItem[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of draft wikis.")
+  total: int32;
+  @doc("Number of wikis per page.")
+  per_page: int32;
+}
+
 @doc("Response returned when wiki list retrieval succeeds.")
 model ListWikisResponse {
   @statusCode statusCode: 200;
   @body body: ListWikisResponseBody;
+}
+
+@doc("Response returned when draft wiki list retrieval succeeds.")
+model ListDraftWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: ListDraftWikisResponseBody;
 }
 
 @route("/wikis")
@@ -208,6 +270,18 @@ interface WikiListOperations {
     @query sort?: string,
     @query order?: string,
   ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/draft-wikis")
+interface DraftWikiListOperations {
+  @get
+  @doc("List draft wikis.")
+  listDraftWikis(
+    @query perPage?: int32,
+    @query translationSetIdentifier?: Uuid,
+    @query status: DraftWikiStatus,
+    @query resourceType?: string,
+  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/wiki")
