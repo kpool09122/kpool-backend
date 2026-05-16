@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Command\EditWiki;
 
+use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
 use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -20,10 +21,8 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiOutput;
-use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -47,9 +46,8 @@ readonly class EditWikiAction
         try {
             try {
                 $resourceType = ResourceType::from($request->resourceType());
-                $basicClass = BasicInterface::resolveClass($resourceType);
-                $basic = $basicClass::fromArray($request->basic());
-                $sections = SectionContentCollection::fromArray($request->sections());
+                $basic = WikiCommandPayloadMapper::basic($resourceType, $request->basic());
+                $sections = WikiCommandPayloadMapper::sections($request->sections());
 
                 $input = new EditWikiInput(
                     new DraftWikiIdentifier($request->wikiId()),
