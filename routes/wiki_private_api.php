@@ -65,7 +65,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
 });
 Route::get('/wikis/{language}', ListWikisAction::class);
-Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware('auth.api');
+Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
 Route::get('/wiki/{language}/agency/{slug}/draft', GetAgencyDraftWikiAction::class);
 Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);

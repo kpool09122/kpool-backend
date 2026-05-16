@@ -7,6 +7,7 @@ namespace Tests\Wiki\Wiki\Infrastructure\Query;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInterface;
@@ -152,6 +153,36 @@ class ListDraftWikisTest extends TestCase
         $this->assertSame(2, $payload['per_page']);
         $this->assertSame(2, $payload['last_page']);
         $this->assertSame(3, $payload['total']);
+    }
+
+    #[Group('useDb')]
+    public function testProcessFiltersByEditorIdentifierWhenSpecified(): void
+    {
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f601', 'talent', [
+            'status' => ApprovalStatus::UnderReview->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+            'edited_at' => '2026-05-01 00:00:00',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f602', 'talent', [
+            'status' => ApprovalStatus::UnderReview->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f702',
+            'edited_at' => '2026-05-02 00:00:00',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f603', 'talent', [
+            'status' => ApprovalStatus::Pending->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+            'edited_at' => '2026-05-03 00:00:00',
+        ]);
+
+        $payload = $this->process(new ListDraftWikisInput(
+            status: ApprovalStatus::UnderReview,
+            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
+        ))->toArray();
+
+        $this->assertSame(1, $payload['total']);
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
     }
 
     #[Group('useDb')]

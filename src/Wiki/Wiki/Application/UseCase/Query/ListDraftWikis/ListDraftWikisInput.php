@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 readonly class ListDraftWikisInput implements ListDraftWikisInputPort
@@ -14,6 +15,7 @@ readonly class ListDraftWikisInput implements ListDraftWikisInputPort
         private ApprovalStatus $status,
         private ?TranslationSetIdentifier $translationSetIdentifier = null,
         private ?ResourceType $resourceType = null,
+        private ?PrincipalIdentifier $editorIdentifier = null,
         private ?int $perPage = null,
     ) {
     }
@@ -36,5 +38,10 @@ readonly class ListDraftWikisInput implements ListDraftWikisInputPort
     public function resourceType(): ?ResourceType
     {
         return $this->resourceType;
+    }
+
+    public function editorIdentifier(): ?PrincipalIdentifier
+    {
+        return $this->editorIdentifier;
     }
 }

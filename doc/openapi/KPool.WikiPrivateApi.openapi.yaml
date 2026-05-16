@@ -86,6 +86,12 @@ paths:
           schema:
             type: string
           explode: false
+        - name: onlyMine
+          in: query
+          required: false
+          schema:
+            type: boolean
+          explode: false
       responses:
         '200':
           description: Response returned when draft wiki list retrieval succeeds.
@@ -95,6 +101,12 @@ paths:
                 $ref: '#/components/schemas/ListDraftWikisResponseBody'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:

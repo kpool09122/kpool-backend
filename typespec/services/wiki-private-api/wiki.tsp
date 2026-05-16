@@ -281,7 +281,8 @@ interface DraftWikiListOperations {
     @query translationSetIdentifier?: Uuid,
     @query status: DraftWikiStatus,
     @query resourceType?: string,
-  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+    @query onlyMine?: boolean,
+  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/wiki")
