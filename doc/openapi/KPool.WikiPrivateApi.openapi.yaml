@@ -56,6 +56,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /draft-wikis:
+    get:
+      operationId: DraftWikiListOperations_listDraftWikis
+      description: List draft wikis.
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: translationSetIdentifier
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          explode: false
+        - name: status
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/DraftWikiStatus'
+          explode: false
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned when draft wiki list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDraftWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /image/upload:
     post:
       operationId: ImageOperations_uploadImage
@@ -2445,6 +2500,91 @@ components:
           nullable: true
           description: Image identifier shown as the hero image.
       description: Hero image payload for a draft wiki.
+    DraftWikiListItem:
+      type: object
+      required:
+        - wikiIdentifier
+        - publishedWikiIdentifier
+        - translationSetIdentifier
+        - slug
+        - language
+        - resourceType
+        - themeColor
+        - status
+        - name
+        - normalizedName
+        - editedAt
+        - updatedAt
+        - approvedAt
+        - translatedAt
+        - mergedAt
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft wiki identifier.
+        publishedWikiIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Published wiki identifier linked to this draft.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier.
+        slug:
+          type: string
+          description: Unique slug for the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        themeColor:
+          type: string
+          nullable: true
+          description: Theme color applied to the wiki.
+        status:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiStatus'
+          description: Approval status of the draft wiki.
+        name:
+          type: string
+          description: Display name of the wiki.
+        normalizedName:
+          type: string
+          description: Normalized name used for search.
+        editedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the draft was edited.
+        updatedAt:
+          type: string
+          nullable: true
+          description: Last updated timestamp.
+        approvedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the draft was approved.
+        translatedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the draft was translated.
+        mergedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the draft was merged.
+      description: Draft wiki list item returned by the draft wiki list endpoint.
+    DraftWikiStatus:
+      type: string
+      enum:
+        - approved
+        - pending
+        - rejected
+        - under_review
+      description: Approval status assigned to a draft wiki.
     DraftWikiSummary:
       type: object
       required:
@@ -2700,6 +2840,37 @@ components:
           format: int32
           description: Number of images per page.
       description: Response body for the draft image list endpoint.
+    ListDraftWikisResponseBody:
+      type: object
+      required:
+        - wikis
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftWikiListItem'
+          description: Draft wikis for the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of draft wikis.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of wikis per page.
+      description: Response body for the draft wiki list endpoint.
     ListUploadedImagesResponseBody:
       type: object
       required:
