@@ -20,6 +20,11 @@ interface WikiRepositoryInterface
 
     public function existsBySlug(Slug $slug): bool;
 
+    public function existsBySlugExcludingTranslationSetIdentifier(
+        Slug $slug,
+        TranslationSetIdentifier $translationSetIdentifier,
+    ): bool;
+
     /**
      * @return Wiki[]
      */

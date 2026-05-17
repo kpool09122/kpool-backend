@@ -545,6 +545,52 @@ class WikiRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：existsBySlugExcludingTranslationSetIdentifierで同じ翻訳セットのSlugは除外されること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlugExcludingTranslationSetIdentifierIgnoresSameTranslationSet(): void
+    {
+        $translationSetId = StrTestHelper::generateUuid();
+
+        CreateWiki::create(StrTestHelper::generateUuid(), 'group', [
+            'slug' => 'gr-same-translation-set-slug',
+            'translation_set_identifier' => $translationSetId,
+        ]);
+
+        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $exists = $repository->existsBySlugExcludingTranslationSetIdentifier(
+            new Slug('gr-same-translation-set-slug'),
+            new TranslationSetIdentifier($translationSetId),
+        );
+
+        $this->assertFalse($exists);
+    }
+
+    /**
+     * 正常系：existsBySlugExcludingTranslationSetIdentifierで別翻訳セットのSlugは存在扱いになること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testExistsBySlugExcludingTranslationSetIdentifierDetectsOtherTranslationSet(): void
+    {
+        CreateWiki::create(StrTestHelper::generateUuid(), 'group', [
+            'slug' => 'gr-other-translation-set-slug',
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+        ]);
+
+        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $exists = $repository->existsBySlugExcludingTranslationSetIdentifier(
+            new Slug('gr-other-translation-set-slug'),
+            new TranslationSetIdentifier(StrTestHelper::generateUuid()),
+        );
+
+        $this->assertTrue($exists);
+    }
+
+    /**
      * 正常系：TranslationSetIdentifierでWikiが取得できること.
      *
      * @throws BindingResolutionException

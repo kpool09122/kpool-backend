@@ -121,9 +121,9 @@ class ApproveWikiTest extends TestCase
             ->andReturn($dummyApproveWiki->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlug')
+        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
             ->once()
-            ->with($dummyApproveWiki->slug)
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
             ->andReturn(false);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
@@ -412,9 +412,9 @@ class ApproveWikiTest extends TestCase
             ->andReturn($dummyApproveWiki->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlug')
+        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
             ->once()
-            ->with($dummyApproveWiki->slug)
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
             ->andReturn(true);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
@@ -478,9 +478,9 @@ class ApproveWikiTest extends TestCase
             ->andReturn($dummyApproveWiki->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlug')
+        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
             ->once()
-            ->with($dummyApproveWiki->slug)
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
             ->andReturn(false);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
