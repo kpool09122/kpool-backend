@@ -12,7 +12,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -34,7 +33,6 @@ class ImageSnapshotRepositoryTest extends TestCase
         $imageId = StrTestHelper::generateUuid();
         $wikiId = StrTestHelper::generateUuid();
         $imagePath = '/images/talents/profile-snapshot.jpg';
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -51,7 +49,6 @@ class ImageSnapshotRepositoryTest extends TestCase
             new ImageIdentifier($imageId),
             new TranslationSetIdentifier($wikiId),
             new ImagePath($imagePath),
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -73,7 +70,6 @@ class ImageSnapshotRepositoryTest extends TestCase
             'image_id' => $imageId,
             'translation_set_identifier' => $wikiId,
             'image_path' => $imagePath,
-            'image_usage' => $imageUsage->value,
             'display_order' => $displayOrder,
             'source_url' => $sourceUrl,
             'source_name' => $sourceName,
@@ -100,7 +96,6 @@ class ImageSnapshotRepositoryTest extends TestCase
             'image_id' => $imageId,
             'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile.jpg',
-            'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
         ]);
 
@@ -112,7 +107,6 @@ class ImageSnapshotRepositoryTest extends TestCase
         $this->assertSame($imageId, (string) $snapshot->imageIdentifier());
         $this->assertSame($wikiId, (string) $snapshot->translationSetIdentifier());
         $this->assertSame('/images/talents/profile.jpg', (string) $snapshot->imagePath());
-        $this->assertSame(ImageUsage::PROFILE, $snapshot->imageUsage());
         $this->assertSame(1, $snapshot->displayOrder());
     }
 
@@ -147,21 +141,18 @@ class ImageSnapshotRepositoryTest extends TestCase
         CreateImageSnapshot::create($snapshotId1, [
             'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile.jpg',
-            'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
         ]);
 
         CreateImageSnapshot::create($snapshotId2, [
             'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/additional.jpg',
-            'image_usage' => ImageUsage::ADDITIONAL->value,
             'display_order' => 2,
         ]);
 
         CreateImageSnapshot::create($otherSnapshotId, [
             'translation_set_identifier' => StrTestHelper::generateUuid(),
             'image_path' => '/images/groups/cover.jpg',
-            'image_usage' => ImageUsage::COVER->value,
             'display_order' => 1,
         ]);
 

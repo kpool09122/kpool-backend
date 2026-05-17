@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -20,7 +19,6 @@ readonly class ImageSnapshot
         private ImageIdentifier         $imageIdentifier,
         private TranslationSetIdentifier          $translationSetIdentifier,
         private ImagePath               $imagePath,
-        private ImageUsage              $imageUsage,
         private int                     $displayOrder,
         private string                  $sourceUrl,
         private string                  $sourceName,
@@ -53,11 +51,6 @@ readonly class ImageSnapshot
     public function imagePath(): ImagePath
     {
         return $this->imagePath;
-    }
-
-    public function imageUsage(): ImageUsage
-    {
-        return $this->imageUsage;
     }
 
     public function displayOrder(): int

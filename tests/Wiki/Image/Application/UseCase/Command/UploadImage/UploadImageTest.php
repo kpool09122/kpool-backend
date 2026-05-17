@@ -21,7 +21,6 @@ use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -83,7 +82,6 @@ class UploadImageTest extends TestCase
             $testData->resourceType,
             $testData->draftResourceIdentifier,
             $testData->base64EncodedImage,
-            $testData->imageUsage,
             $testData->displayOrder,
             $testData->sourceUrl,
             $testData->sourceName,
@@ -107,7 +105,6 @@ class UploadImageTest extends TestCase
                 $testData->draftResourceIdentifier,
                 $testData->principalIdentifier,
                 $testData->imagePath,
-                $testData->imageUsage,
                 $testData->displayOrder,
                 $testData->sourceUrl,
                 $testData->sourceName,
@@ -152,7 +149,6 @@ class UploadImageTest extends TestCase
         $result = $output->toArray();
         $this->assertNotNull($result['imageIdentifier']);
         $this->assertSame($testData->resourceType->value, $result['resourceType']);
-        $this->assertSame($testData->imageUsage->value, $result['imageUsage']);
         $this->assertSame('under_review', $result['status']);
     }
 
@@ -176,7 +172,6 @@ class UploadImageTest extends TestCase
             $testData->resourceType,
             $testData->draftResourceIdentifier,
             $testData->base64EncodedImage,
-            $testData->imageUsage,
             $testData->displayOrder,
             $testData->sourceUrl,
             $testData->sourceName,
@@ -235,7 +230,6 @@ class UploadImageTest extends TestCase
             $testData->resourceType,
             $testData->draftResourceIdentifier,
             $testData->base64EncodedImage,
-            $testData->imageUsage,
             $testData->displayOrder,
             $testData->sourceUrl,
             $testData->sourceName,
@@ -278,7 +272,6 @@ class UploadImageTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -301,7 +294,6 @@ class UploadImageTest extends TestCase
             $draftResourceIdentifier,
             $principalIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -318,7 +310,6 @@ class UploadImageTest extends TestCase
             $resourceType,
             $draftResourceIdentifier,
             $base64EncodedImage,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -345,7 +336,6 @@ readonly class UploadImageTestData
         public ResourceType $resourceType,
         public TranslationSetIdentifier $draftResourceIdentifier,
         public string $base64EncodedImage,
-        public ImageUsage $imageUsage,
         public int $displayOrder,
         public string $sourceUrl,
         public string $sourceName,

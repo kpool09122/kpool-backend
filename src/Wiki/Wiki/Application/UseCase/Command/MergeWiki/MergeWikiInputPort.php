@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki;
 
 use DateTimeImmutable;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
@@ -22,6 +23,8 @@ interface MergeWikiInputPort
     public function sections(): SectionContentCollection;
 
     public function themeColor(): ?Color;
+
+    public function imageIdentifier(): ?ImageIdentifier;
 
     public function principalIdentifier(): PrincipalIdentifier;
 

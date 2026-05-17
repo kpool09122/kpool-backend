@@ -11,7 +11,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -42,7 +41,6 @@ class DraftImageRepositoryTest extends TestCase
             'translation_set_identifier' => $wikiId,
             'uploader_id' => $editorId,
             'image_path' => '/images/talents/profile.jpg',
-            'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
         ]);
 
@@ -56,7 +54,6 @@ class DraftImageRepositoryTest extends TestCase
         $this->assertSame($wikiId, (string) $draft->translationSetIdentifier());
         $this->assertSame($editorId, (string) $draft->uploaderIdentifier());
         $this->assertSame('/images/talents/profile.jpg', (string) $draft->imagePath());
-        $this->assertSame(ImageUsage::PROFILE, $draft->imageUsage());
         $this->assertSame(1, $draft->displayOrder());
         $this->assertInstanceOf(DateTimeImmutable::class, $draft->uploadedAt());
     }
@@ -75,7 +72,6 @@ class DraftImageRepositoryTest extends TestCase
             'published_id' => null,
             'resource_type' => ResourceType::GROUP->value,
             'image_path' => '/images/groups/logo.png',
-            'image_usage' => ImageUsage::LOGO->value,
         ]);
 
         $repository = $this->app->make(DraftImageRepositoryInterface::class);
@@ -117,7 +113,6 @@ class DraftImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/profile1.jpg',
-            'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
         ]);
 
@@ -125,7 +120,6 @@ class DraftImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
             'translation_set_identifier' => $wikiId,
             'image_path' => '/images/talents/additional.jpg',
-            'image_usage' => ImageUsage::ADDITIONAL->value,
             'display_order' => 2,
         ]);
 
@@ -133,7 +127,6 @@ class DraftImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::GROUP->value,
             'translation_set_identifier' => StrTestHelper::generateUuid(),
             'image_path' => '/images/groups/cover.jpg',
-            'image_usage' => ImageUsage::COVER->value,
             'display_order' => 1,
         ]);
 
@@ -190,7 +183,6 @@ class DraftImageRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('/images/talents/new-profile.jpg'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',
@@ -211,7 +203,6 @@ class DraftImageRepositoryTest extends TestCase
             'translation_set_identifier' => (string) $draft->translationSetIdentifier(),
             'uploader_id' => (string) $draft->uploaderIdentifier(),
             'image_path' => (string) $draft->imagePath(),
-            'image_usage' => $draft->imageUsage()->value,
             'display_order' => $draft->displayOrder(),
             'source_url' => $draft->sourceUrl(),
             'source_name' => $draft->sourceName(),
@@ -235,7 +226,6 @@ class DraftImageRepositoryTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('/images/groups/logo.png'),
-            ImageUsage::LOGO,
             1,
             'https://example.com/source',
             'Example Source',
@@ -273,7 +263,6 @@ class DraftImageRepositoryTest extends TestCase
             'translation_set_identifier' => $wikiId,
             'uploader_id' => $editorId,
             'image_path' => '/images/talents/old.jpg',
-            'image_usage' => ImageUsage::PROFILE->value,
             'display_order' => 1,
         ]);
 
@@ -284,7 +273,6 @@ class DraftImageRepositoryTest extends TestCase
             new TranslationSetIdentifier($wikiId),
             new PrincipalIdentifier($editorId),
             new ImagePath('/images/talents/updated.jpg'),
-            ImageUsage::COVER,
             2,
             'https://example.com/updated-source',
             'Updated Source',
@@ -301,7 +289,6 @@ class DraftImageRepositoryTest extends TestCase
         $this->assertDatabaseHas('draft_wiki_images', [
             'id' => $draftId,
             'image_path' => '/images/talents/updated.jpg',
-            'image_usage' => ImageUsage::COVER->value,
             'display_order' => 2,
         ]);
 
@@ -321,7 +308,6 @@ class DraftImageRepositoryTest extends TestCase
         CreateDraftImage::create($draftId, [
             'resource_type' => ResourceType::TALENT->value,
             'image_path' => '/images/talents/to-delete.jpg',
-            'image_usage' => ImageUsage::ADDITIONAL->value,
         ]);
 
         $this->assertDatabaseHas('draft_wiki_images', ['id' => $draftId]);

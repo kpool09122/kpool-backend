@@ -43,7 +43,7 @@ readonly class GetAgencyWiki implements GetAgencyWikiInterface
             version: $model->version,
             themeColor: $model->theme_color,
             heroImage: [
-                'imageIdentifier' => $basic->logo_image_identifier,
+                'imageIdentifier' => $model->image_identifier,
             ],
             basic: new AgencyWikiBasicReadModel(
                 name: $basic->name,
@@ -53,7 +53,6 @@ readonly class GetAgencyWiki implements GetAgencyWikiInterface
                 foundedIn: $basic->founded_in,
                 parentAgencyIdentifier: $basic->parent_agency_identifier,
                 status: $basic->status,
-                logoImageIdentifier: $basic->logo_image_identifier,
                 officialWebsite: $basic->official_website,
                 socialLinks: $basic->social_links,
             ),

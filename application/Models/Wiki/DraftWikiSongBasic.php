@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?string $agency_identifier
  * @property ?string $release_date
  * @property ?string $album_name
- * @property ?string $cover_image_identifier
  * @property string $lyricist
  * @property string $normalized_lyricist
  * @property string $composer
@@ -37,7 +36,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
     'agency_identifier',
     'release_date',
     'album_name',
-    'cover_image_identifier',
     'lyricist',
     'normalized_lyricist',
     'composer',

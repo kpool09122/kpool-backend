@@ -24,7 +24,6 @@ final class WikiBasicReadModelFactory
             officialColors: $basic['officialColors'],
             emoji: $basic['emoji'],
             representativeSymbol: $basic['representativeSymbol'],
-            mainImageIdentifier: $basic['mainImageIdentifier'],
         );
     }
 
@@ -49,7 +48,6 @@ final class WikiBasicReadModelFactory
             height: $basic['height'],
             bloodType: $basic['bloodType'],
             fandomName: $basic['fandomName'],
-            profileImageIdentifier: $basic['profileImageIdentifier'],
             groups: array_map(
                 static fn (array|TalentWikiGroupSummaryReadModel $group): TalentWikiGroupSummaryReadModel => is_array($group)
                     ? self::groupSummary($group)
@@ -72,7 +70,6 @@ final class WikiBasicReadModelFactory
             agencyIdentifier: $basic['agencyIdentifier'],
             releaseDate: $basic['releaseDate'],
             albumName: $basic['albumName'],
-            coverImageIdentifier: $basic['coverImageIdentifier'],
             lyricist: $basic['lyricist'],
             normalizedLyricist: $basic['normalizedLyricist'],
             composer: $basic['composer'],
@@ -107,7 +104,6 @@ final class WikiBasicReadModelFactory
             foundedIn: $basic['foundedIn'],
             parentAgencyIdentifier: $basic['parentAgencyIdentifier'],
             status: $basic['status'],
-            logoImageIdentifier: $basic['logoImageIdentifier'],
             officialWebsite: $basic['officialWebsite'],
             socialLinks: $basic['socialLinks'],
         );
@@ -134,7 +130,6 @@ final class WikiBasicReadModelFactory
             officialColors: $group['officialColors'],
             emoji: $group['emoji'],
             representativeSymbol: $group['representativeSymbol'],
-            mainImageIdentifier: $group['mainImageIdentifier'],
         );
     }
 
@@ -162,7 +157,6 @@ final class WikiBasicReadModelFactory
             height: $talent['height'],
             bloodType: $talent['bloodType'],
             fandomName: $talent['fandomName'],
-            profileImageIdentifier: $talent['profileImageIdentifier'],
         );
     }
 }

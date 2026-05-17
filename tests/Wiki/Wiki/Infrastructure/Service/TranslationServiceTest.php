@@ -489,7 +489,6 @@ class TranslationServiceTest extends TestCase
             'representative_symbol' => '',
             'position' => '',
             'fandom_name' => '',
-            'profile_image_identifier' => null,
         ]);
 
         return new Wiki(
@@ -568,7 +567,6 @@ class TranslationServiceTest extends TestCase
             'founded_in' => null,
             'parent_agency_identifier' => null,
             'status' => null,
-            'logo_image_identifier' => null,
             'official_website' => null,
             'social_links' => [],
         ]);

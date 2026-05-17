@@ -16,6 +16,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInput;
@@ -53,12 +54,13 @@ readonly class EditWikiAction
                     new DraftWikiIdentifier($request->wikiId()),
                     $basic,
                     $sections,
-                    $request->themeColor() !== null ? new Color($request->themeColor()) : null,
-                    $this->wikiContext->principalIdentifier,
-                    $resourceType,
-                    $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
-                    array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
-                    array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
+                    themeColor: $request->themeColor() !== null ? new Color($request->themeColor()) : null,
+                    principalIdentifier: $this->wikiContext->principalIdentifier,
+                    resourceType: $resourceType,
+                    agencyIdentifier: $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
+                    groupIdentifiers: array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
+                    talentIdentifiers: array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
+                    imageIdentifier: $request->imageIdentifier() !== null ? new ImageIdentifier($request->imageIdentifier()) : null,
                 );
                 $output = new EditWikiOutput();
             } catch (InvalidArgumentException $e) {

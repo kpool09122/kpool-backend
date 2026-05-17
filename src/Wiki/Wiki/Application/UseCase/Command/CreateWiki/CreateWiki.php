@@ -79,6 +79,7 @@ readonly class CreateWiki implements CreateWikiInterface
 
         $wiki->setSections($input->sections());
         $wiki->setThemeColor($input->themeColor());
+        $wiki->setImageIdentifier($input->imageIdentifier());
 
         $this->draftWikiRepository->save($wiki);
 

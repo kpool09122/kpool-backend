@@ -327,7 +327,6 @@ class AutoCreateWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
     }
 
@@ -346,7 +345,6 @@ class AutoCreateWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
 
         $sections = new SectionContentCollection([

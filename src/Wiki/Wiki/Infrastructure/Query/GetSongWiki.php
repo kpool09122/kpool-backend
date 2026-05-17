@@ -45,7 +45,7 @@ readonly class GetSongWiki implements GetSongWikiInterface
             version: $model->version,
             themeColor: $model->theme_color,
             heroImage: [
-                'imageIdentifier' => $basic->cover_image_identifier,
+                'imageIdentifier' => $model->image_identifier,
             ],
             basic: new SongWikiBasicReadModel(
                 name: $basic->name,
@@ -55,7 +55,6 @@ readonly class GetSongWiki implements GetSongWikiInterface
                 agencyIdentifier: $basic->agency_identifier,
                 releaseDate: $basic->release_date,
                 albumName: $basic->album_name,
-                coverImageIdentifier: $basic->cover_image_identifier,
                 lyricist: $basic->lyricist,
                 normalizedLyricist: $basic->normalized_lyricist,
                 composer: $basic->composer,
@@ -103,7 +102,6 @@ readonly class GetSongWiki implements GetSongWikiInterface
             officialColors: $basic->official_colors,
             emoji: $basic->emoji,
             representativeSymbol: $basic->representative_symbol,
-            mainImageIdentifier: $basic->main_image_identifier,
         );
     }
 
@@ -135,7 +133,6 @@ readonly class GetSongWiki implements GetSongWikiInterface
             height: $basic->height,
             bloodType: $basic->blood_type,
             fandomName: $basic->fandom_name,
-            profileImageIdentifier: $basic->profile_image_identifier,
         );
     }
 }

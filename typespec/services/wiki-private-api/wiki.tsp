@@ -13,6 +13,8 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
   slug: string;
   @doc("Basic wiki content payload.")
   basic: unknown;
+  @doc("Representative image identifier for the wiki.")
+  imageIdentifier?: Uuid | null;
   @doc("Section content payloads.")
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
@@ -37,6 +39,8 @@ model UpdateWikiDraftRequestBody extends WikiAssociationTargets {
   resourceType: string;
   @doc("Basic wiki content payload.")
   basic: unknown;
+  @doc("Representative image identifier for the wiki.")
+  imageIdentifier?: Uuid | null;
   @doc("Section content payloads.")
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
@@ -205,6 +209,12 @@ model DraftWikiListItem {
   name: string;
   @doc("Normalized name used for search.")
   normalizedName: string;
+  @doc("Representative image identifier for the draft wiki.")
+  imageIdentifier: Uuid | null;
+  @doc("Absolute URL of the representative image.")
+  imageUrl: string | null;
+  @doc("Alternative text of the representative image.")
+  imageAltText: string | null;
   @doc("Timestamp when the draft was edited.")
   editedAt: string | null;
   @doc("Last updated timestamp.")

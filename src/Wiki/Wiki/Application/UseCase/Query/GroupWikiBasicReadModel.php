@@ -24,7 +24,6 @@ readonly class GroupWikiBasicReadModel implements WikiBasicReadModel
         private array $officialColors,
         private string $emoji,
         private string $representativeSymbol,
-        private ?string $mainImageIdentifier,
     ) {
     }
 
@@ -46,7 +45,6 @@ readonly class GroupWikiBasicReadModel implements WikiBasicReadModel
             'officialColors' => $this->officialColors,
             'emoji' => $this->emoji,
             'representativeSymbol' => $this->representativeSymbol,
-            'mainImageIdentifier' => $this->mainImageIdentifier,
         ];
     }
 }

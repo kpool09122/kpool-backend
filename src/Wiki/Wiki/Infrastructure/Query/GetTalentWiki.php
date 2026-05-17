@@ -46,7 +46,7 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
             version: $model->version,
             themeColor: $model->theme_color,
             heroImage: [
-                'imageIdentifier' => $basic->profile_image_identifier,
+                'imageIdentifier' => $model->image_identifier,
             ],
             basic: new TalentWikiBasicReadModel(
                 name: $basic->name,
@@ -64,7 +64,6 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
                 height: $basic->height,
                 bloodType: $basic->blood_type,
                 fandomName: $basic->fandom_name,
-                profileImageIdentifier: $basic->profile_image_identifier,
                 groups: $basic->groups->map(fn (WikiModel $group) => $this->groupSummary($group))->values()->all(),
             ),
             sections: $model->sections,
@@ -96,7 +95,6 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
             officialColors: $basic->official_colors,
             emoji: $basic->emoji,
             representativeSymbol: $basic->representative_symbol,
-            mainImageIdentifier: $basic->main_image_identifier,
         );
     }
 }

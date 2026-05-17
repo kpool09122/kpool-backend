@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Repository\DraftImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -55,7 +54,6 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
                 'translation_set_identifier' => (string) $draftImage->translationSetIdentifier(),
                 'uploader_id' => (string) $draftImage->uploaderIdentifier(),
                 'image_path' => (string) $draftImage->imagePath(),
-                'image_usage' => $draftImage->imageUsage()->value,
                 'display_order' => $draftImage->displayOrder(),
                 'source_url' => $draftImage->sourceUrl(),
                 'source_name' => $draftImage->sourceName(),
@@ -92,7 +90,6 @@ final class DraftImageRepository implements DraftImageRepositoryInterface
             new TranslationSetIdentifier($model->translation_set_identifier),
             new PrincipalIdentifier($model->uploader_id),
             new ImagePath($model->image_path),
-            ImageUsage::from($model->image_usage),
             $model->display_order,
             $model->source_url,
             $model->source_name,

@@ -13,6 +13,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
+use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiListItemReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInputPort;
@@ -32,23 +33,25 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
     public function process(ListDraftWikisInputPort $input, ListDraftWikisOutputPort $output): void
     {
         $query = DraftWiki::query()
+            ->select('draft_wikis.*', 'draft_wiki_images.image_path as image_path', 'draft_wiki_images.alt_text as image_alt_text')
+            ->leftJoin('draft_wiki_images', 'draft_wiki_images.id', '=', 'draft_wikis.image_identifier')
             ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
-            ->where('status', $input->status()->value)
-            ->orderBy('edited_at', 'desc')
-            ->orderBy('updated_at', 'desc');
+            ->where('draft_wikis.status', $input->status()->value)
+            ->orderBy('draft_wikis.edited_at', 'desc')
+            ->orderBy('draft_wikis.updated_at', 'desc');
 
         if ($input->translationSetIdentifier() !== null) {
-            $query->where('translation_set_identifier', (string) $input->translationSetIdentifier());
+            $query->where('draft_wikis.translation_set_identifier', (string) $input->translationSetIdentifier());
         }
 
         if ($input->editorIdentifier() !== null) {
-            $query->where('editor_id', (string) $input->editorIdentifier());
+            $query->where('draft_wikis.editor_id', (string) $input->editorIdentifier());
         }
 
         if ($input->resourceType() !== null) {
-            $query->where('resource_type', $input->resourceType()->value);
+            $query->where('draft_wikis.resource_type', $input->resourceType()->value);
         } else {
-            $query->whereIn('resource_type', array_keys(self::BASIC_RELATIONS));
+            $query->whereIn('draft_wikis.resource_type', array_keys(self::BASIC_RELATIONS));
         }
 
         /** @var LengthAwarePaginator<int, DraftWiki> $paginator */
@@ -78,6 +81,9 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             language: $wiki->language,
             resourceType: $wiki->resource_type,
             themeColor: $wiki->theme_color,
+            imageIdentifier: $wiki->image_identifier,
+            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
+            imageAltText: $wiki->getAttribute('image_alt_text'),
             status: $wiki->status,
             name: (string) $basic->getAttribute('name'),
             normalizedName: (string) $basic->getAttribute('normalized_name'),

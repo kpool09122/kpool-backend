@@ -27,7 +27,6 @@ readonly class TalentWikiBasicReadModel implements WikiBasicReadModel
         private int|string|null $height,
         private ?string $bloodType,
         private string $fandomName,
-        private ?string $profileImageIdentifier,
         private array $groups,
     ) {
     }
@@ -53,7 +52,6 @@ readonly class TalentWikiBasicReadModel implements WikiBasicReadModel
             'height' => $this->height,
             'bloodType' => $this->bloodType,
             'fandomName' => $this->fandomName,
-            'profileImageIdentifier' => $this->profileImageIdentifier,
             'groups' => array_map(
                 static fn (TalentWikiGroupSummaryReadModel $group): array => $group->toArray(),
                 $this->groups,

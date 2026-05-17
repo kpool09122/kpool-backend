@@ -10,7 +10,6 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\ImageFactory;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -41,7 +40,6 @@ class ImageFactoryTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $resourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -56,7 +54,6 @@ class ImageFactoryTest extends TestCase
             $resourceType,
             $resourceIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -71,7 +68,6 @@ class ImageFactoryTest extends TestCase
         $this->assertSame($resourceType, $image->resourceType());
         $this->assertSame((string) $resourceIdentifier, (string) $image->translationSetIdentifier());
         $this->assertSame((string) $imagePath, (string) $image->imagePath());
-        $this->assertSame($imageUsage, $image->imageUsage());
         $this->assertSame($displayOrder, $image->displayOrder());
         $this->assertSame($sourceUrl, $image->sourceUrl());
         $this->assertSame($sourceName, $image->sourceName());

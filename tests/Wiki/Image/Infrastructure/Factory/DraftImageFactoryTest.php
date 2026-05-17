@@ -10,7 +10,6 @@ use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\DraftImageFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -44,7 +43,6 @@ class DraftImageFactoryTest extends TestCase
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -59,7 +57,6 @@ class DraftImageFactoryTest extends TestCase
             $draftResourceIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -74,7 +71,6 @@ class DraftImageFactoryTest extends TestCase
         $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->translationSetIdentifier());
         $this->assertSame((string) $uploaderIdentifier, (string) $draftImage->uploaderIdentifier());
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
-        $this->assertSame($imageUsage, $draftImage->imageUsage());
         $this->assertSame($displayOrder, $draftImage->displayOrder());
         $this->assertSame($sourceUrl, $draftImage->sourceUrl());
         $this->assertSame($sourceName, $draftImage->sourceName());
@@ -95,7 +91,6 @@ class DraftImageFactoryTest extends TestCase
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
-        $imageUsage = ImageUsage::COVER;
         $displayOrder = 0;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -110,7 +105,6 @@ class DraftImageFactoryTest extends TestCase
             $draftResourceIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,

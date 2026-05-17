@@ -43,7 +43,6 @@ class WikiSnapshotTest extends TestCase
             foundedIn: null,
             parentAgencyIdentifier: null,
             status: null,
-            logoImageIdentifier: null,
             officialWebsite: null,
             socialLinks: [],
         );
@@ -120,7 +119,6 @@ class WikiSnapshotTest extends TestCase
                 foundedIn: null,
                 parentAgencyIdentifier: null,
                 status: null,
-                logoImageIdentifier: null,
                 officialWebsite: null,
                 socialLinks: [],
             ),

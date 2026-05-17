@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 
 use DateTimeImmutable;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -33,7 +32,6 @@ final readonly class GroupBasic implements BasicInterface
         private array $officialColors,
         private Emoji $emoji,
         private RepresentativeSymbol $representativeSymbol,
-        private ?ImageIdentifier $mainImageIdentifier,
     ) {
     }
 
@@ -100,11 +98,6 @@ final readonly class GroupBasic implements BasicInterface
         return $this->representativeSymbol;
     }
 
-    public function mainImageIdentifier(): ?ImageIdentifier
-    {
-        return $this->mainImageIdentifier;
-    }
-
     public function normalizableKeys(): array
     {
         return ['name' => 'normalized_name'];
@@ -142,7 +135,6 @@ final readonly class GroupBasic implements BasicInterface
             ),
             'emoji' => $this->emoji->value(),
             'representative_symbol' => $this->representativeSymbol->value(),
-            'main_image_identifier' => $this->mainImageIdentifier !== null ? (string)$this->mainImageIdentifier : null,
         ];
     }
 
@@ -166,7 +158,6 @@ final readonly class GroupBasic implements BasicInterface
                 : [],
             emoji: new Emoji($data['emoji'] ?? ''),
             representativeSymbol: new RepresentativeSymbol($data['representative_symbol'] ?? ''),
-            mainImageIdentifier: isset($data['main_image_identifier']) ? new ImageIdentifier($data['main_image_identifier']) : null,
         );
     }
 }

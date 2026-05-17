@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Factory\DraftImageFactoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -30,7 +29,6 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
         TranslationSetIdentifier      $translationSetIdentifier,
         PrincipalIdentifier $uploaderIdentifier,
         ImagePath           $imagePath,
-        ImageUsage          $imageUsage,
         int                 $displayOrder,
         string              $sourceUrl,
         string              $sourceName,
@@ -45,7 +43,6 @@ readonly class DraftImageFactory implements DraftImageFactoryInterface
             $translationSetIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,

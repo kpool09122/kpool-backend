@@ -11,7 +11,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageSnapshotFactoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Factory\ImageSnapshotFactory;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -44,7 +43,6 @@ class ImageSnapshotFactoryTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $resourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -61,7 +59,6 @@ class ImageSnapshotFactoryTest extends TestCase
             $resourceType,
             $resourceIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -87,7 +84,6 @@ class ImageSnapshotFactoryTest extends TestCase
         $this->assertSame((string) $imageIdentifier, (string) $snapshot->imageIdentifier());
         $this->assertSame((string) $resourceSnapshotIdentifier, (string) $snapshot->translationSetIdentifier());
         $this->assertSame((string) $imagePath, (string) $snapshot->imagePath());
-        $this->assertSame($imageUsage, $snapshot->imageUsage());
         $this->assertSame($displayOrder, $snapshot->displayOrder());
         $this->assertSame($sourceUrl, $snapshot->sourceUrl());
         $this->assertSame($sourceName, $snapshot->sourceName());

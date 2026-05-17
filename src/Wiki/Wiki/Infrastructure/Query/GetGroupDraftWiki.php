@@ -45,7 +45,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
             version: $model->publishedWiki->version,
             themeColor: $model->theme_color,
             heroImage: [
-                'imageIdentifier' => $basic->main_image_identifier,
+                'imageIdentifier' => $model->image_identifier,
             ],
             basic: new GroupWikiBasicReadModel(
                 name: $basic->name,
@@ -60,7 +60,6 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
                 officialColors: $basic->official_colors,
                 emoji: $basic->emoji,
                 representativeSymbol: $basic->representative_symbol,
-                mainImageIdentifier: $basic->main_image_identifier,
             ),
             sections: $model->sections,
         );

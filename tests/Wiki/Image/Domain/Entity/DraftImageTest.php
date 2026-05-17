@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -29,7 +28,6 @@ class DraftImageTest extends TestCase
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/test.webp');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -45,7 +43,6 @@ class DraftImageTest extends TestCase
             $draftResourceIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -62,7 +59,6 @@ class DraftImageTest extends TestCase
         $this->assertSame((string) $draftResourceIdentifier, (string) $draftImage->translationSetIdentifier());
         $this->assertSame((string) $uploaderIdentifier, (string) $draftImage->uploaderIdentifier());
         $this->assertSame((string) $imagePath, (string) $draftImage->imagePath());
-        $this->assertSame($imageUsage, $draftImage->imageUsage());
         $this->assertSame($displayOrder, $draftImage->displayOrder());
         $this->assertSame($sourceUrl, $draftImage->sourceUrl());
         $this->assertSame($sourceName, $draftImage->sourceName());
@@ -83,7 +79,6 @@ class DraftImageTest extends TestCase
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('/resources/public/images/cover.webp');
-        $imageUsage = ImageUsage::COVER;
         $displayOrder = 0;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -99,7 +94,6 @@ class DraftImageTest extends TestCase
             $draftResourceIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -124,18 +118,6 @@ class DraftImageTest extends TestCase
         $draftImage->setImagePath($newImagePath);
 
         $this->assertSame((string) $newImagePath, (string) $draftImage->imagePath());
-    }
-
-    /**
-     * 正常系: ImageUsageのsetterが正しく動作すること.
-     */
-    public function testSetImageUsage(): void
-    {
-        $draftImage = $this->createDummyDraftImage();
-
-        $draftImage->setImageUsage(ImageUsage::ADDITIONAL);
-
-        $this->assertSame(ImageUsage::ADDITIONAL, $draftImage->imageUsage());
     }
 
     /**
@@ -198,7 +180,6 @@ class DraftImageTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('/resources/public/images/test.webp'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',

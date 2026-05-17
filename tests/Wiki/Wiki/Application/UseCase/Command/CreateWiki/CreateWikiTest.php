@@ -323,7 +323,6 @@ class CreateWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');

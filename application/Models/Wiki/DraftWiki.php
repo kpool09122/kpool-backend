@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property string $language
  * @property string $resource_type
+ * @property ?string $image_identifier
  * @property array<array<string, mixed>> $sections
  * @property ?string $theme_color
  * @property string $status
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
     'slug',
     'language',
     'resource_type',
+    'image_identifier',
     'sections',
     'theme_color',
     'status',

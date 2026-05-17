@@ -19,7 +19,6 @@ use Source\Wiki\Image\Domain\Exception\ImageHideRequestAlreadyPendingException;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -149,7 +148,6 @@ class RequestImageHideTest extends TestCase
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',
@@ -185,7 +183,6 @@ class RequestImageHideTest extends TestCase
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',

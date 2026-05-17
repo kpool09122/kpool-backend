@@ -628,7 +628,6 @@ class RollbackWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
 
         return new Wiki(
@@ -663,7 +662,6 @@ class RollbackWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
 
         return new WikiSnapshot(

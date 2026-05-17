@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $image_id
  * @property string $translation_set_identifier
  * @property string $image_path
- * @property string $image_usage
  * @property int $display_order
  * @property string $source_url
  * @property string $source_name
@@ -30,7 +29,6 @@ use Illuminate\Database\Eloquent\Model;
     'image_id',
     'translation_set_identifier',
     'image_path',
-    'image_usage',
     'display_order',
     'source_url',
     'source_name',

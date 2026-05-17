@@ -6,7 +6,6 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -23,8 +22,6 @@ interface UploadImageInputPort
     public function translationSetIdentifier(): TranslationSetIdentifier;
 
     public function base64EncodedImage(): string;
-
-    public function imageUsage(): ImageUsage;
 
     public function displayOrder(): int;
 

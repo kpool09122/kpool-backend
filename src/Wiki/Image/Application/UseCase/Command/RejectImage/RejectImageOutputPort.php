@@ -11,7 +11,7 @@ interface RejectImageOutputPort
     public function setDraftImage(DraftImage $draftImage): void;
 
     /**
-     * @return array{imageIdentifier: ?string, resourceType: ?string, imageUsage: ?string, status: ?string}
+     * @return array{imageIdentifier: ?string, resourceType: ?string, status: ?string}
      */
     public function toArray(): array;
 }

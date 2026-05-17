@@ -6,7 +6,6 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\DebutDate;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\DisbandDate;
@@ -45,7 +44,6 @@ class GroupBasicTest extends TestCase
         $this->assertSame($testData->officialColors, $testData->groupBasic->officialColors());
         $this->assertSame($testData->emoji, $testData->groupBasic->emoji());
         $this->assertSame($testData->representativeSymbol, $testData->groupBasic->representativeSymbol());
-        $this->assertSame($testData->mainImageIdentifier, $testData->groupBasic->mainImageIdentifier());
     }
 
     /**
@@ -66,7 +64,6 @@ class GroupBasicTest extends TestCase
         $this->assertNull($testData->groupBasic->debutDate());
         $this->assertNull($testData->groupBasic->disbandDate());
         $this->assertEmpty($testData->groupBasic->officialColors());
-        $this->assertNull($testData->groupBasic->mainImageIdentifier());
     }
 
     /**
@@ -145,7 +142,6 @@ class GroupBasicTest extends TestCase
         $this->assertCount(count($testData->officialColors), $array['official_colors']);
         $this->assertSame($testData->emoji->value(), $array['emoji']);
         $this->assertSame($testData->representativeSymbol->value(), $array['representative_symbol']);
-        $this->assertSame((string) $testData->mainImageIdentifier, $array['main_image_identifier']);
     }
 
     /**
@@ -165,7 +161,6 @@ class GroupBasicTest extends TestCase
         $this->assertNull($array['debut_date']);
         $this->assertNull($array['disband_date']);
         $this->assertEmpty($array['official_colors']);
-        $this->assertNull($array['main_image_identifier']);
     }
 
     /**
@@ -191,7 +186,6 @@ class GroupBasicTest extends TestCase
             'official_colors' => ['#FF5FA2', '#FFC0CB'],
             'emoji' => '🍭',
             'representative_symbol' => 'candy',
-            'main_image_identifier' => $mainImageUuid,
         ];
 
         $groupBasic = GroupBasic::fromArray($data);
@@ -210,7 +204,6 @@ class GroupBasicTest extends TestCase
         $this->assertSame('#FFC0CB', (string) $groupBasic->officialColors()[1]);
         $this->assertSame('🍭', $groupBasic->emoji()->value());
         $this->assertSame('candy', $groupBasic->representativeSymbol()->value());
-        $this->assertSame($mainImageUuid, (string) $groupBasic->mainImageIdentifier());
     }
 
     /**
@@ -239,7 +232,6 @@ class GroupBasicTest extends TestCase
         $this->assertEmpty($groupBasic->officialColors());
         $this->assertSame('', $groupBasic->emoji()->value());
         $this->assertSame('', $groupBasic->representativeSymbol()->value());
-        $this->assertNull($groupBasic->mainImageIdentifier());
     }
 
     private function createDummyGroupBasic(
@@ -260,7 +252,6 @@ class GroupBasicTest extends TestCase
         ] : [];
         $emoji = new Emoji('🍭');
         $representativeSymbol = new RepresentativeSymbol('candy');
-        $mainImageIdentifier = $withNullableValues ? new ImageIdentifier(StrTestHelper::generateUuid()) : null;
 
         $groupBasic = new GroupBasic(
             name: $name,
@@ -275,7 +266,6 @@ class GroupBasicTest extends TestCase
             officialColors: $officialColors,
             emoji: $emoji,
             representativeSymbol: $representativeSymbol,
-            mainImageIdentifier: $mainImageIdentifier,
         );
 
         return new GroupBasicTestData(
@@ -291,7 +281,6 @@ class GroupBasicTest extends TestCase
             officialColors: $officialColors,
             emoji: $emoji,
             representativeSymbol: $representativeSymbol,
-            mainImageIdentifier: $mainImageIdentifier,
             groupBasic: $groupBasic,
         );
     }
@@ -320,7 +309,6 @@ readonly class GroupBasicTestData
         public array $officialColors,
         public Emoji $emoji,
         public RepresentativeSymbol $representativeSymbol,
-        public ?ImageIdentifier $mainImageIdentifier,
         public GroupBasic $groupBasic,
     ) {
     }

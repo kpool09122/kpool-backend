@@ -6,7 +6,6 @@ namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -25,7 +24,6 @@ final readonly class AgencyBasic implements BasicInterface
         private ?FoundedIn $foundedIn,
         private ?WikiIdentifier $parentAgencyIdentifier,
         private ?AgencyStatus $status,
-        private ?ImageIdentifier $logoImageIdentifier,
         private ?ExternalContentLink $officialWebsite,
         private array $socialLinks,
     ) {
@@ -64,11 +62,6 @@ final readonly class AgencyBasic implements BasicInterface
     public function status(): ?AgencyStatus
     {
         return $this->status;
-    }
-
-    public function logoImageIdentifier(): ?ImageIdentifier
-    {
-        return $this->logoImageIdentifier;
     }
 
     public function officialWebsite(): ?ExternalContentLink
@@ -116,7 +109,6 @@ final readonly class AgencyBasic implements BasicInterface
             'founded_in' => $this->foundedIn?->format('Y-m-d'),
             'parent_agency_identifier' => $this->parentAgencyIdentifier !== null ? (string)$this->parentAgencyIdentifier : null,
             'status' => $this->status?->value,
-            'logo_image_identifier' => $this->logoImageIdentifier !== null ? (string)$this->logoImageIdentifier : null,
             'official_website' => $this->officialWebsite !== null ? (string)$this->officialWebsite : null,
             'social_links' => array_map(
                 static fn (ExternalContentLink $link) => (string)$link,
@@ -138,7 +130,6 @@ final readonly class AgencyBasic implements BasicInterface
             foundedIn: isset($data['founded_in']) ? new FoundedIn(new DateTimeImmutable($data['founded_in'])) : null,
             parentAgencyIdentifier: isset($data['parent_agency_identifier']) ? new WikiIdentifier($data['parent_agency_identifier']) : null,
             status: isset($data['status']) ? AgencyStatus::from($data['status']) : null,
-            logoImageIdentifier: isset($data['logo_image_identifier']) ? new ImageIdentifier($data['logo_image_identifier']) : null,
             officialWebsite: isset($data['official_website']) ? new ExternalContentLink($data['official_website']) : null,
             socialLinks: isset($data['social_links'])
                 ? array_map(static fn (string $link) => new ExternalContentLink($link), $data['social_links'])

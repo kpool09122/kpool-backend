@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -22,6 +23,7 @@ readonly class CreateWikiInput implements CreateWikiInputPort
      * @param BasicInterface $basic
      * @param SectionContentCollection $sections
      * @param Color|null $themeColor
+     * @param ImageIdentifier|null $imageIdentifier
      * @param Slug $slug
      * @param PrincipalIdentifier $principalIdentifier
      * @param WikiIdentifier|null $agencyIdentifier
@@ -40,6 +42,7 @@ readonly class CreateWikiInput implements CreateWikiInputPort
         private ?WikiIdentifier          $agencyIdentifier = null,
         private array                    $groupIdentifiers = [],
         private array                    $talentIdentifiers = [],
+        private ?ImageIdentifier         $imageIdentifier = null,
     ) {
     }
 
@@ -71,6 +74,11 @@ readonly class CreateWikiInput implements CreateWikiInputPort
     public function themeColor(): ?Color
     {
         return $this->themeColor;
+    }
+
+    public function imageIdentifier(): ?ImageIdentifier
+    {
+        return $this->imageIdentifier;
     }
 
     public function slug(): Slug

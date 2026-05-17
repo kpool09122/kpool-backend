@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -38,6 +39,7 @@ readonly class WikiSnapshot
         private ?DateTimeImmutable       $translatedAt,
         private ?DateTimeImmutable       $approvedAt,
         private DateTimeImmutable        $createdAt,
+        private ?ImageIdentifier         $imageIdentifier = null,
     ) {
     }
 
@@ -129,5 +131,10 @@ readonly class WikiSnapshot
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function imageIdentifier(): ?ImageIdentifier
+    {
+        return $this->imageIdentifier;
     }
 }

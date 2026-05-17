@@ -49,6 +49,7 @@ class CreateWikiSnapshot
             'slug' => $overrides['slug'] ?? self::defaultSlug($resourceType, 'test-snapshot-' . substr($snapshotId, 0, 8)),
             'language' => $overrides['language'] ?? 'ko',
             'resource_type' => $resourceType,
+            'image_identifier' => $overrides['image_identifier'] ?? null,
             'sections' => $overrides['sections'] ?? json_encode([]),
             'theme_color' => $overrides['theme_color'] ?? null,
             'version' => $overrides['version'] ?? 1,
@@ -106,7 +107,6 @@ class CreateWikiSnapshot
             'official_colors' => $overrides['official_colors'] ?? json_encode([]),
             'emoji' => $overrides['emoji'] ?? '',
             'representative_symbol' => $overrides['representative_symbol'] ?? '',
-            'main_image_identifier' => $overrides['main_image_identifier'] ?? null,
         ]);
     }
 
@@ -136,7 +136,6 @@ class CreateWikiSnapshot
             'height' => $overrides['height'] ?? null,
             'blood_type' => $overrides['blood_type'] ?? null,
             'fandom_name' => $overrides['fandom_name'] ?? '',
-            'profile_image_identifier' => $overrides['profile_image_identifier'] ?? null,
         ]);
 
         foreach ($groupIdentifiers as $groupId) {
@@ -161,7 +160,6 @@ class CreateWikiSnapshot
             'founded_in' => $overrides['founded_in'] ?? null,
             'parent_agency_identifier' => $overrides['parent_agency_identifier'] ?? null,
             'status' => $overrides['status'] ?? null,
-            'logo_image_identifier' => $overrides['logo_image_identifier'] ?? null,
             'official_website' => $overrides['official_website'] ?? null,
             'social_links' => $overrides['social_links'] ?? json_encode([]),
         ]);
@@ -188,7 +186,6 @@ class CreateWikiSnapshot
             'agency_identifier' => $overrides['agency_identifier'] ?? null,
             'release_date' => $overrides['release_date'] ?? null,
             'album_name' => $overrides['album_name'] ?? null,
-            'cover_image_identifier' => $overrides['cover_image_identifier'] ?? null,
             'lyricist' => $overrides['lyricist'] ?? 'Black Eyed Pilseung',
             'normalized_lyricist' => $overrides['normalized_lyricist'] ?? 'black eyed pilseung',
             'composer' => $overrides['composer'] ?? 'Black Eyed Pilseung',

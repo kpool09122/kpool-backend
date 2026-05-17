@@ -36,7 +36,6 @@ class DraftWikiReadModelTest extends TestCase
                 'officialColors' => ['#FE5F8F', '#FEE500'],
                 'emoji' => '',
                 'representativeSymbol' => 'Candy Bong',
-                'mainImageIdentifier' => null,
             ],
             sections: [
                 [
@@ -83,7 +82,6 @@ class DraftWikiReadModelTest extends TestCase
                 'officialColors' => ['#FE5F8F', '#FEE500'],
                 'emoji' => '',
                 'representativeSymbol' => 'Candy Bong',
-                'mainImageIdentifier' => null,
             ],
             'sections' => [
                 [

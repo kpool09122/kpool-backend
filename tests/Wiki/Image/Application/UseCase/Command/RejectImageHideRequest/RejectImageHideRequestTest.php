@@ -21,7 +21,6 @@ use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -290,7 +289,6 @@ class RejectImageHideRequestTest extends TestCase
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',
@@ -316,7 +314,6 @@ class RejectImageHideRequestTest extends TestCase
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',

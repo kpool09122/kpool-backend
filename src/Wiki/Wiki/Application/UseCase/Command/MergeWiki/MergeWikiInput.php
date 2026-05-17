@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki;
 
 use DateTimeImmutable;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
@@ -20,6 +21,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
      * @param BasicInterface $basic
      * @param SectionContentCollection $sections
      * @param Color|null $themeColor
+     * @param ImageIdentifier|null $imageIdentifier
      * @param PrincipalIdentifier $principalIdentifier
      * @param ResourceType $resourceType
      * @param DateTimeImmutable $mergedAt
@@ -38,6 +40,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
         private ?WikiIdentifier          $agencyIdentifier = null,
         private array                    $groupIdentifiers = [],
         private array                    $talentIdentifiers = [],
+        private ?ImageIdentifier         $imageIdentifier = null,
     ) {
     }
 
@@ -59,6 +62,11 @@ readonly class MergeWikiInput implements MergeWikiInputPort
     public function themeColor(): ?Color
     {
         return $this->themeColor;
+    }
+
+    public function imageIdentifier(): ?ImageIdentifier
+    {
+        return $this->imageIdentifier;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

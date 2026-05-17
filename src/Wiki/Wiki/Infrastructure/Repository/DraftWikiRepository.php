@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -149,6 +150,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 'slug' => (string) $draftWiki->slug(),
                 'language' => $draftWiki->language()->value,
                 'resource_type' => $draftWiki->resourceType()->value,
+                'image_identifier' => $draftWiki->imageIdentifier() ? (string) $draftWiki->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($draftWiki->sections()),
                 'theme_color' => $draftWiki->themeColor() ? (string) $draftWiki->themeColor() : null,
                 'status' => $draftWiki->status()->value,
@@ -237,6 +239,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->merged_at?->toDateTimeImmutable(),
             $model->translated_at?->toDateTimeImmutable(),
             $model->approved_at?->toDateTimeImmutable(),
+            $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
         );
     }
 
@@ -264,7 +267,6 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             'height' => $basic->height,
             'blood_type' => $basic->blood_type,
             'fandom_name' => $basic->fandom_name,
-            'profile_image_identifier' => $basic->profile_image_identifier,
         ]);
     }
 
@@ -288,7 +290,6 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             'official_colors' => $basic->official_colors,
             'emoji' => $basic->emoji,
             'representative_symbol' => $basic->representative_symbol,
-            'main_image_identifier' => $basic->main_image_identifier,
         ]);
     }
 
@@ -307,7 +308,6 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             'founded_in' => $basic->founded_in,
             'parent_agency_identifier' => $basic->parent_agency_identifier,
             'status' => $basic->status,
-            'logo_image_identifier' => $basic->logo_image_identifier,
             'official_website' => $basic->official_website,
             'social_links' => $basic->social_links,
         ]);
@@ -330,7 +330,6 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             'talent_identifiers' => $basic->talents->pluck('id')->toArray(),
             'release_date' => $basic->release_date,
             'album_name' => $basic->album_name,
-            'cover_image_identifier' => $basic->cover_image_identifier,
             'lyricist' => $basic->lyricist,
             'normalized_lyricist' => $basic->normalized_lyricist,
             'composer' => $basic->composer,

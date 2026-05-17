@@ -6,8 +6,6 @@ namespace Application\Http\Action\Wiki\Image\Command\UploadImage;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 
 class UploadImageRequest extends FormRequest
 {
@@ -23,7 +21,6 @@ class UploadImageRequest extends FormRequest
             'resourceType' => ['required', 'string'],
             'translationSetIdentifier' => ['required', 'uuid'],
             'base64EncodedImage' => ['required', 'string'],
-            'imageUsage' => ['required', 'string', Rule::in(array_column(ImageUsage::cases(), 'value'))],
             'displayOrder' => ['required', 'integer'],
             'sourceUrl' => ['required', 'string'],
             'sourceName' => ['required', 'string'],
@@ -60,11 +57,6 @@ class UploadImageRequest extends FormRequest
     public function base64EncodedImage(): string
     {
         return (string) $this->input('base64EncodedImage');
-    }
-
-    public function imageUsage(): string
-    {
-        return (string) $this->input('imageUsage');
     }
 
     public function displayOrder(): string

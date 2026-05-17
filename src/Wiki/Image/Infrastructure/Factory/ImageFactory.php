@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Factory\ImageFactoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -27,7 +26,6 @@ readonly class ImageFactory implements ImageFactoryInterface
         ResourceType        $resourceType,
         TranslationSetIdentifier      $translationSetIdentifier,
         ImagePath           $imagePath,
-        ImageUsage          $imageUsage,
         int                 $displayOrder,
         string              $sourceUrl,
         string              $sourceName,
@@ -42,7 +40,6 @@ readonly class ImageFactory implements ImageFactoryInterface
             $resourceType,
             $translationSetIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
