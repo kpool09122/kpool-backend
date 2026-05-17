@@ -20,7 +20,7 @@ class ListDraftWikisRequest extends FormRequest
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'translationSetIdentifier' => ['nullable', 'uuid'],
             'status' => ['required', 'string', Rule::in(array_column(ApprovalStatus::cases(), 'value'))],
-            'onlyMine' => ['nullable', 'boolean'],
+            'onlyMine' => ['nullable', Rule::in([true, false, 1, 0, '1', '0', 'true', 'false'])],
             'resourceType' => ['nullable', 'string', Rule::in([
                 ResourceType::AGENCY->value,
                 ResourceType::GROUP->value,
