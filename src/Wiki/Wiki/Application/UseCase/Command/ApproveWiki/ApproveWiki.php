@@ -83,7 +83,10 @@ readonly class ApproveWiki implements ApproveWikiInterface
             throw new DisallowedException();
         }
 
-        if ($this->wikiRepository->existsBySlug($wiki->slug())) {
+        if ($this->wikiRepository->existsBySlugExcludingTranslationSetIdentifier(
+            $wiki->slug(),
+            $wiki->translationSetIdentifier(),
+        )) {
             throw new DuplicateSlugException();
         }
 

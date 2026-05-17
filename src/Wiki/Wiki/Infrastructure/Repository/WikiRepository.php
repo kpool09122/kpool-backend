@@ -66,6 +66,16 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ->exists();
     }
 
+    public function existsBySlugExcludingTranslationSetIdentifier(
+        Slug $slug,
+        TranslationSetIdentifier $translationSetIdentifier,
+    ): bool {
+        return WikiModel::query()
+            ->where('slug', (string) $slug)
+            ->where('translation_set_identifier', '!=', (string) $translationSetIdentifier)
+            ->exists();
+    }
+
     /**
      * @return Wiki[]
      */
