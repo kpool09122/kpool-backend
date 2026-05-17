@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $resource_type
  * @property string $translation_set_identifier
  * @property string $image_path
- * @property string $image_usage
  * @property int $display_order
  * @property string $source_url
  * @property string $source_name
@@ -37,7 +36,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'resource_type',
     'translation_set_identifier',
     'image_path',
-    'image_usage',
     'display_order',
     'source_url',
     'source_name',

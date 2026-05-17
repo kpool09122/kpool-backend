@@ -64,6 +64,8 @@ readonly class EditWiki implements EditWikiInterface
         $wiki->setBasic($input->basic());
         $wiki->setSections($input->sections());
         $wiki->setThemeColor($input->themeColor());
+        $wiki->setImageIdentifier($input->imageIdentifier());
+        $wiki->setEditorIdentifier($input->principalIdentifier());
 
         $this->draftWikiRepository->save($wiki);
 

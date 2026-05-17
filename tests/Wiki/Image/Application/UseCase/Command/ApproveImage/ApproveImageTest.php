@@ -25,7 +25,6 @@ use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -113,7 +112,6 @@ class ApproveImageTest extends TestCase
                 $testData->resourceType,
                 $testData->translationSetIdentifier,
                 $testData->imagePath,
-                $testData->imageUsage,
                 $testData->displayOrder,
                 $testData->sourceUrl,
                 $testData->sourceName,
@@ -159,7 +157,6 @@ class ApproveImageTest extends TestCase
         $result = $output->toArray();
         $this->assertNotNull($result['imageIdentifier']);
         $this->assertSame($testData->resourceType->value, $result['resourceType']);
-        $this->assertSame($testData->imageUsage->value, $result['imageUsage']);
         $this->assertFalse($result['isHidden']);
     }
 
@@ -287,7 +284,6 @@ class ApproveImageTest extends TestCase
             $testData->existingImage->imageIdentifier(),
             $testData->existingImage->translationSetIdentifier(),
             $testData->existingImage->imagePath(),
-            $testData->existingImage->imageUsage(),
             $testData->existingImage->displayOrder(),
             $testData->existingImage->sourceUrl(),
             $testData->existingImage->sourceName(),
@@ -367,7 +363,6 @@ class ApproveImageTest extends TestCase
         $result = $output->toArray();
         $this->assertSame((string) $testData->publishedImageIdentifier, $result['imageIdentifier']);
         $this->assertSame($testData->existingImage->resourceType()->value, $result['resourceType']);
-        $this->assertSame($testData->newImageUsage->value, $result['imageUsage']);
         $this->assertFalse($result['isHidden']);
     }
 
@@ -488,7 +483,6 @@ class ApproveImageTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -504,7 +498,6 @@ class ApproveImageTest extends TestCase
             $translationSetIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -523,7 +516,6 @@ class ApproveImageTest extends TestCase
             $resourceType,
             $translationSetIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -545,7 +537,6 @@ class ApproveImageTest extends TestCase
             $resourceType,
             $translationSetIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -564,7 +555,6 @@ class ApproveImageTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -580,7 +570,6 @@ class ApproveImageTest extends TestCase
             $translationSetIdentifier,
             $uploaderIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -596,7 +585,6 @@ class ApproveImageTest extends TestCase
             $resourceType,
             $translationSetIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -621,7 +609,6 @@ class ApproveImageTest extends TestCase
 
         // 既存Imageのデータ（更新前）
         $existingImagePath = new ImagePath('images/existing.png');
-        $existingImageUsage = ImageUsage::PROFILE;
         $existingDisplayOrder = 1;
         $existingSourceUrl = 'https://example.com/existing';
         $existingSourceName = 'Existing Source';
@@ -631,7 +618,6 @@ class ApproveImageTest extends TestCase
 
         // DraftImageのデータ（更新後の値）
         $newImagePath = new ImagePath('images/updated.png');
-        $newImageUsage = ImageUsage::ADDITIONAL;
         $newDisplayOrder = 2;
         $newSourceUrl = 'https://example.com/updated';
         $newSourceName = 'Updated Source';
@@ -642,7 +628,6 @@ class ApproveImageTest extends TestCase
             $resourceType,
             $translationSetIdentifier,
             $existingImagePath,
-            $existingImageUsage,
             $existingDisplayOrder,
             $existingSourceUrl,
             $existingSourceName,
@@ -666,7 +651,6 @@ class ApproveImageTest extends TestCase
             $translationSetIdentifier,
             $uploaderIdentifier,
             $newImagePath,
-            $newImageUsage,
             $newDisplayOrder,
             $newSourceUrl,
             $newSourceName,
@@ -683,7 +667,6 @@ class ApproveImageTest extends TestCase
             $draftImage,
             $existingImage,
             $newImagePath,
-            $newImageUsage,
             $newDisplayOrder,
             $newSourceUrl,
             $newSourceName,
@@ -702,7 +685,6 @@ readonly class ApproveImageTestData
         public ResourceType    $resourceType,
         public TranslationSetIdentifier  $translationSetIdentifier,
         public ImagePath       $imagePath,
-        public ImageUsage      $imageUsage,
         public int             $displayOrder,
         public string          $sourceUrl,
         public string          $sourceName,
@@ -724,7 +706,6 @@ readonly class ApproveImageUpdateTestData
         public DraftImage $draftImage,
         public Image $existingImage,
         public ImagePath $newImagePath,
-        public ImageUsage $newImageUsage,
         public int $newDisplayOrder,
         public string $newSourceUrl,
         public string $newSourceName,

@@ -19,7 +19,6 @@ readonly class AgencyWikiBasicReadModel implements WikiBasicReadModel
         private ?string $foundedIn,
         private ?string $parentAgencyIdentifier,
         private ?string $status,
-        private ?string $logoImageIdentifier,
         private string $officialWebsite,
         private array $socialLinks,
     ) {
@@ -38,7 +37,6 @@ readonly class AgencyWikiBasicReadModel implements WikiBasicReadModel
             'foundedIn' => $this->foundedIn,
             'parentAgencyIdentifier' => $this->parentAgencyIdentifier,
             'status' => $this->status,
-            'logoImageIdentifier' => $this->logoImageIdentifier,
             'officialWebsite' => $this->officialWebsite,
             'socialLinks' => $this->socialLinks,
         ];

@@ -59,7 +59,6 @@ class DraftWikiFactoryTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $slug = new Slug('gr-twice');
         $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);
@@ -109,7 +108,6 @@ class DraftWikiFactoryTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $slug = new Slug('gr-newjeans');
         $wikiFactory = $this->app->make(DraftWikiFactoryInterface::class);

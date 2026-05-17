@@ -16,7 +16,7 @@ class ApproveImageOutput implements ApproveImageOutputPort
     }
 
     /**
-     * @return array{imageIdentifier: ?string, resourceType: ?string, imageUsage: ?string, isHidden: ?bool}
+     * @return array{imageIdentifier: ?string, resourceType: ?string, isHidden: ?bool}
      */
     public function toArray(): array
     {
@@ -24,7 +24,6 @@ class ApproveImageOutput implements ApproveImageOutputPort
             return [
                 'imageIdentifier' => null,
                 'resourceType' => null,
-                'imageUsage' => null,
                 'isHidden' => null,
             ];
         }
@@ -32,7 +31,6 @@ class ApproveImageOutput implements ApproveImageOutputPort
         return [
             'imageIdentifier' => (string) $this->image->imageIdentifier(),
             'resourceType' => $this->image->resourceType()->value,
-            'imageUsage' => $this->image->imageUsage()->value,
             'isHidden' => $this->image->isHidden(),
         ];
     }

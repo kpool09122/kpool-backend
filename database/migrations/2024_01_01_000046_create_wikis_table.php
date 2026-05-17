@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug', 80)->comment('URLスラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('resource_type', 50)->comment('リソースタイプ (agency, group, talent, song)');
+            $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
             $table->unsignedInteger('version')->default(1)->comment('バージョン');
@@ -43,6 +44,7 @@ return new class extends Migration
             $table->string('slug', 80)->comment('URLスラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('resource_type', 50)->comment('リソースタイプ (agency, group, talent, song)');
+            $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
             $table->string('status', 50)->default('pending')->comment('承認ステータス');
@@ -74,6 +76,7 @@ return new class extends Migration
             $table->string('slug', 80)->comment('URLスラッグ');
             $table->string('language', 8)->comment('翻訳言語');
             $table->string('resource_type', 50)->comment('リソースタイプ');
+            $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー');
             $table->unsignedInteger('version')->comment('バージョン');

@@ -13,7 +13,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Image\Infrastructure\Service\ImageAuthorizationResourceBuilder;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -854,7 +853,6 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             new TranslationSetIdentifier($resourceId),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.webp'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',
@@ -873,7 +871,6 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             $resourceType,
             new TranslationSetIdentifier($resourceId),
             new ImagePath('images/test.webp'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',

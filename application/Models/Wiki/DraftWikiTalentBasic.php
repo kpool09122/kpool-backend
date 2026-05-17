@@ -26,7 +26,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property ?string $height
  * @property ?string $blood_type
  * @property ?string $fandom_name
- * @property ?string $profile_image_identifier
  * @property-read Collection<int, Wiki> $groups
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
@@ -46,7 +45,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
     'height',
     'blood_type',
     'fandom_name',
-    'profile_image_identifier',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'draft_wiki_talent_basics', key: 'wiki_id', keyType: 'string')]
 class DraftWikiTalentBasic extends Model

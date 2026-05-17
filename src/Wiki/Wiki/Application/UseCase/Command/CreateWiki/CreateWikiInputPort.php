@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -26,6 +27,8 @@ interface CreateWikiInputPort
     public function sections(): SectionContentCollection;
 
     public function themeColor(): ?Color;
+
+    public function imageIdentifier(): ?ImageIdentifier;
 
     public function slug(): Slug;
 

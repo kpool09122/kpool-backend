@@ -52,7 +52,6 @@ class SubmitWikiOutputTest extends TestCase
                 officialColors: [],
                 emoji: new Emoji(''),
                 representativeSymbol: new RepresentativeSymbol(''),
-                mainImageIdentifier: null,
             ),
             new SectionContentCollection(),
             null,

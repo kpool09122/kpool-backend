@@ -12,6 +12,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisOutput;
+use Tests\Helper\CreateDraftImage;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
@@ -224,6 +225,9 @@ class ListDraftWikisTest extends TestCase
             'language' => 'ko',
             'resourceType' => 'group',
             'themeColor' => '#ff3366',
+            'imageIdentifier' => null,
+            'imageUrl' => null,
+            'imageAltText' => null,
             'status' => ApprovalStatus::Approved->value,
             'name' => 'TWICE',
             'normalizedName' => 'twice',
@@ -233,6 +237,31 @@ class ListDraftWikisTest extends TestCase
             'translatedAt' => '2026-05-03T00:00:00+00:00',
             'mergedAt' => '2026-05-04T00:00:00+00:00',
         ], $payload['wikis'][0]);
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsDraftWikiImageFieldsWhenImageExists(): void
+    {
+        CreateDraftImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f801', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'image_path' => '/images/test/card.jpg',
+            'alt_text' => 'Draft wiki card image',
+        ]);
+
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f802', 'talent', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            'status' => ApprovalStatus::Pending->value,
+        ]);
+
+        $payload = $this->process(new ListDraftWikisInput(
+            status: ApprovalStatus::Pending,
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f901'),
+        ))->toArray();
+
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
+        $this->assertSame('http://localhost:8080/images/test/card.jpg', $payload['wikis'][0]['imageUrl']);
+        $this->assertSame('Draft wiki card image', $payload['wikis'][0]['imageAltText']);
     }
 
     private function listDraftWikis(): ListDraftWikisInterface

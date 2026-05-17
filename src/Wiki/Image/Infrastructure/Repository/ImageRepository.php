@@ -13,7 +13,6 @@ use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -58,7 +57,6 @@ final class ImageRepository implements ImageRepositoryInterface
                 'resource_type' => $image->resourceType()->value,
                 'translation_set_identifier' => (string) $image->translationSetIdentifier(),
                 'image_path' => (string) $image->imagePath(),
-                'image_usage' => $image->imageUsage()->value,
                 'display_order' => $image->displayOrder(),
                 'source_url' => $image->sourceUrl(),
                 'source_name' => $image->sourceName(),
@@ -125,7 +123,6 @@ final class ImageRepository implements ImageRepositoryInterface
             ResourceType::from($model->resource_type),
             new TranslationSetIdentifier($model->translation_set_identifier),
             new ImagePath($model->image_path),
-            ImageUsage::from($model->image_usage),
             $model->display_order,
             $model->source_url,
             $model->source_name,

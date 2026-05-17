@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\RejectImage\RejectImageOutput;
 use Source\Wiki\Image\Domain\Entity\DraftImage;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -35,7 +34,6 @@ class RejectImageOutputTest extends TestCase
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',
@@ -53,7 +51,6 @@ class RejectImageOutputTest extends TestCase
 
         $this->assertSame((string) $imageIdentifier, $result['imageIdentifier']);
         $this->assertSame('talent', $result['resourceType']);
-        $this->assertSame('profile', $result['imageUsage']);
         $this->assertSame('rejected', $result['status']);
     }
 
@@ -71,7 +68,6 @@ class RejectImageOutputTest extends TestCase
         $this->assertSame([
             'imageIdentifier' => null,
             'resourceType' => null,
-            'imageUsage' => null,
             'status' => null,
         ], $result);
     }

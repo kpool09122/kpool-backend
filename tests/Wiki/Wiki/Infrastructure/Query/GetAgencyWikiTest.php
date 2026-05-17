@@ -28,6 +28,7 @@ class GetAgencyWikiTest extends TestCase
                 'language' => 'ko',
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f405',
                 'version' => 3,
+                'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
                 'theme_color' => '#1A1A1A',
                 'sections' => json_encode([
                     [
@@ -46,7 +47,6 @@ class GetAgencyWikiTest extends TestCase
                 'founded_in' => '1997-04-25',
                 'parent_agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f403',
                 'status' => 'active',
-                'logo_image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
                 'official_website' => 'https://www.jype.com',
                 'social_links' => json_encode([
                     'https://twitter.com/jypnation',

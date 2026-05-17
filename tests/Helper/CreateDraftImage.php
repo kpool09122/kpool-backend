@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
@@ -18,7 +17,6 @@ class CreateDraftImage
      *     translation_set_identifier?: string,
      *     uploader_id?: string,
      *     image_path?: string,
-     *     image_usage?: string,
      *     display_order?: int,
      *     source_url?: string,
      *     source_name?: string,
@@ -38,7 +36,6 @@ class CreateDraftImage
             'translation_set_identifier' => $overrides['translation_set_identifier'] ?? StrTestHelper::generateUuid(),
             'uploader_id' => $overrides['uploader_id'] ?? StrTestHelper::generateUuid(),
             'image_path' => $overrides['image_path'] ?? '/images/test/sample.jpg',
-            'image_usage' => $overrides['image_usage'] ?? ImageUsage::PROFILE->value,
             'display_order' => $overrides['display_order'] ?? 1,
             'source_url' => $overrides['source_url'] ?? 'https://example.com/source',
             'source_name' => $overrides['source_name'] ?? 'Example Source',

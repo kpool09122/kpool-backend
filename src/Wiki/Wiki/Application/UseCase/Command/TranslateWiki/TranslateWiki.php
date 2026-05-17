@@ -86,6 +86,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
 
             $wikiDraft->setSections($translatedData->translatedSections());
             $wikiDraft->setThemeColor($wiki->themeColor());
+            $wikiDraft->setImageIdentifier($wiki->imageIdentifier());
             $wikiDraft->setPublishedWikiIdentifier($input->wikiIdentifier());
             $wikiDraft->setSourceEditorIdentifier($wiki->editorIdentifier());
             $wikiDraft->setTranslatedAt($translatedAt);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Song;
 
 use DateTimeImmutable;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -31,7 +30,6 @@ final readonly class SongBasic implements BasicInterface
         // リリース情報
         private ?ReleaseDate $releaseDate,
         private ?string $albumName,
-        private ?ImageIdentifier $coverImageIdentifier,
         // クレジット情報
         private Lyricist $lyricist,
         private string $normalizedLyricist,
@@ -94,11 +92,6 @@ final readonly class SongBasic implements BasicInterface
     public function albumName(): ?string
     {
         return $this->albumName;
-    }
-
-    public function coverImageIdentifier(): ?ImageIdentifier
-    {
-        return $this->coverImageIdentifier;
     }
 
     public function lyricist(): Lyricist
@@ -179,7 +172,6 @@ final readonly class SongBasic implements BasicInterface
             // リリース情報
             'release_date' => $this->releaseDate?->format('Y-m-d'),
             'album_name' => $this->albumName,
-            'cover_image_identifier' => $this->coverImageIdentifier !== null ? (string)$this->coverImageIdentifier : null,
             // クレジット情報
             'lyricist' => (string)$this->lyricist,
             'normalized_lyricist' => $this->normalizedLyricist,
@@ -214,7 +206,6 @@ final readonly class SongBasic implements BasicInterface
             // リリース情報
             releaseDate: isset($data['release_date']) ? new ReleaseDate(new DateTimeImmutable($data['release_date'])) : null,
             albumName: $data['album_name'] ?? null,
-            coverImageIdentifier: isset($data['cover_image_identifier']) ? new ImageIdentifier($data['cover_image_identifier']) : null,
             // クレジット情報
             lyricist: new Lyricist($data['lyricist'] ?? ''),
             normalizedLyricist: $data['normalized_lyricist'] ?? '',

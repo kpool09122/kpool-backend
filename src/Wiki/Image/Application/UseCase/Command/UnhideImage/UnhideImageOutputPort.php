@@ -11,7 +11,7 @@ interface UnhideImageOutputPort
     public function setImage(Image $image): void;
 
     /**
-     * @return array{imageIdentifier: ?string, resourceType: ?string, imageUsage: ?string, isHidden: ?bool}
+     * @return array{imageIdentifier: ?string, resourceType: ?string, isHidden: ?bool}
      */
     public function toArray(): array;
 }

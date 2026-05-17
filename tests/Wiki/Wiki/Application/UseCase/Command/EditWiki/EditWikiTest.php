@@ -82,7 +82,6 @@ class EditWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $updatedSections = new SectionContentCollection();
         $updatedThemeColor = new Color('#00FF00');
@@ -131,6 +130,7 @@ class EditWikiTest extends TestCase
         $this->assertSame((string) $updatedBasic->name(), $result['name']);
         $this->assertSame($testData->resourceType->value, $result['resourceType']);
         $this->assertSame($testData->status->value, $result['status']);
+        $this->assertSame($principalIdentifier, $testData->draftWiki->editorIdentifier());
     }
 
     /**
@@ -354,7 +354,6 @@ class EditWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');

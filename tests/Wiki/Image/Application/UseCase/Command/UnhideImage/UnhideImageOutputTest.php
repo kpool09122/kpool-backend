@@ -9,7 +9,6 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageOutput;
 use Source\Wiki\Image\Domain\Entity\Image;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -32,7 +31,6 @@ class UnhideImageOutputTest extends TestCase
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',
@@ -56,7 +54,6 @@ class UnhideImageOutputTest extends TestCase
 
         $this->assertSame((string) $imageIdentifier, $result['imageIdentifier']);
         $this->assertSame('talent', $result['resourceType']);
-        $this->assertSame('profile', $result['imageUsage']);
         $this->assertFalse($result['isHidden']);
     }
 
@@ -74,7 +71,6 @@ class UnhideImageOutputTest extends TestCase
         $this->assertSame([
             'imageIdentifier' => null,
             'resourceType' => null,
-            'imageUsage' => null,
             'isHidden' => null,
         ], $result);
     }

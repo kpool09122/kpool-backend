@@ -79,7 +79,6 @@ final class WikiCommandPayloadMapper
             'official_colors' => $basic['officialColors'] ?? [],
             'emoji' => $basic['emoji'] ?? '',
             'representative_symbol' => $basic['representativeSymbol'] ?? '',
-            'main_image_identifier' => $basic['mainImageIdentifier'] ?? null,
         ];
     }
 
@@ -106,7 +105,6 @@ final class WikiCommandPayloadMapper
             'height' => $basic['height'] ?? null,
             'blood_type' => $basic['bloodType'] ?? null,
             'fandom_name' => $basic['fandomName'] ?? '',
-            'profile_image_identifier' => $basic['profileImageIdentifier'] ?? null,
         ];
     }
 
@@ -124,7 +122,6 @@ final class WikiCommandPayloadMapper
             'founded_in' => $basic['foundedIn'] ?? null,
             'parent_agency_identifier' => $basic['parentAgencyIdentifier'] ?? null,
             'status' => $basic['status'] ?? null,
-            'logo_image_identifier' => $basic['logoImageIdentifier'] ?? null,
             'official_website' => $basic['officialWebsite'] ?? null,
             'social_links' => $basic['socialLinks'] ?? [],
         ];
@@ -146,7 +143,6 @@ final class WikiCommandPayloadMapper
             'talent_identifiers' => $basic['talentIdentifiers'] ?? [],
             'release_date' => $basic['releaseDate'] ?? null,
             'album_name' => $basic['albumName'] ?? null,
-            'cover_image_identifier' => $basic['coverImageIdentifier'] ?? null,
             'lyricist' => $basic['lyricist'] ?? '',
             'normalized_lyricist' => $basic['normalizedLyricist'] ?? '',
             'composer' => $basic['composer'] ?? '',

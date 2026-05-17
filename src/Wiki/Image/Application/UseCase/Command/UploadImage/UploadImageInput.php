@@ -6,7 +6,6 @@ namespace Source\Wiki\Image\Application\UseCase\Command\UploadImage;
 
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -20,7 +19,6 @@ readonly class UploadImageInput implements UploadImageInputPort
         private ResourceType        $resourceType,
         private TranslationSetIdentifier      $draftTranslationSetIdentifier,
         private string              $base64EncodedImage,
-        private ImageUsage          $imageUsage,
         private int                 $displayOrder,
         private string              $sourceUrl,
         private string              $sourceName,
@@ -53,11 +51,6 @@ readonly class UploadImageInput implements UploadImageInputPort
     public function base64EncodedImage(): string
     {
         return $this->base64EncodedImage;
-    }
-
-    public function imageUsage(): ImageUsage
-    {
-        return $this->imageUsage;
     }
 
     public function displayOrder(): int

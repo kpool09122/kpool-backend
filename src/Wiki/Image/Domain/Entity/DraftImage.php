@@ -7,7 +7,6 @@ namespace Source\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -23,7 +22,6 @@ class DraftImage
         private readonly TranslationSetIdentifier      $translationSetIdentifier,
         private readonly PrincipalIdentifier $uploaderIdentifier,
         private ImagePath                    $imagePath,
-        private ImageUsage                   $imageUsage,
         private int                          $displayOrder,
         private string                       $sourceUrl,
         private string                       $sourceName,
@@ -68,16 +66,6 @@ class DraftImage
     public function setImagePath(ImagePath $imagePath): void
     {
         $this->imagePath = $imagePath;
-    }
-
-    public function imageUsage(): ImageUsage
-    {
-        return $this->imageUsage;
-    }
-
-    public function setImageUsage(ImageUsage $imageUsage): void
-    {
-        $this->imageUsage = $imageUsage;
     }
 
     public function displayOrder(): int

@@ -59,7 +59,6 @@ class WikiFactoryTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $wikiFactory = $this->app->make(WikiFactoryInterface::class);
         $wiki = $wikiFactory->create($translationSetIdentifier, $slug, $language, $resourceType, $basic);

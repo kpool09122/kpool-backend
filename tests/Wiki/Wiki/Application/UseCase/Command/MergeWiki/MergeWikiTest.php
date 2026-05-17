@@ -84,7 +84,6 @@ class MergeWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $updatedSections = new SectionContentCollection();
         $updatedThemeColor = new Color('#00FF00');
@@ -365,7 +364,6 @@ class MergeWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');

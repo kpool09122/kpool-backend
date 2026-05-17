@@ -6,7 +6,6 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Song;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\Arranger;
@@ -39,7 +38,6 @@ class SongBasicTest extends TestCase
         $this->assertSame($testData->talentIdentifiers, $testData->songBasic->talentIdentifiers());
         $this->assertSame($testData->releaseDate, $testData->songBasic->releaseDate());
         $this->assertSame($testData->albumName, $testData->songBasic->albumName());
-        $this->assertSame($testData->coverImageIdentifier, $testData->songBasic->coverImageIdentifier());
         $this->assertSame((string) $testData->lyricist, (string) $testData->songBasic->lyricist());
         $this->assertSame($testData->normalizedLyricist, $testData->songBasic->normalizedLyricist());
         $this->assertSame((string) $testData->composer, (string) $testData->songBasic->composer());
@@ -66,7 +64,6 @@ class SongBasicTest extends TestCase
         $this->assertEmpty($testData->songBasic->talentIdentifiers());
         $this->assertNull($testData->songBasic->releaseDate());
         $this->assertNull($testData->songBasic->albumName());
-        $this->assertNull($testData->songBasic->coverImageIdentifier());
     }
 
     /**
@@ -148,7 +145,6 @@ class SongBasicTest extends TestCase
         // リリース情報
         $this->assertSame($testData->releaseDate->format('Y-m-d'), $array['release_date']);
         $this->assertSame($testData->albumName, $array['album_name']);
-        $this->assertSame((string) $testData->coverImageIdentifier, $array['cover_image_identifier']);
         // クレジット情報
         $this->assertSame((string) $testData->lyricist, $array['lyricist']);
         $this->assertSame($testData->normalizedLyricist, $array['normalized_lyricist']);
@@ -176,7 +172,6 @@ class SongBasicTest extends TestCase
         $this->assertEmpty($array['talent_identifiers']);
         $this->assertNull($array['release_date']);
         $this->assertNull($array['album_name']);
-        $this->assertNull($array['cover_image_identifier']);
     }
 
     /**
@@ -205,7 +200,6 @@ class SongBasicTest extends TestCase
             // リリース情報
             'release_date' => '2020-08-21',
             'album_name' => 'BE',
-            'cover_image_identifier' => $coverImageUuid,
             // クレジット情報
             'lyricist' => 'David Stewart',
             'normalized_lyricist' => 'davidstewart',
@@ -234,7 +228,6 @@ class SongBasicTest extends TestCase
         // リリース情報
         $this->assertSame('2020-08-21', $songBasic->releaseDate()->format('Y-m-d'));
         $this->assertSame('BE', $songBasic->albumName());
-        $this->assertSame($coverImageUuid, (string) $songBasic->coverImageIdentifier());
         // クレジット情報
         $this->assertSame('David Stewart', (string) $songBasic->lyricist());
         $this->assertSame('davidstewart', $songBasic->normalizedLyricist());
@@ -269,7 +262,6 @@ class SongBasicTest extends TestCase
         // リリース情報
         $this->assertNull($songBasic->releaseDate());
         $this->assertNull($songBasic->albumName());
-        $this->assertNull($songBasic->coverImageIdentifier());
         // クレジット情報
         $this->assertSame('', (string) $songBasic->lyricist());
         $this->assertSame('', $songBasic->normalizedLyricist());
@@ -301,7 +293,6 @@ class SongBasicTest extends TestCase
         // リリース情報
         $releaseDate = $withNullableValues ? new ReleaseDate(new DateTimeImmutable('2020-08-21')) : null;
         $albumName = $withNullableValues ? 'BE' : null;
-        $coverImageIdentifier = $withNullableValues ? new ImageIdentifier(StrTestHelper::generateUuid()) : null;
 
         // クレジット情報
         $lyricist = new Lyricist('David Stewart');
@@ -321,7 +312,6 @@ class SongBasicTest extends TestCase
             talentIdentifiers: $talentIdentifiers,
             releaseDate: $releaseDate,
             albumName: $albumName,
-            coverImageIdentifier: $coverImageIdentifier,
             lyricist: $lyricist,
             normalizedLyricist: $normalizedLyricist,
             composer: $composer,
@@ -340,7 +330,6 @@ class SongBasicTest extends TestCase
             talentIdentifiers: $talentIdentifiers,
             releaseDate: $releaseDate,
             albumName: $albumName,
-            coverImageIdentifier: $coverImageIdentifier,
             lyricist: $lyricist,
             normalizedLyricist: $normalizedLyricist,
             composer: $composer,
@@ -377,7 +366,6 @@ readonly class SongBasicTestData
         // リリース情報
         public ?ReleaseDate $releaseDate,
         public ?string $albumName,
-        public ?ImageIdentifier $coverImageIdentifier,
         // クレジット情報
         public Lyricist $lyricist,
         public string $normalizedLyricist,

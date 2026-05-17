@@ -16,7 +16,7 @@ class UploadImageOutput implements UploadImageOutputPort
     }
 
     /**
-     * @return array{imageIdentifier: ?string, resourceType: ?string, imageUsage: ?string, status: ?string}
+     * @return array{imageIdentifier: ?string, resourceType: ?string, status: ?string}
      */
     public function toArray(): array
     {
@@ -24,7 +24,6 @@ class UploadImageOutput implements UploadImageOutputPort
             return [
                 'imageIdentifier' => null,
                 'resourceType' => null,
-                'imageUsage' => null,
                 'status' => null,
             ];
         }
@@ -32,7 +31,6 @@ class UploadImageOutput implements UploadImageOutputPort
         return [
             'imageIdentifier' => (string) $this->draftImage->imageIdentifier(),
             'resourceType' => $this->draftImage->resourceType()->value,
-            'imageUsage' => $this->draftImage->imageUsage()->value,
             'status' => $this->draftImage->status()->value,
         ];
     }

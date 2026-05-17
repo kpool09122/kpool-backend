@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('resource_type', 16)->comment('リソースタイプ (talent, song, group)');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('image_path', 255)->comment('画像パス');
-            $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
             $table->integer('display_order')->default(0)->comment('表示順');
             $table->string('source_url', 512)->comment('出典元URL');
             $table->string('source_name', 255)->comment('出典元サイト名');
@@ -33,7 +32,6 @@ return new class extends Migration
             $table->timestamp('updated_at')->nullable()->comment('更新日時');
 
             $table->index(['resource_type', 'translation_set_identifier'], 'idx_resource');
-            $table->index('image_usage', 'idx_usage');
         });
 
         Schema::create('draft_wiki_images', static function (Blueprint $table) {
@@ -43,7 +41,6 @@ return new class extends Migration
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->uuid('uploader_id')->comment('アップロード者ID');
             $table->string('image_path', 255)->comment('画像パス');
-            $table->string('image_usage', 16)->comment('画像用途 (profile, cover, logo, additional)');
             $table->integer('display_order')->default(0)->comment('表示順');
             $table->string('source_url', 512)->comment('出典元URL');
             $table->string('source_name', 255)->comment('出典元サイト名');
@@ -61,7 +58,6 @@ return new class extends Migration
             $table->uuid('image_id')->comment('画像ID');
             $table->uuid('translation_set_identifier')->comment('翻訳セットID');
             $table->string('image_path', 255)->comment('画像パス');
-            $table->string('image_usage', 16)->comment('画像用途');
             $table->integer('display_order')->comment('表示順');
             $table->string('source_url', 512)->comment('出典元URL');
             $table->string('source_name', 255)->comment('出典元サイト名');

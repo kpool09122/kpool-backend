@@ -81,7 +81,6 @@ readonly class ApproveImage implements ApproveImageInterface
 
                 // 既存Imageを更新
                 $existingImage->setImagePath($draftImage->imagePath());
-                $existingImage->setImageUsage($draftImage->imageUsage());
                 $existingImage->setDisplayOrder($draftImage->displayOrder());
                 $existingImage->setSourceUrl($draftImage->sourceUrl());
                 $existingImage->setSourceName($draftImage->sourceName());
@@ -106,7 +105,6 @@ readonly class ApproveImage implements ApproveImageInterface
             $draftImage->resourceType(),
             $draftImage->translationSetIdentifier(),
             $draftImage->imagePath(),
-            $draftImage->imageUsage(),
             $draftImage->displayOrder(),
             $draftImage->sourceUrl(),
             $draftImage->sourceName(),

@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $founded_in
  * @property ?string $parent_agency_identifier
  * @property ?string $status
- * @property ?string $logo_image_identifier
  * @property ?string $official_website
  * @property array<string> $social_links
  */
@@ -29,7 +28,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'founded_in',
     'parent_agency_identifier',
     'status',
-    'logo_image_identifier',
     'official_website',
     'social_links',
 ])]

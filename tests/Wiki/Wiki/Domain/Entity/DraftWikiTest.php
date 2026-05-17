@@ -102,7 +102,6 @@ class DraftWikiTest extends TestCase
             'founded_in' => '2005-02-01',
             'parent_agency_identifier' => null,
             'status' => null,
-            'logo_image_identifier' => null,
             'official_website' => null,
             'social_links' => [],
         ]);
@@ -336,7 +335,6 @@ class DraftWikiTest extends TestCase
             'founded_in' => '1997-04-25',
             'parent_agency_identifier' => null,
             'status' => null,
-            'logo_image_identifier' => null,
             'official_website' => null,
             'social_links' => [],
         ]);

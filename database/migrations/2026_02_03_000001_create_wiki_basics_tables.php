@@ -29,7 +29,6 @@ return new class extends Migration
             $table->integer('height')->nullable()->comment('身長(cm)');
             $table->string('blood_type', 8)->nullable()->comment('血液型');
             $table->string('fandom_name', 64)->default('')->comment('ファンダム名');
-            $table->uuid('profile_image_identifier')->nullable()->comment('プロフィール画像識別子');
             $table->timestamps();
 
             $table->foreign('wiki_id')
@@ -67,7 +66,6 @@ return new class extends Migration
             $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列');
             $table->string('emoji', 16)->default('')->comment('絵文字');
             $table->string('representative_symbol', 32)->default('')->comment('代表シンボル');
-            $table->uuid('main_image_identifier')->nullable()->comment('メイン画像識別子');
             $table->timestamps();
 
             $table->foreign('wiki_id')
@@ -88,7 +86,6 @@ return new class extends Migration
             $table->date('founded_in')->nullable()->comment('設立日');
             $table->uuid('parent_agency_identifier')->nullable()->comment('親事務所ID');
             $table->string('status', 32)->nullable()->comment('ステータス');
-            $table->uuid('logo_image_identifier')->nullable()->comment('ロゴ画像識別子');
             $table->string('official_website', 512)->nullable()->comment('公式ウェブサイト');
             $table->jsonb('social_links')->default('[]')->comment('SNSリンク配列');
             $table->timestamps();
@@ -111,7 +108,6 @@ return new class extends Migration
             $table->uuid('agency_identifier')->nullable()->comment('事務所ID');
             $table->date('release_date')->nullable()->comment('リリース日');
             $table->string('album_name', 255)->nullable()->comment('アルバム名');
-            $table->uuid('cover_image_identifier')->nullable()->comment('カバー画像識別子');
             $table->string('lyricist', 255)->default('')->comment('作詞家');
             $table->string('normalized_lyricist', 255)->default('')->comment('正規化作詞家');
             $table->string('composer', 255)->default('')->comment('作曲家');
@@ -170,7 +166,6 @@ return new class extends Migration
             $table->integer('height')->nullable()->comment('身長(cm)');
             $table->string('blood_type', 8)->nullable()->comment('血液型');
             $table->string('fandom_name', 64)->default('')->comment('ファンダム名');
-            $table->uuid('profile_image_identifier')->nullable()->comment('プロフィール画像識別子');
             $table->timestamps();
 
             $table->foreign('wiki_id')
@@ -205,7 +200,6 @@ return new class extends Migration
             $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列');
             $table->string('emoji', 16)->default('')->comment('絵文字');
             $table->string('representative_symbol', 32)->default('')->comment('代表シンボル');
-            $table->uuid('main_image_identifier')->nullable()->comment('メイン画像識別子');
             $table->timestamps();
 
             $table->foreign('wiki_id')
@@ -223,7 +217,6 @@ return new class extends Migration
             $table->date('founded_in')->nullable()->comment('設立日');
             $table->uuid('parent_agency_identifier')->nullable()->comment('親事務所ID');
             $table->string('status', 32)->nullable()->comment('ステータス');
-            $table->uuid('logo_image_identifier')->nullable()->comment('ロゴ画像識別子');
             $table->string('official_website', 512)->nullable()->comment('公式ウェブサイト');
             $table->jsonb('social_links')->default('[]')->comment('SNSリンク配列');
             $table->timestamps();
@@ -243,7 +236,6 @@ return new class extends Migration
             $table->uuid('agency_identifier')->nullable()->comment('事務所ID');
             $table->date('release_date')->nullable()->comment('リリース日');
             $table->string('album_name', 255)->nullable()->comment('アルバム名');
-            $table->uuid('cover_image_identifier')->nullable()->comment('カバー画像識別子');
             $table->string('lyricist', 255)->default('')->comment('作詞家');
             $table->string('normalized_lyricist', 255)->default('')->comment('正規化作詞家');
             $table->string('composer', 255)->default('')->comment('作曲家');
@@ -300,7 +292,6 @@ return new class extends Migration
             $table->integer('height')->nullable()->comment('身長(cm)');
             $table->string('blood_type', 8)->nullable()->comment('血液型');
             $table->string('fandom_name', 64)->default('')->comment('ファンダム名');
-            $table->uuid('profile_image_identifier')->nullable()->comment('プロフィール画像識別子');
             $table->timestamps();
 
             $table->foreign('snapshot_id')
@@ -335,7 +326,6 @@ return new class extends Migration
             $table->jsonb('official_colors')->default('[]')->comment('公式カラー配列');
             $table->string('emoji', 16)->default('')->comment('絵文字');
             $table->string('representative_symbol', 32)->default('')->comment('代表シンボル');
-            $table->uuid('main_image_identifier')->nullable()->comment('メイン画像識別子');
             $table->timestamps();
 
             $table->foreign('snapshot_id')
@@ -353,7 +343,6 @@ return new class extends Migration
             $table->date('founded_in')->nullable()->comment('設立日');
             $table->uuid('parent_agency_identifier')->nullable()->comment('親事務所ID');
             $table->string('status', 32)->nullable()->comment('ステータス');
-            $table->uuid('logo_image_identifier')->nullable()->comment('ロゴ画像識別子');
             $table->string('official_website', 512)->nullable()->comment('公式ウェブサイト');
             $table->jsonb('social_links')->default('[]')->comment('SNSリンク配列');
             $table->timestamps();
@@ -373,7 +362,6 @@ return new class extends Migration
             $table->uuid('agency_identifier')->nullable()->comment('事務所ID');
             $table->date('release_date')->nullable()->comment('リリース日');
             $table->string('album_name', 255)->nullable()->comment('アルバム名');
-            $table->uuid('cover_image_identifier')->nullable()->comment('カバー画像識別子');
             $table->string('lyricist', 255)->default('')->comment('作詞家');
             $table->string('normalized_lyricist', 255)->default('')->comment('正規化作詞家');
             $table->string('composer', 255)->default('')->comment('作曲家');

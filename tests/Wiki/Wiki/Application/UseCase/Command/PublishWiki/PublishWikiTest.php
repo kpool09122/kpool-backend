@@ -987,7 +987,6 @@ class PublishWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');
@@ -1022,7 +1021,6 @@ class PublishWikiTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $exSections = new SectionContentCollection();
         $publishedVersion = new Version(1);

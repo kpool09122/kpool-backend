@@ -67,7 +67,6 @@ class WikiSnapshotFactoryTest extends TestCase
             officialColors: [],
             emoji: new Emoji(''),
             representativeSymbol: new RepresentativeSymbol(''),
-            mainImageIdentifier: null,
         );
         $sections = new SectionContentCollection([], allowBlocks: false);
         $themeColor = new Color('#FF5733');
@@ -150,7 +149,6 @@ class WikiSnapshotFactoryTest extends TestCase
                 officialColors: [],
                 emoji: new Emoji(''),
                 representativeSymbol: new RepresentativeSymbol(''),
-                mainImageIdentifier: null,
             ),
             new SectionContentCollection([], allowBlocks: false),
             null,

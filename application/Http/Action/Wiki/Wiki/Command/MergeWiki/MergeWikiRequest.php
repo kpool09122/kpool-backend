@@ -22,6 +22,7 @@ class MergeWikiRequest extends FormRequest
             'basic' => ['required', 'array'],
             'sections' => ['nullable', 'array'],
             'themeColor' => ['nullable', 'string'],
+            'imageIdentifier' => ['nullable', 'uuid'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
             'groupIdentifiers.*' => ['uuid'],
@@ -59,6 +60,13 @@ class MergeWikiRequest extends FormRequest
     public function themeColor(): ?string
     {
         $value = $this->input('themeColor');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    public function imageIdentifier(): ?string
+    {
+        $value = $this->input('imageIdentifier');
 
         return $value !== null ? (string) $value : null;
     }

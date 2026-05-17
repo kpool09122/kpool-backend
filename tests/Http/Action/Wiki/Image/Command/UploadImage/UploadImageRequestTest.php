@@ -7,7 +7,6 @@ namespace Tests\Http\Action\Wiki\Image\Command\UploadImage;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageRequest;
 use Illuminate\Support\Facades\Validator;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -58,7 +57,6 @@ class UploadImageRequestTest extends TestCase
             'resourceType' => ResourceType::TALENT->value,
             'translationSetIdentifier' => StrTestHelper::generateUuid(),
             'base64EncodedImage' => 'base64-image',
-            'imageUsage' => ImageUsage::PROFILE->value,
             'displayOrder' => 1,
             'sourceUrl' => 'https://example.com/source',
             'sourceName' => 'Example Source',

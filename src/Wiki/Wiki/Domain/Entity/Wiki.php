@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -37,6 +38,7 @@ class Wiki
         private ?DateTimeImmutable $mergedAt = null,
         private ?DateTimeImmutable $translatedAt = null,
         private ?DateTimeImmutable $approvedAt = null,
+        private ?ImageIdentifier $imageIdentifier = null,
     ) {
     }
 
@@ -201,5 +203,15 @@ class Wiki
     public function setApprovedAt(?DateTimeImmutable $approvedAt): void
     {
         $this->approvedAt = $approvedAt;
+    }
+
+    public function imageIdentifier(): ?ImageIdentifier
+    {
+        return $this->imageIdentifier;
+    }
+
+    public function setImageIdentifier(?ImageIdentifier $imageIdentifier): void
+    {
+        $this->imageIdentifier = $imageIdentifier;
     }
 }

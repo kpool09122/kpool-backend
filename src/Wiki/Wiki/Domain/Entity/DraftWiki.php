@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -30,13 +31,14 @@ class DraftWiki
         private SectionContentCollection $sections,
         private ?Color $themeColor,
         private ApprovalStatus $status,
-        private readonly ?PrincipalIdentifier $editorIdentifier = null,
+        private ?PrincipalIdentifier $editorIdentifier = null,
         private ?PrincipalIdentifier $approverIdentifier = null,
         private ?PrincipalIdentifier $mergerIdentifier = null,
         private ?PrincipalIdentifier $sourceEditorIdentifier = null,
         private ?DateTimeImmutable $mergedAt = null,
         private ?DateTimeImmutable $translatedAt = null,
         private ?DateTimeImmutable $approvedAt = null,
+        private ?ImageIdentifier $imageIdentifier = null,
     ) {
     }
 
@@ -120,6 +122,11 @@ class DraftWiki
         return $this->editorIdentifier;
     }
 
+    public function setEditorIdentifier(?PrincipalIdentifier $editorIdentifier): void
+    {
+        $this->editorIdentifier = $editorIdentifier;
+    }
+
     public function approverIdentifier(): ?PrincipalIdentifier
     {
         return $this->approverIdentifier;
@@ -178,5 +185,15 @@ class DraftWiki
     public function setApprovedAt(?DateTimeImmutable $approvedAt): void
     {
         $this->approvedAt = $approvedAt;
+    }
+
+    public function imageIdentifier(): ?ImageIdentifier
+    {
+        return $this->imageIdentifier;
+    }
+
+    public function setImageIdentifier(?ImageIdentifier $imageIdentifier): void
+    {
+        $this->imageIdentifier = $imageIdentifier;
     }
 }

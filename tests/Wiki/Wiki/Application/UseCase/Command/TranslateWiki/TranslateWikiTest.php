@@ -325,7 +325,6 @@ class TranslateWikiTest extends TestCase
             'representative_symbol' => '',
             'position' => '',
             'fandom_name' => '',
-            'profile_image_identifier' => null,
         ]);
     }
 

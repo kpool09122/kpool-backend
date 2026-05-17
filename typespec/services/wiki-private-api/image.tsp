@@ -13,8 +13,6 @@ model UploadImageRequestBody {
   translationSetIdentifier: Uuid;
   @doc("Image data encoded as base64.")
   base64EncodedImage: string;
-  @doc("Usage category of the image.")
-  imageUsage: string;
   @doc("Display order of the image.")
   displayOrder: int32;
   @doc("Original source URL of the image.")
@@ -55,8 +53,6 @@ model UploadedImageListItem {
   resourceType: string;
   @doc("Translation set identifier that the image belongs to.")
   translationSetIdentifier: Uuid;
-  @doc("Usage category of the image.")
-  imageUsage: string;
   @doc("Display order of the image.")
   displayOrder: int32;
   @doc("Original source URL of the image.")
@@ -99,8 +95,6 @@ model DraftImageListItem {
   resourceType: string;
   @doc("Translation set identifier that the image belongs to.")
   translationSetIdentifier: Uuid;
-  @doc("Usage category of the image.")
-  imageUsage: string;
   @doc("Display order of the image.")
   displayOrder: int32;
   @doc("Original source URL of the image.")

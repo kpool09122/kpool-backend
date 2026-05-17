@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent;
 
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -35,7 +34,6 @@ final readonly class TalentBasic implements BasicInterface
         private ?Height $height,
         private ?BloodType $bloodType,
         private FandomName $fandomName,
-        private ?ImageIdentifier $profileImageIdentifier,
     ) {
     }
 
@@ -122,11 +120,6 @@ final readonly class TalentBasic implements BasicInterface
         return $this->fandomName;
     }
 
-    public function profileImageIdentifier(): ?ImageIdentifier
-    {
-        return $this->profileImageIdentifier;
-    }
-
     public function normalizableKeys(): array
     {
         return [
@@ -168,7 +161,6 @@ final readonly class TalentBasic implements BasicInterface
             'height' => $this->height?->centimeters(),
             'blood_type' => $this->bloodType?->value,
             'fandom_name' => $this->fandomName->value(),
-            'profile_image_identifier' => $this->profileImageIdentifier !== null ? (string)$this->profileImageIdentifier : null,
         ];
     }
 
@@ -194,7 +186,6 @@ final readonly class TalentBasic implements BasicInterface
             height: isset($data['height']) ? new Height((int) $data['height']) : null,
             bloodType: isset($data['blood_type']) ? BloodType::from($data['blood_type']) : null,
             fandomName: new FandomName($data['fandom_name'] ?? ''),
-            profileImageIdentifier: isset($data['profile_image_identifier']) ? new ImageIdentifier($data['profile_image_identifier']) : null,
         );
     }
 }

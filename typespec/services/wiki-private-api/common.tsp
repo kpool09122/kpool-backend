@@ -69,8 +69,6 @@ model GroupDraftWikiBasic {
   emoji: string;
   @doc("Representative symbol of the group.")
   representativeSymbol: string;
-  @doc("Main image identifier of the group.")
-  mainImageIdentifier?: Uuid | null;
 }
 
 @doc("Detailed draft wiki payload used by the editor.")
@@ -153,8 +151,6 @@ model TalentDraftWikiGroupSummary {
   emoji: string;
   @doc("Representative symbol of the group.")
   representativeSymbol: string;
-  @doc("Main image identifier of the group.")
-  mainImageIdentifier?: Uuid;
 }
 
 @doc("Basic payload for a talent draft wiki.")
@@ -189,8 +185,6 @@ model TalentDraftWikiBasic {
   bloodType?: string;
   @doc("Fandom name of the talent.")
   fandomName: string;
-  @doc("Profile image identifier of the talent.")
-  profileImageIdentifier?: Uuid;
   @doc("Related published groups linked to the talent.")
   groups: TalentDraftWikiGroupSummary[];
 }
@@ -275,8 +269,6 @@ model SongDraftWikiGroupSummary {
   emoji: string;
   @doc("Representative symbol of the group.")
   representativeSymbol: string;
-  @doc("Main image identifier of the group.")
-  mainImageIdentifier?: Uuid;
 }
 
 @doc("Summary of a published talent linked from a song draft wiki.")
@@ -317,8 +309,6 @@ model SongDraftWikiTalentSummary {
   bloodType?: string;
   @doc("Fandom name of the talent.")
   fandomName: string;
-  @doc("Profile image identifier of the talent.")
-  profileImageIdentifier?: Uuid;
 }
 
 @doc("Basic payload for a song draft wiki.")
@@ -337,8 +327,6 @@ model SongDraftWikiBasic {
   releaseDate?: plainDate;
   @doc("Album name.")
   albumName: string;
-  @doc("Cover image identifier of the song.")
-  coverImageIdentifier?: Uuid;
   @doc("Lyricist name.")
   lyricist: string;
   @doc("Normalized lyricist name.")
@@ -421,8 +409,6 @@ model AgencyDraftWikiBasic {
   parentAgencyIdentifier?: Uuid;
   @doc("Current activity status of the agency.")
   status?: string;
-  @doc("Logo image identifier of the agency.")
-  logoImageIdentifier?: Uuid;
   @doc("Official website of the agency.")
   officialWebsite: string;
   @doc("Social links of the agency.")
@@ -483,8 +469,6 @@ model ImageDraftSummary {
   imageIdentifier: Uuid;
   @doc("Resource type that the image belongs to.")
   resourceType: string;
-  @doc("Usage category of the image.")
-  imageUsage: string;
   @doc("Current workflow status of the image.")
   status: string;
 }
@@ -495,8 +479,6 @@ model ImageSummary {
   imageIdentifier: Uuid;
   @doc("Resource type that the image belongs to.")
   resourceType: string;
-  @doc("Usage category of the image.")
-  imageUsage: string;
   @doc("Whether the image is currently hidden.")
   isHidden: boolean;
 }

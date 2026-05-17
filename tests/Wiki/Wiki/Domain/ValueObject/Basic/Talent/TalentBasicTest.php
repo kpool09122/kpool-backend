@@ -6,7 +6,6 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Talent;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
@@ -51,7 +50,6 @@ class TalentBasicTest extends TestCase
         $this->assertSame($testData->height, $testData->talentBasic->height());
         $this->assertSame($testData->bloodType, $testData->talentBasic->bloodType());
         $this->assertSame($testData->fandomName, $testData->talentBasic->fandomName());
-        $this->assertSame($testData->profileImageIdentifier, $testData->talentBasic->profileImageIdentifier());
     }
 
     /**
@@ -73,7 +71,6 @@ class TalentBasicTest extends TestCase
         $this->assertNull($testData->talentBasic->englishLevel());
         $this->assertNull($testData->talentBasic->height());
         $this->assertNull($testData->talentBasic->bloodType());
-        $this->assertNull($testData->talentBasic->profileImageIdentifier());
     }
 
     /**
@@ -154,7 +151,6 @@ class TalentBasicTest extends TestCase
         $this->assertSame($testData->fandomName->value(), $array['fandom_name']);
         $this->assertSame((string) $testData->agencyIdentifier, $array['agency_identifier']);
         $this->assertCount(count($testData->groupIdentifiers), $array['group_identifiers']);
-        $this->assertSame((string) $testData->profileImageIdentifier, $array['profile_image_identifier']);
     }
 
     /**
@@ -174,7 +170,6 @@ class TalentBasicTest extends TestCase
         $this->assertNull($array['english_level']);
         $this->assertNull($array['height']);
         $this->assertNull($array['blood_type']);
-        $this->assertNull($array['profile_image_identifier']);
     }
 
     /**
@@ -206,7 +201,6 @@ class TalentBasicTest extends TestCase
             'height' => 159,
             'blood_type' => 'B',
             'fandom_name' => 'ONCE',
-            'profile_image_identifier' => $profileImageUuid,
         ];
 
         $talentBasic = TalentBasic::fromArray($data);
@@ -226,7 +220,6 @@ class TalentBasicTest extends TestCase
         $this->assertSame('ONCE', $talentBasic->fandomName()->value());
         $this->assertSame($agencyUuid, (string) $talentBasic->agencyIdentifier());
         $this->assertCount(2, $talentBasic->groupIdentifiers());
-        $this->assertSame($profileImageUuid, (string) $talentBasic->profileImageIdentifier());
     }
 
     /**
@@ -257,7 +250,6 @@ class TalentBasicTest extends TestCase
         $this->assertNull($talentBasic->height());
         $this->assertNull($talentBasic->bloodType());
         $this->assertSame('', $talentBasic->fandomName()->value());
-        $this->assertNull($talentBasic->profileImageIdentifier());
     }
 
     private function createDummyTalentBasic(
@@ -282,7 +274,6 @@ class TalentBasicTest extends TestCase
         $height = $withNullableValues ? new Height(159) : null;
         $bloodType = $withNullableValues ? BloodType::B : null;
         $fandomName = new FandomName('ONCE');
-        $profileImageIdentifier = $withNullableValues ? new ImageIdentifier(StrTestHelper::generateUuid()) : null;
 
         $talentBasic = new TalentBasic(
             name: $name,
@@ -301,7 +292,6 @@ class TalentBasicTest extends TestCase
             height: $height,
             bloodType: $bloodType,
             fandomName: $fandomName,
-            profileImageIdentifier: $profileImageIdentifier,
         );
 
         return new TalentBasicTestData(
@@ -321,7 +311,6 @@ class TalentBasicTest extends TestCase
             height: $height,
             bloodType: $bloodType,
             fandomName: $fandomName,
-            profileImageIdentifier: $profileImageIdentifier,
             talentBasic: $talentBasic,
         );
     }
@@ -354,7 +343,6 @@ readonly class TalentBasicTestData
         public ?Height $height,
         public ?BloodType $bloodType,
         public FandomName $fandomName,
-        public ?ImageIdentifier $profileImageIdentifier,
         public TalentBasic $talentBasic,
     ) {
     }

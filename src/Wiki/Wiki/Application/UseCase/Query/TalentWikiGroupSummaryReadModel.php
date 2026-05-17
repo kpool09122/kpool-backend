@@ -25,7 +25,6 @@ readonly class TalentWikiGroupSummaryReadModel
         private array $officialColors,
         private string $emoji,
         private string $representativeSymbol,
-        private ?string $mainImageIdentifier,
     ) {
     }
 
@@ -50,7 +49,6 @@ readonly class TalentWikiGroupSummaryReadModel
             'officialColors' => $this->officialColors,
             'emoji' => $this->emoji,
             'representativeSymbol' => $this->representativeSymbol,
-            'mainImageIdentifier' => $this->mainImageIdentifier,
         ];
     }
 }

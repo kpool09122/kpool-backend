@@ -27,7 +27,6 @@ readonly class ImageSnapshotFactory implements ImageSnapshotFactoryInterface
             $image->imageIdentifier(),
             $translationSetIdentifier,
             $image->imagePath(),
-            $image->imageUsage(),
             $image->displayOrder(),
             $image->sourceUrl(),
             $image->sourceName(),

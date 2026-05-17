@@ -39,6 +39,7 @@ readonly class WikiSnapshotFactory implements WikiSnapshotFactoryInterface
             $wiki->translatedAt(),
             $wiki->approvedAt(),
             new DateTimeImmutable('now'),
+            $wiki->imageIdentifier(),
         );
     }
 }

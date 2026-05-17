@@ -7,7 +7,6 @@ namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Agency;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\ExternalContentLink;
-use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyStatus;
@@ -35,7 +34,6 @@ class AgencyBasicTest extends TestCase
         $this->assertSame($testData->foundedIn, $testData->agencyBasic->foundedIn());
         $this->assertSame($testData->parentAgencyIdentifier, $testData->agencyBasic->parentAgencyIdentifier());
         $this->assertSame($testData->status, $testData->agencyBasic->status());
-        $this->assertSame($testData->logoImageIdentifier, $testData->agencyBasic->logoImageIdentifier());
         $this->assertSame($testData->officialWebsite, $testData->agencyBasic->officialWebsite());
         $this->assertSame($testData->socialLinks, $testData->agencyBasic->socialLinks());
     }
@@ -54,7 +52,6 @@ class AgencyBasicTest extends TestCase
         $this->assertNull($testData->agencyBasic->foundedIn());
         $this->assertNull($testData->agencyBasic->parentAgencyIdentifier());
         $this->assertNull($testData->agencyBasic->status());
-        $this->assertNull($testData->agencyBasic->logoImageIdentifier());
         $this->assertNull($testData->agencyBasic->officialWebsite());
         $this->assertEmpty($testData->agencyBasic->socialLinks());
     }
@@ -131,7 +128,6 @@ class AgencyBasicTest extends TestCase
         $this->assertSame($testData->foundedIn->format('Y-m-d'), $array['founded_in']);
         $this->assertSame((string) $testData->parentAgencyIdentifier, $array['parent_agency_identifier']);
         $this->assertSame($testData->status->value, $array['status']);
-        $this->assertSame((string) $testData->logoImageIdentifier, $array['logo_image_identifier']);
         $this->assertSame((string) $testData->officialWebsite, $array['official_website']);
         $this->assertCount(count($testData->socialLinks), $array['social_links']);
     }
@@ -150,7 +146,6 @@ class AgencyBasicTest extends TestCase
         $this->assertNull($array['founded_in']);
         $this->assertNull($array['parent_agency_identifier']);
         $this->assertNull($array['status']);
-        $this->assertNull($array['logo_image_identifier']);
         $this->assertNull($array['official_website']);
         $this->assertEmpty($array['social_links']);
     }
@@ -173,7 +168,6 @@ class AgencyBasicTest extends TestCase
             'founded_in' => '2005-02-01',
             'parent_agency_identifier' => $parentAgencyUuid,
             'status' => 'active',
-            'logo_image_identifier' => $logoImageUuid,
             'official_website' => 'https://www.bighitmusic.com',
             'social_links' => [
                 'https://twitter.com/BIGHIT_MUSIC',
@@ -190,7 +184,6 @@ class AgencyBasicTest extends TestCase
         $this->assertSame('2005-02-01', $agencyBasic->foundedIn()->format('Y-m-d'));
         $this->assertSame($parentAgencyUuid, (string) $agencyBasic->parentAgencyIdentifier());
         $this->assertSame(AgencyStatus::ACTIVE, $agencyBasic->status());
-        $this->assertSame($logoImageUuid, (string) $agencyBasic->logoImageIdentifier());
         $this->assertSame('https://www.bighitmusic.com', (string) $agencyBasic->officialWebsite());
         $this->assertCount(2, $agencyBasic->socialLinks());
         $this->assertSame('https://twitter.com/BIGHIT_MUSIC', (string) $agencyBasic->socialLinks()[0]);
@@ -217,7 +210,6 @@ class AgencyBasicTest extends TestCase
         $this->assertNull($agencyBasic->foundedIn());
         $this->assertNull($agencyBasic->parentAgencyIdentifier());
         $this->assertNull($agencyBasic->status());
-        $this->assertNull($agencyBasic->logoImageIdentifier());
         $this->assertNull($agencyBasic->officialWebsite());
         $this->assertEmpty($agencyBasic->socialLinks());
     }
@@ -232,7 +224,6 @@ class AgencyBasicTest extends TestCase
         $foundedIn = $withNullableValues ? new FoundedIn(new DateTimeImmutable('2005-02-01')) : null;
         $parentAgencyIdentifier = $withNullableValues ? new WikiIdentifier(StrTestHelper::generateUuid()) : null;
         $status = $withNullableValues ? AgencyStatus::ACTIVE : null;
-        $logoImageIdentifier = $withNullableValues ? new ImageIdentifier(StrTestHelper::generateUuid()) : null;
         $officialWebsite = $withNullableValues ? new ExternalContentLink('https://www.bighitmusic.com') : null;
         $socialLinks = $withNullableValues ? [
             new ExternalContentLink('https://twitter.com/BIGHIT_MUSIC'),
@@ -247,7 +238,6 @@ class AgencyBasicTest extends TestCase
             foundedIn: $foundedIn,
             parentAgencyIdentifier: $parentAgencyIdentifier,
             status: $status,
-            logoImageIdentifier: $logoImageIdentifier,
             officialWebsite: $officialWebsite,
             socialLinks: $socialLinks,
         );
@@ -260,7 +250,6 @@ class AgencyBasicTest extends TestCase
             foundedIn: $foundedIn,
             parentAgencyIdentifier: $parentAgencyIdentifier,
             status: $status,
-            logoImageIdentifier: $logoImageIdentifier,
             officialWebsite: $officialWebsite,
             socialLinks: $socialLinks,
             agencyBasic: $agencyBasic,
@@ -286,7 +275,6 @@ readonly class AgencyBasicTestData
         public ?FoundedIn $foundedIn,
         public ?WikiIdentifier $parentAgencyIdentifier,
         public ?AgencyStatus $status,
-        public ?ImageIdentifier $logoImageIdentifier,
         public ?ExternalContentLink $officialWebsite,
         public array $socialLinks,
         public AgencyBasic $agencyBasic,

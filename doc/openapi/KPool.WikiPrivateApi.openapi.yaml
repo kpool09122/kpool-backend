@@ -2085,10 +2085,6 @@ components:
         status:
           type: string
           description: Current activity status of the agency.
-        logoImageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Logo image identifier of the agency.
         officialWebsite:
           type: string
           description: Official website of the agency.
@@ -2324,6 +2320,12 @@ components:
           description: Unique slug for the wiki.
         basic:
           description: Basic wiki content payload.
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Representative image identifier for the wiki.
         sections:
           type: array
           items: {}
@@ -2369,7 +2371,6 @@ components:
         - url
         - resourceType
         - translationSetIdentifier
-        - imageUsage
         - displayOrder
         - sourceUrl
         - sourceName
@@ -2398,9 +2399,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Translation set identifier that the image belongs to.
-        imageUsage:
-          type: string
-          description: Usage category of the image.
         displayOrder:
           type: integer
           format: int32
@@ -2525,6 +2523,9 @@ components:
         - status
         - name
         - normalizedName
+        - imageIdentifier
+        - imageUrl
+        - imageAltText
         - editedAt
         - updatedAt
         - approvedAt
@@ -2568,6 +2569,20 @@ components:
         normalizedName:
           type: string
           description: Normalized name used for search.
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Representative image identifier for the draft wiki.
+        imageUrl:
+          type: string
+          nullable: true
+          description: Absolute URL of the representative image.
+        imageAltText:
+          type: string
+          nullable: true
+          description: Alternative text of the representative image.
         editedAt:
           type: string
           nullable: true
@@ -2698,19 +2713,12 @@ components:
         representativeSymbol:
           type: string
           description: Representative symbol of the group.
-        mainImageIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: Main image identifier of the group.
       description: Basic payload for a group draft wiki.
     ImageDraftSummary:
       type: object
       required:
         - imageIdentifier
         - resourceType
-        - imageUsage
         - status
       properties:
         imageIdentifier:
@@ -2720,9 +2728,6 @@ components:
         resourceType:
           type: string
           description: Resource type that the image belongs to.
-        imageUsage:
-          type: string
-          description: Usage category of the image.
         status:
           type: string
           description: Current workflow status of the image.
@@ -2780,7 +2785,6 @@ components:
       required:
         - imageIdentifier
         - resourceType
-        - imageUsage
         - isHidden
       properties:
         imageIdentifier:
@@ -2790,9 +2794,6 @@ components:
         resourceType:
           type: string
           description: Resource type that the image belongs to.
-        imageUsage:
-          type: string
-          description: Usage category of the image.
         isHidden:
           type: boolean
           description: Whether the image is currently hidden.
@@ -3309,10 +3310,6 @@ components:
         albumName:
           type: string
           description: Album name.
-        coverImageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Cover image identifier of the song.
         lyricist:
           type: string
           description: Lyricist name.
@@ -3456,10 +3453,6 @@ components:
         representativeSymbol:
           type: string
           description: Representative symbol of the group.
-        mainImageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Main image identifier of the group.
       description: Summary of a published group linked from a song draft wiki.
     SongDraftWikiTalentSummary:
       type: object
@@ -3534,10 +3527,6 @@ components:
         fandomName:
           type: string
           description: Fandom name of the talent.
-        profileImageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Profile image identifier of the talent.
       description: Summary of a published talent linked from a song draft wiki.
     SongWikiDetail:
       type: object
@@ -3652,10 +3641,6 @@ components:
         fandomName:
           type: string
           description: Fandom name of the talent.
-        profileImageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Profile image identifier of the talent.
         groups:
           type: array
           items:
@@ -3776,10 +3761,6 @@ components:
         representativeSymbol:
           type: string
           description: Representative symbol of the group.
-        mainImageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Main image identifier of the group.
       description: Summary of a published group linked from a talent draft wiki.
     TalentWikiDetail:
       type: object
@@ -3855,6 +3836,12 @@ components:
           description: Resource type that the wiki belongs to.
         basic:
           description: Basic wiki content payload.
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Representative image identifier for the wiki.
         sections:
           type: array
           items: {}
@@ -3871,7 +3858,6 @@ components:
         - resourceType
         - translationSetIdentifier
         - base64EncodedImage
-        - imageUsage
         - displayOrder
         - sourceUrl
         - sourceName
@@ -3893,9 +3879,6 @@ components:
         base64EncodedImage:
           type: string
           description: Image data encoded as base64.
-        imageUsage:
-          type: string
-          description: Usage category of the image.
         displayOrder:
           type: integer
           format: int32
@@ -3923,7 +3906,6 @@ components:
         - url
         - resourceType
         - translationSetIdentifier
-        - imageUsage
         - displayOrder
         - sourceUrl
         - sourceName
@@ -3945,9 +3927,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Translation set identifier that the image belongs to.
-        imageUsage:
-          type: string
-          description: Usage category of the image.
         displayOrder:
           type: integer
           format: int32

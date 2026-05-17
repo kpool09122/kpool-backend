@@ -18,6 +18,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInput;
@@ -56,12 +57,13 @@ readonly class CreateWikiAction
                     $resourceType,
                     $basic,
                     $sections,
-                    $request->themeColor() !== null ? new Color($request->themeColor()) : null,
-                    new Slug($request->slug()),
-                    $this->wikiContext->principalIdentifier,
-                    $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
-                    array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
-                    array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
+                    themeColor: $request->themeColor() !== null ? new Color($request->themeColor()) : null,
+                    slug: new Slug($request->slug()),
+                    principalIdentifier: $this->wikiContext->principalIdentifier,
+                    agencyIdentifier: $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
+                    groupIdentifiers: array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
+                    talentIdentifiers: array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
+                    imageIdentifier: $request->imageIdentifier() !== null ? new ImageIdentifier($request->imageIdentifier()) : null,
                 );
                 $output = new CreateWikiOutput();
             } catch (InvalidArgumentException $e) {

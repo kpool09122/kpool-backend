@@ -55,7 +55,6 @@ readonly class ListDraftImages implements ListDraftImagesInterface
             url: ImageUrl::fromPath($image->image_path) ?? '',
             resourceType: $image->resource_type,
             translationSetIdentifier: $image->translation_set_identifier,
-            imageUsage: $image->image_usage,
             displayOrder: $image->display_order,
             sourceUrl: $image->source_url,
             sourceName: $image->source_name,

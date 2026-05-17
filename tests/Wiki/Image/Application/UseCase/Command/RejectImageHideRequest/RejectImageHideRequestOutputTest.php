@@ -11,7 +11,6 @@ use Source\Wiki\Image\Application\UseCase\Command\RejectImageHideRequest\RejectI
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\ValueObject\HideRequest;
 use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -47,7 +46,6 @@ class RejectImageHideRequestOutputTest extends TestCase
             ResourceType::TALENT,
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new ImagePath('images/test.png'),
-            ImageUsage::PROFILE,
             1,
             'https://example.com/source',
             'Example Source',

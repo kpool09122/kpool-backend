@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string> $official_colors
  * @property string $emoji
  * @property string $representative_symbol
- * @property ?string $main_image_identifier
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'wiki_id',
@@ -37,7 +36,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'official_colors',
     'emoji',
     'representative_symbol',
-    'main_image_identifier',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'wiki_group_basics', key: 'wiki_id', keyType: 'string')]
 class WikiGroupBasic extends Model

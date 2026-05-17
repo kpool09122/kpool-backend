@@ -7,7 +7,6 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\UploadImage;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -29,7 +28,6 @@ class UploadImageInputTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -43,7 +41,6 @@ class UploadImageInputTest extends TestCase
             $resourceType,
             $draftResourceIdentifier,
             $base64EncodedImage,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,
@@ -57,7 +54,6 @@ class UploadImageInputTest extends TestCase
         $this->assertSame($resourceType, $input->resourceType());
         $this->assertSame((string) $draftResourceIdentifier, (string) $input->translationSetIdentifier());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
-        $this->assertSame($imageUsage, $input->imageUsage());
         $this->assertSame($displayOrder, $input->displayOrder());
         $this->assertSame($sourceUrl, $input->sourceUrl());
         $this->assertSame($sourceName, $input->sourceName());
@@ -77,7 +73,6 @@ class UploadImageInputTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $draftResourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -91,7 +86,6 @@ class UploadImageInputTest extends TestCase
             $resourceType,
             $draftResourceIdentifier,
             $base64EncodedImage,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,

@@ -120,6 +120,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
             $w->setBasic($snapshot->basic());
             $w->setSections($snapshot->sections());
             $w->setThemeColor($snapshot->themeColor());
+            $w->setImageIdentifier($snapshot->imageIdentifier());
             $w->setEditorIdentifier($snapshot->editorIdentifier());
             $w->setApproverIdentifier($snapshot->approverIdentifier());
             $w->setMergerIdentifier($snapshot->mergerIdentifier());

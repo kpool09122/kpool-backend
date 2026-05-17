@@ -18,7 +18,6 @@ use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageOutput;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
 use Source\Wiki\Image\Domain\Service\ImageAuthorizationResourceBuilderInterface;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
@@ -245,7 +244,6 @@ class UnhideImageTest extends TestCase
         $resourceType = ResourceType::TALENT;
         $resourceIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.png');
-        $imageUsage = ImageUsage::PROFILE;
         $displayOrder = 1;
         $sourceUrl = 'https://example.com/source';
         $sourceName = 'Example Source';
@@ -260,7 +258,6 @@ class UnhideImageTest extends TestCase
             $resourceType,
             $resourceIdentifier,
             $imagePath,
-            $imageUsage,
             $displayOrder,
             $sourceUrl,
             $sourceName,

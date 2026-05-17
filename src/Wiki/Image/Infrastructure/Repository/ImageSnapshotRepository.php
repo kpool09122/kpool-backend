@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\ImageSnapshot;
 use Source\Wiki\Image\Domain\Repository\ImageSnapshotRepositoryInterface;
 use Source\Wiki\Image\Domain\ValueObject\ImageSnapshotIdentifier;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -50,7 +49,6 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             'image_id' => (string) $imageSnapshot->imageIdentifier(),
             'translation_set_identifier' => (string) $imageSnapshot->translationSetIdentifier(),
             'image_path' => (string) $imageSnapshot->imagePath(),
-            'image_usage' => $imageSnapshot->imageUsage()->value,
             'display_order' => $imageSnapshot->displayOrder(),
             'source_url' => $imageSnapshot->sourceUrl(),
             'source_name' => $imageSnapshot->sourceName(),
@@ -72,7 +70,6 @@ final class ImageSnapshotRepository implements ImageSnapshotRepositoryInterface
             new ImageIdentifier($model->image_id),
             new TranslationSetIdentifier($model->translation_set_identifier),
             new ImagePath($model->image_path),
-            ImageUsage::from($model->image_usage),
             $model->display_order,
             $model->source_url,
             $model->source_name,

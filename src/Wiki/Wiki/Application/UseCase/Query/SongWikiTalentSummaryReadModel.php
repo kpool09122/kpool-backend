@@ -25,7 +25,6 @@ readonly class SongWikiTalentSummaryReadModel
         private int|string|null $height,
         private ?string $bloodType,
         private string $fandomName,
-        private ?string $profileImageIdentifier,
     ) {
     }
 
@@ -53,7 +52,6 @@ readonly class SongWikiTalentSummaryReadModel
             'height' => $this->height,
             'bloodType' => $this->bloodType,
             'fandomName' => $this->fandomName,
-            'profileImageIdentifier' => $this->profileImageIdentifier,
         ];
     }
 }

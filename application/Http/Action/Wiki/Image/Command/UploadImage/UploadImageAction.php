@@ -18,7 +18,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInput;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageOutput;
-use Source\Wiki\Image\Domain\ValueObject\ImageUsage;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
@@ -51,7 +50,6 @@ readonly class UploadImageAction
                     ResourceType::from($request->resourceType()),
                     new TranslationSetIdentifier($request->translationSetIdentifier()),
                     $request->base64EncodedImage(),
-                    ImageUsage::from($request->imageUsage()),
                     (int) $request->displayOrder(),
                     $request->sourceUrl(),
                     $request->sourceName(),

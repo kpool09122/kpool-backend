@@ -12,6 +12,7 @@ use Application\Models\Wiki\WikiSnapshotTalentBasic;
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -43,6 +44,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 'slug' => (string) $snapshot->slug(),
                 'language' => $snapshot->language()->value,
                 'resource_type' => $snapshot->resourceType()->value,
+                'image_identifier' => $snapshot->imageIdentifier() ? (string) $snapshot->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($snapshot->sections()),
                 'theme_color' => $snapshot->themeColor() ? (string) $snapshot->themeColor() : null,
                 'version' => $snapshot->version()->value(),
@@ -164,6 +166,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             $model->translated_at?->toDateTimeImmutable(),
             $model->approved_at?->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
+            $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
         );
     }
 
@@ -202,7 +205,6 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             'height' => $basic->height,
             'blood_type' => $basic->blood_type,
             'fandom_name' => $basic->fandom_name,
-            'profile_image_identifier' => $basic->profile_image_identifier,
         ]);
     }
 
@@ -226,7 +228,6 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             'official_colors' => $basic->official_colors,
             'emoji' => $basic->emoji,
             'representative_symbol' => $basic->representative_symbol,
-            'main_image_identifier' => $basic->main_image_identifier,
         ]);
     }
 
@@ -245,7 +246,6 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             'founded_in' => $basic->founded_in,
             'parent_agency_identifier' => $basic->parent_agency_identifier,
             'status' => $basic->status,
-            'logo_image_identifier' => $basic->logo_image_identifier,
             'official_website' => $basic->official_website,
             'social_links' => $basic->social_links,
         ]);
@@ -268,7 +268,6 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             'talent_identifiers' => $basic->talents->pluck('id')->toArray(),
             'release_date' => $basic->release_date,
             'album_name' => $basic->album_name,
-            'cover_image_identifier' => $basic->cover_image_identifier,
             'lyricist' => $basic->lyricist,
             'normalized_lyricist' => $basic->normalized_lyricist,
             'composer' => $basic->composer,
