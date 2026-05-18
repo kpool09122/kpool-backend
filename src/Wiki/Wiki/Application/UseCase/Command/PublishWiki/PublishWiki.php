@@ -62,7 +62,7 @@ readonly class PublishWiki implements PublishWikiInterface
             throw new WikiNotFoundException();
         }
 
-        if ($wiki->status() !== ApprovalStatus::UnderReview) {
+        if ($wiki->status() !== ApprovalStatus::Approved) {
             throw new InvalidStatusException();
         }
 
