@@ -13,7 +13,6 @@ readonly class PublishWikiInput implements PublishWikiInputPort
 {
     /**
      * @param DraftWikiIdentifier $wikiIdentifier
-     * @param WikiIdentifier|null $publishedWikiIdentifier
      * @param PrincipalIdentifier $principalIdentifier
      * @param ResourceType $resourceType
      * @param WikiIdentifier|null $agencyIdentifier
@@ -22,7 +21,6 @@ readonly class PublishWikiInput implements PublishWikiInputPort
      */
     public function __construct(
         private DraftWikiIdentifier $wikiIdentifier,
-        private ?WikiIdentifier     $publishedWikiIdentifier,
         private PrincipalIdentifier $principalIdentifier,
         private ResourceType        $resourceType,
         private ?WikiIdentifier     $agencyIdentifier = null,
@@ -34,11 +32,6 @@ readonly class PublishWikiInput implements PublishWikiInputPort
     public function wikiIdentifier(): DraftWikiIdentifier
     {
         return $this->wikiIdentifier;
-    }
-
-    public function publishedWikiIdentifier(): ?WikiIdentifier
-    {
-        return $this->publishedWikiIdentifier;
     }
 
     public function principalIdentifier(): PrincipalIdentifier

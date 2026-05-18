@@ -14,6 +14,17 @@ class SubmitWikiRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
+    public function validationData(): array
+    {
+        return [
+            ...parent::validationData(),
+            'wikiId' => $this->route('wikiId'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
@@ -29,7 +40,7 @@ class SubmitWikiRequest extends FormRequest
 
     public function wikiId(): string
     {
-        return (string) $this->input('wikiId');
+        return (string) $this->route('wikiId');
     }
 
     public function resourceType(): string

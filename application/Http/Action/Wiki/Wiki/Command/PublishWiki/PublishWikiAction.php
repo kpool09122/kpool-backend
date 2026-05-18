@@ -48,7 +48,6 @@ readonly class PublishWikiAction
             try {
                 $input = new PublishWikiInput(
                     new DraftWikiIdentifier($request->wikiId()),
-                    $request->publishedWikiIdentifier() !== null ? new WikiIdentifier($request->publishedWikiIdentifier()) : null,
                     $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,

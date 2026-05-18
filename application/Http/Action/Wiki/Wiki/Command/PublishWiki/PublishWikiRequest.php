@@ -14,12 +14,22 @@ class PublishWikiRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
+    public function validationData(): array
+    {
+        return [
+            ...parent::validationData(),
+            'wikiId' => $this->route('wikiId'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         return [
             'wikiId' => ['required', 'uuid'],
             'resourceType' => ['required', 'string'],
-            'publishedWikiIdentifier' => ['nullable', 'uuid'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
             'groupIdentifiers.*' => ['uuid'],
@@ -30,19 +40,12 @@ class PublishWikiRequest extends FormRequest
 
     public function wikiId(): string
     {
-        return (string) $this->input('wikiId');
+        return (string) $this->route('wikiId');
     }
 
     public function resourceType(): string
     {
         return (string) $this->input('resourceType');
-    }
-
-    public function publishedWikiIdentifier(): ?string
-    {
-        $value = $this->input('publishedWikiIdentifier');
-
-        return $value !== null ? (string) $value : null;
     }
 
     public function agencyIdentifier(): ?string
