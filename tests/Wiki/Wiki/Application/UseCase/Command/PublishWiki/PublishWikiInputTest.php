@@ -22,7 +22,6 @@ class PublishWikiInputTest extends TestCase
     public function test__construct(): void
     {
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
-        $publishedWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::GROUP;
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -31,7 +30,6 @@ class PublishWikiInputTest extends TestCase
 
         $input = new PublishWikiInput(
             $wikiIdentifier,
-            $publishedWikiIdentifier,
             $principalIdentifier,
             $resourceType,
             $agencyIdentifier,
@@ -39,7 +37,6 @@ class PublishWikiInputTest extends TestCase
             $talentIdentifiers,
         );
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
-        $this->assertSame((string) $publishedWikiIdentifier, (string) $input->publishedWikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType, $input->resourceType());
         $this->assertSame($agencyIdentifier, $input->agencyIdentifier());

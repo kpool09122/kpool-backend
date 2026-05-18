@@ -1777,7 +1777,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PublishWikiRequestBody'
+              $ref: '#/components/schemas/WikiWorkflowRequestBody'
   /wiki/{wikiId}/reject:
     post:
       operationId: WikiOperations_rejectWiki
@@ -3117,21 +3117,6 @@ components:
             $ref: '#/components/schemas/EffectivePolicySummary'
           description: Effective policies granted to the principal through principal groups and roles.
       description: Summary of a principal.
-    PublishWikiRequestBody:
-      type: object
-      required:
-        - resourceType
-      properties:
-        resourceType:
-          type: string
-          description: Resource type that the wiki belongs to.
-        publishedWikiIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Published wiki identifier to update.
-      allOf:
-        - $ref: '#/components/schemas/WikiAssociationTargets'
-      description: Request body for publishing a wiki.
     PublishedWikiSummary:
       type: object
       required:
