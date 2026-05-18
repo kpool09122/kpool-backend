@@ -390,7 +390,7 @@ class PublishWikiTest extends TestCase
     }
 
     /**
-     * 異常系：承認ステータスがUnderReview以外の場合、例外がスローされること.
+     * 異常系：承認ステータスがApproved以外の場合、例外がスローされること.
      *
      * @return void
      * @throws BindingResolutionException
@@ -400,7 +400,7 @@ class PublishWikiTest extends TestCase
      */
     public function testInvalidStatus(): void
     {
-        $dummyPublishWiki = $this->createDummyPublishWiki(status: ApprovalStatus::Approved);
+        $dummyPublishWiki = $this->createDummyPublishWiki(status: ApprovalStatus::UnderReview);
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $input = new PublishWikiInput(
@@ -705,7 +705,7 @@ class PublishWikiTest extends TestCase
         $publishWiki = $this->app->make(PublishWikiInterface::class);
         $publishWiki->process($input, new PublishWikiOutput());
 
-        $this->assertSame(ApprovalStatus::UnderReview, $dummyPublishWiki->status);
+        $this->assertSame(ApprovalStatus::Approved, $dummyPublishWiki->status);
     }
 
     /**
@@ -959,7 +959,7 @@ class PublishWikiTest extends TestCase
      * @return PublishWikiTestData
      */
     private function createDummyPublishWiki(
-        ApprovalStatus $status = ApprovalStatus::UnderReview,
+        ApprovalStatus $status = ApprovalStatus::Approved,
         bool $hasPublishedWiki = false,
         ?PrincipalIdentifier $operatorIdentifier = null,
         ?PrincipalIdentifier $approverIdentifier = null,
