@@ -55,6 +55,8 @@ class SectionContentMapperTest extends TestCase
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
+        $this->assertSame($imageId, $array[0]['image_identifier']);
+
         $restored = SectionContentMapper::collectionFromArray($array);
 
         $block = $restored->sorted()[0];
@@ -80,6 +82,8 @@ class SectionContentMapperTest extends TestCase
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
+        $this->assertSame([$imageId1, $imageId2], $array[0]['image_identifiers']);
+
         $restored = SectionContentMapper::collectionFromArray($array);
 
         $block = $restored->sorted()[0];

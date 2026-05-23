@@ -196,7 +196,7 @@ final class WikiCommandPayloadMapper
             'items' => $content['items'] ?? [],
             'header_cells' => $content['headerCells'] ?? null,
             'row_cells' => $content['rowCells'] ?? [],
-            'table_width' => $content['tableWidth'] ?? null,
+            'table_width' => isset($content['tableWidth']) ? (string) $content['tableWidth'] : null,
             'wiki_identifiers' => $content['wikiIdentifiers'] ?? [],
             'title' => $content['title'] ?? null,
         ];

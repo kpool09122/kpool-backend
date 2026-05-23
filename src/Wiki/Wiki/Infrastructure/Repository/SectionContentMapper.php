@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Infrastructure\Repository;
 
 use InvalidArgumentException;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
@@ -53,14 +54,17 @@ final class SectionContentMapper
                         ImageBlock::class => [
                             'block_type' => $content->blockType()->value,
                             'display_order' => $content->displayOrder(),
-                            'image_identifier' => $content->imageIdentifier(),
+                            'image_identifier' => (string) $content->imageIdentifier(),
                             'caption' => $content->caption(),
                             'alt' => $content->alt(),
                         ],
                         ImageGalleryBlock::class => [
                             'block_type' => $content->blockType()->value,
                             'display_order' => $content->displayOrder(),
-                            'image_identifiers' => $content->imageIdentifiers(),
+                            'image_identifiers' => array_map(
+                                static fn (ImageIdentifier $id): string => (string) $id,
+                                $content->imageIdentifiers(),
+                            ),
                             'caption' => $content->caption(),
                         ],
                         EmbedBlock::class => [
@@ -136,13 +140,16 @@ final class SectionContentMapper
                     ),
                     BlockType::IMAGE => new ImageBlock(
                         displayOrder: $contentData['display_order'] ?? 0,
-                        imageIdentifier: $contentData['image_identifier'] ?? '',
+                        imageIdentifier: new ImageIdentifier((string) ($contentData['image_identifier'] ?? '')),
                         caption: $contentData['caption'] ?? null,
                         alt: $contentData['alt'] ?? null,
                     ),
                     BlockType::IMAGE_GALLERY => new ImageGalleryBlock(
                         displayOrder: $contentData['display_order'] ?? 0,
-                        imageIdentifiers: $contentData['image_identifiers'] ?? [],
+                        imageIdentifiers: array_map(
+                            static fn (string $id): ImageIdentifier => new ImageIdentifier($id),
+                            $contentData['image_identifiers'] ?? [],
+                        ),
                         caption: $contentData['caption'] ?? null,
                     ),
                     BlockType::EMBED => new EmbedBlock(
