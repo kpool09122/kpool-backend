@@ -8,6 +8,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmai
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Throwable;
 
 readonly class SubmitContact implements SubmitContactInterface
@@ -21,10 +22,10 @@ readonly class SubmitContact implements SubmitContactInterface
 
     /**
      * @param SubmitContactInputPort $input
-     * @return void
+     * @return ContactIdentifier
      * @throws FailedToSendEmailException
      */
-    public function process(SubmitContactInputPort $input): void
+    public function process(SubmitContactInputPort $input): ContactIdentifier
     {
         $contact = $this->contactFactory->create(
             $input->category(),
@@ -47,5 +48,7 @@ readonly class SubmitContact implements SubmitContactInterface
         } catch (Throwable $e) {
             throw new FailedToSendEmailException($e->getMessage());
         }
+
+        return $contact->contactIdentifier();
     }
 }

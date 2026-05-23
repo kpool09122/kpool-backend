@@ -36,6 +36,8 @@ readonly class SubmitContactAction
      */
     public function __invoke(SubmitContactRequest $request): JsonResponse
     {
+        $contactIdentifier = null;
+
         try {
             try {
                 $input = new SubmitContactInput(
@@ -51,7 +53,7 @@ readonly class SubmitContactAction
             DB::beginTransaction();
 
             try {
-                $this->submitContact->process($input);
+                $contactIdentifier = $this->submitContact->process($input);
                 DB::commit();
             } catch (FailedToSendEmailException $e) {
                 DB::rollBack();
@@ -72,6 +74,12 @@ readonly class SubmitContactAction
             throw new InternalServerErrorHttpException(previous: $e);
         }
 
-        return response()->json([], Response::HTTP_CREATED);
+        if ($contactIdentifier === null) {
+            throw new InternalServerErrorHttpException();
+        }
+
+        return response()->json([
+            'id' => (string) $contactIdentifier,
+        ], Response::HTTP_CREATED);
     }
 }

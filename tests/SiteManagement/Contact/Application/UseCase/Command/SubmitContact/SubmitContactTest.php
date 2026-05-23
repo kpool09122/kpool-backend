@@ -103,7 +103,10 @@ class SubmitContactTest extends TestCase
         $this->app->instance(EmailServiceInterface::class, $emailService);
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $submitContact = $this->app->make(SubmitContactInterface::class);
-        $submitContact->process($input);
+        $actual = $submitContact->process($input);
+
+        $this->assertInstanceOf(ContactIdentifier::class, $actual);
+        $this->assertSame((string)$contactIdentifier, (string)$actual);
     }
 
     /**
