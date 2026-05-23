@@ -96,7 +96,7 @@ readonly class PublishWiki implements PublishWikiInterface
         }
 
         if ($wiki->publishedWikiIdentifier()) {
-            $publishedWiki = $this->wikiRepository->findById($input->publishedWikiIdentifier());
+            $publishedWiki = $this->wikiRepository->findById($wiki->publishedWikiIdentifier());
             if ($publishedWiki === null) {
                 throw new WikiNotFoundException();
             }
@@ -133,7 +133,7 @@ readonly class PublishWiki implements PublishWikiInterface
             actionType: HistoryActionType::Publish,
             actorIdentifier: $input->principalIdentifier(),
             submitterIdentifier: $wiki->editorIdentifier(),
-            wikiIdentifier: $wiki->publishedWikiIdentifier(),
+            wikiIdentifier: $publishedWiki->wikiIdentifier(),
             draftWikiIdentifier: new DraftWikiIdentifier((string) $wiki->wikiIdentifier()),
             fromStatus: $wiki->status(),
             toStatus: null,

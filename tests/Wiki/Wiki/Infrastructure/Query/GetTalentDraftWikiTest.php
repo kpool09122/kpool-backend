@@ -31,7 +31,7 @@ class GetTalentDraftWikiTest extends TestCase
         $this->assertSame('talent', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('Chaeyoung', $readModel->basic()['name']);
         $this->assertSame('Son Chaeyoung', $readModel->basic()['realName']);

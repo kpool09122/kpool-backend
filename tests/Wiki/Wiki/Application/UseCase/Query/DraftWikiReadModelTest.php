@@ -22,6 +22,8 @@ class DraftWikiReadModelTest extends TestCase
             themeColor: '#FE5F8F',
             heroImage: [
                 'imageIdentifier' => null,
+                'src' => null,
+                'alt' => null,
             ],
             basic: [
                 'name' => 'TWICE',
@@ -54,7 +56,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('overview', $readModel->sections()[0]['id']);
@@ -68,6 +70,8 @@ class DraftWikiReadModelTest extends TestCase
             'themeColor' => '#FE5F8F',
             'heroImage' => [
                 'imageIdentifier' => null,
+                'src' => null,
+                'alt' => null,
             ],
             'basic' => [
                 'name' => 'TWICE',

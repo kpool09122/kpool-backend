@@ -134,7 +134,7 @@ class GetSongDraftWikiTest extends TestCase
         $this->assertSame('song', $readModel->resourceType());
         $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(SongWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TT', $readModel->basic()['name']);
         $this->assertSame('title_track', $readModel->basic()['songType']);

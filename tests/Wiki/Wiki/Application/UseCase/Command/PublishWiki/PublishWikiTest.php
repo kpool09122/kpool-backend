@@ -106,7 +106,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -185,6 +184,116 @@ class PublishWikiTest extends TestCase
     }
 
     /**
+     * 正常系：下書きのpublishedWikiIdentifierで公開Wikiを更新できること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws WikiNotFoundException
+     * @throws InvalidStatusException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testProcessUsesDraftPublishedWikiIdentifier(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $dummyPublishWiki = $this->createDummyPublishWiki(
+            hasPublishedWiki: true,
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
+        );
+
+        $input = new PublishWikiInput(
+            $dummyPublishWiki->wikiIdentifier,
+            $principalIdentifier,
+            $dummyPublishWiki->resourceType,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishWiki->publishedWikiIdentifier)
+            ->andReturn($dummyPublishWiki->publishedWiki);
+        $wikiRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishWiki->publishedWiki)
+            ->andReturn(null);
+
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishWiki->wikiIdentifier)
+            ->andReturn($dummyPublishWiki->draftWiki);
+        $draftWikiRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(null);
+
+        $wikiService = Mockery::mock(WikiServiceInterface::class);
+        $wikiService->shouldReceive('hasConsistentVersions')
+            ->once()
+            ->with($dummyPublishWiki->translationSetIdentifier)
+            ->andReturn(true);
+
+        $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
+        $wikiHistoryFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                HistoryActionType::Publish,
+                $principalIdentifier,
+                $dummyPublishWiki->editorIdentifier,
+                $dummyPublishWiki->publishedWikiIdentifier,
+                Mockery::type(DraftWikiIdentifier::class),
+                ApprovalStatus::Approved,
+                null,
+                null,
+                null,
+                $dummyPublishWiki->name,
+            )
+            ->andReturn($dummyPublishWiki->history);
+
+        $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
+        $wikiHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishWiki->history)
+            ->andReturn(null);
+
+        $wikiSnapshotFactory = Mockery::mock(WikiSnapshotFactoryInterface::class);
+        $wikiSnapshotFactory->shouldReceive('create')
+            ->once()
+            ->with($dummyPublishWiki->publishedWiki)
+            ->andReturn($dummyPublishWiki->snapshot);
+
+        $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
+        $wikiSnapshotRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishWiki->snapshot)
+            ->andReturn(null);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(WikiServiceInterface::class, $wikiService);
+        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $output = new PublishWikiOutput();
+        $publishWiki->process($input, $output);
+
+        $result = $output->toArray();
+        $this->assertSame($dummyPublishWiki->publishedVersion->value() + 1, $result['version']);
+    }
+
+    /**
      * 正常系：正しく変更されたWikiが公開されること（初めて公開する場合）.
      *
      * @return void
@@ -206,7 +315,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -303,7 +411,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -353,7 +460,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -405,7 +511,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -457,7 +562,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -516,7 +620,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -579,7 +682,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            null,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -638,7 +740,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            null,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -734,7 +835,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
@@ -855,7 +955,6 @@ class PublishWikiTest extends TestCase
 
         $input = new PublishWikiInput(
             $dummyPublishWiki->wikiIdentifier,
-            $dummyPublishWiki->publishedWikiIdentifier,
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
