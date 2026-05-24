@@ -46,7 +46,7 @@ class ListUploadedImagesTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
             '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
         ], array_column($payload['images'], 'imageIdentifier'));
-        $this->assertSame('http://localhost:8080/images/talents/beta.jpg', $payload['images'][0]['url']);
+        $this->assertSame('http://127.0.0.1:8080/images/talents/beta.jpg', $payload['images'][0]['url']);
     }
 
     #[Group('useDb')]
@@ -127,7 +127,7 @@ class ListUploadedImagesTest extends TestCase
 
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f501',
-            'url' => 'http://localhost:8080/storage/images/groups/cover.jpg',
+            'url' => 'http://127.0.0.1:8080/storage/images/groups/cover.jpg',
             'resourceType' => 'group',
             'translationSetIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
             'displayOrder' => 2,

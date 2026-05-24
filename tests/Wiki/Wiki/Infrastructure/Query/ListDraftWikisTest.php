@@ -12,8 +12,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisOutput;
-use Tests\Helper\CreateDraftImage;
 use Tests\Helper\CreateDraftWiki;
+use Tests\Helper\CreateImage;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
 
@@ -242,10 +242,10 @@ class ListDraftWikisTest extends TestCase
     #[Group('useDb')]
     public function testProcessReturnsDraftWikiImageFieldsWhenImageExists(): void
     {
-        CreateDraftImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f801', [
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f801', [
             'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
             'image_path' => '/images/test/card.jpg',
-            'alt_text' => 'Draft wiki card image',
+            'alt_text' => 'Wiki card image',
         ]);
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f802', 'talent', [
@@ -260,8 +260,8 @@ class ListDraftWikisTest extends TestCase
         ))->toArray();
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
-        $this->assertSame('http://localhost:8080/images/test/card.jpg', $payload['wikis'][0]['imageUrl']);
-        $this->assertSame('Draft wiki card image', $payload['wikis'][0]['imageAltText']);
+        $this->assertSame('http://127.0.0.1:8080/images/test/card.jpg', $payload['wikis'][0]['imageUrl']);
+        $this->assertSame('Wiki card image', $payload['wikis'][0]['imageAltText']);
     }
 
     private function listDraftWikis(): ListDraftWikisInterface

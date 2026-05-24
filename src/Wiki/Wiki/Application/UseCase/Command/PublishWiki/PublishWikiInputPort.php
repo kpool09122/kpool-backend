@@ -13,8 +13,6 @@ interface PublishWikiInputPort
 {
     public function wikiIdentifier(): DraftWikiIdentifier;
 
-    public function publishedWikiIdentifier(): ?WikiIdentifier;
-
     public function principalIdentifier(): PrincipalIdentifier;
 
     public function resourceType(): ResourceType;

@@ -12,6 +12,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
 use Tests\Helper\CreateDraftWiki;
+use Tests\Helper\CreateImage;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
 
@@ -30,6 +31,11 @@ class GetAgencyDraftWikiTest extends TestCase
             ],
         );
 
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f404', [
+            'image_path' => '/images/wiki/agency-hero.jpg',
+            'alt_text' => 'JYP Entertainment hero image',
+        ]);
+
         CreateDraftWiki::create(
             '01965bb2-bcc9-7c6f-8b90-89f7f217f402',
             'agency',
@@ -42,10 +48,24 @@ class GetAgencyDraftWikiTest extends TestCase
                 'theme_color' => '#1A1A1A',
                 'sections' => json_encode([
                     [
-                        'id' => 'overview',
-                        'type' => 'plaintext',
+                        'type' => 'section',
                         'title' => 'Overview',
-                        'content' => 'Draft sample for checking the agency wiki editor state.',
+                        'display_order' => 1,
+                        'contents' => [
+                            [
+                                'block_type' => 'image',
+                                'display_order' => 1,
+                                'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
+                                'caption' => 'Agency image',
+                                'alt' => null,
+                            ],
+                            [
+                                'block_type' => 'image_gallery',
+                                'display_order' => 2,
+                                'image_identifiers' => ['01965bb2-bcc9-7c6f-8b90-89f7f217f404'],
+                                'caption' => 'Agency gallery',
+                            ],
+                        ],
                     ],
                 ]),
             ],
@@ -75,13 +95,19 @@ class GetAgencyDraftWikiTest extends TestCase
         $this->assertSame('agency', $readModel->resourceType());
         $this->assertSame(3, $readModel->version());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404'], $readModel->heroImage());
+        $this->assertSame([
+            'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
+            'src' => 'http://127.0.0.1:8080/images/wiki/agency-hero.jpg',
+            'alt' => 'JYP Entertainment hero image',
+        ], $readModel->heroImage());
         $this->assertInstanceOf(AgencyWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('JYP Entertainment', $readModel->basic()['name']);
         $this->assertSame('J.Y. Park', $readModel->basic()['ceo']);
         $this->assertSame('1997-04-25', $readModel->basic()['foundedIn']);
         $this->assertSame('https://twitter.com/jypnation', $readModel->basic()['socialLinks'][0]);
-        $this->assertSame('overview', $readModel->sections()[0]['id']);
+        $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][0]['src']);
+        $this->assertSame('JYP Entertainment hero image', $readModel->sections()[0]['contents'][0]['alt']);
+        $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][1]['images'][0]['src']);
     }
 
     #[Group('useDb')]

@@ -33,8 +33,8 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
     public function process(ListDraftWikisInputPort $input, ListDraftWikisOutputPort $output): void
     {
         $query = DraftWiki::query()
-            ->select('draft_wikis.*', 'draft_wiki_images.image_path as image_path', 'draft_wiki_images.alt_text as image_alt_text')
-            ->leftJoin('draft_wiki_images', 'draft_wiki_images.id', '=', 'draft_wikis.image_identifier')
+            ->select('draft_wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text')
+            ->leftJoin('wiki_images', 'wiki_images.id', '=', 'draft_wikis.image_identifier')
             ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
             ->where('draft_wikis.status', $input->status()->value)
             ->orderBy('draft_wikis.edited_at', 'desc')

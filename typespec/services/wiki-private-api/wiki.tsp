@@ -53,14 +53,6 @@ model WikiWorkflowRequestBody extends WikiAssociationTargets {
   resourceType: string;
 }
 
-@doc("Request body for publishing a wiki.")
-model PublishWikiRequestBody extends WikiAssociationTargets {
-  @doc("Resource type that the wiki belongs to.")
-  resourceType: string;
-  @doc("Published wiki identifier to update.")
-  publishedWikiIdentifier?: Uuid;
-}
-
 @doc("Request body for rolling back a wiki to a previous version.")
 model RollbackWikiRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
@@ -340,7 +332,7 @@ interface WikiOperations {
   @doc("Publish a wiki draft.")
   publishWiki(
     @path wikiId: Uuid,
-    @body body: PublishWikiRequestBody,
+    @body body: WikiWorkflowRequestBody,
   ): CreatePublishedWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post

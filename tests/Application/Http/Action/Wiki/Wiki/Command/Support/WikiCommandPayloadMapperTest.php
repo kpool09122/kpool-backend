@@ -7,6 +7,7 @@ namespace Tests\Application\Http\Action\Wiki\Wiki\Command\Support;
 use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 
@@ -50,5 +51,32 @@ class WikiCommandPayloadMapperTest extends TestCase
                 'content' => 'Hello World',
             ],
         ]);
+    }
+
+    public function testSectionsMapsNumericTableWidthToDomainTableBlock(): void
+    {
+        $sections = WikiCommandPayloadMapper::sections([
+            [
+                'type' => 'section',
+                'title' => 'Tables',
+                'displayOrder' => 1,
+                'contents' => [
+                    [
+                        'type' => 'table',
+                        'displayOrder' => 1,
+                        'headerCells' => [['content' => 'Name']],
+                        'rowCells' => [[['content' => 'Aurora Echo']]],
+                        'tableWidth' => 320,
+                    ],
+                ],
+            ],
+        ]);
+
+        $section = $sections->sorted()[0];
+        $this->assertInstanceOf(Section::class, $section);
+        $block = $section->contents()->sorted()[0];
+
+        $this->assertInstanceOf(TableBlock::class, $block);
+        $this->assertSame('320', $block->tableWidth());
     }
 }
