@@ -25,7 +25,7 @@ REDIS_PORT=6379
 APP_ENV=local
 APP_DEBUG=true
 APP_KEY=
-APP_URL=http://localhost:8080
+APP_URL=http://127.0.0.1:8080
 FRONTEND_URL=http://localhost:3000
 
 # Logging

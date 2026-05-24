@@ -88,7 +88,7 @@ class GetAgencyWikiTest extends TestCase
         $this->assertSame('#1A1A1A', $readModel->themeColor());
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
-            'src' => 'http://localhost:8080/images/wiki/agency-hero.jpg',
+            'src' => 'http://127.0.0.1:8080/images/wiki/agency-hero.jpg',
             'alt' => 'JYP Entertainment hero image',
         ], $readModel->heroImage());
         $this->assertInstanceOf(AgencyWikiBasicReadModel::class, $readModel->basic());
@@ -96,9 +96,9 @@ class GetAgencyWikiTest extends TestCase
         $this->assertSame('J.Y. Park', $readModel->basic()['ceo']);
         $this->assertSame('1997-04-25', $readModel->basic()['foundedIn']);
         $this->assertSame('https://twitter.com/jypnation', $readModel->basic()['socialLinks'][0]);
-        $this->assertSame('http://localhost:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][0]['src']);
+        $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][0]['src']);
         $this->assertSame('JYP Entertainment hero image', $readModel->sections()[0]['contents'][0]['alt']);
-        $this->assertSame('http://localhost:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][1]['images'][0]['src']);
+        $this->assertSame('http://127.0.0.1:8080/images/wiki/agency-hero.jpg', $readModel->sections()[0]['contents'][1]['images'][0]['src']);
     }
 
     #[Group('useDb')]

@@ -185,11 +185,13 @@ readonly class GetTalentDraftWiki implements GetTalentDraftWikiInterface
                     continue;
                 }
                 $blockType = $content['block_type'] ?? $content['blockType'] ?? $content['type'] ?? null;
-                if ($blockType === 'image' && is_string($content['image_identifier'] ?? null)) {
-                    $identifiers[] = $content['image_identifier'];
+                $imageIdentifier = $content['image_identifier'] ?? $content['imageIdentifier'] ?? null;
+                if ($blockType === 'image' && is_string($imageIdentifier)) {
+                    $identifiers[] = $imageIdentifier;
                 }
-                if ($blockType === 'image_gallery' && is_array($content['image_identifiers'] ?? null)) {
-                    foreach ($content['image_identifiers'] as $imageIdentifier) {
+                $imageIdentifiers = $content['image_identifiers'] ?? $content['imageIdentifiers'] ?? null;
+                if ($blockType === 'image_gallery' && is_array($imageIdentifiers)) {
+                    foreach ($imageIdentifiers as $imageIdentifier) {
                         if (is_string($imageIdentifier)) {
                             $identifiers[] = $imageIdentifier;
                         }

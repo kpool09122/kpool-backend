@@ -14,10 +14,15 @@ final readonly class ImageUrl
             return null;
         }
 
-        if (str_starts_with($path, '/')) {
-            return url($path);
-        }
+        $url = str_starts_with($path, '/')
+            ? url($path)
+            : Storage::disk((string) config('filesystems.image_disk', 'public'))->url($path);
 
-        return Storage::disk((string) config('filesystems.image_disk', 'public'))->url($path);
+        return self::normalizeLocalhost($url);
+    }
+
+    private static function normalizeLocalhost(string $url): string
+    {
+        return preg_replace('/^http:\/\/localhost(?=[:\/])/', 'http://127.0.0.1', $url) ?? $url;
     }
 }

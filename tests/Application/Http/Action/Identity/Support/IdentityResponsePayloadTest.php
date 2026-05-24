@@ -16,7 +16,7 @@ class IdentityResponsePayloadTest extends TestCase
 
         config([
             'app.url' => 'http://localhost:8080',
-            'filesystems.disks.public.url' => 'http://localhost:8080/storage',
+            'filesystems.disks.public.url' => 'http://127.0.0.1:8080/storage',
         ]);
         URL::forceRootUrl('http://localhost:8080');
     }
@@ -27,7 +27,7 @@ class IdentityResponsePayloadTest extends TestCase
             'profileImage' => 'images/profile.webp',
         ]);
 
-        $this->assertSame('http://localhost:8080/storage/images/profile.webp', $payload['profileImage']);
+        $this->assertSame('http://127.0.0.1:8080/storage/images/profile.webp', $payload['profileImage']);
     }
 
     public function testNormalizeProfileImageConvertsAbsolutePathToAppUrl(): void
@@ -36,7 +36,7 @@ class IdentityResponsePayloadTest extends TestCase
             'profileImage' => '/storage/images/profile.webp',
         ]);
 
-        $this->assertSame('http://localhost:8080/storage/images/profile.webp', $payload['profileImage']);
+        $this->assertSame('http://127.0.0.1:8080/storage/images/profile.webp', $payload['profileImage']);
     }
 
     public function testNormalizeProfileImageKeepsNull(): void

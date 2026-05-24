@@ -260,7 +260,7 @@ class ListDraftWikisTest extends TestCase
         ))->toArray();
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
-        $this->assertSame('http://localhost:8080/images/test/card.jpg', $payload['wikis'][0]['imageUrl']);
+        $this->assertSame('http://127.0.0.1:8080/images/test/card.jpg', $payload['wikis'][0]['imageUrl']);
         $this->assertSame('Wiki card image', $payload['wikis'][0]['imageAltText']);
     }
 
