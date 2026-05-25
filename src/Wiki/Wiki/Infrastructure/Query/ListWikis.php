@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
@@ -34,7 +35,8 @@ readonly class ListWikis implements ListWikisInterface
     public function process(ListWikisInputPort $input, ListWikisOutputPort $output): void
     {
         $query = WikiModel::query()
-            ->select('wikis.*')
+            ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text')
+            ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
             ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
             ->where('wikis.language', $input->language()->value);
 
@@ -136,6 +138,9 @@ readonly class ListWikis implements ListWikisInterface
             resourceType: $wiki->resource_type,
             version: $wiki->version,
             themeColor: $wiki->theme_color,
+            imageIdentifier: $wiki->image_identifier,
+            imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
+            imageAltText: $wiki->getAttribute('image_alt_text'),
             name: (string) $basic->getAttribute('name'),
             normalizedName: (string) $basic->getAttribute('normalized_name'),
             publishedAt: $this->formatDateTime($wiki->published_at),

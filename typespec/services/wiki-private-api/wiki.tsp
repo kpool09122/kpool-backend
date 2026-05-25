@@ -161,6 +161,12 @@ model WikiListItem {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Representative image identifier for the wiki.")
+  imageIdentifier: Uuid | null;
+  @doc("Absolute URL of the representative image.")
+  imageUrl: string | null;
+  @doc("Alternative text of the representative image.")
+  imageAltText: string | null;
   @doc("Display name of the wiki.")
   name: string;
   @doc("Normalized name used for search.")

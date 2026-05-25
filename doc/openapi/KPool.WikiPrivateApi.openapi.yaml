@@ -4138,6 +4138,9 @@ components:
         - resourceType
         - version
         - themeColor
+        - imageIdentifier
+        - imageUrl
+        - imageAltText
         - name
         - normalizedName
         - publishedAt
@@ -4168,6 +4171,20 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Representative image identifier for the wiki.
+        imageUrl:
+          type: string
+          nullable: true
+          description: Absolute URL of the representative image.
+        imageAltText:
+          type: string
+          nullable: true
+          description: Alternative text of the representative image.
         name:
           type: string
           description: Display name of the wiki.

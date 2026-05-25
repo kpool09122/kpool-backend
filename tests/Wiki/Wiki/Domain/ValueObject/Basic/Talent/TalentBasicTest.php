@@ -140,6 +140,7 @@ class TalentBasicTest extends TestCase
         $this->assertSame('talent', $array['type']);
         $this->assertSame((string) $testData->name, $array['name']);
         $this->assertSame($testData->normalizedName, $array['normalized_name']);
+        $this->assertSame('1999-04-23', $array['birthday']);
         $this->assertSame($testData->emoji->value(), $array['emoji']);
         $this->assertSame($testData->representativeSymbol->value(), $array['representative_symbol']);
         $this->assertSame($testData->position->value(), $array['position']);
@@ -189,7 +190,7 @@ class TalentBasicTest extends TestCase
             'normalized_name' => 'chaeyoung',
             'real_name' => '손채영',
             'normalized_real_name' => 'sonchaeyoung',
-            'birthday' => null,
+            'birthday' => '1999-04-23',
             'agency_identifier' => $agencyUuid,
             'group_identifiers' => [$groupUuid1, $groupUuid2],
             'emoji' => '🍓',
@@ -209,6 +210,7 @@ class TalentBasicTest extends TestCase
         $this->assertSame('chaeyoung', $talentBasic->normalizedName());
         $this->assertSame('손채영', (string) $talentBasic->realName());
         $this->assertSame('sonchaeyoung', $talentBasic->normalizedRealName());
+        $this->assertSame('1999-04-23', $talentBasic->birthday()?->format('Y-m-d'));
         $this->assertSame('🍓', $talentBasic->emoji()->value());
         $this->assertSame('strawberry', $talentBasic->representativeSymbol()->value());
         $this->assertSame('Main Rapper, Sub Vocalist', $talentBasic->position()->value());
