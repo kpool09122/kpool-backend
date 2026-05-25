@@ -157,6 +157,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 'editor_id' => $draftWiki->editorIdentifier() ? (string) $draftWiki->editorIdentifier() : null,
                 'approver_id' => $draftWiki->approverIdentifier() ? (string) $draftWiki->approverIdentifier() : null,
                 'merger_id' => $draftWiki->mergerIdentifier() ? (string) $draftWiki->mergerIdentifier() : null,
+                'edited_at' => $draftWiki->editedAt(),
                 'merged_at' => $draftWiki->mergedAt(),
                 'source_editor_id' => $draftWiki->sourceEditorIdentifier()
                     ? (string) $draftWiki->sourceEditorIdentifier()
@@ -240,6 +241,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->translated_at?->toDateTimeImmutable(),
             $model->approved_at?->toDateTimeImmutable(),
             $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
+            $model->edited_at?->toDateTimeImmutable(),
         );
     }
 

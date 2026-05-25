@@ -215,8 +215,6 @@ model DraftWikiListItem {
   imageAltText: string | null;
   @doc("Timestamp when the draft was edited.")
   editedAt: string | null;
-  @doc("Last updated timestamp.")
-  updatedAt: string | null;
   @doc("Timestamp when the draft was approved.")
   approvedAt: string | null;
   @doc("Timestamp when the draft was translated.")

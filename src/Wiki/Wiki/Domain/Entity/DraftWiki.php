@@ -39,6 +39,7 @@ class DraftWiki
         private ?DateTimeImmutable $translatedAt = null,
         private ?DateTimeImmutable $approvedAt = null,
         private ?ImageIdentifier $imageIdentifier = null,
+        private ?DateTimeImmutable $editedAt = null,
     ) {
     }
 
@@ -195,5 +196,15 @@ class DraftWiki
     public function setImageIdentifier(?ImageIdentifier $imageIdentifier): void
     {
         $this->imageIdentifier = $imageIdentifier;
+    }
+
+    public function editedAt(): ?DateTimeImmutable
+    {
+        return $this->editedAt;
+    }
+
+    public function setEditedAt(?DateTimeImmutable $editedAt): void
+    {
+        $this->editedAt = $editedAt;
     }
 }

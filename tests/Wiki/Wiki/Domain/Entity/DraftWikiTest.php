@@ -50,6 +50,7 @@ class DraftWikiTest extends TestCase
         $this->assertNull($draftWiki->mergedAt());
         $this->assertNull($draftWiki->translatedAt());
         $this->assertNull($draftWiki->approvedAt());
+        $this->assertNull($draftWiki->editedAt());
     }
 
     /**
@@ -310,6 +311,26 @@ class DraftWikiTest extends TestCase
         // nullを設定
         $draftWiki->setApprovedAt(null);
         $this->assertNull($draftWiki->approvedAt());
+    }
+
+    /**
+     * 正常系：setEditedAtのsetterとgetterが正しく動作すること.
+     *
+     * @return void
+     */
+    public function testSetEditedAt(): void
+    {
+        $data = $this->createDummyDraftWiki();
+        $draftWiki = $data->draftWiki;
+
+        $this->assertNull($draftWiki->editedAt());
+
+        $editedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $draftWiki->setEditedAt($editedAt);
+        $this->assertSame($editedAt, $draftWiki->editedAt());
+
+        $draftWiki->setEditedAt(null);
+        $this->assertNull($draftWiki->editedAt());
     }
 
     /**

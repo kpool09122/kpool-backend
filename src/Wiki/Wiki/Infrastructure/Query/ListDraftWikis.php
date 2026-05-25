@@ -88,7 +88,6 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             name: (string) $basic->getAttribute('name'),
             normalizedName: (string) $basic->getAttribute('normalized_name'),
             editedAt: $this->formatDateTime($wiki->edited_at),
-            updatedAt: $this->formatDateTime($wiki->updated_at),
             approvedAt: $this->formatDateTime($wiki->approved_at),
             translatedAt: $this->formatDateTime($wiki->translated_at),
             mergedAt: $this->formatDateTime($wiki->merged_at),
