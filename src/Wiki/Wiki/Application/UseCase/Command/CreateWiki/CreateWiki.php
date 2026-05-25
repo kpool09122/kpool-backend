@@ -6,7 +6,6 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki;
 
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
-use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
@@ -33,7 +32,6 @@ readonly class CreateWiki implements CreateWikiInterface
      * @return void
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
-     * @throws DuplicateSlugException
      */
     public function process(CreateWikiInputPort $input, CreateWikiOutputPort $output): void
     {
@@ -59,22 +57,20 @@ readonly class CreateWiki implements CreateWikiInterface
             throw new DisallowedException();
         }
 
-        if ($this->wikiRepository->existsBySlug($input->slug())) {
-            throw new DuplicateSlugException();
-        }
+        $publishedWiki = $input->publishedWikiIdentifier() !== null
+            ? $this->wikiRepository->findById($input->publishedWikiIdentifier())
+            : null;
 
         $wiki = $this->wikiFactory->create(
             $input->principalIdentifier(),
             $input->language(),
             $input->basic(),
             $input->slug(),
+            $publishedWiki?->translationSetIdentifier(),
         );
 
-        if ($input->publishedWikiIdentifier()) {
-            $publishedWiki = $this->wikiRepository->findById($input->publishedWikiIdentifier());
-            if ($publishedWiki) {
-                $wiki->setPublishedWikiIdentifier($publishedWiki->wikiIdentifier());
-            }
+        if ($publishedWiki !== null) {
+            $wiki->setPublishedWikiIdentifier($publishedWiki->wikiIdentifier());
         }
 
         $wiki->setSections($input->sections());

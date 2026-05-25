@@ -6,7 +6,6 @@ namespace Application\Http\Action\Wiki\Wiki\Command\CreateWiki;
 
 use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
 use Application\Http\Context\WikiContext;
-use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -15,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -82,11 +80,6 @@ readonly class CreateWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
-            } catch (DuplicateSlugException $e) {
-                DB::rollBack();
-                $this->logger->error((string) $e);
-
-                throw new ConflictHttpException(detail: error_message('duplicate_slug', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);
@@ -98,7 +91,7 @@ readonly class CreateWikiAction
 
                 throw $e;
             }
-        } catch (ForbiddenHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ForbiddenHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

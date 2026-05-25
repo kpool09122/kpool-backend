@@ -41,6 +41,10 @@ model PublishedWikiSummary {
 model DraftWikiHeroImage {
   @doc("Image identifier shown as the hero image.")
   imageIdentifier: Uuid | null;
+  @doc("Resolved hero image URL.")
+  src: string | null;
+  @doc("Hero image alternative text.")
+  alt: string | null;
 }
 
 @doc("Basic payload for a group draft wiki.")
@@ -50,17 +54,17 @@ model GroupDraftWikiBasic {
   @doc("Normalized name of the group.")
   normalizedName: string;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid | null;
+  agencyIdentifier: Uuid | null;
   @doc("Group type.")
   groupType: string;
   @doc("Current activity status of the group.")
-  status?: string;
+  status: string | null;
   @doc("Generation label of the group.")
   generation: string;
   @doc("Debut date of the group.")
-  debutDate?: plainDate;
+  debutDate: plainDate | null;
   @doc("Disband date of the group.")
-  disbandDate?: plainDate | null;
+  disbandDate: plainDate | null;
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official colors of the group.")
@@ -86,7 +90,7 @@ model DraftWikiDetail {
   @doc("Published version number associated with the draft.")
   version: int32;
   @doc("Theme color applied to the wiki.")
-  themeColor?: string;
+  themeColor: string | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic wiki content payload.")
@@ -132,17 +136,17 @@ model TalentDraftWikiGroupSummary {
   @doc("Normalized name of the group.")
   normalizedName: string;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier: Uuid | null;
   @doc("Group type.")
-  groupType?: string;
+  groupType: string | null;
   @doc("Current activity status of the group.")
-  status?: string;
+  status: string | null;
   @doc("Generation label of the group.")
-  generation?: string;
+  generation: string | null;
   @doc("Debut date of the group.")
-  debutDate?: plainDate;
+  debutDate: plainDate | null;
   @doc("Disband date of the group.")
-  disbandDate?: plainDate;
+  disbandDate: plainDate | null;
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official color palette of the group.")
@@ -164,9 +168,9 @@ model TalentDraftWikiBasic {
   @doc("Normalized real name of the talent.")
   normalizedRealName: string;
   @doc("Birthday of the talent.")
-  birthday?: plainDate;
+  birthday: plainDate | null;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier: Uuid | null;
   @doc("Emoji representing the talent.")
   emoji: string;
   @doc("Representative symbol of the talent.")
@@ -174,15 +178,15 @@ model TalentDraftWikiBasic {
   @doc("Position of the talent.")
   position: string;
   @doc("MBTI of the talent.")
-  mbti?: string;
+  mbti: string | null;
   @doc("Zodiac sign of the talent.")
-  zodiacSign?: string;
+  zodiacSign: string | null;
   @doc("English proficiency level of the talent.")
-  englishLevel?: string;
+  englishLevel: string | null;
   @doc("Height of the talent in centimeters.")
-  height?: int32;
+  height: int32 | string | null;
   @doc("Blood type of the talent.")
-  bloodType?: string;
+  bloodType: string | null;
   @doc("Fandom name of the talent.")
   fandomName: string;
   @doc("Related published groups linked to the talent.")
@@ -204,7 +208,7 @@ model TalentDraftWikiDetail {
   @doc("Published version number associated with the draft.")
   version: int32;
   @doc("Theme color applied to the wiki.")
-  themeColor?: string;
+  themeColor: string | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic talent wiki content payload.")
@@ -250,17 +254,17 @@ model SongDraftWikiGroupSummary {
   @doc("Normalized name of the group.")
   normalizedName: string;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier: Uuid | null;
   @doc("Group type.")
-  groupType?: string;
+  groupType: string | null;
   @doc("Current activity status of the group.")
-  status?: string;
+  status: string | null;
   @doc("Generation label of the group.")
-  generation?: string;
+  generation: string | null;
   @doc("Debut date of the group.")
-  debutDate?: plainDate;
+  debutDate: plainDate | null;
   @doc("Disband date of the group.")
-  disbandDate?: plainDate;
+  disbandDate: plainDate | null;
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official color palette of the group.")
@@ -288,9 +292,9 @@ model SongDraftWikiTalentSummary {
   @doc("Normalized real name of the talent.")
   normalizedRealName: string;
   @doc("Birthday of the talent.")
-  birthday?: plainDate;
+  birthday: plainDate | null;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier: Uuid | null;
   @doc("Emoji representing the talent.")
   emoji: string;
   @doc("Representative symbol of the talent.")
@@ -298,15 +302,15 @@ model SongDraftWikiTalentSummary {
   @doc("Position of the talent.")
   position: string;
   @doc("MBTI of the talent.")
-  mbti?: string;
+  mbti: string | null;
   @doc("Zodiac sign of the talent.")
-  zodiacSign?: string;
+  zodiacSign: string | null;
   @doc("English proficiency level of the talent.")
-  englishLevel?: string;
+  englishLevel: string | null;
   @doc("Height of the talent in centimeters.")
-  height?: int32;
+  height: int32 | string | null;
   @doc("Blood type of the talent.")
-  bloodType?: string;
+  bloodType: string | null;
   @doc("Fandom name of the talent.")
   fandomName: string;
 }
@@ -318,15 +322,15 @@ model SongDraftWikiBasic {
   @doc("Normalized name of the song.")
   normalizedName: string;
   @doc("Song type.")
-  songType: string;
+  songType: string | null;
   @doc("Genres associated with the song.")
   genres: string[];
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier: Uuid | null;
   @doc("Release date of the song.")
-  releaseDate?: plainDate;
+  releaseDate: plainDate | null;
   @doc("Album name.")
-  albumName: string;
+  albumName: string | null;
   @doc("Lyricist name.")
   lyricist: string;
   @doc("Normalized lyricist name.")
@@ -360,7 +364,7 @@ model SongDraftWikiDetail {
   @doc("Published version number associated with the draft.")
   version: int32;
   @doc("Theme color applied to the wiki.")
-  themeColor?: string;
+  themeColor: string | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic song wiki content payload.")
@@ -404,11 +408,11 @@ model AgencyDraftWikiBasic {
   @doc("Normalized chief executive officer name.")
   normalizedCeo: string;
   @doc("Date when the agency was founded.")
-  foundedIn?: plainDate;
+  foundedIn: plainDate | null;
   @doc("Parent agency identifier.")
-  parentAgencyIdentifier?: Uuid;
+  parentAgencyIdentifier: Uuid | null;
   @doc("Current activity status of the agency.")
-  status?: string;
+  status: string | null;
   @doc("Official website of the agency.")
   officialWebsite: string;
   @doc("Social links of the agency.")
@@ -430,7 +434,7 @@ model AgencyDraftWikiDetail {
   @doc("Published version number associated with the draft.")
   version: int32;
   @doc("Theme color applied to the wiki.")
-  themeColor?: string;
+  themeColor: string | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic agency wiki content payload.")
