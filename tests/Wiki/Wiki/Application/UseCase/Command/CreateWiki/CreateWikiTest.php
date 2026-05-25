@@ -12,7 +12,6 @@ use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
-use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
@@ -65,7 +64,6 @@ class CreateWikiTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws DisallowedException
-     * @throws DuplicateSlugException
      */
     public function testWhenNotFoundPrincipal(): void
     {
@@ -112,7 +110,6 @@ class CreateWikiTest extends TestCase
      * @return void
      * @throws BindingResolutionException
      * @throws PrincipalNotFoundException
-     * @throws DuplicateSlugException
      */
     public function testDisallowed(): void
     {
@@ -161,72 +158,12 @@ class CreateWikiTest extends TestCase
     }
 
     /**
-     * 異常系：指定したSlugが既に存在する場合、例外がスローされること.
-     *
-     * @return void
-     * @throws BindingResolutionException
-     * @throws DisallowedException
-     * @throws PrincipalNotFoundException
-     */
-    public function testDuplicateSlug(): void
-    {
-        $testData = $this->createDummyCreateWiki();
-
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
-
-        $input = new CreateWikiInput(
-            $testData->publishedWikiIdentifier,
-            $testData->language,
-            $testData->resourceType,
-            $testData->basic,
-            $testData->sections,
-            $testData->themeColor,
-            $testData->slug,
-            $principalIdentifier,
-            $testData->agencyIdentifier,
-            $testData->groupIdentifiers,
-            $testData->talentIdentifiers,
-        );
-
-        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
-        $principalRepository->shouldReceive('findById')
-            ->with($principalIdentifier)
-            ->once()
-            ->andReturn($principal);
-
-        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
-        $policyEvaluator->shouldReceive('evaluate')
-            ->once()
-            ->andReturn(true);
-
-        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlug')
-            ->once()
-            ->with($testData->slug)
-            ->andReturn(true);
-
-        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
-        $draftWikiRepository->shouldNotReceive('save');
-
-        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
-        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
-        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
-        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
-
-        $this->expectException(DuplicateSlugException::class);
-        $useCase = $this->app->make(CreateWikiInterface::class);
-        $useCase->process($input, new CreateWikiOutput());
-    }
-
-    /**
      * 正常系：正しくDraftWiki Entityが作成されること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
-     * @throws DuplicateSlugException
      */
     public function testProcess(): void
     {
@@ -263,14 +200,16 @@ class CreateWikiTest extends TestCase
         $wikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
         $wikiFactory->shouldReceive('create')
             ->once()
-            ->with($principalIdentifier, $testData->language, $testData->basic, $testData->slug)
+            ->with(
+                $principalIdentifier,
+                $testData->language,
+                $testData->basic,
+                $testData->slug,
+                $testData->translationSetIdentifier,
+            )
             ->andReturn($testData->draftWiki);
 
         $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
-        $wikiRepository->shouldReceive('existsBySlug')
-            ->once()
-            ->with($testData->slug)
-            ->andReturn(false);
         $wikiRepository->shouldReceive('findById')
             ->once()
             ->with($testData->publishedWikiIdentifier)

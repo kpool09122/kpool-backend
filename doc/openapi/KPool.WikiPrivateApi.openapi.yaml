@@ -2059,6 +2059,9 @@ components:
         - normalizedName
         - ceo
         - normalizedCeo
+        - foundedIn
+        - parentAgencyIdentifier
+        - status
         - officialWebsite
         - socialLinks
       properties:
@@ -2077,13 +2080,17 @@ components:
         foundedIn:
           type: string
           format: date
+          nullable: true
           description: Date when the agency was founded.
         parentAgencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Parent agency identifier.
         status:
           type: string
+          nullable: true
           description: Current activity status of the agency.
         officialWebsite:
           type: string
@@ -2103,6 +2110,7 @@ components:
         - language
         - resourceType
         - version
+        - themeColor
         - heroImage
         - basic
         - sections
@@ -2130,6 +2138,7 @@ components:
           description: Published version number associated with the draft.
         themeColor:
           type: string
+          nullable: true
           description: Theme color applied to the wiki.
         heroImage:
           allOf:
@@ -2457,6 +2466,7 @@ components:
         - language
         - resourceType
         - version
+        - themeColor
         - heroImage
         - basic
         - sections
@@ -2484,6 +2494,7 @@ components:
           description: Published version number associated with the draft.
         themeColor:
           type: string
+          nullable: true
           description: Theme color applied to the wiki.
         heroImage:
           allOf:
@@ -2502,6 +2513,8 @@ components:
       type: object
       required:
         - imageIdentifier
+        - src
+        - alt
       properties:
         imageIdentifier:
           type: string
@@ -2509,6 +2522,14 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Image identifier shown as the hero image.
+        src:
+          type: string
+          nullable: true
+          description: Resolved hero image URL.
+        alt:
+          type: string
+          nullable: true
+          description: Hero image alternative text.
       description: Hero image payload for a draft wiki.
     DraftWikiListItem:
       type: object
@@ -2662,8 +2683,12 @@ components:
       required:
         - name
         - normalizedName
+        - agencyIdentifier
         - groupType
+        - status
         - generation
+        - debutDate
+        - disbandDate
         - fandomName
         - officialColors
         - emoji
@@ -2686,6 +2711,7 @@ components:
           description: Group type.
         status:
           type: string
+          nullable: true
           description: Current activity status of the group.
         generation:
           type: string
@@ -2693,6 +2719,7 @@ components:
         debutDate:
           type: string
           format: date
+          nullable: true
           description: Debut date of the group.
         disbandDate:
           type: string
@@ -3260,6 +3287,8 @@ components:
         - normalizedName
         - songType
         - genres
+        - agencyIdentifier
+        - releaseDate
         - albumName
         - lyricist
         - normalizedLyricist
@@ -3278,6 +3307,7 @@ components:
           description: Normalized name of the song.
         songType:
           type: string
+          nullable: true
           description: Song type.
         genres:
           type: array
@@ -3285,15 +3315,19 @@ components:
             type: string
           description: Genres associated with the song.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         releaseDate:
           type: string
           format: date
+          nullable: true
           description: Release date of the song.
         albumName:
           type: string
+          nullable: true
           description: Album name.
         lyricist:
           type: string
@@ -3333,6 +3367,7 @@ components:
         - language
         - resourceType
         - version
+        - themeColor
         - heroImage
         - basic
         - sections
@@ -3360,6 +3395,7 @@ components:
           description: Published version number associated with the draft.
         themeColor:
           type: string
+          nullable: true
           description: Theme color applied to the wiki.
         heroImage:
           allOf:
@@ -3382,6 +3418,12 @@ components:
         - language
         - name
         - normalizedName
+        - agencyIdentifier
+        - groupType
+        - status
+        - generation
+        - debutDate
+        - disbandDate
         - fandomName
         - officialColors
         - emoji
@@ -3404,25 +3446,32 @@ components:
           type: string
           description: Normalized name of the group.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         groupType:
           type: string
+          nullable: true
           description: Group type.
         status:
           type: string
+          nullable: true
           description: Current activity status of the group.
         generation:
           type: string
+          nullable: true
           description: Generation label of the group.
         debutDate:
           type: string
           format: date
+          nullable: true
           description: Debut date of the group.
         disbandDate:
           type: string
           format: date
+          nullable: true
           description: Disband date of the group.
         fandomName:
           type: string
@@ -3449,9 +3498,16 @@ components:
         - normalizedName
         - realName
         - normalizedRealName
+        - birthday
+        - agencyIdentifier
         - emoji
         - representativeSymbol
         - position
+        - mbti
+        - zodiacSign
+        - englishLevel
+        - height
+        - bloodType
         - fandomName
       properties:
         wikiIdentifier:
@@ -3479,10 +3535,13 @@ components:
         birthday:
           type: string
           format: date
+          nullable: true
           description: Birthday of the talent.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         emoji:
           type: string
@@ -3495,19 +3554,26 @@ components:
           description: Position of the talent.
         mbti:
           type: string
+          nullable: true
           description: MBTI of the talent.
         zodiacSign:
           type: string
+          nullable: true
           description: Zodiac sign of the talent.
         englishLevel:
           type: string
+          nullable: true
           description: English proficiency level of the talent.
         height:
-          type: integer
-          format: int32
+          anyOf:
+            - type: integer
+              format: int32
+            - type: string
+          nullable: true
           description: Height of the talent in centimeters.
         bloodType:
           type: string
+          nullable: true
           description: Blood type of the talent.
         fandomName:
           type: string
@@ -3572,9 +3638,16 @@ components:
         - normalizedName
         - realName
         - normalizedRealName
+        - birthday
+        - agencyIdentifier
         - emoji
         - representativeSymbol
         - position
+        - mbti
+        - zodiacSign
+        - englishLevel
+        - height
+        - bloodType
         - fandomName
         - groups
       properties:
@@ -3593,10 +3666,13 @@ components:
         birthday:
           type: string
           format: date
+          nullable: true
           description: Birthday of the talent.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         emoji:
           type: string
@@ -3609,19 +3685,26 @@ components:
           description: Position of the talent.
         mbti:
           type: string
+          nullable: true
           description: MBTI of the talent.
         zodiacSign:
           type: string
+          nullable: true
           description: Zodiac sign of the talent.
         englishLevel:
           type: string
+          nullable: true
           description: English proficiency level of the talent.
         height:
-          type: integer
-          format: int32
+          anyOf:
+            - type: integer
+              format: int32
+            - type: string
+          nullable: true
           description: Height of the talent in centimeters.
         bloodType:
           type: string
+          nullable: true
           description: Blood type of the talent.
         fandomName:
           type: string
@@ -3641,6 +3724,7 @@ components:
         - language
         - resourceType
         - version
+        - themeColor
         - heroImage
         - basic
         - sections
@@ -3668,6 +3752,7 @@ components:
           description: Published version number associated with the draft.
         themeColor:
           type: string
+          nullable: true
           description: Theme color applied to the wiki.
         heroImage:
           allOf:
@@ -3690,6 +3775,12 @@ components:
         - language
         - name
         - normalizedName
+        - agencyIdentifier
+        - groupType
+        - status
+        - generation
+        - debutDate
+        - disbandDate
         - fandomName
         - officialColors
         - emoji
@@ -3712,25 +3803,32 @@ components:
           type: string
           description: Normalized name of the group.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         groupType:
           type: string
+          nullable: true
           description: Group type.
         status:
           type: string
+          nullable: true
           description: Current activity status of the group.
         generation:
           type: string
+          nullable: true
           description: Generation label of the group.
         debutDate:
           type: string
           format: date
+          nullable: true
           description: Debut date of the group.
         disbandDate:
           type: string
           format: date
+          nullable: true
           description: Disband date of the group.
         fandomName:
           type: string
