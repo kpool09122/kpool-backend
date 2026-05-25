@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisOutput;
+use Tests\Helper\CreateImage;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
 
@@ -36,6 +37,9 @@ class ListWikisTest extends TestCase
         ], array_column($payload['wikis'], 'wikiIdentifier'));
         $this->assertArrayHasKey('translationSetIdentifier', $payload['wikis'][0]);
         $this->assertIsString($payload['wikis'][0]['translationSetIdentifier']);
+        $this->assertArrayHasKey('imageIdentifier', $payload['wikis'][0]);
+        $this->assertArrayHasKey('imageUrl', $payload['wikis'][0]);
+        $this->assertArrayHasKey('imageAltText', $payload['wikis'][0]);
         $this->assertArrayNotHasKey('sections', $payload['wikis'][0]);
     }
 
@@ -128,6 +132,36 @@ class ListWikisTest extends TestCase
         $this->assertSame('Alpha EN', $enPayload['wikis'][0]['name']);
     }
 
+    #[Group('useDb')]
+    public function testProcessReturnsWikiImageFieldsWhenImageExists(): void
+    {
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f801', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'image_path' => '/images/test/public-card.jpg',
+            'alt_text' => 'Published wiki card image',
+        ]);
+
+        $this->createWiki(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f802',
+            'talent',
+            'tl-image',
+            'Image Talent',
+            'image talent',
+            '2026-05-01 00:00:00',
+            'ko',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+        );
+
+        $payload = $this->process(new ListWikisInput(
+            language: Language::KOREAN,
+            resourceType: ResourceType::TALENT,
+        ))->toArray();
+
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
+        $this->assertSame('http://127.0.0.1:8080/images/test/public-card.jpg', $payload['wikis'][0]['imageUrl']);
+        $this->assertSame('Published wiki card image', $payload['wikis'][0]['imageAltText']);
+    }
+
     private function listWikis(): ListWikisInterface
     {
         return $this->app->make(ListWikisInterface::class);
@@ -149,6 +183,7 @@ class ListWikisTest extends TestCase
         string $normalizedName,
         string $updatedAt,
         string $language = 'ko',
+        ?string $imageIdentifier = null,
     ): void {
         CreateWiki::create(
             $wikiId,
@@ -156,6 +191,7 @@ class ListWikisTest extends TestCase
             [
                 'slug' => $slug,
                 'language' => $language,
+                'image_identifier' => $imageIdentifier,
                 'published_at' => '2026-04-01 00:00:00',
             ],
             [

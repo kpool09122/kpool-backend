@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent;
 
+use DateTimeImmutable;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -149,7 +150,7 @@ final readonly class TalentBasic implements BasicInterface
             'normalized_name' => $this->normalizedName,
             'real_name' => (string) $this->realName,
             'normalized_real_name' => $this->normalizedRealName,
-            'birthday' => $this->birthday,
+            'birthday' => $this->birthday?->format('Y-m-d'),
             'agency_identifier' => $this->agencyIdentifier !== null ? (string)$this->agencyIdentifier : null,
             'group_identifiers' => array_map(static fn ($groupIdentifier) => (string) $groupIdentifier, $this->groupIdentifiers),
             'emoji' => $this->emoji->value(),
@@ -174,7 +175,7 @@ final readonly class TalentBasic implements BasicInterface
             normalizedName: $data['normalized_name'] ?? '',
             realName: new RealName($data['real_name'] ?? ''),
             normalizedRealName: $data['normalized_real_name'] ?? '',
-            birthday: $data['birthday'] ?? null,
+            birthday: self::toBirthday($data['birthday'] ?? null),
             agencyIdentifier: $data['agency_identifier'] ? new WikiIdentifier($data['agency_identifier']) : null,
             groupIdentifiers: $data['group_identifiers'] ? array_map(static fn ($groupIdentifier) => new WikiIdentifier($groupIdentifier), $data['group_identifiers']) : [],
             emoji: new Emoji($data['emoji'] ?? ''),
@@ -187,5 +188,22 @@ final readonly class TalentBasic implements BasicInterface
             bloodType: isset($data['blood_type']) ? BloodType::from($data['blood_type']) : null,
             fandomName: new FandomName($data['fandom_name'] ?? ''),
         );
+    }
+
+    private static function toBirthday(mixed $birthday): ?Birthday
+    {
+        if ($birthday === null || $birthday === '') {
+            return null;
+        }
+
+        if ($birthday instanceof Birthday) {
+            return $birthday;
+        }
+
+        if ($birthday instanceof DateTimeImmutable) {
+            return new Birthday($birthday);
+        }
+
+        return new Birthday(new DateTimeImmutable((string) $birthday));
     }
 }
