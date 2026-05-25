@@ -2548,7 +2548,6 @@ components:
         - imageUrl
         - imageAltText
         - editedAt
-        - updatedAt
         - approvedAt
         - translatedAt
         - mergedAt
@@ -2608,10 +2607,6 @@ components:
           type: string
           nullable: true
           description: Timestamp when the draft was edited.
-        updatedAt:
-          type: string
-          nullable: true
-          description: Last updated timestamp.
         approvedAt:
           type: string
           nullable: true

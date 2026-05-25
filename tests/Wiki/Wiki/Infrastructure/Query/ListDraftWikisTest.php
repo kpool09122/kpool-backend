@@ -232,7 +232,6 @@ class ListDraftWikisTest extends TestCase
             'name' => 'TWICE',
             'normalizedName' => 'twice',
             'editedAt' => '2026-05-01T00:00:00+00:00',
-            'updatedAt' => '2026-05-05T00:00:00+00:00',
             'approvedAt' => '2026-05-02T00:00:00+00:00',
             'translatedAt' => '2026-05-03T00:00:00+00:00',
             'mergedAt' => '2026-05-04T00:00:00+00:00',

@@ -131,6 +131,7 @@ class EditWikiTest extends TestCase
         $this->assertSame($testData->resourceType->value, $result['resourceType']);
         $this->assertSame($testData->status->value, $result['status']);
         $this->assertSame($principalIdentifier, $testData->draftWiki->editorIdentifier());
+        $this->assertNotNull($testData->draftWiki->editedAt());
     }
 
     /**
@@ -275,6 +276,8 @@ class EditWikiTest extends TestCase
 
         $editWiki = $this->app->make(EditWikiInterface::class);
         $editWiki->process($input, new EditWikiOutput());
+
+        $this->assertNotNull($testData->draftWiki->editedAt());
     }
 
     /**

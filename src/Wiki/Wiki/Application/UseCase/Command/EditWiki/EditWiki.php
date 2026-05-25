@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\EditWiki;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
@@ -66,6 +67,7 @@ readonly class EditWiki implements EditWikiInterface
         $wiki->setThemeColor($input->themeColor());
         $wiki->setImageIdentifier($input->imageIdentifier());
         $wiki->setEditorIdentifier($input->principalIdentifier());
+        $wiki->setEditedAt(new DateTimeImmutable());
 
         $this->draftWikiRepository->save($wiki);
 

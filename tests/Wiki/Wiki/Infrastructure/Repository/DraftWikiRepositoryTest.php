@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -77,6 +78,7 @@ class DraftWikiRepositoryTest extends TestCase
             'editor_id' => $editorId,
             'approver_id' => $approverId,
             'merger_id' => $mergerId,
+            'edited_at' => '2026-05-06 12:34:56',
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
@@ -103,6 +105,7 @@ class DraftWikiRepositoryTest extends TestCase
         $this->assertNull($found->mergedAt());
         $this->assertNull($found->translatedAt());
         $this->assertNull($found->approvedAt());
+        $this->assertSame('2026-05-06 12:34:56', $found->editedAt()?->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -216,6 +219,7 @@ class DraftWikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
+        $editedAt = new DateTimeImmutable('2026-05-06 12:34:56');
 
         $draftWiki = new DraftWiki(
             new DraftWikiIdentifier($wikiId),
@@ -242,6 +246,7 @@ class DraftWikiRepositoryTest extends TestCase
             null,
             ApprovalStatus::Pending,
             new PrincipalIdentifier($editorId),
+            editedAt: $editedAt,
         );
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -259,6 +264,7 @@ class DraftWikiRepositoryTest extends TestCase
             'approver_id' => null,
             'merger_id' => null,
             'source_editor_id' => null,
+            'edited_at' => '2026-05-06 12:34:56',
         ]);
         $this->assertDatabaseHas('draft_wiki_group_basics', [
             'wiki_id' => $wikiId,
