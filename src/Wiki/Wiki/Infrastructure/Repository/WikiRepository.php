@@ -90,6 +90,27 @@ readonly class WikiRepository implements WikiRepositoryInterface
     }
 
     /**
+     * @param Language[] $languages
+     * @return Wiki[]
+     */
+    public function findByTranslationSetIdentifierAndLanguages(
+        TranslationSetIdentifier $translationSetIdentifier,
+        array $languages,
+    ): array {
+        if ($languages === []) {
+            return [];
+        }
+
+        $models = WikiModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('translation_set_identifier', (string) $translationSetIdentifier)
+            ->whereIn('language', array_map(static fn (Language $language): string => $language->value, $languages))
+            ->get();
+
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
+    }
+
+    /**
      * @return Wiki[]
      */
     public function findByResourceType(ResourceType $resourceType, int $limit = 20, int $offset = 0): array

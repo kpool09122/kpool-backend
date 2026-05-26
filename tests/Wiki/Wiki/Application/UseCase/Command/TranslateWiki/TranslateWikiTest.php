@@ -80,6 +80,20 @@ class TranslateWikiTest extends TestCase
             $principalIdentifier,
             ResourceType::TALENT,
         );
+        $enPublishedWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $enPublishedWiki = new Wiki(
+            $enPublishedWikiIdentifier,
+            $testData->translationSetIdentifier,
+            $testData->slug,
+            Language::ENGLISH,
+            ResourceType::TALENT,
+            $this->createTalentBasic('Test Wiki'),
+            new SectionContentCollection(),
+            null,
+            new Version(1),
+            null,
+            $testData->editorIdentifier,
+        );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -92,6 +106,10 @@ class TranslateWikiTest extends TestCase
             ->with($testData->wikiIdentifier)
             ->once()
             ->andReturn($testData->wiki);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
+            ->with($testData->translationSetIdentifier, [Language::JAPANESE, Language::ENGLISH])
+            ->once()
+            ->andReturn([$enPublishedWiki]);
 
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('save')
@@ -180,6 +198,8 @@ class TranslateWikiTest extends TestCase
         $result = $output->toArray();
 
         $this->assertCount(2, $result['draftWikis']);
+        $this->assertNull($jaDraftWiki->publishedWikiIdentifier());
+        $this->assertSame($enPublishedWikiIdentifier, $enDraftWiki->publishedWikiIdentifier());
     }
 
     /**
