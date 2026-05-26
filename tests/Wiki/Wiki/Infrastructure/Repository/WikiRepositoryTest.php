@@ -645,6 +645,55 @@ class WikiRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系：TranslationSetIdentifierと言語でWikiが取得できること.
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testFindByTranslationSetIdentifierAndLanguages(): void
+    {
+        $translationSetId = StrTestHelper::generateUuid();
+        $wikiId1 = StrTestHelper::generateUuid();
+        $wikiId2 = StrTestHelper::generateUuid();
+        $excludedLanguageWikiId = StrTestHelper::generateUuid();
+        $otherTranslationSetWikiId = StrTestHelper::generateUuid();
+
+        CreateWiki::create($wikiId1, 'group', [
+            'translation_set_identifier' => $translationSetId,
+            'slug' => 'gr-twice-ja',
+            'language' => Language::JAPANESE->value,
+        ]);
+        CreateWiki::create($wikiId2, 'group', [
+            'translation_set_identifier' => $translationSetId,
+            'slug' => 'gr-twice-en',
+            'language' => Language::ENGLISH->value,
+        ]);
+        CreateWiki::create($excludedLanguageWikiId, 'group', [
+            'translation_set_identifier' => $translationSetId,
+            'slug' => 'gr-twice-ko',
+            'language' => Language::KOREAN->value,
+        ]);
+        CreateWiki::create($otherTranslationSetWikiId, 'group', [
+            'translation_set_identifier' => StrTestHelper::generateUuid(),
+            'slug' => 'gr-other-translation-set-ja',
+            'language' => Language::JAPANESE->value,
+        ]);
+
+        $repository = $this->app->make(WikiRepositoryInterface::class);
+        $wikis = $repository->findByTranslationSetIdentifierAndLanguages(
+            new TranslationSetIdentifier($translationSetId),
+            [Language::JAPANESE, Language::ENGLISH],
+        );
+
+        $this->assertCount(2, $wikis);
+        $wikiIds = array_map(static fn (Wiki $wiki): string => (string) $wiki->wikiIdentifier(), $wikis);
+        $this->assertContains($wikiId1, $wikiIds);
+        $this->assertContains($wikiId2, $wikiIds);
+        $this->assertNotContains($excludedLanguageWikiId, $wikiIds);
+        $this->assertNotContains($otherTranslationSetWikiId, $wikiIds);
+    }
+
+    /**
      * 正常系：ResourceTypeでWikiが取得できること.
      *
      * @throws BindingResolutionException

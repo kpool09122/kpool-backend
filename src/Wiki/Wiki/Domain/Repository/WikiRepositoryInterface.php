@@ -31,6 +31,15 @@ interface WikiRepositoryInterface
     public function findByTranslationSetIdentifier(TranslationSetIdentifier $translationSetIdentifier): array;
 
     /**
+     * @param Language[] $languages
+     * @return Wiki[]
+     */
+    public function findByTranslationSetIdentifierAndLanguages(
+        TranslationSetIdentifier $translationSetIdentifier,
+        array $languages,
+    ): array;
+
+    /**
      * @return Wiki[]
      */
     public function findByResourceType(ResourceType $resourceType, int $limit = 20, int $offset = 0): array;

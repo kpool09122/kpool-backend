@@ -70,6 +70,14 @@ readonly class TranslateWiki implements TranslateWikiInterface
         }
 
         $languages = Language::allExcept($wiki->language());
+        $publishedWikiIdentifierMap = [];
+        $publishedWikis = $this->wikiRepository->findByTranslationSetIdentifierAndLanguages(
+            $wiki->translationSetIdentifier(),
+            $languages,
+        );
+        foreach ($publishedWikis as $publishedWiki) {
+            $publishedWikiIdentifierMap[$publishedWiki->language()->value] = $publishedWiki->wikiIdentifier();
+        }
 
         $wikiDrafts = [];
         $translatedAt = new DateTimeImmutable();
@@ -87,7 +95,10 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $wikiDraft->setSections($translatedData->translatedSections());
             $wikiDraft->setThemeColor($wiki->themeColor());
             $wikiDraft->setImageIdentifier($wiki->imageIdentifier());
-            $wikiDraft->setPublishedWikiIdentifier($input->wikiIdentifier());
+            $publishedWikiIdentifier = $publishedWikiIdentifierMap[$language->value] ?? null;
+            if ($publishedWikiIdentifier !== null) {
+                $wikiDraft->setPublishedWikiIdentifier($publishedWikiIdentifier);
+            }
             $wikiDraft->setSourceEditorIdentifier($wiki->editorIdentifier());
             $wikiDraft->setTranslatedAt($translatedAt);
 
