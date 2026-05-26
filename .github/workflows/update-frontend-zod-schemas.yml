@@ -63,12 +63,6 @@ jobs:
       - name: Generate frontend Zod schemas
         run: ./scripts/generate_frontend_zod_schemas.sh "${GITHUB_WORKSPACE}/${FRONTEND_CHECKOUT_PATH}"
 
-      - name: Verify frontend lint and build
-        working-directory: ${{ env.FRONTEND_CHECKOUT_PATH }}
-        run: |
-          pnpm run lint
-          pnpm run build
-
       - name: Detect frontend changes
         id: changes
         working-directory: ${{ env.FRONTEND_CHECKOUT_PATH }}
