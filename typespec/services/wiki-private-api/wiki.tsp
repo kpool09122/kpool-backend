@@ -266,6 +266,16 @@ model ListDraftWikisResponse {
 @route("/wikis")
 interface WikiListOperations {
   @get
+  @route("/version-inconsistencies")
+  @doc("List published wikis with version inconsistencies across translation sets.")
+  listVersionInconsistentWikis(
+    @query perPage?: int32,
+    @query resourceType?: string,
+    @query sort?: string,
+    @query order?: string,
+  ): ListWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
   @route("/{language}")
   @doc("List published wikis by language.")
   listWikis(

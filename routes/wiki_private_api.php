@@ -44,6 +44,7 @@ use Application\Http\Action\Wiki\Wiki\Query\GetSongWiki\GetSongWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentDraftWiki\GetTalentDraftWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentWiki\GetTalentWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListDraftWikis\ListDraftWikisAction;
+use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
 use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
@@ -64,6 +65,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
     Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
 });
+Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::get('/wikis/{language}', ListWikisAction::class);
 Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
