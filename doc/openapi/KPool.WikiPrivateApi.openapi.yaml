@@ -1990,6 +1990,61 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/WikiWorkflowRequestBody'
+  /wikis/version-inconsistencies:
+    get:
+      operationId: WikiListOperations_listVersionInconsistentWikis
+      description: List published wikis with version inconsistencies across translation sets.
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned when wiki list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wikis/{language}:
     get:
       operationId: WikiListOperations_listWikis
