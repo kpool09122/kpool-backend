@@ -12,6 +12,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiBasicReadModel;
+use Tests\Helper\CreateDraftWiki;
 use Tests\TestCase;
 
 class GetTalentDraftWikiTest extends TestCase
@@ -29,7 +30,6 @@ class GetTalentDraftWikiTest extends TestCase
         $this->assertSame('tl-chaeyoung', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('talent', $readModel->resourceType());
-        $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
@@ -39,6 +39,37 @@ class GetTalentDraftWikiTest extends TestCase
         $this->assertSame('TWICE', $readModel->basic()['groups'][0]['name']);
         $this->assertSame('girl_group', $readModel->basic()['groups'][0]['groupType']);
         $this->assertSame('overview', $readModel->sections()[0]['id']);
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsTranslatedDraftTalentWikiWithoutPublishedWiki(): void
+    {
+        CreateDraftWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f201',
+            'talent',
+            [
+                'published_wiki_id' => null,
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f202',
+                'slug' => 'tl-momo',
+                'language' => 'ja',
+                'theme_color' => '#FE5F8F',
+            ],
+            [
+                'name' => 'モモ',
+                'normalized_name' => 'momo',
+                'real_name' => '平井もも',
+                'normalized_real_name' => 'hirai momo',
+            ],
+        );
+
+        $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
+        $readModel = $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-momo'), Language::JAPANESE));
+
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f201', $readModel->wikiIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f202', $readModel->translationSetIdentifier());
+        $this->assertSame('tl-momo', $readModel->slug());
+        $this->assertSame('ja', $readModel->language());
+        $this->assertSame('モモ', $readModel->basic()['name']);
     }
 
     #[Group('useDb')]

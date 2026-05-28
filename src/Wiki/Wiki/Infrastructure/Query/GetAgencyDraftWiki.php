@@ -44,7 +44,6 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::AGENCY->value,
-            version: $model->publishedWiki->version,
             themeColor: $model->theme_color,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,

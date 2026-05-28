@@ -18,7 +18,6 @@ class DraftWikiReadModelTest extends TestCase
             slug: 'gr-twice',
             language: 'ko',
             resourceType: 'group',
-            version: 1,
             themeColor: '#FE5F8F',
             heroImage: [
                 'imageIdentifier' => null,
@@ -54,7 +53,6 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('gr-twice', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
-        $this->assertSame(1, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
@@ -66,7 +64,6 @@ class DraftWikiReadModelTest extends TestCase
             'slug' => 'gr-twice',
             'language' => 'ko',
             'resourceType' => 'group',
-            'version' => 1,
             'themeColor' => '#FE5F8F',
             'heroImage' => [
                 'imageIdentifier' => null,

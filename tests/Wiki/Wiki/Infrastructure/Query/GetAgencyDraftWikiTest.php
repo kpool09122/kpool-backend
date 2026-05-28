@@ -93,7 +93,6 @@ class GetAgencyDraftWikiTest extends TestCase
         $this->assertSame('ag-jyp-entertainment', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());
-        $this->assertSame(3, $readModel->version());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
