@@ -13,7 +13,7 @@ interface ContributionPointServiceInterface
     /**
      * Grant contribution points to principals when a wiki is published.
      *
-     * @param PrincipalIdentifier|null $editorIdentifier null for translation articles
+     * @param PrincipalIdentifier|null $editorIdentifier the user who edited or translated
      * @param PrincipalIdentifier $approverIdentifier the user who approved
      * @param PrincipalIdentifier|null $mergerIdentifier the user who merged
      * @param ResourceType $resourceType agency, talent, group, or song

@@ -149,6 +149,7 @@ class TranslateWikiTest extends TestCase
             $jaTranslatedSections,
             null,
             ApprovalStatus::Pending,
+            $principalIdentifier,
         );
 
         $enDraftWiki = new DraftWiki(
@@ -162,12 +163,13 @@ class TranslateWikiTest extends TestCase
             $enTranslatedSections,
             null,
             ApprovalStatus::Pending,
+            $principalIdentifier,
         );
 
         $draftWikiFactory = Mockery::mock(DraftWikiFactoryInterface::class);
         $draftWikiFactory->shouldReceive('create')
             ->with(
-                Mockery::on(fn ($arg) => $arg === null),
+                $principalIdentifier,
                 Language::JAPANESE,
                 $jaTranslatedBasic,
                 $testData->slug,
@@ -177,7 +179,7 @@ class TranslateWikiTest extends TestCase
             ->andReturn($jaDraftWiki);
         $draftWikiFactory->shouldReceive('create')
             ->with(
-                Mockery::on(fn ($arg) => $arg === null),
+                $principalIdentifier,
                 Language::ENGLISH,
                 $enTranslatedBasic,
                 $testData->slug,
@@ -198,6 +200,8 @@ class TranslateWikiTest extends TestCase
         $result = $output->toArray();
 
         $this->assertCount(2, $result['draftWikis']);
+        $this->assertSame($principalIdentifier, $jaDraftWiki->editorIdentifier());
+        $this->assertSame($principalIdentifier, $enDraftWiki->editorIdentifier());
         $this->assertNull($jaDraftWiki->publishedWikiIdentifier());
         $this->assertSame($enPublishedWikiIdentifier, $enDraftWiki->publishedWikiIdentifier());
     }

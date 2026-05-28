@@ -85,7 +85,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $translatedData = $this->translationService->translateWiki($wiki, $language);
 
             $wikiDraft = $this->draftWikiFactory->create(
-                editorIdentifier: null,
+                editorIdentifier: $input->principalIdentifier(),
                 language: $language,
                 basic: $translatedData->translatedBasic(),
                 slug: $wiki->slug(),
