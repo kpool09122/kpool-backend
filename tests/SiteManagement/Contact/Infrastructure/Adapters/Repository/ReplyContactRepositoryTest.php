@@ -17,7 +17,6 @@ use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 use Tests\Helper\CreateReplyContact;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -62,8 +61,8 @@ class ReplyContactRepositoryTest extends TestCase
             $identityIdentifier,
             $toEmail,
             new ReplyContent($contentText),
-            ReplyStatus::SENT,
             $sentAt,
+            null,
             new DateTimeImmutable('2026-01-01 12:34:57'),
         );
 
@@ -85,19 +84,18 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertSame((string)$reply->toEmail(), $encryptionService->decrypt($record->to_email));
 
         $this->assertSame((string)$reply->content(), (string)$record->content);
-        $this->assertSame($reply->status()->value, (int)$record->status);
-
         $this->assertNotNull($record->sent_at);
         $this->assertSame($sentAt->format('Y-m-d H:i:s'), (new DateTimeImmutable((string)$record->sent_at))->format('Y-m-d H:i:s'));
+        $this->assertNull($record->failed_at);
     }
 
     /**
-     * 正常系：sent_at が null の場合も保存できること
+     * 正常系：failed_at が設定された返信履歴を保存できること
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testSaveWithNullSentAt(): void
+    public function testSaveWithFailedAt(): void
     {
         // ReplyContactRepository のテストでは ContactRepository の実装に依存したくないため、
         // 外部キー制約を満たす最小限の contacts レコードはDBへ直接作成する。
@@ -121,14 +119,15 @@ class ReplyContactRepositoryTest extends TestCase
 実装可否や時期が決まり次第、サイト内のお知らせ等でご案内いたします。
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
+        $failedAt = new DateTimeImmutable('2026-01-01 12:34:58');
         $reply = new ReplyCotact(
             new ContactReplyIdentifier(StrTestHelper::generateUuid()),
             $contactIdentifier,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             $toEmail,
             new ReplyContent($contentText),
-            ReplyStatus::FAILED,
             null,
+            $failedAt,
             new DateTimeImmutable('2026-01-01 12:34:57'),
         );
 
@@ -141,7 +140,8 @@ class ReplyContactRepositoryTest extends TestCase
 
         $this->assertNotNull($record);
         $this->assertNull($record->sent_at);
-        $this->assertSame(ReplyStatus::FAILED->value, (int)$record->status);
+        $this->assertNotNull($record->failed_at);
+        $this->assertSame($failedAt->format('Y-m-d H:i:s'), (new DateTimeImmutable((string)$record->failed_at))->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -171,9 +171,9 @@ class ReplyContactRepositoryTest extends TestCase
         $reply = CreateReplyContact::create(
             $contactIdentifier,
             $toEmail,
-            ReplyStatus::SENT,
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2026-01-02 12:34:56'),
+            null,
             new DateTimeImmutable('2026-01-02 00:00:00'),
             '返信内容です',
             $encryptionService,
@@ -189,14 +189,14 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertSame((string)$reply->identityIdentifier(), (string)$savedReply->identityIdentifier());
         $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
         $this->assertSame((string)$reply->content(), (string)$savedReply->content());
-        $this->assertSame($reply->status()->value, $savedReply->status()->value);
         $this->assertNotNull($savedReply->sentAt());
         $this->assertSame($reply->sentAt()?->format('Y-m-d H:i:s'), $savedReply->sentAt()->format('Y-m-d H:i:s'));
+        $this->assertNull($savedReply->failedAt());
         $this->assertSame($reply->createdAt()->format('Y-m-d H:i:s'), $savedReply->createdAt()->format('Y-m-d H:i:s'));
     }
 
     /**
-     * 正常系：identity_identifier / sent_at が null の場合も取得できること
+     * 正常系：identity_identifier / sent_at が null かつ failed_at がある場合も取得できること
      *
      * @throws BindingResolutionException
      */
@@ -222,9 +222,9 @@ class ReplyContactRepositoryTest extends TestCase
         $reply = CreateReplyContact::create(
             $contactIdentifier,
             $toEmail,
-            ReplyStatus::FAILED,
             null,
             null,
+            new DateTimeImmutable('2026-01-03 12:34:56'),
             new DateTimeImmutable('2026-01-03 00:00:00'),
             '返信内容です（nullケース）',
             $encryptionService,
@@ -236,7 +236,8 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertNotNull($savedReply);
         $this->assertNull($savedReply->identityIdentifier());
         $this->assertNull($savedReply->sentAt());
-        $this->assertSame($reply->status()->value, $savedReply->status()->value);
+        $this->assertNotNull($savedReply->failedAt());
+        $this->assertSame($reply->failedAt()?->format('Y-m-d H:i:s'), $savedReply->failedAt()?->format('Y-m-d H:i:s'));
         $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
         $this->assertSame($reply->createdAt()->format('Y-m-d H:i:s'), $savedReply->createdAt()->format('Y-m-d H:i:s'));
     }

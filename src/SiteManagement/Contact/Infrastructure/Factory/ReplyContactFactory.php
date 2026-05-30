@@ -13,7 +13,6 @@ use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 
 readonly class ReplyContactFactory implements ReplyContactFactoryInterface
 {
@@ -27,8 +26,8 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
         ?IdentityIdentifier $identityIdentifier,
         Email $toEmail,
         ReplyContent $content,
-        ReplyStatus $status,
         ?DateTimeImmutable $sentAt,
+        ?DateTimeImmutable $failedAt,
     ): ReplyCotact {
         return new ReplyCotact(
             new ContactReplyIdentifier($this->generator->generate()),
@@ -36,8 +35,8 @@ readonly class ReplyContactFactory implements ReplyContactFactoryInterface
             $identityIdentifier,
             $toEmail,
             $content,
-            $status,
             $sentAt,
+            $failedAt,
             new DateTimeImmutable('now'),
         );
     }
