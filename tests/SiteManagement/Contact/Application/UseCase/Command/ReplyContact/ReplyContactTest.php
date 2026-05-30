@@ -27,7 +27,6 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -98,7 +97,7 @@ class ReplyContactTest extends TestCase
             $identityIdentifier,
             $contact->email(),
             new ReplyContent($expectedContent),
-            ReplyStatus::UNSENT,
+            null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
         );
@@ -110,15 +109,15 @@ class ReplyContactTest extends TestCase
                 ?IdentityIdentifier $ii,
                 Email $toEmail,
                 ReplyContent $content,
-                ReplyStatus $status,
                 ?DateTimeImmutable $sentAt,
+                ?DateTimeImmutable $failedAt,
             ) use ($contactIdentifier, $contact, $expectedContent, $identityIdentifier): bool {
                 return $ci === $contactIdentifier
                     && $ii === $identityIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
-                    && $status === ReplyStatus::UNSENT
-                    && $sentAt === null;
+                    && $sentAt === null
+                    && $failedAt === null;
             })
             ->andReturn($unsentReply);
 
@@ -139,8 +138,8 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->identityIdentifier() === (string)$identityIdentifier
                     && (string)$saved->toEmail() === (string)$contact->email()
                     && (string)$saved->content() === $expectedContent
-                    && $saved->status() === ReplyStatus::SENT
                     && $saved->sentAt() instanceof DateTimeImmutable
+                    && $saved->failedAt() === null
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();
@@ -243,7 +242,7 @@ class ReplyContactTest extends TestCase
             $identityIdentifier,
             $contact->email(),
             new ReplyContent($expectedContent),
-            ReplyStatus::UNSENT,
+            null,
             null,
             new DateTimeImmutable('2020-01-01 00:00:00'),
         );
@@ -255,15 +254,15 @@ class ReplyContactTest extends TestCase
                 ?IdentityIdentifier $ii,
                 Email $toEmail,
                 ReplyContent $content,
-                ReplyStatus $status,
                 ?DateTimeImmutable $sentAt,
+                ?DateTimeImmutable $failedAt,
             ) use ($contactIdentifier, $contact, $expectedContent, $identityIdentifier): bool {
                 return $ci === $contactIdentifier
                     && $ii === $identityIdentifier
                     && (string)$toEmail === (string)$contact->email()
                     && (string)$content === $expectedContent
-                    && $status === ReplyStatus::UNSENT
-                    && $sentAt === null;
+                    && $sentAt === null
+                    && $failedAt === null;
             })
             ->andReturn($unsentReply);
 
@@ -284,8 +283,8 @@ class ReplyContactTest extends TestCase
                     && (string)$saved->identityIdentifier() === (string)$identityIdentifier
                     && (string)$saved->toEmail() === (string)$contact->email()
                     && (string)$saved->content() === $expectedContent
-                    && $saved->status() === ReplyStatus::FAILED
                     && $saved->sentAt() === null
+                    && $saved->failedAt() instanceof DateTimeImmutable
                     && $saved->createdAt() === $unsentReply->createdAt();
             })
             ->andReturnNull();

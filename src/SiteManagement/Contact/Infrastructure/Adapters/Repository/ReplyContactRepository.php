@@ -13,7 +13,6 @@ use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterf
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 
 final class ReplyContactRepository implements ReplyContactRepositoryInterface
 {
@@ -35,8 +34,8 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
                     : null,
                 'to_email' => $this->encryptionService->encrypt((string)$replyCotact->toEmail()),
                 'content' => (string)$replyCotact->content(),
-                'status' => $replyCotact->status()->value,
                 'sent_at' => $replyCotact->sentAt(),
+                'failed_at' => $replyCotact->failedAt(),
             ]
         );
     }
@@ -58,8 +57,8 @@ final class ReplyContactRepository implements ReplyContactRepositoryInterface
                 : null,
             new Email($this->encryptionService->decrypt((string)$model->to_email)),
             new ReplyContent((string)$model->content),
-            ReplyStatus::from((int)$model->status),
             $model->sent_at?->toDateTimeImmutable(),
+            $model->failed_at?->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
         );
     }

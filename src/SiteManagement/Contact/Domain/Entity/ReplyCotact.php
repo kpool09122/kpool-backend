@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 
 readonly class ReplyCotact
 {
@@ -20,8 +19,8 @@ readonly class ReplyCotact
         private ?IdentityIdentifier $identityIdentifier,
         private Email $toEmail,
         private ReplyContent $content,
-        private ReplyStatus $status,
         private ?DateTimeImmutable $sentAt,
+        private ?DateTimeImmutable $failedAt,
         private DateTimeImmutable $createdAt,
     ) {
     }
@@ -51,14 +50,14 @@ readonly class ReplyCotact
         return $this->content;
     }
 
-    public function status(): ReplyStatus
-    {
-        return $this->status;
-    }
-
     public function sentAt(): ?DateTimeImmutable
     {
         return $this->sentAt;
+    }
+
+    public function failedAt(): ?DateTimeImmutable
+    {
+        return $this->failedAt;
     }
 
     public function createdAt(): DateTimeImmutable
