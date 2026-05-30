@@ -10,7 +10,6 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 
 interface ReplyContactFactoryInterface
 {
@@ -19,7 +18,7 @@ interface ReplyContactFactoryInterface
         ?IdentityIdentifier $identityIdentifier,
         Email $toEmail,
         ReplyContent $content,
-        ReplyStatus $status,
         ?DateTimeImmutable $sentAt,
+        ?DateTimeImmutable $failedAt,
     ): ReplyCotact;
 }

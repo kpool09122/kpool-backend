@@ -11,7 +11,6 @@ use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -33,8 +32,8 @@ class ReplyCotactTest extends TestCase
 
 貴重なご意見をお寄せいただき、ありがとうございました。';
         $content = new ReplyContent($contentText);
-        $status = ReplyStatus::SENT;
         $sentAt = new DateTimeImmutable('2026-01-01 12:34:56');
+        $failedAt = null;
         $createdAt = new DateTimeImmutable('2026-01-01 12:34:57');
 
         $reply = new ReplyCotact(
@@ -43,8 +42,8 @@ class ReplyCotactTest extends TestCase
             $identityIdentifier,
             $toEmail,
             $content,
-            $status,
             $sentAt,
+            $failedAt,
             $createdAt,
         );
 
@@ -53,15 +52,15 @@ class ReplyCotactTest extends TestCase
         $this->assertSame((string)$identityIdentifier, (string)$reply->identityIdentifier());
         $this->assertSame((string)$toEmail, (string)$reply->toEmail());
         $this->assertSame((string)$content, (string)$reply->content());
-        $this->assertSame($status, $reply->status());
         $this->assertSame($sentAt, $reply->sentAt());
+        $this->assertSame($failedAt, $reply->failedAt());
         $this->assertSame($createdAt, $reply->createdAt());
     }
 
     /**
-     * 正常系: sentAt が null を許容すること
+     * 正常系: failedAt が null でなくても許容すること
      */
-    public function testSentAtCanBeNull(): void
+    public function testFailedAtCanBeSet(): void
     {
         $contentText = 'お問い合わせありがとうございます。
 
@@ -75,12 +74,12 @@ class ReplyCotactTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new Email('john.doe@example.com'),
             new ReplyContent($contentText),
-            ReplyStatus::FAILED,
             null,
+            new DateTimeImmutable('2026-01-01 12:34:58'),
             new DateTimeImmutable('2026-01-01 12:34:57'),
         );
 
         $this->assertNull($reply->sentAt());
-        $this->assertSame(ReplyStatus::FAILED, $reply->status());
+        $this->assertNotNull($reply->failedAt());
     }
 }

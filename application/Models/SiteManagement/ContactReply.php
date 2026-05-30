@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $identity_identifier
  * @property string $to_email
  * @property string $content
- * @property int $status
  * @property \Illuminate\Support\Carbon|null $sent_at
+ * @property \Illuminate\Support\Carbon|null $failed_at
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
@@ -34,14 +34,15 @@ class ContactReply extends Model
         'identity_identifier',
         'to_email',
         'content',
-        'status',
         'sent_at',
+        'failed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'sent_at' => 'datetime',
+            'failed_at' => 'datetime',
             'created_at' => 'datetime',
         ];
     }

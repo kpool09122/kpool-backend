@@ -13,7 +13,6 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -31,8 +30,8 @@ class ReplyContactFactoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $toEmail = new Email('john.doe@example.com');
         $content = new ReplyContent('返信本文');
-        $status = ReplyStatus::SENT;
         $sentAt = new DateTimeImmutable('2026-01-01 12:34:56');
+        $failedAt = null;
 
         $generator = Mockery::mock(UuidGeneratorInterface::class);
         $generator->shouldReceive('generate')
@@ -48,8 +47,8 @@ class ReplyContactFactoryTest extends TestCase
             $identityIdentifier,
             $toEmail,
             $content,
-            $status,
             $sentAt,
+            $failedAt,
         );
         $after = new DateTimeImmutable('now');
 
@@ -58,8 +57,8 @@ class ReplyContactFactoryTest extends TestCase
         $this->assertSame($identityIdentifier, $reply->identityIdentifier());
         $this->assertSame($toEmail, $reply->toEmail());
         $this->assertSame($content, $reply->content());
-        $this->assertSame($status, $reply->status());
         $this->assertSame($sentAt, $reply->sentAt());
+        $this->assertSame($failedAt, $reply->failedAt());
 
         // createdAt は factory 内部で "now" が入るため、範囲で検証する
         $this->assertGreaterThanOrEqual($before->getTimestamp(), $reply->createdAt()->getTimestamp());
@@ -67,11 +66,11 @@ class ReplyContactFactoryTest extends TestCase
     }
 
     /**
-     * 正常系: sentAt が null の場合も作成できること.
+     * 正常系: failedAt が null でなくても作成できること.
      *
      * @throws BindingResolutionException
      */
-    public function testCreateWithNullSentAt(): void
+    public function testCreateWithFailedAt(): void
     {
         $replyIdentifier = StrTestHelper::generateUuid();
 
@@ -88,12 +87,12 @@ class ReplyContactFactoryTest extends TestCase
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new Email('john.doe@example.com'),
             new ReplyContent('返信本文'),
-            ReplyStatus::FAILED,
             null,
+            new DateTimeImmutable('2026-01-01 12:34:56'),
         );
 
         $this->assertSame($replyIdentifier, (string)$reply->replyIdentifier());
         $this->assertNull($reply->sentAt());
-        $this->assertSame(ReplyStatus::FAILED, $reply->status());
+        $this->assertNotNull($reply->failedAt());
     }
 }

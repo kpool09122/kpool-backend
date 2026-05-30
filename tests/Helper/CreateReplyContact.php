@@ -13,16 +13,15 @@ use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 
 class CreateReplyContact
 {
     public static function create(
         ContactIdentifier $contactIdentifier,
         Email $toEmail,
-        ReplyStatus $status,
         ?IdentityIdentifier $identityIdentifier,
         ?DateTimeImmutable $sentAt,
+        ?DateTimeImmutable $failedAt,
         DateTimeImmutable $createdAt,
         string $content,
         EncryptionServiceInterface $encryptionService
@@ -33,8 +32,8 @@ class CreateReplyContact
             $identityIdentifier,
             $toEmail,
             new ReplyContent($content),
-            $status,
             $sentAt,
+            $failedAt,
             $createdAt,
         );
 
@@ -44,8 +43,8 @@ class CreateReplyContact
             'identity_identifier' => $reply->identityIdentifier() !== null ? (string) $reply->identityIdentifier() : null,
             'to_email' => $encryptionService->encrypt((string) $reply->toEmail()),
             'content' => (string) $reply->content(),
-            'status' => $reply->status()->value,
             'sent_at' => $reply->sentAt()?->format('Y-m-d H:i:s'),
+            'failed_at' => $reply->failedAt()?->format('Y-m-d H:i:s'),
             'created_at' => $reply->createdAt()->format('Y-m-d H:i:s'),
             'updated_at' => $reply->createdAt()->format('Y-m-d H:i:s'),
         ]);
