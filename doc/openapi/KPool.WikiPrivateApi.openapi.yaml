@@ -2164,7 +2164,6 @@ components:
         - slug
         - language
         - resourceType
-        - version
         - themeColor
         - heroImage
         - basic
@@ -2187,10 +2186,6 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
-        version:
-          type: integer
-          format: int32
-          description: Published version number associated with the draft.
         themeColor:
           type: string
           nullable: true
@@ -2520,7 +2515,6 @@ components:
         - slug
         - language
         - resourceType
-        - version
         - themeColor
         - heroImage
         - basic
@@ -2543,10 +2537,6 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
-        version:
-          type: integer
-          format: int32
-          description: Published version number associated with the draft.
         themeColor:
           type: string
           nullable: true
@@ -3416,7 +3406,6 @@ components:
         - slug
         - language
         - resourceType
-        - version
         - themeColor
         - heroImage
         - basic
@@ -3439,10 +3428,6 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
-        version:
-          type: integer
-          format: int32
-          description: Published version number associated with the draft.
         themeColor:
           type: string
           nullable: true
@@ -3773,7 +3758,6 @@ components:
         - slug
         - language
         - resourceType
-        - version
         - themeColor
         - heroImage
         - basic
@@ -3796,10 +3780,6 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
-        version:
-          type: integer
-          format: int32
-          description: Published version number associated with the draft.
         themeColor:
           type: string
           nullable: true

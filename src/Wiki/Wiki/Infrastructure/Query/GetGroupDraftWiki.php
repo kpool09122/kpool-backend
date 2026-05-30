@@ -46,7 +46,6 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::GROUP->value,
-            version: $model->publishedWiki->version,
             themeColor: $model->theme_color,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,

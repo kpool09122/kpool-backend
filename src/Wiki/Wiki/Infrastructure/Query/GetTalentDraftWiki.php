@@ -48,7 +48,6 @@ readonly class GetTalentDraftWiki implements GetTalentDraftWikiInterface
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::TALENT->value,
-            version: $model->publishedWiki->version,
             themeColor: $model->theme_color,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,

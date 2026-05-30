@@ -47,7 +47,6 @@ readonly class GetSongDraftWiki implements GetSongDraftWikiInterface
             slug: $model->slug,
             language: $model->language,
             resourceType: ResourceType::SONG->value,
-            version: $model->publishedWiki->version,
             themeColor: $model->theme_color,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
