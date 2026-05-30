@@ -13,7 +13,6 @@ use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
-use Source\SiteManagement\Contact\Domain\ValueObject\ReplyStatus;
 use Throwable;
 
 readonly class ReplyContact implements ReplyContactInterface
@@ -44,7 +43,7 @@ readonly class ReplyContact implements ReplyContactInterface
             $input->identityIdentifier(),
             $contact->email(),
             $content,
-            ReplyStatus::UNSENT,
+            null,
             null,
         );
         $this->replyContactRepository->save($reply);
@@ -62,8 +61,8 @@ readonly class ReplyContact implements ReplyContactInterface
                 $persisted->identityIdentifier(),
                 $persisted->toEmail(),
                 $persisted->content(),
-                ReplyStatus::FAILED,
                 null,
+                new DateTimeImmutable('now'),
                 $persisted->createdAt(),
             );
             $this->replyContactRepository->save($failed);
@@ -71,7 +70,7 @@ readonly class ReplyContact implements ReplyContactInterface
             throw new FailedToSendEmailException($e->getMessage());
         }
 
-        // findById で取得してからステータス更新
+        // findById で取得してから送信完了日時を更新
         $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
         $sentAt = new DateTimeImmutable('now');
         $sent = new ReplyCotact(
@@ -80,8 +79,8 @@ readonly class ReplyContact implements ReplyContactInterface
             $persisted->identityIdentifier(),
             $persisted->toEmail(),
             $persisted->content(),
-            ReplyStatus::SENT,
             $sentAt,
+            null,
             $persisted->createdAt(),
         );
         $this->replyContactRepository->save($sent);
