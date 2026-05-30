@@ -6,6 +6,7 @@ namespace Tests\Application\Http\Action\SiteManagement\Contact\Command\SubmitCon
 
 use Application\Http\Action\SiteManagement\Contact\Command\SubmitContact\SubmitContactAction;
 use Application\Http\Action\SiteManagement\Contact\Command\SubmitContact\SubmitContactRequest;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use Mockery\MockInterface;
 use Psr\Log\LoggerInterface;
@@ -33,6 +34,9 @@ class SubmitContactActionTest extends TestCase
         $request->shouldReceive('email')->once()->andReturn('john.doe@example.com');
         $request->shouldReceive('content')->once()->andReturn('お問い合わせ内容');
 
+        DB::shouldReceive('beginTransaction')->once();
+        DB::shouldReceive('commit')->once();
+
         /** @var SubmitContactInterface&MockInterface $submitContact */
         $submitContact = Mockery::mock(SubmitContactInterface::class);
         $submitContact->shouldReceive('process')
@@ -49,7 +53,7 @@ class SubmitContactActionTest extends TestCase
 
         /** @var LoggerInterface&MockInterface $logger */
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldIgnoreMissing();
+        $logger->shouldNotReceive('error');
 
         $action = new SubmitContactAction($submitContact, $logger);
         $response = $action($request);
