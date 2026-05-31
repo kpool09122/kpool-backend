@@ -1572,6 +1572,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/{language}/{slug}/related-profiles:
+    get:
+      operationId: WikiOperations_listRelatedProfiles
+      description: List related published wiki profiles for a source wiki.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resourceType
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned when related profile retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRelatedProfilesResponseBody'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{wikiId}/approve:
     post:
       operationId: WikiOperations_approveWiki
@@ -2951,6 +2997,17 @@ components:
           format: int32
           description: Number of wikis per page.
       description: Response body for the draft wiki list endpoint.
+    ListRelatedProfilesResponseBody:
+      type: object
+      required:
+        - profiles
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedProfileItem'
+          description: Related profile cards.
+      description: Response body for the related profiles endpoint.
     ListUploadedImagesResponseBody:
       type: object
       required:
@@ -3206,6 +3263,53 @@ components:
           format: int32
           description: Published version number.
       description: Summary of a published wiki.
+    RelatedProfileItem:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - resourceType
+        - name
+        - normalizedName
+        - imageIdentifier
+        - imageUrl
+        - imageAltText
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Wiki identifier.
+        slug:
+          type: string
+          description: Unique slug for the wiki.
+        language:
+          type: string
+          description: Language of the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        name:
+          type: string
+          description: Display name of the wiki.
+        normalizedName:
+          type: string
+          description: Normalized name used for search.
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Representative image identifier for the wiki.
+        imageUrl:
+          type: string
+          nullable: true
+          description: Absolute URL of the representative image.
+        imageAltText:
+          type: string
+          nullable: true
+          description: Alternative text of the representative image.
+      description: Related profile card item returned by the related profiles endpoint.
     RequestCertificationRequestBody:
       type: object
       required:
