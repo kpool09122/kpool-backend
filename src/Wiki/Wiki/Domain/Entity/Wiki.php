@@ -107,6 +107,11 @@ class Wiki
         $this->version = Version::nextVersion($this->version);
     }
 
+    public function setVersion(Version $version): void
+    {
+        $this->version = $version;
+    }
+
     public function hasSameVersion(Version $version): bool
     {
         return $this->version->value() === $version->value();

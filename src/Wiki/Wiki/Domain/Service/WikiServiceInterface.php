@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\Service;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
+use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 interface WikiServiceInterface
@@ -30,4 +32,8 @@ interface WikiServiceInterface
         TranslationSetIdentifier $translationSetIdentifier,
         DraftWikiIdentifier $excludeWikiIdentifier,
     ): bool;
+
+    public function canApproveDraftWiki(DraftWiki $draftWiki): bool;
+
+    public function resolvePublishVersion(DraftWiki $draftWiki): ?Version;
 }

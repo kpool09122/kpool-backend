@@ -145,6 +145,25 @@ class WikiTest extends TestCase
     }
 
     /**
+     * 正常系：setVersionが指定したバージョンに更新すること.
+     *
+     * @return void
+     */
+    public function testSetVersion(): void
+    {
+        $data = $this->createDummyWiki();
+        $wiki = $data->wiki;
+
+        $this->assertSame(1, $wiki->version()->value());
+
+        $version = new Version(3);
+        $wiki->setVersion($version);
+
+        $this->assertSame($version, $wiki->version());
+        $this->assertSame(3, $wiki->version()->value());
+    }
+
+    /**
      * 正常系：hasSameVersionが正しく動作すること.
      *
      * @return void

@@ -23,6 +23,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
+use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInput;
@@ -131,6 +132,10 @@ class ApproveWikiTest extends TestCase
             ->once()
             ->with($dummyApproveWiki->translationSetIdentifier, $dummyApproveWiki->wikiIdentifier)
             ->andReturn(false);
+        $wikiService->shouldReceive('canApproveDraftWiki')
+            ->once()
+            ->with($dummyApproveWiki->draftWiki)
+            ->andReturn(true);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -500,6 +505,82 @@ class ApproveWikiTest extends TestCase
         $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
 
         $this->expectException(ExistsApprovedDraftWikiException::class);
+        $approveWiki = $this->app->make(ApproveWikiInterface::class);
+        $approveWiki->process($input, new ApproveWikiOutput());
+    }
+
+    /**
+     * 異常系：version整合性上承認できないDraftWikiの場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws WikiNotFoundException
+     * @throws InvalidStatusException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testInconsistentVersions(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $dummyApproveWiki = $this->createDummyApproveWiki(
+            operatorIdentifier: $principalIdentifier,
+        );
+
+        $input = new ApproveWikiInput(
+            $dummyApproveWiki->wikiIdentifier,
+            $principalIdentifier,
+            $dummyApproveWiki->resourceType,
+            $dummyApproveWiki->agencyIdentifier,
+            $dummyApproveWiki->groupIdentifiers,
+            $dummyApproveWiki->talentIdentifiers,
+        );
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyApproveWiki->wikiIdentifier)
+            ->andReturn($dummyApproveWiki->draftWiki);
+        $draftWikiRepository->shouldNotReceive('save');
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('existsBySlugExcludingTranslationSetIdentifier')
+            ->once()
+            ->with($dummyApproveWiki->slug, $dummyApproveWiki->translationSetIdentifier)
+            ->andReturn(false);
+
+        $wikiService = Mockery::mock(WikiServiceInterface::class);
+        $wikiService->shouldReceive('existsApprovedDraftWiki')
+            ->once()
+            ->with($dummyApproveWiki->translationSetIdentifier, $dummyApproveWiki->wikiIdentifier)
+            ->andReturn(false);
+        $wikiService->shouldReceive('canApproveDraftWiki')
+            ->once()
+            ->with($dummyApproveWiki->draftWiki)
+            ->andReturn(false);
+
+        $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
+        $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(WikiServiceInterface::class, $wikiService);
+        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+
+        $this->expectException(InconsistentVersionException::class);
         $approveWiki = $this->app->make(ApproveWikiInterface::class);
         $approveWiki->process($input, new ApproveWikiOutput());
     }

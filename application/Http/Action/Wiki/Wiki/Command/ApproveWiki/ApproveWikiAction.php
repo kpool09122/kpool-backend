@@ -20,6 +20,7 @@ use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
+use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\ApproveWiki\ApproveWikiInterface;
@@ -92,6 +93,11 @@ readonly class ApproveWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ConflictHttpException(detail: error_message('exists_approved_draft_wiki', $language), previous: $e);
+            } catch (InconsistentVersionException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new ConflictHttpException(detail: error_message('inconsistent_version', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);

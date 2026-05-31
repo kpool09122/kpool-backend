@@ -16,6 +16,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
+use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -48,6 +49,7 @@ readonly class ApproveWiki implements ApproveWikiInterface
      * @throws DisallowedException
      * @throws DuplicateSlugException
      * @throws PrincipalNotFoundException
+     * @throws InconsistentVersionException
      */
     public function process(ApproveWikiInputPort $input, ApproveWikiOutputPort $output): void
     {
@@ -93,6 +95,10 @@ readonly class ApproveWiki implements ApproveWikiInterface
         // 同じ翻訳セットの別版で、承認済みだが公開されていないDraftWikiが存在するかチェック
         if ($this->wikiService->existsApprovedDraftWiki($wiki->translationSetIdentifier(), $wiki->wikiIdentifier())) {
             throw new ExistsApprovedDraftWikiException();
+        }
+
+        if (! $this->wikiService->canApproveDraftWiki($wiki)) {
+            throw new InconsistentVersionException();
         }
 
         $previousStatus = $wiki->status();
