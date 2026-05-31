@@ -177,6 +177,28 @@ model WikiListItem {
   updatedAt: string | null;
 }
 
+@doc("Related profile card item returned by the related profiles endpoint.")
+model RelatedProfileItem {
+  @doc("Wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug for the wiki.")
+  slug: string;
+  @doc("Language of the wiki.")
+  language: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Display name of the wiki.")
+  name: string;
+  @doc("Normalized name used for search.")
+  normalizedName: string;
+  @doc("Representative image identifier for the wiki.")
+  imageIdentifier: Uuid | null;
+  @doc("Absolute URL of the representative image.")
+  imageUrl: string | null;
+  @doc("Alternative text of the representative image.")
+  imageAltText: string | null;
+}
+
 @doc("Approval status assigned to a draft wiki.")
 union DraftWikiStatus {
   "approved",
@@ -251,10 +273,22 @@ model ListDraftWikisResponseBody {
   per_page: int32;
 }
 
+@doc("Response body for the related profiles endpoint.")
+model ListRelatedProfilesResponseBody {
+  @doc("Related profile cards.")
+  profiles: RelatedProfileItem[];
+}
+
 @doc("Response returned when wiki list retrieval succeeds.")
 model ListWikisResponse {
   @statusCode statusCode: 200;
   @body body: ListWikisResponseBody;
+}
+
+@doc("Response returned when related profile retrieval succeeds.")
+model ListRelatedProfilesResponse {
+  @statusCode statusCode: 200;
+  @body body: ListRelatedProfilesResponseBody;
 }
 
 @doc("Response returned when draft wiki list retrieval succeeds.")
@@ -380,6 +414,15 @@ interface WikiOperations {
     @path wikiId: Uuid,
     @body body: WikiWorkflowRequestBody,
   ): TranslateWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/{slug}/related-profiles")
+  @doc("List related published wiki profiles for a source wiki.")
+  listRelatedProfiles(
+    @path language: string,
+    @path slug: string,
+    @query resourceType: string,
+  ): ListRelatedProfilesResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/{language}/group/{slug}")
