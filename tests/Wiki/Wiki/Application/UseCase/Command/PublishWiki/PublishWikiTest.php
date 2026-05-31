@@ -137,10 +137,10 @@ class PublishWikiTest extends TestCase
             ->andReturn(null);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(Version::nextVersion($dummyPublishWiki->publishedVersion));
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -236,10 +236,10 @@ class PublishWikiTest extends TestCase
             ->andReturn(null);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(Version::nextVersion($dummyPublishWiki->publishedVersion));
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -350,14 +350,15 @@ class PublishWikiTest extends TestCase
                 $dummyPublishWiki->language,
                 $dummyPublishWiki->resourceType,
                 $dummyPublishWiki->basic,
+                $dummyPublishWiki->version,
             )
             ->andReturn($dummyPublishWiki->createdWiki);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn($dummyPublishWiki->version);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -392,6 +393,100 @@ class PublishWikiTest extends TestCase
         $result = $output->toArray();
         $this->assertSame($dummyPublishWiki->language->value, $result['language']);
         $this->assertSame($dummyPublishWiki->version->value(), $result['version']);
+    }
+
+    public function testProcessForNewTranslatedLanguageUsesResolvedLatestVersion(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $dummyPublishWiki = $this->createDummyPublishWiki(
+            hasPublishedWiki: false,
+            operatorIdentifier: new PrincipalIdentifier((string) $principalIdentifier),
+            translatedAt: new DateTimeImmutable('2024-01-01 00:00:00'),
+            createdVersion: new Version(2),
+        );
+
+        $input = new PublishWikiInput(
+            $dummyPublishWiki->wikiIdentifier,
+            $principalIdentifier,
+            $dummyPublishWiki->resourceType,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishWiki->createdWiki)
+            ->andReturn(null);
+
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findById')
+            ->once()
+            ->with($dummyPublishWiki->wikiIdentifier)
+            ->andReturn($dummyPublishWiki->draftWiki);
+        $draftWikiRepository->shouldReceive('delete')
+            ->once()
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(null);
+
+        $wikiFactory = Mockery::mock(WikiFactoryInterface::class);
+        $wikiFactory->shouldReceive('create')
+            ->once()
+            ->with(
+                $dummyPublishWiki->translationSetIdentifier,
+                $dummyPublishWiki->slug,
+                $dummyPublishWiki->language,
+                $dummyPublishWiki->resourceType,
+                $dummyPublishWiki->basic,
+                $dummyPublishWiki->version,
+            )
+            ->andReturn($dummyPublishWiki->createdWiki);
+
+        $wikiService = Mockery::mock(WikiServiceInterface::class);
+        $wikiService->shouldReceive('resolvePublishVersion')
+            ->once()
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn($dummyPublishWiki->version);
+
+        $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
+        $wikiHistoryFactory->shouldReceive('create')
+            ->once()
+            ->andReturn($dummyPublishWiki->history);
+
+        $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
+        $wikiHistoryRepository->shouldReceive('save')
+            ->once()
+            ->with($dummyPublishWiki->history)
+            ->andReturn(null);
+
+        $wikiSnapshotFactory = Mockery::mock(WikiSnapshotFactoryInterface::class);
+        $wikiSnapshotFactory->shouldNotReceive('create');
+
+        $wikiSnapshotRepository = Mockery::mock(WikiSnapshotRepositoryInterface::class);
+        $wikiSnapshotRepository->shouldNotReceive('save');
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(WikiFactoryInterface::class, $wikiFactory);
+        $this->app->instance(WikiServiceInterface::class, $wikiService);
+        $this->app->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $this->app->instance(WikiHistoryFactoryInterface::class, $wikiHistoryFactory);
+        $this->app->instance(WikiSnapshotFactoryInterface::class, $wikiSnapshotFactory);
+        $this->app->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $publishWiki = $this->app->make(PublishWikiInterface::class);
+        $output = new PublishWikiOutput();
+        $publishWiki->process($input, $output);
+        $result = $output->toArray();
+
+        $this->assertSame(2, $result['version']);
     }
 
     /**
@@ -582,10 +677,10 @@ class PublishWikiTest extends TestCase
         $draftWikiRepository->shouldNotReceive('delete');
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(false);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(null);
 
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
@@ -644,10 +739,10 @@ class PublishWikiTest extends TestCase
         $draftWikiRepository->shouldNotReceive('delete');
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(Version::nextVersion($dummyPublishWiki->publishedVersion));
 
         $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
@@ -775,14 +870,15 @@ class PublishWikiTest extends TestCase
                 $dummyPublishWiki->language,
                 $dummyPublishWiki->resourceType,
                 $dummyPublishWiki->basic,
+                $dummyPublishWiki->version,
             )
             ->andReturn($dummyPublishWiki->createdWiki);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn($dummyPublishWiki->version);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -870,14 +966,15 @@ class PublishWikiTest extends TestCase
                 $dummyPublishWiki->language,
                 $dummyPublishWiki->resourceType,
                 $dummyPublishWiki->basic,
+                $dummyPublishWiki->version,
             )
             ->andReturn($dummyPublishWiki->createdWiki);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn($dummyPublishWiki->version);
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -986,10 +1083,10 @@ class PublishWikiTest extends TestCase
             ->andReturn(null);
 
         $wikiService = Mockery::mock(WikiServiceInterface::class);
-        $wikiService->shouldReceive('hasConsistentVersions')
+        $wikiService->shouldReceive('resolvePublishVersion')
             ->once()
-            ->with($dummyPublishWiki->translationSetIdentifier)
-            ->andReturn(true);
+            ->with($dummyPublishWiki->draftWiki)
+            ->andReturn(Version::nextVersion($dummyPublishWiki->publishedVersion));
 
         $wikiHistoryFactory = Mockery::mock(WikiHistoryFactoryInterface::class);
         $wikiHistoryFactory->shouldReceive('create')
@@ -1063,6 +1160,9 @@ class PublishWikiTest extends TestCase
         ?PrincipalIdentifier $operatorIdentifier = null,
         ?PrincipalIdentifier $approverIdentifier = null,
         ?PrincipalIdentifier $mergerIdentifier = null,
+        ?DateTimeImmutable $translatedAt = null,
+        ?Version $createdVersion = null,
+        ?Version $publishedVersion = null,
     ): PublishWikiTestData {
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $publishedWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -1104,6 +1204,7 @@ class PublishWikiTest extends TestCase
             $editorIdentifier,
             $approverIdentifier,
             $mergerIdentifier,
+            translatedAt: $translatedAt,
         );
 
         // 公開済みのWikiエンティティ（既存データを想定）
@@ -1122,7 +1223,7 @@ class PublishWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $exSections = new SectionContentCollection();
-        $publishedVersion = new Version(1);
+        $publishedVersion ??= new Version(1);
         $publishedWiki = new Wiki(
             $publishedWikiIdentifier,
             $translationSetIdentifier,
@@ -1136,7 +1237,7 @@ class PublishWikiTest extends TestCase
         );
 
         // 新規作成用のWiki
-        $version = new Version(1);
+        $version = $createdVersion ?? new Version(1);
         $createdWiki = new Wiki(
             $publishedWikiIdentifier,
             $translationSetIdentifier,

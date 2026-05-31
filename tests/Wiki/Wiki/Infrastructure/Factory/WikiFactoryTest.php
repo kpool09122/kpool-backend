@@ -10,6 +10,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\Factory\WikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -79,5 +80,40 @@ class WikiFactoryTest extends TestCase
         $this->assertNull($wiki->mergedAt());
         $this->assertNull($wiki->translatedAt());
         $this->assertNull($wiki->approvedAt());
+    }
+
+    /**
+     * 正常系: 指定したバージョンでWiki Entityが作成されること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     */
+    public function testCreateWithVersion(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $slug = new Slug('gr-twice');
+        $language = Language::KOREAN;
+        $resourceType = ResourceType::GROUP;
+        $basic = new GroupBasic(
+            name: new Name('TWICE'),
+            normalizedName: 'twice',
+            agencyIdentifier: null,
+            groupType: null,
+            status: null,
+            generation: null,
+            debutDate: null,
+            disbandDate: null,
+            fandomName: new FandomName('ONCE'),
+            officialColors: [],
+            emoji: new Emoji(''),
+            representativeSymbol: new RepresentativeSymbol(''),
+        );
+        $version = new Version(2);
+
+        $wikiFactory = $this->app->make(WikiFactoryInterface::class);
+        $wiki = $wikiFactory->create($translationSetIdentifier, $slug, $language, $resourceType, $basic, $version);
+
+        $this->assertSame($version, $wiki->version());
+        $this->assertSame(2, $wiki->version()->value());
     }
 }

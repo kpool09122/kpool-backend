@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Domain\Service;
 
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Shared\Domain\ValueObject\Language;
@@ -407,6 +408,164 @@ class WikiServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function testResolvePublishVersionAllowsTranslatedDraftToCatchUpExistingLanguage(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $koreanWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $koreanWiki = $this->createDummyWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            new Version(1),
+            $koreanWikiIdentifier,
+        );
+        $japaneseWiki = $this->createDummyWiki($translationSetIdentifier, Language::JAPANESE, new Version(1));
+        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version(2));
+        $draftWiki = $this->createDummyDraftWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            ApprovalStatus::UnderReview,
+            publishedWikiIdentifier: $koreanWikiIdentifier,
+            translatedAt: new DateTimeImmutable('2024-01-01 00:00:00'),
+        );
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->twice()
+            ->with($translationSetIdentifier)
+            ->andReturn([$koreanWiki, $japaneseWiki, $englishWiki]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app->make(WikiServiceInterface::class);
+
+        $this->assertTrue($wikiService->canApproveDraftWiki($draftWiki));
+        $this->assertSame(2, $wikiService->resolvePublishVersion($draftWiki)?->value());
+    }
+
+    public function testResolvePublishVersionRejectsNormalDraftWhenVersionsAreInconsistent(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $koreanWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $koreanWiki = $this->createDummyWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            new Version(1),
+            $koreanWikiIdentifier,
+        );
+        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version(2));
+        $draftWiki = $this->createDummyDraftWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            ApprovalStatus::UnderReview,
+            publishedWikiIdentifier: $koreanWikiIdentifier,
+        );
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($translationSetIdentifier)
+            ->andReturn([$koreanWiki, $englishWiki]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app->make(WikiServiceInterface::class);
+
+        $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
+    }
+
+    public function testResolvePublishVersionRejectsTranslatedDraftForLatestLanguage(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $englishWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $japaneseWiki = $this->createDummyWiki($translationSetIdentifier, Language::JAPANESE, new Version(2));
+        $englishWiki = $this->createDummyWiki(
+            $translationSetIdentifier,
+            Language::ENGLISH,
+            new Version(2),
+            $englishWikiIdentifier,
+        );
+        $draftWiki = $this->createDummyDraftWiki(
+            $translationSetIdentifier,
+            Language::ENGLISH,
+            ApprovalStatus::UnderReview,
+            publishedWikiIdentifier: $englishWikiIdentifier,
+            translatedAt: new DateTimeImmutable('2024-01-01 00:00:00'),
+        );
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($translationSetIdentifier)
+            ->andReturn([$japaneseWiki, $englishWiki]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app->make(WikiServiceInterface::class);
+
+        $this->assertNull($wikiService->resolvePublishVersion($draftWiki));
+    }
+
+    public function testResolvePublishVersionUsesLatestVersionForNewTranslatedLanguage(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $japaneseWiki = $this->createDummyWiki($translationSetIdentifier, Language::JAPANESE, new Version(2));
+        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version(2));
+        $draftWiki = $this->createDummyDraftWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            ApprovalStatus::UnderReview,
+            translatedAt: new DateTimeImmutable('2024-01-01 00:00:00'),
+        );
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($translationSetIdentifier)
+            ->andReturn([$japaneseWiki, $englishWiki]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app->make(WikiServiceInterface::class);
+
+        $this->assertSame(2, $wikiService->resolvePublishVersion($draftWiki)?->value());
+    }
+
+    public function testResolvePublishVersionAllowsNormalDraftWhenVersionsAreConsistent(): void
+    {
+        $translationSetIdentifier = new TranslationSetIdentifier(StrTestHelper::generateUuid());
+        $koreanWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
+        $koreanWiki = $this->createDummyWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            new Version(2),
+            $koreanWikiIdentifier,
+        );
+        $englishWiki = $this->createDummyWiki($translationSetIdentifier, Language::ENGLISH, new Version(2));
+        $draftWiki = $this->createDummyDraftWiki(
+            $translationSetIdentifier,
+            Language::KOREAN,
+            ApprovalStatus::UnderReview,
+            publishedWikiIdentifier: $koreanWikiIdentifier,
+        );
+
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifier')
+            ->once()
+            ->with($translationSetIdentifier)
+            ->andReturn([$koreanWiki, $englishWiki]);
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+
+        $this->app->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $wikiService = $this->app->make(WikiServiceInterface::class);
+
+        $this->assertSame(3, $wikiService->resolvePublishVersion($draftWiki)?->value());
+    }
+
     /**
      * ダミーの公開Wikiを作成するヘルパーメソッド
      *
@@ -419,9 +578,10 @@ class WikiServiceTest extends TestCase
         TranslationSetIdentifier $translationSetIdentifier,
         Language $language,
         Version $version,
+        ?WikiIdentifier $wikiIdentifier = null,
     ): Wiki {
         return new Wiki(
-            new WikiIdentifier(StrTestHelper::generateUuid()),
+            $wikiIdentifier ?? new WikiIdentifier(StrTestHelper::generateUuid()),
             $translationSetIdentifier,
             new Slug('gr-twice'),
             $language,
@@ -460,10 +620,12 @@ class WikiServiceTest extends TestCase
         Language $language,
         ApprovalStatus $status,
         ?DraftWikiIdentifier $wikiIdentifier = null,
+        ?WikiIdentifier $publishedWikiIdentifier = null,
+        ?DateTimeImmutable $translatedAt = null,
     ): DraftWiki {
         return new DraftWiki(
             $wikiIdentifier ?? new DraftWikiIdentifier(StrTestHelper::generateUuid()),
-            null,
+            $publishedWikiIdentifier,
             $translationSetIdentifier,
             new Slug('gr-twice'),
             $language,
@@ -486,6 +648,7 @@ class WikiServiceTest extends TestCase
             new Color('#FF5733'),
             $status,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            translatedAt: $translatedAt,
         );
     }
 }

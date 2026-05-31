@@ -29,6 +29,7 @@ readonly class WikiFactory implements WikiFactoryInterface
         Language $language,
         ResourceType $resourceType,
         BasicInterface $basic,
+        ?Version $version = null,
     ): Wiki {
         return new Wiki(
             new WikiIdentifier($this->generator->generate()),
@@ -39,7 +40,7 @@ readonly class WikiFactory implements WikiFactoryInterface
             $basic,
             new SectionContentCollection([], allowBlocks: false),
             null,
-            new Version(1),
+            $version ?? new Version(1),
         );
     }
 }

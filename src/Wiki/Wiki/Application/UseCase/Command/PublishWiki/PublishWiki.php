@@ -88,10 +88,8 @@ readonly class PublishWiki implements PublishWikiInterface
             throw new DisallowedException();
         }
 
-        // 同じ翻訳セットの公開Wikiのバージョンが揃っているかチェック
-        if (! $this->wikiService->hasConsistentVersions(
-            $wiki->translationSetIdentifier(),
-        )) {
+        $publishVersion = $this->wikiService->resolvePublishVersion($wiki);
+        if ($publishVersion === null) {
             throw new InconsistentVersionException();
         }
 
@@ -106,7 +104,7 @@ readonly class PublishWiki implements PublishWikiInterface
             $this->wikiSnapshotRepository->save($snapshot);
 
             $publishedWiki->setBasic($wiki->basic());
-            $publishedWiki->updateVersion();
+            $publishedWiki->setVersion($publishVersion);
         } else {
             $publishedWiki = $this->wikiFactory->create(
                 $wiki->translationSetIdentifier(),
@@ -114,6 +112,7 @@ readonly class PublishWiki implements PublishWikiInterface
                 $wiki->language(),
                 $wiki->resourceType(),
                 $wiki->basic(),
+                $publishVersion,
             );
         }
         $publishedWiki->setSections($wiki->sections());
