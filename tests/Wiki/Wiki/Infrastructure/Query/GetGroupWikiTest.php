@@ -138,6 +138,71 @@ class GetGroupWikiTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessReturnsProfilesForProfileCardListBlocks(): void
+    {
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f504', [
+            'image_path' => '/images/wiki/momo.jpg',
+            'alt_text' => 'Momo profile image',
+        ]);
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f503',
+            'talent',
+            [
+                'slug' => 'tl-momo',
+                'language' => 'ko',
+                'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f504',
+            ],
+            [
+                'name' => 'Momo',
+                'normalized_name' => 'momo',
+            ],
+        );
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f502',
+            'group',
+            [
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f505',
+                'slug' => 'gr-twice-profiles',
+                'language' => 'ko',
+                'sections' => json_encode([
+                    [
+                        'type' => 'section',
+                        'title' => 'Members',
+                        'display_order' => 1,
+                        'contents' => [
+                            [
+                                'block_type' => 'profile_card_list',
+                                'display_order' => 1,
+                                'wiki_identifiers' => ['01965bb2-bcc9-7c6f-8b90-89f7f217f503'],
+                                'title' => 'Members',
+                            ],
+                        ],
+                    ],
+                ]),
+            ],
+            [
+                'name' => 'TWICE',
+                'normalized_name' => 'twice',
+                'group_type' => 'girl_group',
+                'generation' => '3',
+            ],
+        );
+
+        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-twice-profiles'), Language::KOREAN));
+        $block = $readModel->sections()[0]['contents'][0];
+
+        $this->assertSame(['01965bb2-bcc9-7c6f-8b90-89f7f217f503'], $block['wikiIdentifiers']);
+        $this->assertSame('talent', $block['relatedResourceType']);
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f503', $block['profiles'][0]['wikiIdentifier']);
+        $this->assertSame('tl-momo', $block['profiles'][0]['slug']);
+        $this->assertSame('talent', $block['profiles'][0]['resourceType']);
+        $this->assertSame('Momo', $block['profiles'][0]['name']);
+        $this->assertSame('http://127.0.0.1:8080/images/wiki/momo.jpg', $block['profiles'][0]['imageUrl']);
+        $this->assertSame('Momo profile image', $block['profiles'][0]['imageAltText']);
+    }
+
+    #[Group('useDb')]
     public function testProcessThrowsWhenGroupWikiDoesNotExist(): void
     {
         $useCase = $this->app->make(GetGroupWikiInterface::class);
