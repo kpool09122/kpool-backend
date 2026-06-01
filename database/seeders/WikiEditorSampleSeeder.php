@@ -12,7 +12,7 @@ class WikiEditorSampleSeeder extends Seeder
     private const string GROUP_PUBLISHED_WIKI_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217f001';
     private const string GROUP_DRAFT_WIKI_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217f002';
     private const string GROUP_TRANSLATION_SET_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217f003';
-    private const string EDITOR_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217f004';
+    private const string EDITOR_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa03';
 
     /**
      * Repo 内にフロントの mock fixture は見当たらないため、

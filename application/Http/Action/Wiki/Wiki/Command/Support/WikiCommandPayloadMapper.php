@@ -95,7 +95,7 @@ final class WikiCommandPayloadMapper
             'normalized_real_name' => $basic['normalizedRealName'] ?? '',
             'birthday' => $basic['birthday'] ?? null,
             'agency_identifier' => $basic['agencyIdentifier'] ?? null,
-            'group_identifiers' => $basic['groupIdentifiers'] ?? [],
+            'group_identifiers' => self::relatedWikiIdentifiers($basic, 'groupIdentifiers', 'groups'),
             'emoji' => $basic['emoji'] ?? '',
             'representative_symbol' => $basic['representativeSymbol'] ?? '',
             'position' => $basic['position'] ?? '',
@@ -139,8 +139,8 @@ final class WikiCommandPayloadMapper
             'song_type' => $basic['songType'] ?? null,
             'genres' => $basic['genres'] ?? [],
             'agency_identifier' => $basic['agencyIdentifier'] ?? null,
-            'group_identifiers' => $basic['groupIdentifiers'] ?? [],
-            'talent_identifiers' => $basic['talentIdentifiers'] ?? [],
+            'group_identifiers' => self::relatedWikiIdentifiers($basic, 'groupIdentifiers', 'groups'),
+            'talent_identifiers' => self::relatedWikiIdentifiers($basic, 'talentIdentifiers', 'talents'),
             'release_date' => $basic['releaseDate'] ?? null,
             'album_name' => $basic['albumName'] ?? null,
             'lyricist' => $basic['lyricist'] ?? '',
@@ -200,5 +200,27 @@ final class WikiCommandPayloadMapper
             'wiki_identifiers' => $content['wikiIdentifiers'] ?? [],
             'title' => $content['title'] ?? null,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $basic
+     * @return list<string>
+     */
+    private static function relatedWikiIdentifiers(array $basic, string $identifierKey, string $summaryKey): array
+    {
+        if (array_key_exists($identifierKey, $basic)) {
+            return (array) $basic[$identifierKey];
+        }
+
+        if (! array_key_exists($summaryKey, $basic)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn (mixed $summary): ?string => is_array($summary) && isset($summary['wikiIdentifier'])
+                ? (string) $summary['wikiIdentifier']
+                : null,
+            (array) $basic[$summaryKey],
+        )));
     }
 }
