@@ -1064,6 +1064,18 @@ class PolicyEvaluatorTest extends TestCase
                 ResourceType::cases(),
                 null
             ),
+            new Statement(
+                Effect::ALLOW,
+                [Action::DELETE],
+                ResourceType::cases(),
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_EDITOR_ID,
+                        ConditionOperator::EQUALS,
+                        ConditionValue::PRINCIPAL_ID
+                    ),
+                ])
+            ),
         ]);
 
         $role = $this->createAndSaveRole([$basicEditingPolicy->policyIdentifier()]);
@@ -1086,6 +1098,14 @@ class PolicyEvaluatorTest extends TestCase
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::CREATE, $resource));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::EDIT, $resource));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::SUBMIT, $resource));
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::DELETE, $resource));
+        $this->assertTrue(
+            $policyEvaluator->evaluate(
+                $principal,
+                Action::DELETE,
+                new Resource(ResourceType::GROUP, editorId: (string) $principal->principalIdentifier()),
+            )
+        );
 
         // その他は拒否
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $resource));
@@ -1094,6 +1114,48 @@ class PolicyEvaluatorTest extends TestCase
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::PUBLISH, $resource));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::MERGE, $resource));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::ROLLBACK, $resource));
+    }
+
+    /**
+     * 正常系: Condition評価 - resource:editorId eq ${principal.id}.
+     */
+    #[Group('useDb')]
+    public function testConditionEditorIdEqualsPrincipalId(): void
+    {
+        $policy = $this->createAndSavePolicy([
+            new Statement(
+                Effect::ALLOW,
+                [Action::DELETE],
+                ResourceType::cases(),
+                new Condition([
+                    new ConditionClause(
+                        ConditionKey::RESOURCE_EDITOR_ID,
+                        ConditionOperator::EQUALS,
+                        ConditionValue::PRINCIPAL_ID
+                    ),
+                ])
+            ),
+        ]);
+
+        $role = $this->createAndSaveRole([$policy->policyIdentifier()]);
+
+        $principal = $this->createPrincipal();
+        $this->createAndSavePrincipalGroup(
+            $principal->principalIdentifier(),
+            [$role->roleIdentifier()]
+        );
+
+        $policyEvaluator = new PolicyEvaluator(
+            $this->principalGroupRepository,
+            $this->roleRepository,
+            $this->policyRepository
+        );
+
+        $ownDraft = new Resource(ResourceType::GROUP, editorId: (string) $principal->principalIdentifier());
+        $otherDraft = new Resource(ResourceType::GROUP, editorId: StrTestHelper::generateUuid());
+
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::DELETE, $ownDraft));
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::DELETE, $otherDraft));
     }
 
     /**

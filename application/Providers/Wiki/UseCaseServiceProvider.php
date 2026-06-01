@@ -65,6 +65,8 @@ use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\MergeWiki\MergeWiki;
@@ -137,6 +139,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListUploadedImagesInterface::class, ListUploadedImages::class);
         $this->app->singleton(CreateWikiInterface::class, CreateWiki::class);
         $this->app->singleton(AutoCreateWikiInterface::class, AutoCreateWiki::class);
+        $this->app->singleton(DeleteWikiInterface::class, DeleteWiki::class);
         $this->app->singleton(EditWikiInterface::class, EditWiki::class);
         $this->app->singleton(MergeWikiInterface::class, MergeWiki::class);
         $this->app->singleton(SubmitWikiInterface::class, SubmitWiki::class);

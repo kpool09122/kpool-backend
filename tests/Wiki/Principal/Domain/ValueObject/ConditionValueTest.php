@@ -16,10 +16,11 @@ class ConditionValueTest extends TestCase
     {
         $cases = ConditionValue::cases();
 
-        $this->assertCount(3, $cases);
+        $this->assertCount(4, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_AGENCY_ID, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_WIKI_GROUP_IDS, $cases);
         $this->assertContains(ConditionValue::PRINCIPAL_TALENT_IDS, $cases);
+        $this->assertContains(ConditionValue::PRINCIPAL_ID, $cases);
     }
 
     /**
@@ -30,5 +31,6 @@ class ConditionValueTest extends TestCase
         $this->assertSame('${principal.agencyId}', ConditionValue::PRINCIPAL_AGENCY_ID->value);
         $this->assertSame('${principal.wikiGroupIds}', ConditionValue::PRINCIPAL_WIKI_GROUP_IDS->value);
         $this->assertSame('${principal.talentIds}', ConditionValue::PRINCIPAL_TALENT_IDS->value);
+        $this->assertSame('${principal.id}', ConditionValue::PRINCIPAL_ID->value);
     }
 }

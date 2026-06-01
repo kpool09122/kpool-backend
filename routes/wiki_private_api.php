@@ -29,6 +29,7 @@ use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentP
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\CreateWiki\CreateWikiAction;
+use Application\Http\Action\Wiki\Wiki\Command\DeleteWiki\DeleteWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\EditWiki\EditWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\MergeWiki\MergeWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\PublishWiki\PublishWikiAction;
@@ -57,6 +58,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
     Route::post('/wiki/create', CreateWikiAction::class);
     Route::post('/wiki/auto-create', AutoCreateWikiAction::class);
+    Route::delete('/wiki/{wikiId}', DeleteWikiAction::class);
     Route::post('/wiki/{wikiId}/approve', ApproveWikiAction::class);
     Route::post('/wiki/{wikiId}/edit', EditWikiAction::class);
     Route::post('/wiki/{wikiId}/merge', MergeWikiAction::class);

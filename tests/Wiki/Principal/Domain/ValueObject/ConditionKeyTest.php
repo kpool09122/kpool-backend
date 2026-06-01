@@ -16,11 +16,12 @@ class ConditionKeyTest extends TestCase
     {
         $cases = ConditionKey::cases();
 
-        $this->assertCount(4, $cases);
+        $this->assertCount(5, $cases);
         $this->assertContains(ConditionKey::RESOURCE_IS_OFFICIAL, $cases);
         $this->assertContains(ConditionKey::RESOURCE_AGENCY_ID, $cases);
         $this->assertContains(ConditionKey::RESOURCE_GROUP_ID, $cases);
         $this->assertContains(ConditionKey::RESOURCE_TALENT_ID, $cases);
+        $this->assertContains(ConditionKey::RESOURCE_EDITOR_ID, $cases);
     }
 
     /**
@@ -32,5 +33,6 @@ class ConditionKeyTest extends TestCase
         $this->assertSame('resource:agencyId', ConditionKey::RESOURCE_AGENCY_ID->value);
         $this->assertSame('resource:groupId', ConditionKey::RESOURCE_GROUP_ID->value);
         $this->assertSame('resource:talentId', ConditionKey::RESOURCE_TALENT_ID->value);
+        $this->assertSame('resource:editorId', ConditionKey::RESOURCE_EDITOR_ID->value);
     }
 }
