@@ -29,7 +29,6 @@ class DeleteWikiRequest extends FormRequest
     {
         return [
             'wikiId' => ['required', 'uuid'],
-            'resourceType' => ['required', 'string'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
             'groupIdentifiers.*' => ['uuid'],
@@ -41,11 +40,6 @@ class DeleteWikiRequest extends FormRequest
     public function wikiId(): string
     {
         return (string) $this->route('wikiId');
-    }
-
-    public function resourceType(): string
-    {
-        return (string) $this->input('resourceType');
     }
 
     public function agencyIdentifier(): ?string

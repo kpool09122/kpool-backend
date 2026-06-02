@@ -16,7 +16,6 @@ use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\DeleteWiki\DeleteWikiInterface;
@@ -45,7 +44,6 @@ readonly class DeleteWikiAction
                 $input = new DeleteWikiInput(
                     new DraftWikiIdentifier($request->wikiId()),
                     $this->wikiContext->principalIdentifier,
-                    ResourceType::from($request->resourceType()),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
