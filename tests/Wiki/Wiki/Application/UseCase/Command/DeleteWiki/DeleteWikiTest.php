@@ -247,7 +247,8 @@ class DeleteWikiTest extends TestCase
             ->with(
                 $principal,
                 Action::DELETE,
-                Mockery::on(static fn (Resource $resource): bool => $resource->editorId() === (string) $draftWiki->editorIdentifier()),
+                Mockery::on(static fn (Resource $resource): bool => $resource->type() === $draftWiki->resourceType()
+                    && $resource->editorId() === (string) $draftWiki->editorIdentifier()),
             )
             ->andReturn($isAllowed);
 
@@ -261,7 +262,6 @@ class DeleteWikiTest extends TestCase
         return new DeleteWikiInput(
             $wikiIdentifier,
             $principalIdentifier,
-            ResourceType::GROUP,
             new WikiIdentifier(StrTestHelper::generateUuid()),
             [],
             [],

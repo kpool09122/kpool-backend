@@ -38,7 +38,7 @@ readonly class DeleteWiki implements DeleteWikiInterface
         }
 
         $resource = new Resource(
-            type: $input->resourceType(),
+            type: $wiki->resourceType(),
             agencyId: $input->agencyIdentifier() ? (string) $input->agencyIdentifier() : null,
             groupIds: array_map(
                 static fn (WikiIdentifier $id) => (string) $id,
