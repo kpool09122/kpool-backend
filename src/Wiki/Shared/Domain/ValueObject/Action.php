@@ -9,6 +9,7 @@ enum Action: string
     case CREATE = 'create';
     case EDIT = 'edit';
     case SUBMIT = 'submit';
+    case WITHDRAW = 'withdraw';
     case APPROVE = 'approve';
     case REJECT = 'reject';
     case TRANSLATE = 'translate';

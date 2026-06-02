@@ -53,6 +53,7 @@ use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImag
 use Application\Http\Action\Wiki\Image\Command\RequestImageHide\RequestImageHideAction;
 use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinksAction;
 use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
+use Application\Http\Action\Wiki\Wiki\Command\WithdrawWiki\WithdrawWikiAction;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
@@ -67,6 +68,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
     Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
     Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
+    Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
 });
 Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::get('/wikis/{language}', ListWikisAction::class);

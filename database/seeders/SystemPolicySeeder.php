@@ -66,7 +66,7 @@ class SystemPolicySeeder extends Seeder
                 ),
                 new Statement(
                     effect: Effect::ALLOW,
-                    actions: [Action::DELETE],
+                    actions: [Action::DELETE, Action::WITHDRAW],
                     resourceTypes: ResourceType::cases(),
                     condition: new Condition([
                         new ConditionClause(
