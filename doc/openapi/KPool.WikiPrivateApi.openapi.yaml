@@ -2133,11 +2133,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+              $ref: '#/components/schemas/WithdrawWikiRequestBody'
   /wikis/version-inconsistencies:
     get:
       operationId: WikiListOperations_listVersionInconsistentWikis
@@ -4452,6 +4452,11 @@ components:
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for wiki workflow actions.
+    WithdrawWikiRequestBody:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for withdrawing a wiki draft review request.
 servers:
   - url: /api/wiki
     description: Laravel route prefix from bootstrap/app.php.

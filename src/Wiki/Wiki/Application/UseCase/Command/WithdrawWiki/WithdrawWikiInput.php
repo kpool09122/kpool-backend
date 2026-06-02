@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
@@ -18,7 +17,6 @@ readonly class WithdrawWikiInput implements WithdrawWikiInputPort
     public function __construct(
         private DraftWikiIdentifier $wikiIdentifier,
         private PrincipalIdentifier $principalIdentifier,
-        private ResourceType        $resourceType,
         private ?WikiIdentifier     $agencyIdentifier = null,
         private array               $groupIdentifiers = [],
         private array               $talentIdentifiers = [],
@@ -33,11 +31,6 @@ readonly class WithdrawWikiInput implements WithdrawWikiInputPort
     public function principalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
-    }
-
-    public function resourceType(): ResourceType
-    {
-        return $this->resourceType;
     }
 
     public function agencyIdentifier(): ?WikiIdentifier
