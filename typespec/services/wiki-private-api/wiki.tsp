@@ -56,6 +56,9 @@ model WikiWorkflowRequestBody extends WikiAssociationTargets {
 @doc("Request body for deleting a wiki draft.")
 model DeleteWikiRequestBody extends WikiAssociationTargets {}
 
+@doc("Request body for withdrawing a wiki draft review request.")
+model WithdrawWikiRequestBody extends WikiAssociationTargets {}
+
 @doc("Request body for rolling back a wiki to a previous version.")
 model RollbackWikiRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
@@ -423,7 +426,7 @@ interface WikiOperations {
   @doc("Withdraw a wiki draft review request.")
   withdrawWiki(
     @path wikiId: Uuid,
-    @body body: WikiWorkflowRequestBody,
+    @body body?: WithdrawWikiRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post

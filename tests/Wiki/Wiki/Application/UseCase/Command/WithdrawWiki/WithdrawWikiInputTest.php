@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki;
 
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWikiInput;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -18,7 +17,6 @@ class WithdrawWikiInputTest extends TestCase
     {
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceType = ResourceType::GROUP;
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
         $talentIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
@@ -26,7 +24,6 @@ class WithdrawWikiInputTest extends TestCase
         $input = new WithdrawWikiInput(
             $wikiIdentifier,
             $principalIdentifier,
-            $resourceType,
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
@@ -34,7 +31,6 @@ class WithdrawWikiInputTest extends TestCase
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
-        $this->assertSame($resourceType->value, $input->resourceType()->value);
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $input->talentIdentifiers());
@@ -44,17 +40,14 @@ class WithdrawWikiInputTest extends TestCase
     {
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceType = ResourceType::GROUP;
 
         $input = new WithdrawWikiInput(
             $wikiIdentifier,
             $principalIdentifier,
-            $resourceType,
         );
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
-        $this->assertSame($resourceType->value, $input->resourceType()->value);
         $this->assertNull($input->agencyIdentifier());
         $this->assertSame([], $input->groupIdentifiers());
         $this->assertSame([], $input->talentIdentifiers());
