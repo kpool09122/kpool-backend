@@ -9,4 +9,5 @@ enum ConditionValue: string
     case PRINCIPAL_AGENCY_ID = '${principal.agencyId}';
     case PRINCIPAL_WIKI_GROUP_IDS = '${principal.wikiGroupIds}';
     case PRINCIPAL_TALENT_IDS = '${principal.talentIds}';
+    case PRINCIPAL_ID = '${principal.id}';
 }

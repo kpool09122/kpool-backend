@@ -15,6 +15,7 @@ final readonly class Resource
      * @param string[] $groupIds
      * @param string[] $talentIds
      * @param bool $isOfficial
+     * @param string|null $editorId
      */
     public function __construct(
         private ResourceType $type,
@@ -22,8 +23,9 @@ final readonly class Resource
         private array $groupIds = [],
         private array $talentIds = [],
         private bool $isOfficial = false,
+        private ?string $editorId = null,
     ) {
-        $this->validate($agencyId, $this->groupIds, $this->talentIds);
+        $this->validate($agencyId, $this->groupIds, $this->talentIds, $editorId);
     }
 
     public function type(): ResourceType
@@ -57,19 +59,30 @@ final readonly class Resource
         return $this->isOfficial;
     }
 
+    public function editorId(): ?string
+    {
+        return $this->editorId;
+    }
+
     /**
      * @param string|null $agencyId
      * @param string[] $groupIds
      * @param string[] $talentIds
+     * @param string|null $editorId
      * @return void
      */
     public function validate(
         ?string $agencyId,
         array $groupIds,
         array $talentIds,
+        ?string $editorId,
     ): void {
         if ($agencyId !== null && ! UuidValidator::isValid($agencyId)) {
             throw new InvalidArgumentException('Agency id is invalid.');
+        }
+
+        if ($editorId !== null && ! UuidValidator::isValid($editorId)) {
+            throw new InvalidArgumentException('Editor id is invalid.');
         }
 
         foreach ($groupIds as $gid) {

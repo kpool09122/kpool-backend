@@ -351,6 +351,14 @@ interface WikiOperations {
     @body body: AutoCreateWikiRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
+  @delete
+  @route("/{wikiId}")
+  @doc("Delete a wiki draft.")
+  deleteWiki(
+    @path wikiId: Uuid,
+    @body body: WikiWorkflowRequestBody,
+  ): KPool.Common.NoContentResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @post
   @route("/{wikiId}/approve")
   @doc("Approve a wiki draft.")

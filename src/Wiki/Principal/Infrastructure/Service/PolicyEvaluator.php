@@ -171,6 +171,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
             ConditionKey::RESOURCE_GROUP_ID => $resource->groupIds(),
             ConditionKey::RESOURCE_TALENT_ID => $resource->talentIds(),
             ConditionKey::RESOURCE_IS_OFFICIAL => $resource->isOfficial(),
+            ConditionKey::RESOURCE_EDITOR_ID => $resource->editorId(),
         };
     }
 
@@ -186,6 +187,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
                 ConditionValue::PRINCIPAL_AGENCY_ID => $principal->agencyId(),
                 ConditionValue::PRINCIPAL_WIKI_GROUP_IDS => $principal->groupIds(),
                 ConditionValue::PRINCIPAL_TALENT_IDS => $principal->talentIds(),
+                ConditionValue::PRINCIPAL_ID => (string) $principal->principalIdentifier(),
             };
         }
 

@@ -64,6 +64,18 @@ class SystemPolicySeeder extends Seeder
                     resourceTypes: ResourceType::cases(),
                     condition: null,
                 ),
+                new Statement(
+                    effect: Effect::ALLOW,
+                    actions: [Action::DELETE],
+                    resourceTypes: ResourceType::cases(),
+                    condition: new Condition([
+                        new ConditionClause(
+                            ConditionKey::RESOURCE_EDITOR_ID,
+                            ConditionOperator::EQUALS,
+                            ConditionValue::PRINCIPAL_ID,
+                        ),
+                    ]),
+                ),
             ],
             isSystemPolicy: true,
         );
