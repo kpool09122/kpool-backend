@@ -81,6 +81,8 @@ use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWiki;
 use Source\Wiki\Wiki\Application\UseCase\Command\TranslateWiki\TranslateWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWiki;
+use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyWiki\GetAgencyWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
@@ -148,6 +150,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(PublishWikiInterface::class, PublishWiki::class);
         $this->app->singleton(RollbackWikiInterface::class, RollbackWiki::class);
         $this->app->singleton(TranslateWikiInterface::class, TranslateWiki::class);
+        $this->app->singleton(WithdrawWikiInterface::class, WithdrawWiki::class);
         $this->app->singleton(GetAgencyDraftWikiInterface::class, GetAgencyDraftWiki::class);
         $this->app->singleton(GetAgencyWikiInterface::class, GetAgencyWiki::class);
         $this->app->singleton(GetGroupDraftWikiInterface::class, GetGroupDraftWiki::class);

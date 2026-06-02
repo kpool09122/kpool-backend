@@ -416,6 +416,14 @@ interface WikiOperations {
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
+  @route("/{wikiId}/withdraw")
+  @doc("Withdraw a wiki draft review request.")
+  withdrawWiki(
+    @path wikiId: Uuid,
+    @body body: WikiWorkflowRequestBody,
+  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @post
   @route("/{wikiId}/translate")
   @doc("Translate a wiki draft into additional languages.")
   translateWiki(

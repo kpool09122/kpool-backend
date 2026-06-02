@@ -1066,7 +1066,7 @@ class PolicyEvaluatorTest extends TestCase
             ),
             new Statement(
                 Effect::ALLOW,
-                [Action::DELETE],
+                [Action::DELETE, Action::WITHDRAW],
                 ResourceType::cases(),
                 new Condition([
                     new ConditionClause(
@@ -1099,10 +1099,18 @@ class PolicyEvaluatorTest extends TestCase
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::EDIT, $resource));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::SUBMIT, $resource));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::DELETE, $resource));
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::WITHDRAW, $resource));
         $this->assertTrue(
             $policyEvaluator->evaluate(
                 $principal,
                 Action::DELETE,
+                new Resource(ResourceType::GROUP, editorId: (string) $principal->principalIdentifier()),
+            )
+        );
+        $this->assertTrue(
+            $policyEvaluator->evaluate(
+                $principal,
+                Action::WITHDRAW,
                 new Resource(ResourceType::GROUP, editorId: (string) $principal->principalIdentifier()),
             )
         );
@@ -1125,7 +1133,7 @@ class PolicyEvaluatorTest extends TestCase
         $policy = $this->createAndSavePolicy([
             new Statement(
                 Effect::ALLOW,
-                [Action::DELETE],
+                [Action::DELETE, Action::WITHDRAW],
                 ResourceType::cases(),
                 new Condition([
                     new ConditionClause(
@@ -1156,6 +1164,8 @@ class PolicyEvaluatorTest extends TestCase
 
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::DELETE, $ownDraft));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::DELETE, $otherDraft));
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::WITHDRAW, $ownDraft));
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::WITHDRAW, $otherDraft));
     }
 
     /**
