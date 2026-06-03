@@ -66,6 +66,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
                 representativeSymbol: $basic->representative_symbol,
             ),
             sections: $this->sectionsWithImages($model->sections),
+            status: $model->status,
         );
     }
 

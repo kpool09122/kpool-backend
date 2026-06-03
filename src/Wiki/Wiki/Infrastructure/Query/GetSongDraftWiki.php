@@ -70,6 +70,7 @@ readonly class GetSongDraftWiki implements GetSongDraftWikiInterface
                 talents: $basic->talents->map(fn (WikiModel $talent) => $this->talentSummary($talent))->values()->all(),
             ),
             sections: $this->sectionsWithImages($model->sections),
+            status: $model->status,
         );
     }
 

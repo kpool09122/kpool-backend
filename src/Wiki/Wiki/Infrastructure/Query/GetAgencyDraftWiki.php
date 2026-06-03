@@ -61,6 +61,7 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
                 socialLinks: $basic->social_links,
             ),
             sections: $this->sectionsWithImages($model->sections),
+            status: $model->status,
         );
     }
 

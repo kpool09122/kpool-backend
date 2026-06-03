@@ -13,6 +13,7 @@ use Source\Wiki\Principal\Domain\Entity\Principal;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -332,11 +333,89 @@ class EditWikiTest extends TestCase
     }
 
     /**
+     * 異常系：レビュー中のDraftWikiを編集しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws WikiNotFoundException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testUnderReviewIsInvalidStatus(): void
+    {
+        $this->assertInvalidStatus(ApprovalStatus::UnderReview);
+    }
+
+    /**
+     * 異常系：承認済みのDraftWikiを編集しようとした場合、例外がスローされること.
+     *
+     * @return void
+     * @throws BindingResolutionException
+     * @throws WikiNotFoundException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
+     */
+    public function testApprovedIsInvalidStatus(): void
+    {
+        $this->assertInvalidStatus(ApprovalStatus::Approved);
+    }
+
+    /**
+     * @throws BindingResolutionException
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
+     * @throws WikiNotFoundException
+     */
+    private function assertInvalidStatus(ApprovalStatus $status): void
+    {
+        $testData = $this->createDummyEditWiki($status);
+
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+
+        $input = new EditWikiInput(
+            $testData->wikiIdentifier,
+            $testData->basic,
+            $testData->sections,
+            $testData->themeColor,
+            $principalIdentifier,
+            $testData->resourceType,
+            $testData->agencyIdentifier,
+            $testData->groupIdentifiers,
+            $testData->talentIdentifiers,
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with($principalIdentifier)
+            ->once()
+            ->andReturn($principal);
+
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(true);
+
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('findById')
+            ->once()
+            ->with($testData->wikiIdentifier)
+            ->andReturn($testData->draftWiki);
+        $draftWikiRepository->shouldNotReceive('save');
+
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+
+        $this->expectException(InvalidStatusException::class);
+        $editWiki = $this->app->make(EditWikiInterface::class);
+        $editWiki->process($input, new EditWikiOutput());
+    }
+
+    /**
      * ダミーデータを作成するヘルパーメソッド
      *
      * @return EditWikiTestData
      */
-    private function createDummyEditWiki(): EditWikiTestData
+    private function createDummyEditWiki(ApprovalStatus $status = ApprovalStatus::Pending): EditWikiTestData
     {
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $publishedWikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -364,8 +443,6 @@ class EditWikiTest extends TestCase
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];
         $talentIdentifiers = [];
-        $status = ApprovalStatus::Pending;
-
         $draftWiki = new DraftWiki(
             $wikiIdentifier,
             $publishedWikiIdentifier,

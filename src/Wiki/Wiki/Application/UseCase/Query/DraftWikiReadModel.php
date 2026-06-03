@@ -11,6 +11,7 @@ readonly class DraftWikiReadModel
     private string $slug;
     private string $language;
     private string $resourceType;
+    private ?string $status;
     private ?string $themeColor;
     /** @var array<string, mixed> */
     private array $heroImage;
@@ -33,12 +34,14 @@ readonly class DraftWikiReadModel
         array $heroImage,
         array|WikiBasicReadModel $basic,
         array $sections,
+        ?string $status = null,
     ) {
         $this->wikiIdentifier = $wikiIdentifier;
         $this->translationSetIdentifier = $translationSetIdentifier;
         $this->slug = $slug;
         $this->language = $language;
         $this->resourceType = $resourceType;
+        $this->status = $status;
         $this->themeColor = $themeColor;
         $this->heroImage = $heroImage;
         $this->basic = is_array($basic) ? match ($resourceType) {
@@ -74,6 +77,11 @@ readonly class DraftWikiReadModel
     public function resourceType(): string
     {
         return $this->resourceType;
+    }
+
+    public function status(): ?string
+    {
+        return $this->status;
     }
 
     public function themeColor(): ?string
@@ -115,6 +123,7 @@ readonly class DraftWikiReadModel
             'slug' => $this->slug,
             'language' => $this->language,
             'resourceType' => $this->resourceType,
+            'status' => $this->status,
             'themeColor' => $this->themeColor,
             'heroImage' => $this->heroImage,
             'basic' => $this->basic->toArray(),

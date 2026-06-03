@@ -46,6 +46,7 @@ class DraftWikiReadModelTest extends TestCase
                     'content' => 'Draft sample for checking the TWICE group wiki editor state.',
                 ],
             ],
+            status: 'under_review',
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
@@ -53,6 +54,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('gr-twice', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
+        $this->assertSame('under_review', $readModel->status());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
@@ -64,6 +66,7 @@ class DraftWikiReadModelTest extends TestCase
             'slug' => 'gr-twice',
             'language' => 'ko',
             'resourceType' => 'group',
+            'status' => 'under_review',
             'themeColor' => '#FE5F8F',
             'heroImage' => [
                 'imageIdentifier' => null,

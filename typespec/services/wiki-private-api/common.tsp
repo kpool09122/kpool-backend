@@ -87,6 +87,8 @@ model DraftWikiDetail {
   language: string;
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
+  @doc("Current workflow status of the draft wiki.")
+  status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Hero image payload for the editor.")
@@ -203,6 +205,8 @@ model TalentDraftWikiDetail {
   language: string;
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
+  @doc("Current workflow status of the draft wiki.")
+  status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Hero image payload for the editor.")
@@ -357,6 +361,8 @@ model SongDraftWikiDetail {
   language: string;
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
+  @doc("Current workflow status of the draft wiki.")
+  status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Hero image payload for the editor.")
@@ -425,6 +431,8 @@ model AgencyDraftWikiDetail {
   language: string;
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
+  @doc("Current workflow status of the draft wiki.")
+  status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("Hero image payload for the editor.")
