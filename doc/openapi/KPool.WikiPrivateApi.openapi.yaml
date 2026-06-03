@@ -1749,6 +1749,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '422':
           description: Client error
           content:
@@ -2312,6 +2318,7 @@ components:
         - slug
         - language
         - resourceType
+        - status
         - themeColor
         - heroImage
         - basic
@@ -2334,6 +2341,9 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
+        status:
+          type: string
+          description: Current workflow status of the draft wiki.
         themeColor:
           type: string
           nullable: true
@@ -2668,6 +2678,7 @@ components:
         - slug
         - language
         - resourceType
+        - status
         - themeColor
         - heroImage
         - basic
@@ -2690,6 +2701,9 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
+        status:
+          type: string
+          description: Current workflow status of the draft wiki.
         themeColor:
           type: string
           nullable: true
@@ -3617,6 +3631,7 @@ components:
         - slug
         - language
         - resourceType
+        - status
         - themeColor
         - heroImage
         - basic
@@ -3639,6 +3654,9 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
+        status:
+          type: string
+          description: Current workflow status of the draft wiki.
         themeColor:
           type: string
           nullable: true
@@ -3969,6 +3987,7 @@ components:
         - slug
         - language
         - resourceType
+        - status
         - themeColor
         - heroImage
         - basic
@@ -3991,6 +4010,9 @@ components:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
+        status:
+          type: string
+          description: Current workflow status of the draft wiki.
         themeColor:
           type: string
           nullable: true
