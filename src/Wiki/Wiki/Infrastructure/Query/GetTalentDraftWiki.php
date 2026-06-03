@@ -72,6 +72,7 @@ readonly class GetTalentDraftWiki implements GetTalentDraftWikiInterface
                 groups: $basic->groups->map(fn (WikiModel $group) => $this->groupSummary($group))->values()->all(),
             ),
             sections: $this->sectionsWithImages($model->sections),
+            status: $model->status,
         );
     }
 

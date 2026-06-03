@@ -6,6 +6,7 @@ namespace Application\Http\Action\Wiki\Wiki\Command\EditWiki;
 
 use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
 use Application\Http\Context\WikiContext;
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -84,6 +86,11 @@ readonly class EditWikiAction
                 $this->logger->error((string) $e);
 
                 throw new ForbiddenHttpException(detail: error_message('disallowed', $language), previous: $e);
+            } catch (InvalidStatusException $e) {
+                DB::rollBack();
+                $this->logger->error((string) $e);
+
+                throw new ConflictHttpException(detail: error_message('invalid_status', $language), previous: $e);
             } catch (PrincipalNotFoundException $e) {
                 DB::rollBack();
                 $this->logger->error((string) $e);
@@ -95,7 +102,7 @@ readonly class EditWikiAction
 
                 throw $e;
             }
-        } catch (NotFoundHttpException|ForbiddenHttpException|UnprocessableEntityHttpException $e) {
+        } catch (NotFoundHttpException|ForbiddenHttpException|ConflictHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

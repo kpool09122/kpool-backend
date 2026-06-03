@@ -8,8 +8,10 @@ use DateTimeImmutable;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -30,6 +32,7 @@ readonly class EditWiki implements EditWikiInterface
      * @return void
      * @throws WikiNotFoundException
      * @throws DisallowedException
+     * @throws InvalidStatusException
      * @throws PrincipalNotFoundException
      */
     public function process(EditWikiInputPort $input, EditWikiOutputPort $output): void
@@ -60,6 +63,11 @@ readonly class EditWiki implements EditWikiInterface
 
         if (! $this->policyEvaluator->evaluate($principal, Action::EDIT, $resource)) {
             throw new DisallowedException();
+        }
+
+        if ($wiki->status() !== ApprovalStatus::Pending
+            && $wiki->status() !== ApprovalStatus::Rejected) {
+            throw new InvalidStatusException();
         }
 
         $wiki->setBasic($input->basic());
