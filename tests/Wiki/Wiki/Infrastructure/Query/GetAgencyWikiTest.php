@@ -102,6 +102,30 @@ class GetAgencyWikiTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessReturnsNullableOptionalAgencyBasicValues(): void
+    {
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f502',
+            'agency',
+            [
+                'slug' => 'ag-nullable-basic',
+                'language' => 'en',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f503',
+            ],
+            [
+                'name' => 'Nullable Agency',
+                'normalized_name' => 'nullable agency',
+                'official_website' => null,
+            ],
+        );
+
+        $useCase = $this->app->make(GetAgencyWikiInterface::class);
+        $readModel = $useCase->process(new GetAgencyWikiInput(new Slug('ag-nullable-basic'), Language::ENGLISH));
+
+        $this->assertNull($readModel->basic()['officialWebsite']);
+    }
+
+    #[Group('useDb')]
     public function testProcessThrowsWhenAgencyWikiDoesNotExist(): void
     {
         $useCase = $this->app->make(GetAgencyWikiInterface::class);

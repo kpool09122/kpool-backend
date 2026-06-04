@@ -72,6 +72,32 @@ class GetGroupWikiTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessReturnsNullableOptionalGroupBasicValues(): void
+    {
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f102',
+            'group',
+            [
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
+                'slug' => 'gr-nullable-basic',
+                'language' => 'en',
+            ],
+            [
+                'name' => 'Test',
+                'normalized_name' => '',
+                'group_type' => null,
+                'generation' => null,
+            ],
+        );
+
+        $useCase = $this->app->make(GetGroupWikiInterface::class);
+        $readModel = $useCase->process(new GetGroupWikiInput(new Slug('gr-nullable-basic'), Language::ENGLISH));
+
+        $this->assertNull($readModel->basic()['groupType']);
+        $this->assertNull($readModel->basic()['generation']);
+    }
+
+    #[Group('useDb')]
     public function testProcessReturnsImageUrlsForCamelCaseSectionImages(): void
     {
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f404', [

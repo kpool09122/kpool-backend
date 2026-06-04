@@ -19,7 +19,7 @@ readonly class AgencyWikiBasicReadModel implements WikiBasicReadModel
         private ?string $foundedIn,
         private ?string $parentAgencyIdentifier,
         private ?string $status,
-        private string $officialWebsite,
+        private ?string $officialWebsite,
         private array $socialLinks,
     ) {
     }

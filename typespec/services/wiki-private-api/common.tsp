@@ -56,11 +56,11 @@ model GroupDraftWikiBasic {
   @doc("Associated agency identifier.")
   agencyIdentifier: Uuid | null;
   @doc("Group type.")
-  groupType: string;
+  groupType: string | null;
   @doc("Current activity status of the group.")
   status: string | null;
   @doc("Generation label of the group.")
-  generation: string;
+  generation: string | null;
   @doc("Debut date of the group.")
   debutDate: plainDate | null;
   @doc("Disband date of the group.")
@@ -414,7 +414,7 @@ model AgencyDraftWikiBasic {
   @doc("Current activity status of the agency.")
   status: string | null;
   @doc("Official website of the agency.")
-  officialWebsite: string;
+  officialWebsite: string | null;
   @doc("Social links of the agency.")
   socialLinks: string[];
 }
