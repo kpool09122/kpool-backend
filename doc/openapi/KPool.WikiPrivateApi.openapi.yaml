@@ -2915,6 +2915,7 @@ components:
           description: Associated agency identifier.
         groupType:
           type: string
+          nullable: true
           description: Group type.
         status:
           type: string
@@ -2922,6 +2923,7 @@ components:
           description: Current activity status of the group.
         generation:
           type: string
+          nullable: true
           description: Generation label of the group.
         debutDate:
           type: string
