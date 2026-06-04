@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInput;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
@@ -22,6 +23,7 @@ class AutoCreateWikiInputTest extends TestCase
             Language::KOREAN,
             ResourceType::GROUP,
             new Name('TWICE'),
+            new Slug('gr-twice'),
             null,
             [],
             [],
@@ -33,6 +35,7 @@ class AutoCreateWikiInputTest extends TestCase
 
         $this->assertSame($payload, $input->payload());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
+        $this->assertSame('gr-twice', (string) $input->payload()->slug());
     }
 
     public function testWithAllParameters(): void
@@ -50,6 +53,7 @@ class AutoCreateWikiInputTest extends TestCase
             Language::KOREAN,
             ResourceType::GROUP,
             new Name('TWICE'),
+            new Slug('gr-twice'),
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
@@ -64,5 +68,6 @@ class AutoCreateWikiInputTest extends TestCase
         $this->assertSame($agencyIdentifier, $input->payload()->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->payload()->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $input->payload()->talentIdentifiers());
+        $this->assertSame('gr-twice', (string) $input->payload()->slug());
     }
 }

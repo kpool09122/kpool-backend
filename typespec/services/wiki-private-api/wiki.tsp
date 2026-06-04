@@ -29,6 +29,8 @@ model AutoCreateWikiRequestBody extends WikiAssociationTargets {
   resourceType: string;
   @doc("Language of the wiki.")
   language: string;
+  @doc("Unique slug for the wiki.")
+  slug: string;
   @doc("Display name of the wiki.")
   name: string;
 }

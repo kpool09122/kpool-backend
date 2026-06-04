@@ -16,6 +16,7 @@ use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki\AutoCreateWikiOutput;
@@ -47,6 +48,7 @@ readonly class AutoCreateWikiAction
                     Language::from($request->wikiLanguage()),
                     ResourceType::from($request->resourceType()),
                     new Name($request->name()),
+                    new Slug($request->slug()),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),

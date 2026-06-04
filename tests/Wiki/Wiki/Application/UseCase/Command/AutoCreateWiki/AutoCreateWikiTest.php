@@ -13,7 +13,6 @@ use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
-use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -72,21 +71,15 @@ class AutoCreateWikiTest extends TestCase
             ->with('트와이스', Language::KOREAN)
             ->andReturn('ㅌㅇㅇㅅ');
 
-        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
-        $slugGeneratorService->shouldReceive('generate')
-            ->once()
-            ->with('TWICE', ResourceType::GROUP)
-            ->andReturn(new Slug('gr-twice'));
-
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
+            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
         $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
@@ -133,21 +126,15 @@ class AutoCreateWikiTest extends TestCase
             ->with('트와이스', Language::KOREAN)
             ->andReturn('ㅌㅇㅇㅅ');
 
-        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
-        $slugGeneratorService->shouldReceive('generate')
-            ->once()
-            ->with('TWICE', ResourceType::GROUP)
-            ->andReturn(new Slug('gr-twice'));
-
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
+            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
         $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
@@ -182,13 +169,11 @@ class AutoCreateWikiTest extends TestCase
 
         $service = Mockery::mock(AutoWikiCreationServiceInterface::class);
         $normalizationService = Mockery::mock(NormalizationServiceInterface::class);
-        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
         $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
@@ -219,13 +204,11 @@ class AutoCreateWikiTest extends TestCase
 
         $service = Mockery::mock(AutoWikiCreationServiceInterface::class);
         $normalizationService = Mockery::mock(NormalizationServiceInterface::class);
-        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
         $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
@@ -273,21 +256,15 @@ class AutoCreateWikiTest extends TestCase
             ->with('트와이스', Language::KOREAN)
             ->andReturn('ㅌㅇㅇㅅ');
 
-        $slugGeneratorService = Mockery::mock(SlugGeneratorServiceInterface::class);
-        $slugGeneratorService->shouldReceive('generate')
-            ->once()
-            ->with('트와이스', ResourceType::GROUP)
-            ->andReturn(new Slug('gr-twice'));
-
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
+            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(AutoWikiCreationServiceInterface::class, $service);
         $this->app->instance(NormalizationServiceInterface::class, $normalizationService);
-        $this->app->instance(SlugGeneratorServiceInterface::class, $slugGeneratorService);
         $this->app->instance(DraftWikiRepositoryInterface::class, $repository);
 
         $input = new AutoCreateWikiInput($payload, $principalIdentifier);
@@ -306,6 +283,7 @@ class AutoCreateWikiTest extends TestCase
             Language::KOREAN,
             ResourceType::GROUP,
             new Name('트와이스'),
+            new Slug('gr-request-twice'),
             new WikiIdentifier(StrTestHelper::generateUuid()),
             [],
             [],

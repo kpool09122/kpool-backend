@@ -72,9 +72,7 @@ use Source\Wiki\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Wiki\Principal\Infrastructure\Service\AffiliationQueryService;
 use Source\Wiki\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
-use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Infrastructure\Service\NormalizationService;
-use Source\Wiki\Shared\Infrastructure\Service\SlugGeneratorService;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinks;
 use Source\Wiki\VideoLink\Application\UseCase\Command\SaveVideoLinks\SaveVideoLinksInterface;
 use Source\Wiki\VideoLink\Domain\Factory\VideoLinkFactoryInterface;
@@ -117,7 +115,6 @@ class DomainServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->singleton(NormalizationServiceInterface::class, NormalizationService::class);
-        $this->app->singleton(SlugGeneratorServiceInterface::class, SlugGeneratorService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);
         $this->app->singleton(PolicyFactoryInterface::class, PolicyFactory::class);
