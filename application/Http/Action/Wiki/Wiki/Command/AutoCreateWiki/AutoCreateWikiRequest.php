@@ -19,6 +19,7 @@ class AutoCreateWikiRequest extends FormRequest
         return [
             'resourceType' => ['required', 'string'],
             'language' => ['required', 'string'],
+            'slug' => ['required', 'string'],
             'name' => ['required', 'string'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
@@ -41,6 +42,11 @@ class AutoCreateWikiRequest extends FormRequest
     public function name(): string
     {
         return (string) $this->input('name');
+    }
+
+    public function slug(): string
+    {
+        return (string) $this->input('slug');
     }
 
     public function agencyIdentifier(): ?string

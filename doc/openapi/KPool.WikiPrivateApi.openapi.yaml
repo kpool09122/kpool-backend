@@ -2439,6 +2439,7 @@ components:
       required:
         - resourceType
         - language
+        - slug
         - name
       properties:
         resourceType:
@@ -2447,6 +2448,9 @@ components:
         language:
           type: string
           description: Language of the wiki.
+        slug:
+          type: string
+          description: Unique slug for the wiki.
         name:
           type: string
           description: Display name of the wiki.

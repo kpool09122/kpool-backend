@@ -9,7 +9,6 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
-use Source\Wiki\Shared\Domain\Service\SlugGeneratorServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
@@ -26,7 +25,6 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         private NormalizationServiceInterface    $normalizationService,
         private PrincipalRepositoryInterface     $principalRepository,
         private PolicyEvaluatorInterface         $policyEvaluator,
-        private SlugGeneratorServiceInterface    $slugGeneratorService,
     ) {
     }
 
@@ -65,9 +63,6 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
 
         $generatedData = $this->automaticDraftWikiCreationService->generate($payload);
 
-        $slugSource = $generatedData->alphabetName() ?? (string) $payload->name();
-        $slug = $this->slugGeneratorService->generate($slugSource, $payload->resourceType());
-
         $generatedBasic = $generatedData->basic();
         $basicArray = $generatedBasic->toArray();
         foreach ($generatedBasic->normalizableKeys() as $sourceKey => $normalizedKey) {
@@ -82,7 +77,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
             editorIdentifier: null,
             language: $payload->language(),
             basic: $basic,
-            slug: $slug,
+            slug: $payload->slug(),
         );
 
         $draftWiki->setSections($generatedData->sections());

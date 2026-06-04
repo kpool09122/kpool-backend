@@ -6,6 +6,7 @@ namespace Source\Wiki\Wiki\Domain\ValueObject;
 
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 
 final readonly class AutoWikiCreationPayload
@@ -18,6 +19,7 @@ final readonly class AutoWikiCreationPayload
         private Language         $language,
         private ResourceType     $resourceType,
         private Name             $name,
+        private Slug             $slug,
         private ?WikiIdentifier  $agencyIdentifier,
         private array            $groupIdentifiers,
         private array            $talentIdentifiers,
@@ -37,6 +39,11 @@ final readonly class AutoWikiCreationPayload
     public function name(): Name
     {
         return $this->name;
+    }
+
+    public function slug(): Slug
+    {
+        return $this->slug;
     }
 
     public function agencyIdentifier(): ?WikiIdentifier
