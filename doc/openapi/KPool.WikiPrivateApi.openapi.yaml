@@ -2303,6 +2303,7 @@ components:
           description: Current activity status of the agency.
         officialWebsite:
           type: string
+          nullable: true
           description: Official website of the agency.
         socialLinks:
           type: array

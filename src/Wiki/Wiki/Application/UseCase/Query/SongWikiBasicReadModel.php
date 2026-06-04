@@ -16,11 +16,11 @@ readonly class SongWikiBasicReadModel implements WikiBasicReadModel
     public function __construct(
         private string $name,
         private string $normalizedName,
-        private string $songType,
+        private ?string $songType,
         private array $genres,
         private ?string $agencyIdentifier,
         private ?string $releaseDate,
-        private string $albumName,
+        private ?string $albumName,
         private string $lyricist,
         private string $normalizedLyricist,
         private string $composer,

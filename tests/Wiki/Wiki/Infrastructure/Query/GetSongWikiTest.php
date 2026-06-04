@@ -121,6 +121,32 @@ class GetSongWikiTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessReturnsNullableOptionalSongBasicValues(): void
+    {
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f302',
+            'song',
+            [
+                'slug' => 'sg-nullable-basic',
+                'language' => 'en',
+                'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f303',
+            ],
+            [
+                'name' => 'Nullable Song',
+                'normalized_name' => 'nullable song',
+                'song_type' => null,
+                'album_name' => null,
+            ],
+        );
+
+        $useCase = $this->app->make(GetSongWikiInterface::class);
+        $readModel = $useCase->process(new GetSongWikiInput(new Slug('sg-nullable-basic'), Language::ENGLISH));
+
+        $this->assertNull($readModel->basic()['songType']);
+        $this->assertNull($readModel->basic()['albumName']);
+    }
+
+    #[Group('useDb')]
     public function testProcessThrowsWhenSongWikiDoesNotExist(): void
     {
         $useCase = $this->app->make(GetSongWikiInterface::class);

@@ -414,7 +414,7 @@ model AgencyDraftWikiBasic {
   @doc("Current activity status of the agency.")
   status: string | null;
   @doc("Official website of the agency.")
-  officialWebsite: string;
+  officialWebsite: string | null;
   @doc("Social links of the agency.")
   socialLinks: string[];
 }
