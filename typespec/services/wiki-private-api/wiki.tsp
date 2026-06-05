@@ -24,7 +24,7 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
 }
 
 @doc("Request body for automatically creating a wiki draft.")
-model AutoCreateWikiRequestBody extends WikiAssociationTargets {
+model AutoCreateWikiRequestBody {
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Language of the wiki.")
@@ -33,6 +33,12 @@ model AutoCreateWikiRequestBody extends WikiAssociationTargets {
   slug: string;
   @doc("Display name of the wiki.")
   name: string;
+  @doc("Associated agency identifier.")
+  agencyIdentifier?: Uuid;
+  @doc("Associated group identifiers.")
+  groupIdentifiers?: Uuid[];
+  @doc("Associated talent identifiers.")
+  talentIdentifiers?: Uuid[];
 }
 
 @doc("Request body for updating a wiki draft.")
