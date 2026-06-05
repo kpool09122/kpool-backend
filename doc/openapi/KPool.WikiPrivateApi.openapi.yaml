@@ -2454,8 +2454,20 @@ components:
         name:
           type: string
           description: Display name of the wiki.
-      allOf:
-        - $ref: '#/components/schemas/WikiAssociationTargets'
+        agencyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated agency identifier.
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated group identifiers.
+        talentIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Associated talent identifiers.
       description: Request body for automatically creating a wiki draft.
     CreatePolicyRequestBody:
       type: object
