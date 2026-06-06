@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Client\GeminiClient;
 
+use Application\Http\Client\Foundation\Json\Decoder;
 use Application\Http\Client\Foundation\PsrFactories;
 use Application\Http\Client\GeminiClient\Exceptions\GeminiException;
 use Application\Http\Client\GeminiClient\GenerateAgency\GenerateAgencyRequest;
@@ -134,7 +135,7 @@ class GeminiClient
     private function sendRequest(RequestInterface $request): ResponseInterface
     {
         try {
-            return $this->httpClient->sendRequest($request);
+            $response = $this->httpClient->sendRequest($request);
         } catch (ClientExceptionInterface $e) {
             throw new GeminiException(
                 sprintf('Gemini API request failed: %s', $e->getMessage()),
@@ -142,5 +143,38 @@ class GeminiClient
                 $e,
             );
         }
+
+        if ($response->getStatusCode() >= 400) {
+            throw new GeminiException($this->buildApiErrorMessage($response));
+        }
+
+        return $response;
+    }
+
+    private function buildApiErrorMessage(ResponseInterface $response): string
+    {
+        $statusCode = $response->getStatusCode();
+        $reasonPhrase = $response->getReasonPhrase();
+        $body = (string) $response->getBody();
+
+        try {
+            $decoded = Decoder::decode($body, true);
+        } catch (JsonException) {
+            return sprintf('Gemini API returned HTTP %d %s', $statusCode, $reasonPhrase);
+        }
+
+        if (! is_array($decoded) || ! is_array($decoded['error'] ?? null)) {
+            return sprintf('Gemini API returned HTTP %d %s', $statusCode, $reasonPhrase);
+        }
+
+        $error = $decoded['error'];
+
+        return sprintf(
+            'Gemini API returned HTTP %d %s: %s%s',
+            $statusCode,
+            $reasonPhrase,
+            is_scalar($error['message'] ?? null) ? (string) $error['message'] : 'Unknown error',
+            is_scalar($error['status'] ?? null) ? sprintf(' [%s]', (string) $error['status']) : '',
+        );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Client\GeminiClient\GenerateSong;
 
 use Application\Http\Client\Foundation\Json\Decoder;
+use Application\Http\Client\GeminiClient\JsonContentExtractor;
 use Psr\Http\Message\ResponseInterface;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 
@@ -24,7 +25,7 @@ final readonly class GenerateSongResponse
 
         $content = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
         /** @var array<string, mixed> $data */
-        $data = Decoder::decode($content, true);
+        $data = JsonContentExtractor::decodeObject($content);
 
         $sources = $this->extractSources($responseBody);
 

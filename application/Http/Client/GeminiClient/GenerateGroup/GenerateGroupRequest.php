@@ -51,42 +51,13 @@ final readonly class GenerateGroupRequest
         return [
             'tools' => [
                 [
-                    'google_search' => [
-                        'dynamic_retrieval_config' => [
-                            'dynamic_threshold' => 0.5,
-                        ],
-                    ],
+                    'google_search' => (object) [],
                 ],
             ],
             'contents' => [
                 [
                     'parts' => [
                         ['text' => $this->buildPrompt()],
-                    ],
-                ],
-            ],
-            'generationConfig' => [
-                'responseMimeType' => 'application/json',
-                'responseSchema' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'alphabet_name' => ['type' => 'string', 'nullable' => true],
-                        'overview' => ['type' => 'string', 'nullable' => true],
-                        'history' => ['type' => 'string', 'nullable' => true],
-                        'representative_songs' => [
-                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
-                        ],
-                        'awards' => [
-                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
-                        ],
-                        'members' => [
-                            'type' => 'array', 'items' => ['type' => 'string'], 'nullable' => true,
-                        ],
-                        'fandom_name' => ['type' => 'string', 'nullable' => true],
-                        'instagram_url' => ['type' => 'string', 'nullable' => true],
-                        'tiktok_url' => ['type' => 'string', 'nullable' => true],
-                        'youtube_url' => ['type' => 'string', 'nullable' => true],
-                        'x_url' => ['type' => 'string', 'nullable' => true],
                     ],
                 ],
             ],
@@ -141,6 +112,9 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
 - Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
+
+## Output Format
+Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above.
 PROMPT;
     }
 }
