@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki;
 
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki\GetSongDraftWikiInput;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Tests\TestCase;
 
 class GetSongDraftWikiInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $slug = new Slug('sg-signal');
-        $language = Language::KOREAN;
-        $input = new GetSongDraftWikiInput($slug, $language);
+        $wikiIdentifier = new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f501');
+        $input = new GetSongDraftWikiInput($wikiIdentifier);
 
-        $this->assertSame((string) $slug, (string) $input->slug());
-        $this->assertSame($language, $input->language());
+        $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
     }
 }

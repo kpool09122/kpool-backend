@@ -463,11 +463,10 @@ interface WikiOperations {
   ): GetGroupWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
-  @route("/{language}/group/{slug}/draft")
-  @doc("Fetch the group draft wiki used by the editor.")
+  @route("/group/{wikiIdentifier}/draft")
+  @doc("Fetch a group draft wiki by draft wiki identifier.")
   getGroupDraftWiki(
-    @path language: string,
-    @path slug: string,
+    @path wikiIdentifier: Uuid,
   ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
@@ -479,11 +478,10 @@ interface WikiOperations {
   ): GetTalentWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
-  @route("/{language}/talent/{slug}/draft")
-  @doc("Fetch the talent draft wiki used by the editor.")
+  @route("/talent/{wikiIdentifier}/draft")
+  @doc("Fetch a talent draft wiki by draft wiki identifier.")
   getTalentDraftWiki(
-    @path language: string,
-    @path slug: string,
+    @path wikiIdentifier: Uuid,
   ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
@@ -495,11 +493,10 @@ interface WikiOperations {
   ): GetSongWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
-  @route("/{language}/song/{slug}/draft")
-  @doc("Fetch the song draft wiki used by the editor.")
+  @route("/song/{wikiIdentifier}/draft")
+  @doc("Fetch a song draft wiki by draft wiki identifier.")
   getSongDraftWiki(
-    @path language: string,
-    @path slug: string,
+    @path wikiIdentifier: Uuid,
   ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
@@ -511,9 +508,43 @@ interface WikiOperations {
   ): GetAgencyWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
-  @route("/{language}/agency/{slug}/draft")
-  @doc("Fetch the agency draft wiki used by the editor.")
+  @route("/agency/{wikiIdentifier}/draft")
+  @doc("Fetch an agency draft wiki by draft wiki identifier.")
   getAgencyDraftWiki(
+    @path wikiIdentifier: Uuid,
+  ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/wiki")
+interface MyWikiOperations {
+  @get
+  @route("/{language}/group/{slug}/my/draft")
+  @doc("Fetch the current principal's group draft wiki by language and slug.")
+  getMyGroupDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/talent/{slug}/my/draft")
+  @doc("Fetch the current principal's talent draft wiki by language and slug.")
+  getMyTalentDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/song/{slug}/my/draft")
+  @doc("Fetch the current principal's song draft wiki by language and slug.")
+  getMySongDraftWiki(
+    @path language: string,
+    @path slug: string,
+  ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/agency/{slug}/my/draft")
+  @doc("Fetch the current principal's agency draft wiki by language and slug.")
+  getMyAgencyDraftWiki(
     @path language: string,
     @path slug: string,
   ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;

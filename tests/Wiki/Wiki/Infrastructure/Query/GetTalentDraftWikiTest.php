@@ -6,12 +6,11 @@ namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use Database\Seeders\WikiEditorSampleSeeder;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiBasicReadModel;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Tests\Helper\CreateDraftWiki;
 use Tests\TestCase;
 
@@ -23,7 +22,7 @@ class GetTalentDraftWikiTest extends TestCase
         $this->seed(WikiEditorSampleSeeder::class);
 
         $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-chaeyoung'), Language::KOREAN));
+        $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f172')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f172', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f173', $readModel->translationSetIdentifier());
@@ -63,7 +62,7 @@ class GetTalentDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app->make(GetTalentDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-momo'), Language::JAPANESE));
+        $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f201')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f201', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f202', $readModel->translationSetIdentifier());
@@ -79,6 +78,6 @@ class GetTalentDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetTalentDraftWikiInput(new Slug('tl-chaeyoung'), Language::KOREAN));
+        $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff')));
     }
 }

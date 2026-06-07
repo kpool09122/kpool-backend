@@ -15,8 +15,7 @@ class GetTalentDraftWikiRequest extends FormRequest
     {
         return [
             ...parent::validationData(),
-            'language' => $this->route('language'),
-            'slug' => $this->route('slug'),
+            'wikiIdentifier' => $this->route('wikiIdentifier'),
         ];
     }
 
@@ -26,18 +25,12 @@ class GetTalentDraftWikiRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'language' => ['required', 'string', 'in:ja,ko,en'],
-            'slug' => ['required', 'string'],
+            'wikiIdentifier' => ['required', 'uuid'],
         ];
     }
 
-    public function language(): string
+    public function wikiIdentifier(): string
     {
-        return (string) $this->route('language');
-    }
-
-    public function slug(): string
-    {
-        return (string) $this->route('slug');
+        return (string) $this->route('wikiIdentifier');
     }
 }

@@ -1174,6 +1174,41 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SaveVideoLinksRequestBody'
+  /wiki/agency/{wikiIdentifier}/draft:
+    get:
+      operationId: WikiOperations_getAgencyDraftWiki
+      description: Fetch an agency draft wiki by draft wiki identifier.
+      parameters:
+        - name: wikiIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an agency draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgencyDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/auto-create:
     post:
       operationId: WikiOperations_autoCreateWiki
@@ -1252,6 +1287,111 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateWikiRequestBody'
+  /wiki/group/{wikiIdentifier}/draft:
+    get:
+      operationId: WikiOperations_getGroupDraftWiki
+      description: Fetch a group draft wiki by draft wiki identifier.
+      parameters:
+        - name: wikiIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when a group draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/song/{wikiIdentifier}/draft:
+    get:
+      operationId: WikiOperations_getSongDraftWiki
+      description: Fetch a song draft wiki by draft wiki identifier.
+      parameters:
+        - name: wikiIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when a song draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wiki/talent/{wikiIdentifier}/draft:
+    get:
+      operationId: WikiOperations_getTalentDraftWiki
+      description: Fetch a talent draft wiki by draft wiki identifier.
+      parameters:
+        - name: wikiIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when a talent draft wiki is fetched.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TalentDraftWikiDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /wiki/{language}/agency/{slug}:
     get:
       operationId: WikiOperations_getAgencyWiki
@@ -1292,10 +1432,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /wiki/{language}/agency/{slug}/draft:
+  /wiki/{language}/agency/{slug}/my/draft:
     get:
-      operationId: WikiOperations_getAgencyDraftWiki
-      description: Fetch the agency draft wiki used by the editor.
+      operationId: MyWikiOperations_getMyAgencyDraftWiki
+      description: Fetch the current principal's agency draft wiki by language and slug.
       parameters:
         - name: language
           in: path
@@ -1372,10 +1512,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /wiki/{language}/group/{slug}/draft:
+  /wiki/{language}/group/{slug}/my/draft:
     get:
-      operationId: WikiOperations_getGroupDraftWiki
-      description: Fetch the group draft wiki used by the editor.
+      operationId: MyWikiOperations_getMyGroupDraftWiki
+      description: Fetch the current principal's group draft wiki by language and slug.
       parameters:
         - name: language
           in: path
@@ -1452,10 +1592,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /wiki/{language}/song/{slug}/draft:
+  /wiki/{language}/song/{slug}/my/draft:
     get:
-      operationId: WikiOperations_getSongDraftWiki
-      description: Fetch the song draft wiki used by the editor.
+      operationId: MyWikiOperations_getMySongDraftWiki
+      description: Fetch the current principal's song draft wiki by language and slug.
       parameters:
         - name: language
           in: path
@@ -1532,10 +1672,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /wiki/{language}/talent/{slug}/draft:
+  /wiki/{language}/talent/{slug}/my/draft:
     get:
-      operationId: WikiOperations_getTalentDraftWiki
-      description: Fetch the talent draft wiki used by the editor.
+      operationId: MyWikiOperations_getMyTalentDraftWiki
+      description: Fetch the current principal's talent draft wiki by language and slug.
       parameters:
         - name: language
           in: path
@@ -2860,11 +3000,16 @@ components:
     DraftWikiSummary:
       type: object
       required:
+        - wikiIdentifier
         - language
         - name
         - resourceType
         - status
       properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Draft wiki identifier.
         language:
           type: string
           description: Language of the wiki.
