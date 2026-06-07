@@ -4,24 +4,17 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki;
 
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class GetAgencyDraftWikiInput implements GetAgencyDraftWikiInputPort
 {
     public function __construct(
-        private Slug $slug,
-        private Language $language,
+        private DraftWikiIdentifier $wikiIdentifier,
     ) {
     }
 
-    public function slug(): Slug
+    public function wikiIdentifier(): DraftWikiIdentifier
     {
-        return $this->slug;
-    }
-
-    public function language(): Language
-    {
-        return $this->language;
+        return $this->wikiIdentifier;
     }
 }

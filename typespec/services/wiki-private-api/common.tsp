@@ -15,6 +15,8 @@ model WikiAssociationTargets {
 
 @doc("Summary of a draft wiki.")
 model DraftWikiSummary {
+  @doc("Draft wiki identifier.")
+  wikiIdentifier: Uuid;
   @doc("Language of the wiki.")
   language: string;
   @doc("Display name of the wiki.")

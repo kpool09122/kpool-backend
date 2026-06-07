@@ -14,6 +14,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
 {
@@ -22,19 +23,31 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
      */
     public function process(GetAgencyDraftWikiInputPort $input): DraftWikiReadModel
     {
+        return $this->getByIdentifier($input->wikiIdentifier());
+    }
+
+    /**
+     * @throws WikiNotFoundException
+     */
+    private function getByIdentifier(DraftWikiIdentifier $wikiIdentifier): DraftWikiReadModel
+    {
         $model = DraftWikiModel::query()
             ->select('draft_wikis.*', 'wiki_images.image_path as hero_image_path', 'wiki_images.alt_text as hero_image_alt_text')
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'draft_wikis.image_identifier')
             ->with(['agencyBasic', 'publishedWiki'])
             ->where('draft_wikis.resource_type', ResourceType::AGENCY->value)
-            ->where('draft_wikis.language', $input->language()->value)
-            ->where('draft_wikis.slug', (string) $input->slug())
+            ->where('draft_wikis.id', (string) $wikiIdentifier)
             ->first();
 
         if ($model === null) {
-            throw new WikiNotFoundException("Draft wiki not found for slug: {$input->slug()} and language: {$input->language()->value}");
+            throw new WikiNotFoundException("Draft agency wiki not found for wiki identifier: {$wikiIdentifier}");
         }
 
+        return $this->readModel($model);
+    }
+
+    private function readModel(DraftWikiModel $model): DraftWikiReadModel
+    {
         $basic = $this->agencyBasic($model->agencyBasic);
 
         return new DraftWikiReadModel(

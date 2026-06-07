@@ -32,8 +32,9 @@ class AutoCreateWikiOutputTest extends TestCase
      */
     public function testToArrayWithDraftWiki(): void
     {
+        $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $draftWiki = new DraftWiki(
-            new DraftWikiIdentifier(StrTestHelper::generateUuid()),
+            $wikiIdentifier,
             new WikiIdentifier(StrTestHelper::generateUuid()),
             new TranslationSetIdentifier(StrTestHelper::generateUuid()),
             new Slug('gr-twice'),
@@ -64,6 +65,7 @@ class AutoCreateWikiOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        $this->assertSame((string) $wikiIdentifier, $result['wikiIdentifier']);
         $this->assertSame('ko', $result['language']);
         $this->assertSame('TWICE', $result['name']);
         $this->assertSame('group', $result['resourceType']);
@@ -82,6 +84,7 @@ class AutoCreateWikiOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame([
+            'wikiIdentifier' => null,
             'language' => null,
             'name' => null,
             'resourceType' => null,

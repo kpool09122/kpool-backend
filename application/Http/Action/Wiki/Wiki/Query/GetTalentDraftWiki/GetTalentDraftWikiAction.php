@@ -10,11 +10,10 @@ use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use ValueError;
@@ -35,8 +34,7 @@ readonly class GetTalentDraftWikiAction
         try {
             try {
                 $input = new GetTalentDraftWikiInput(
-                    new Slug($request->slug()),
-                    Language::from($request->language()),
+                    new DraftWikiIdentifier($request->wikiIdentifier()),
                 );
             } catch (InvalidArgumentException|ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);

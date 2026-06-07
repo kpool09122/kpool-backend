@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use PHPUnit\Framework\Attributes\Group;
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki\GetSongDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki\GetSongDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiBasicReadModel;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
@@ -125,7 +124,7 @@ class GetSongDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app->make(GetSongDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetSongDraftWikiInput(new Slug('sg-signal'), Language::KOREAN));
+        $readModel = $useCase->process(new GetSongDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f301')));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f301', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f302', $readModel->translationSetIdentifier());
@@ -165,7 +164,7 @@ class GetSongDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app->make(GetSongDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetSongDraftWikiInput(new Slug('sg-nullable-basic'), Language::ENGLISH));
+        $readModel = $useCase->process(new GetSongDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f302')));
 
         $this->assertNull($readModel->basic()['songType']);
         $this->assertNull($readModel->basic()['albumName']);
@@ -178,6 +177,6 @@ class GetSongDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetSongDraftWikiInput(new Slug('sg-signal'), Language::KOREAN));
+        $useCase->process(new GetSongDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff')));
     }
 }

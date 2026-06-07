@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki;
 
-use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInput;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Tests\TestCase;
 
 class GetTalentDraftWikiInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $slug = new Slug('tl-chaeyoung');
-        $language = Language::KOREAN;
-        $input = new GetTalentDraftWikiInput($slug, $language);
+        $wikiIdentifier = new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f301');
+        $input = new GetTalentDraftWikiInput($wikiIdentifier);
 
-        $this->assertSame((string) $slug, (string) $input->slug());
-        $this->assertSame($language, $input->language());
+        $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
     }
 }
