@@ -483,16 +483,26 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             return null;
         }
 
-        $items = array_map(
-            static fn (SourceReference $source) => "{$source->title()} ({$source->uri()})",
-            $sources,
-        );
+        $items = array_map(fn (SourceReference $source) => $this->sourceMarkdownLink($source), $sources);
 
         return new Section(
             title: section_title('sources', $language),
             displayOrder: $displayOrder,
             contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $items)]),
         );
+    }
+
+    private function sourceMarkdownLink(SourceReference $source): string
+    {
+        $title = trim($source->title());
+        $label = $title !== '' ? $title : $source->uri();
+
+        return '[' . $this->escapeMarkdownLinkLabel($label) . '](' . $source->uri() . ')';
+    }
+
+    private function escapeMarkdownLinkLabel(string $label): string
+    {
+        return str_replace(['\\', '[', ']'], ['\\\\', '\[', '\]'], $label);
     }
 
     /**

@@ -87,6 +87,11 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 5. history: Chronological description of founding, growth, and major events, approximately 1200 characters.
 6. artists: Array of currently affiliated artist/group names (max 20).
 7. social_links: Array of official HTTPS SNS URLs. Include Instagram, TikTok, YouTube, and X(Twitter) URLs when found.
+8. sources: Array of referenced pages used for this response. Each item must have:
+   - page_title: Specific page title that describes the referenced content.
+   - site_name: Website or publication name, not a search/proxy/cache host.
+   - url: Direct HTTPS URL of the referenced page.
+   - description: Short description of what information was verified from this page.
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
@@ -102,9 +107,10 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 - Do not guess uncertain values. Return null for unknown scalar values and [] for unknown arrays.
 - Dates must use YYYY-MM-DD.
 - Enum fields must use only the allowed lowercase values listed above.
+- sources must include only pages actually used for the generated information. Do not include search result URLs, proxy URLs, cache URLs, or vertexaisearch.cloud.google.com URLs.
 
 ## Output Format
-Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above.
+Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above, including sources.
 PROMPT;
     }
 }

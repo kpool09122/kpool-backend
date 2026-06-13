@@ -6,8 +6,8 @@ namespace Application\Http\Client\GeminiClient\GenerateGroup;
 
 use Application\Http\Client\Foundation\Json\Decoder;
 use Application\Http\Client\GeminiClient\JsonContentExtractor;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 use Psr\Http\Message\ResponseInterface;
-use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateGroupResponse
 {
@@ -27,34 +27,8 @@ final readonly class GenerateGroupResponse
         /** @var array<string, mixed> $data */
         $data = JsonContentExtractor::decodeObject($content);
 
-        $sources = $this->extractSources($responseBody);
+        $sources = (new SourceReferenceExtractor())->extract($data, $responseBody);
 
         return GenerateGroupParams::fromArray($data, $sources);
-    }
-
-    /**
-     * @param array<string, mixed> $responseBody
-     * @return SourceReference[]
-     */
-    private function extractSources(array $responseBody): array
-    {
-        $groundingMetadata = $responseBody['candidates'][0]['groundingMetadata'] ?? [];
-        $sources = [];
-        $seenUris = [];
-
-        foreach ($groundingMetadata['groundingChunks'] ?? [] as $chunk) {
-            $uri = $chunk['web']['uri'] ?? null;
-            $title = $chunk['web']['title'] ?? null;
-
-            if ($uri !== null && ! isset($seenUris[$uri])) {
-                $sources[] = new SourceReference(
-                    uri: $uri,
-                    title: $title ?? '',
-                );
-                $seenUris[$uri] = true;
-            }
-        }
-
-        return $sources;
     }
 }
