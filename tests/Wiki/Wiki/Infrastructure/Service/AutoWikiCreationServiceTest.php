@@ -78,8 +78,11 @@ class AutoWikiCreationServiceTest extends TestCase
                             [
                                 'text' => json_encode([
                                     'alphabet_name' => 'JYP Entertainment',
-                                    'ceo_name' => 'J.Y. Park',
-                                    'founded_year' => 1997,
+                                    'ceo' => 'J.Y. Park',
+                                    'founded_in' => '1997-04-25',
+                                    'status' => 'active',
+                                    'official_website' => 'https://www.jype.com/',
+                                    'social_links' => ['https://www.youtube.com/@JYPEntertainment', 'http://invalid.example.com/'],
                                     'overview' => $overview,
                                     'history' => $history,
                                     'artists' => $artists,
@@ -130,6 +133,10 @@ class AutoWikiCreationServiceTest extends TestCase
         $basic = $result->basic();
         $this->assertSame('J.Y. Park', (string) $basic->ceo());
         $this->assertNotNull($basic->foundedIn());
+        $this->assertSame('1997-04-25', $basic->foundedIn()->format('Y-m-d'));
+        $this->assertSame('active', $basic->status()?->value);
+        $this->assertSame('https://www.jype.com/', (string) $basic->officialWebsite());
+        $this->assertSame(['https://www.youtube.com/@JYPEntertainment'], array_map('strval', $basic->socialLinks()));
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
@@ -258,6 +265,15 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'TWICE',
+            'group_type' => 'girl_group',
+            'status' => 'unknown',
+            'generation' => '3rd',
+            'debut_date' => '2015-10-20',
+            'disband_date' => 'invalid-date',
+            'fandom_name' => 'ONCE',
+            'official_colors' => ['#FF5FA2', 'apricot'],
+            'emoji' => '🍭',
+            'representative_symbol' => 'Candy Bong',
             'overview' => $overview,
             'history' => $history,
             'representative_songs' => $representativeSongs,
@@ -296,6 +312,15 @@ class AutoWikiCreationServiceTest extends TestCase
         /** @var GroupBasic $basic */
         $basic = $result->basic();
         $this->assertSame((string) $agencyId, (string) $basic->agencyIdentifier());
+        $this->assertSame('girl_group', $basic->groupType()?->value);
+        $this->assertNull($basic->status());
+        $this->assertSame('3rd', $basic->generation()?->value);
+        $this->assertSame('2015-10-20', $basic->debutDate()?->format('Y-m-d'));
+        $this->assertNull($basic->disbandDate());
+        $this->assertSame('ONCE', $basic->fandomName()->value());
+        $this->assertSame(['#FF5FA2'], array_map('strval', $basic->officialColors()));
+        $this->assertSame('🍭', $basic->emoji()->value());
+        $this->assertSame('Candy Bong', $basic->representativeSymbol()->value());
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
@@ -484,6 +509,15 @@ class AutoWikiCreationServiceTest extends TestCase
             'alphabet_name' => 'Jimin',
             'real_name' => '박지민',
             'birthday' => '1995-10-13',
+            'position' => 'Main dancer',
+            'mbti' => 'ENFJ',
+            'zodiac_sign' => 'invalid',
+            'english_level' => 'conversational',
+            'height' => 174,
+            'blood_type' => 'A',
+            'fandom_name' => 'Jjangu',
+            'emoji' => '🐥',
+            'representative_symbol' => 'Chick',
             'overview' => $overview,
             'history' => $history,
             'appearances' => $appearances,
@@ -526,6 +560,15 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame((string) $agencyId, (string) $basic->agencyIdentifier());
         $this->assertCount(1, $basic->groupIdentifiers());
         $this->assertSame((string) $groupId, (string) $basic->groupIdentifiers()[0]);
+        $this->assertSame('Main dancer', $basic->position()->value());
+        $this->assertSame('ENFJ', $basic->mbti()?->value);
+        $this->assertNull($basic->zodiacSign());
+        $this->assertSame('conversational', $basic->englishLevel()?->value);
+        $this->assertSame(174, $basic->height()?->centimeters());
+        $this->assertSame('A', $basic->bloodType()?->value);
+        $this->assertSame('Jjangu', $basic->fandomName()->value());
+        $this->assertSame('🐥', $basic->emoji()->value());
+        $this->assertSame('Chick', $basic->representativeSymbol()->value());
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
@@ -765,9 +808,13 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $responseJson = $this->createGeminiResponseJson([
             'alphabet_name' => 'Dynamite',
+            'song_type' => 'title_track',
+            'genres' => ['pop', 'unknown'],
             'lyricist' => 'David Stewart',
             'composer' => 'Jessica Agombar',
+            'arranger' => 'David Stewart',
             'release_date' => '2020-08-21',
+            'album_name' => 'Dynamite',
             'overview' => $overview,
             'chart_performance' => $chartPerformance,
         ], [
@@ -804,8 +851,13 @@ class AutoWikiCreationServiceTest extends TestCase
 
         /** @var SongBasic $basic */
         $basic = $result->basic();
+        $this->assertSame('title_track', $basic->songType()?->value);
+        $this->assertSame(['pop'], array_map(static fn ($genre) => $genre->value, $basic->genres()));
+        $this->assertSame('2020-08-21', $basic->releaseDate()?->format('Y-m-d'));
+        $this->assertSame('Dynamite', $basic->albumName());
         $this->assertSame('David Stewart', (string) $basic->lyricist());
         $this->assertSame('Jessica Agombar', (string) $basic->composer());
+        $this->assertSame('David Stewart', (string) $basic->arranger());
         $this->assertSame((string) $agencyId, (string) $basic->agencyIdentifier());
         $this->assertCount(1, $basic->groupIdentifiers());
         $this->assertCount(1, $basic->talentIdentifiers());

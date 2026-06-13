@@ -74,7 +74,8 @@ class AutoCreateWikiTest extends TestCase
         $repository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $repository->shouldReceive('save')
             ->once()
-            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()))
+            ->with(Mockery::on(static fn ($draftWiki) => (string) $draftWiki->slug() === (string) $payload->slug()
+                && (string) $draftWiki->editorIdentifier() === (string) $principalIdentifier))
             ->andReturn(null);
 
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
