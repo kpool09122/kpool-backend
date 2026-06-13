@@ -6,8 +6,8 @@ namespace Application\Http\Client\GeminiClient\GenerateSong;
 
 use Application\Http\Client\Foundation\Json\Decoder;
 use Application\Http\Client\GeminiClient\JsonContentExtractor;
+use Application\Http\Client\GeminiClient\SourceReferenceExtractor;
 use Psr\Http\Message\ResponseInterface;
-use Source\Wiki\Shared\Application\DTO\SourceReference;
 
 final readonly class GenerateSongResponse
 {
@@ -27,36 +27,8 @@ final readonly class GenerateSongResponse
         /** @var array<string, mixed> $data */
         $data = JsonContentExtractor::decodeObject($content);
 
-        $sources = $this->extractSources($responseBody);
+        $sources = (new SourceReferenceExtractor())->extract($data, $responseBody);
 
         return GenerateSongParams::fromArray($data, $sources);
-    }
-
-    /**
-     * @param array{candidates?: array<int, array{content?: array{parts?: array<int, array{text?: string}>}, groundingMetadata?: array{groundingChunks?: array<int, array{web?: array{uri?: string, title?: string}}>}}>} $responseBody
-     * @return SourceReference[]
-     */
-    private function extractSources(array $responseBody): array
-    {
-        $groundingMetadata = $responseBody['candidates'][0]['groundingMetadata'] ?? [];
-        $sources = [];
-        /** @var array<string, bool> $seenUris */
-        $seenUris = [];
-
-        /** @var array{web?: array{uri?: string, title?: string}} $chunk */
-        foreach ($groundingMetadata['groundingChunks'] ?? [] as $chunk) {
-            $uri = $chunk['web']['uri'] ?? null;
-            $title = $chunk['web']['title'] ?? null;
-
-            if ($uri !== null && ! isset($seenUris[$uri])) {
-                $sources[] = new SourceReference(
-                    uri: $uri,
-                    title: $title ?? '',
-                );
-                $seenUris[$uri] = true;
-            }
-        }
-
-        return $sources;
     }
 }

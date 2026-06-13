@@ -86,6 +86,14 @@ class AutoWikiCreationServiceTest extends TestCase
                                     'overview' => $overview,
                                     'history' => $history,
                                     'artists' => $artists,
+                                    'sources' => [
+                                        [
+                                            'page_title' => 'JYP Entertainment Company Info',
+                                            'site_name' => 'JYP Entertainment',
+                                            'url' => 'https://www.jypentertainment.com/en/Company/Info',
+                                            'description' => 'Company profile and founding information.',
+                                        ],
+                                    ],
                                 ], JSON_THROW_ON_ERROR),
                             ],
                         ],
@@ -94,8 +102,8 @@ class AutoWikiCreationServiceTest extends TestCase
                         'groundingChunks' => [
                             [
                                 'web' => [
-                                    'uri' => 'https://www.jypentertainment.com/',
-                                    'title' => 'JYP Entertainment 公式サイト',
+                                    'uri' => 'https://vertexaisearch.cloud.google.com/grounding-api-redirect/example',
+                                    'title' => 'jypentertainment.com',
                                 ],
                             ],
                         ],
@@ -157,12 +165,12 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('出典', $sections[3]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[3]->contents()->blocks()[0]);
         $this->assertSame(
-            ['JYP Entertainment 公式サイト (https://www.jypentertainment.com/)'],
+            ['[JYP Entertainment Company Info - JYP Entertainment](https://www.jypentertainment.com/en/Company/Info)'],
             $sections[3]->contents()->blocks()[0]->items(),
         );
 
         $this->assertCount(1, $result->sources());
-        $this->assertSame('https://www.jypentertainment.com/', $result->sources()[0]->uri());
+        $this->assertSame('https://www.jypentertainment.com/en/Company/Info', $result->sources()[0]->uri());
     }
 
     /**
@@ -343,7 +351,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('출처', $sections[5]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
         $this->assertSame(
-            ['트와이스 - 위키백과 (https://ko.wikipedia.org/wiki/트와이스)'],
+            ['[트와이스 - 위키백과](https://ko.wikipedia.org/wiki/트와이스)'],
             $sections[5]->contents()->blocks()[0]->items(),
         );
 
@@ -588,7 +596,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('出典', $sections[4]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
         $this->assertSame(
-            ['Example (https://example.com/)'],
+            ['[Example](https://example.com/)'],
             $sections[4]->contents()->blocks()[0]->items(),
         );
 
@@ -877,7 +885,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('出典', $sections[2]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
         $this->assertSame(
-            ['Dynamite - Wikipedia (https://example.com/dynamite)'],
+            ['[Dynamite - Wikipedia](https://example.com/dynamite)'],
             $sections[2]->contents()->blocks()[0]->items(),
         );
 
