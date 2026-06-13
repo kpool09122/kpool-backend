@@ -23,10 +23,20 @@ use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\AutoWikiCreationServiceInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\AutoWikiCreationPayload;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyStatus;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\Generation;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupStatus;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongGenre;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Birthday;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\BloodType;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\EnglishLevel;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\MBTI;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\ZodiacSign;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
@@ -77,7 +87,11 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'type' => 'agency',
             'name' => (string) $payload->name(),
             'ceo' => $params->ceoName() ?? '',
-            'founded_in' => $params->foundedYear() !== null ? $params->foundedYear() . '-01-01' : null,
+            'founded_in' => $this->validDate($params->foundedIn())
+                ?? ($params->foundedYear() !== null ? $params->foundedYear() . '-01-01' : null),
+            'status' => $this->allowedValue($params->status(), AgencyStatus::cases()),
+            'official_website' => $this->validHttpsUrl($params->officialWebsite()),
+            'social_links' => $this->validHttpsUrls($params->socialLinks()),
         ]);
 
         return new GeneratedWikiData(
@@ -112,6 +126,15 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'type' => 'group',
             'name' => (string) $payload->name(),
             'agency_identifier' => $payload->agencyIdentifier() !== null ? (string) $payload->agencyIdentifier() : null,
+            'group_type' => $this->allowedValue($params->groupType(), GroupType::cases()),
+            'status' => $this->allowedValue($params->status(), GroupStatus::cases()),
+            'generation' => $this->allowedValue($params->generation(), Generation::cases()),
+            'debut_date' => $this->validDate($params->debutDate()),
+            'disband_date' => $this->validDate($params->disbandDate()),
+            'fandom_name' => $params->fandomName() ?? '',
+            'official_colors' => $this->validHexColors($params->officialColors()),
+            'emoji' => $params->emoji() ?? '',
+            'representative_symbol' => $params->representativeSymbol() ?? '',
         ]);
 
         return new GeneratedWikiData(
@@ -163,6 +186,15 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
                 static fn (WikiIdentifier $id) => (string) $id,
                 $payload->groupIdentifiers(),
             ),
+            'emoji' => $params->emoji() ?? '',
+            'representative_symbol' => $params->representativeSymbol() ?? '',
+            'position' => $params->position() ?? '',
+            'mbti' => $this->allowedValue($params->mbti(), MBTI::cases()),
+            'zodiac_sign' => $this->allowedValue($params->zodiacSign(), ZodiacSign::cases()),
+            'english_level' => $this->allowedValue($params->englishLevel(), EnglishLevel::cases()),
+            'height' => $params->height() !== null && $params->height() > 0 ? $params->height() : null,
+            'blood_type' => $this->allowedValue($params->bloodType(), BloodType::cases()),
+            'fandom_name' => $params->fandomName() ?? '',
         ]);
 
         return new GeneratedWikiData(
@@ -220,9 +252,13 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
                 static fn (WikiIdentifier $id) => (string) $id,
                 $payload->talentIdentifiers(),
             ),
-            'release_date' => $params->releaseDate(),
+            'song_type' => $this->allowedValue($params->songType(), SongType::cases()),
+            'genres' => $this->allowedValues($params->genres(), SongGenre::cases()),
+            'release_date' => $this->validDate($params->releaseDate()),
+            'album_name' => $params->albumName(),
             'lyricist' => $params->lyricist() ?? '',
             'composer' => $params->composer() ?? '',
+            'arranger' => $params->arranger() ?? '',
         ]);
 
         return new GeneratedWikiData(
@@ -457,5 +493,84 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             displayOrder: $displayOrder,
             contents: new SectionContentCollection([new ListBlock(displayOrder: 0, listType: ListType::BULLET, items: $items)]),
         );
+    }
+
+    /**
+     * @param array<\BackedEnum> $cases
+     */
+    private function allowedValue(?string $value, array $cases): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        foreach ($cases as $case) {
+            if ($case->value === $value) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string[] $values
+     * @param array<\BackedEnum> $cases
+     * @return string[]
+     */
+    private function allowedValues(array $values, array $cases): array
+    {
+        return array_values(array_filter(
+            $values,
+            fn (string $value) => $this->allowedValue($value, $cases) !== null,
+        ));
+    }
+
+    private function validDate(?string $value): ?string
+    {
+        if ($value === null || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
+
+        try {
+            $date = new DateTimeImmutable($value);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $date->format('Y-m-d') === $value ? $value : null;
+    }
+
+    private function validHttpsUrl(?string $value): ?string
+    {
+        if ($value === null || ! str_starts_with($value, 'https://') || ! filter_var($value, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param string[] $values
+     * @return string[]
+     */
+    private function validHttpsUrls(array $values): array
+    {
+        return array_values(array_filter(
+            $values,
+            fn (string $value) => $this->validHttpsUrl($value) !== null,
+        ));
+    }
+
+    /**
+     * @param string[] $values
+     * @return string[]
+     */
+    private function validHexColors(array $values): array
+    {
+        return array_values(array_filter(
+            $values,
+            static fn (string $value) => preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value) === 1,
+        ));
     }
 }

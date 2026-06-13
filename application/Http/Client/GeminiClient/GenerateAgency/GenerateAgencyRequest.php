@@ -79,16 +79,14 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 
 ## Required Information
 1. alphabet_name: Agency name in English alphabet only (e.g., "JYP Entertainment", "SM Entertainment"). Use official English name if available, otherwise romanize the name.
-2. CEO name (representative director, CEO, etc.)
-3. Founded year (year only, e.g., 2005)
+2. ceo: CEO name (representative director, CEO, etc.) or null.
+3. founded_in: Founding date in YYYY-MM-DD format or null. If only the year is known, return YYYY-01-01.
+4. status: One of "active", "closed", "merged", "rebranded", or null.
+5. official_website: Official website URL or null.
 4. overview: Company overview (characteristics, business areas, market position) approximately 800 characters.
 5. history: Chronological description of founding, growth, and major events, approximately 1200 characters.
 6. artists: Array of currently affiliated artist/group names (max 20).
-7. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
-   - instagram_url: Official Instagram URL (e.g., "https://www.instagram.com/jaboritory/")
-   - tiktok_url: Official TikTok URL (e.g., "https://www.tiktok.com/@jypentertainment")
-   - youtube_url: Official YouTube channel URL (e.g., "https://www.youtube.com/@JYPEntertainment")
-   - x_url: Official X(Twitter) URL (e.g., "https://x.com/jypentertainment" or "https://twitter.com/jypentertainment")
+7. social_links: Array of official HTTPS SNS URLs. Include Instagram, TikTok, YouTube, and X(Twitter) URLs when found.
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
@@ -101,6 +99,9 @@ Research the following agency using Wikipedia, Namuwiki, and official homepage, 
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
 - Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
+- Do not guess uncertain values. Return null for unknown scalar values and [] for unknown arrays.
+- Dates must use YYYY-MM-DD.
+- Enum fields must use only the allowed lowercase values listed above.
 
 ## Output Format
 Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above.

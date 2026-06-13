@@ -89,17 +89,20 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 
 ## Required Information
 1. alphabet_name: Group/Artist name in English alphabet only (e.g., "BTS", "BLACKPINK", "NewJeans"). Use official English name if available, otherwise romanize the name.
-2. overview: Overview of the group (concept, characteristics, agency, etc.) approximately 800 characters.
-3. history: Chronological description of formation, debut, and career milestones, approximately 1200 characters.
-4. representative_songs: Array of representative songs (max 10). Format: "Song Title (Year)". Example: "Dynamite (2020)"
-5. awards: Array of major awards (max 10). Include award name and year.
-6. members: Array of current member names (stage names).
+2. group_type: One of "boy_group", "girl_group", "co_ed", or null.
+3. status: One of "active", "disbanded", "hiatus", or null.
+4. generation: One of "1st", "2nd", "3rd", "4th", "5th", or null.
+5. debut_date: Debut date in YYYY-MM-DD format or null.
+6. disband_date: Disbandment date in YYYY-MM-DD format or null.
 7. fandom_name: Official name for the fan community (e.g., "ARMY" for BTS, "BLINK" for BLACKPINK, "Bunnies" for NewJeans). If unknown, set to null.
-8. Official SNS URLs (extract from external links section of Wikipedia/Namuwiki):
-   - instagram_url: Official Instagram URL (e.g., "https://www.instagram.com/newjeans_official/")
-   - tiktok_url: Official TikTok URL (e.g., "https://www.tiktok.com/@newjeans_official")
-   - youtube_url: Official YouTube channel URL (e.g., "https://www.youtube.com/@NewJeans_official")
-   - x_url: Official X(Twitter) URL (e.g., "https://x.com/NewJeans_ADOR" or "https://twitter.com/NewJeans_ADOR")
+8. official_colors: Array of official colors as HEX color codes (e.g., "#FF5733"). If unknown, return [].
+9. emoji: Single representative emoji string or null.
+10. representative_symbol: Representative symbol text or null.
+11. overview: Overview of the group (concept, characteristics, agency, etc.) approximately 800 characters.
+12. history: Chronological description of formation, debut, and career milestones, approximately 1200 characters.
+13. representative_songs: Array of representative songs (max 10). Format: "Song Title (Year)". Example: "Dynamite (2020)"
+14. awards: Array of major awards (max 10). Include award name and year.
+15. members: Array of current member names (stage names).
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
@@ -112,6 +115,9 @@ Research the following K-POP group/artist{$agencyContext} using Wikipedia, Namuw
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
 - Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
+- Do not guess uncertain values. Return null for unknown scalar values and [] for unknown arrays.
+- Dates must use YYYY-MM-DD.
+- Enum fields must use only the allowed values listed above.
 
 ## Output Format
 Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above.

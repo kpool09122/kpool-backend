@@ -100,19 +100,20 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, N
 ## Required Information
 1. alphabet_name: Talent name in English alphabet only (e.g., "Jimin", "Lisa", "Karina"). Use official English name if available, otherwise romanize the name.
 2. real_name: Real name (birth name) of the talent in the original language (e.g., "박지민", "김제니"). If unknown, set to null.
-3. birthday: Birth date in ISO 8601 format (YYYY-MM-DD, e.g., "1995-10-13"). If unknown, set to null.
-4. overview: Introduction of the person (group affiliation, agency, position, main characteristics) approximately 800 characters.
-5. history: Chronological description of upbringing, debut, and career milestones, approximately 1200 characters.
-6. appearances: Array of appearances in works (max 10). Format: "Title (Type, Year)". Example: "Hwarang (Drama, 2016)"
-7. awards: Array of major individual awards (max 10).
-8. English proficiency:
-   - english_level: Level of English proficiency (e.g., "Native", "Fluent", "Conversational", "Basic", "None"). If unknown, set to null.
-   - english_background: Background of English ability (e.g., "Born and raised in Australia", "Studied abroad in the US for 3 years", "Self-taught"). If unknown, set to null.
-6. Personal SNS URLs (extract from external links section of Wikipedia/Namuwiki):
-   - instagram_url: Personal Instagram URL (e.g., "https://www.instagram.com/j.m/")
-   - tiktok_url: Personal TikTok URL (e.g., "https://www.tiktok.com/@j.m")
-   - youtube_url: Personal YouTube channel URL (e.g., "https://www.youtube.com/@jimin")
-   - x_url: Personal X(Twitter) URL (e.g., "https://x.com/jikiE_twt" or "https://twitter.com/jikiE_twt")
+3. birthday: Birth date in YYYY-MM-DD format (e.g., "1995-10-13"). If unknown, set to null.
+4. position: Main group position or role as a string, or null.
+5. mbti: One of "INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP", or null.
+6. zodiac_sign: One of "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces", or null.
+7. english_level: One of "native", "fluent", "conversational", "basic", "none", or null.
+8. height: Height in centimeters as a number, or null.
+9. blood_type: One of "A", "B", "O", "AB", or null.
+10. fandom_name: Personal fandom name as a string, or null.
+11. emoji: Single representative emoji string or null.
+12. representative_symbol: Representative symbol text or null.
+13. overview: Introduction of the person (group affiliation, agency, position, main characteristics) approximately 800 characters.
+14. history: Chronological description of upbringing, debut, and career milestones, approximately 1200 characters.
+15. appearances: Array of appearances in works (max 10). Format: "Title (Type, Year)". Example: "Hwarang (Drama, 2016)"
+16. awards: Array of major individual awards (max 10).
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
@@ -125,6 +126,9 @@ Research the following K-POP idol/talent{$affiliationContext} using Wikipedia, N
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
 - Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
+- Do not guess uncertain values. Return null for unknown scalar values and [] for unknown arrays.
+- Dates must use YYYY-MM-DD.
+- Enum fields must use only the allowed values listed above.
 
 ## Output Format
 Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above.

@@ -99,11 +99,15 @@ Research the following K-POP song{$affiliationContext} using Wikipedia, Namuwiki
 
 ## Required Information
 1. alphabet_name: Song title in English alphabet only (e.g., "Dynamite", "Butter", "Next Level"). Use official English title if available, otherwise romanize the title.
-2. lyricist: Name of the lyricist(s) who wrote the song lyrics. If multiple writers, separate with commas. If unknown, set to null.
-3. composer: Name of the composer(s) who created the music. If multiple composers, separate with commas. If unknown, set to null.
-4. release_date: Release date in ISO 8601 format (YYYY-MM-DD, e.g., "2020-08-21"). If unknown, set to null.
-5. overview: Background, production, music style, and characteristics of the song, approximately 800 characters.
-6. chart_performance: Array of chart performance records (max 10). Format: "Chart Name - Ranking/Certification". Example: "Billboard Hot 100 - #1"
+2. song_type: One of "title_track", "b_side", "ost", "solo", "collaboration", "pre_release", or null.
+3. genres: Array using only "pop", "dance", "ballad", "rnb", "hiphop", "edm", "rock", "jazz", "acoustic".
+4. release_date: Release date in YYYY-MM-DD format (e.g., "2020-08-21"). If unknown, set to null.
+5. album_name: Album or single name as a string, or null.
+6. lyricist: Name of the lyricist(s) who wrote the song lyrics. If multiple writers, separate with commas. If unknown, set to null.
+7. composer: Name of the composer(s) who created the music. If multiple composers, separate with commas. If unknown, set to null.
+8. arranger: Name of the arranger(s). If multiple arrangers, separate with commas. If unknown, set to null.
+9. overview: Background, production, music style, and characteristics of the song, approximately 800 characters.
+10. chart_performance: Array of chart performance records (max 10). Format: "Chart Name - Ranking/Certification". Example: "Billboard Hot 100 - #1"
 
 ## Constraints
 - Limit your web searches to a maximum of 5 queries
@@ -115,6 +119,9 @@ Research the following K-POP song{$affiliationContext} using Wikipedia, Namuwiki
 - If Korean sources are insufficient, then use other language sources (English Wikipedia, etc.)
 - Use reliable sources (Wikipedia, Namuwiki, official websites)
 - If information is not found, set the field to null
+- Do not guess uncertain values. Return null for unknown scalar values and [] for unknown arrays.
+- Dates must use YYYY-MM-DD.
+- Enum fields must use only the allowed values listed above.
 
 ## Output Format
 Return only one valid JSON object. Do not wrap it in Markdown. Use the snake_case field names listed above.

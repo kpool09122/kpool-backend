@@ -74,7 +74,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         $basic = $generatedBasic::fromArray($basicArray);
 
         $draftWiki = $this->draftWikiFactory->create(
-            editorIdentifier: null,
+            editorIdentifier: $input->principalIdentifier(),
             language: $payload->language(),
             basic: $basic,
             slug: $payload->slug(),
