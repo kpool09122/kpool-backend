@@ -20,7 +20,7 @@ class TranslateWikiOutput implements TranslateWikiOutputPort
     }
 
     /**
-     * @return array{draftWikis: array<int, array{language: string, name: string, resourceType: string, status: string}>}
+     * @return array{draftWikis: array<int, array{wikiIdentifier: string, language: string, name: string, resourceType: string, status: string}>}
      */
     public function toArray(): array
     {
@@ -31,6 +31,7 @@ class TranslateWikiOutput implements TranslateWikiOutputPort
         return [
             'draftWikis' => array_map(
                 static fn (DraftWiki $draftWiki) => [
+                    'wikiIdentifier' => (string) $draftWiki->wikiIdentifier(),
                     'language' => $draftWiki->language()->value,
                     'name' => (string) $draftWiki->basic()->name(),
                     'resourceType' => $draftWiki->resourceType()->value,

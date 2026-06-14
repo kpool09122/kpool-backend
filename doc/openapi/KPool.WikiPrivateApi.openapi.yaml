@@ -3529,11 +3529,16 @@ components:
     PublishedWikiSummary:
       type: object
       required:
+        - wikiIdentifier
         - language
         - name
         - resourceType
         - version
       properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published wiki identifier.
         language:
           type: string
           description: Language of the wiki.

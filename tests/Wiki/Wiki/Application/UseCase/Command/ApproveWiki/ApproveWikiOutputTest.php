@@ -64,6 +64,7 @@ class ApproveWikiOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        $this->assertSame((string) $draftWiki->wikiIdentifier(), $result['wikiIdentifier']);
         $this->assertSame('ko', $result['language']);
         $this->assertSame('TWICE', $result['name']);
         $this->assertSame('group', $result['resourceType']);
@@ -82,6 +83,7 @@ class ApproveWikiOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame([
+            'wikiIdentifier' => null,
             'language' => null,
             'name' => null,
             'resourceType' => null,

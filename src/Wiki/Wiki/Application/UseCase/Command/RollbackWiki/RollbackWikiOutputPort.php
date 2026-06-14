@@ -14,7 +14,7 @@ interface RollbackWikiOutputPort
     public function setWikis(array $wikis): void;
 
     /**
-     * @return array{wikis: array<int, array{language: string, name: string, resourceType: string, version: int}>}
+     * @return array{wikis: array<int, array{wikiIdentifier: string, language: string, name: string, resourceType: string, version: int}>}
      */
     public function toArray(): array;
 }
