@@ -16,12 +16,13 @@ class PublishWikiOutput implements PublishWikiOutputPort
     }
 
     /**
-     * @return array{language: ?string, name: ?string, resourceType: ?string, version: ?int}
+     * @return array{wikiIdentifier: ?string, language: ?string, name: ?string, resourceType: ?string, version: ?int}
      */
     public function toArray(): array
     {
         if ($this->wiki === null) {
             return [
+                'wikiIdentifier' => null,
                 'language' => null,
                 'name' => null,
                 'resourceType' => null,
@@ -30,6 +31,7 @@ class PublishWikiOutput implements PublishWikiOutputPort
         }
 
         return [
+            'wikiIdentifier' => (string) $this->wiki->wikiIdentifier(),
             'language' => $this->wiki->language()->value,
             'name' => (string) $this->wiki->basic()->name(),
             'resourceType' => $this->wiki->resourceType()->value,

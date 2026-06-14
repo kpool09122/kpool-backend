@@ -58,6 +58,7 @@ class WithdrawWikiOutputTest extends TestCase
         $output->setDraftWiki($draftWiki);
 
         $this->assertSame([
+            'wikiIdentifier' => (string) $draftWiki->wikiIdentifier(),
             'language' => 'ko',
             'name' => 'TWICE',
             'resourceType' => 'group',
@@ -70,6 +71,7 @@ class WithdrawWikiOutputTest extends TestCase
         $output = new WithdrawWikiOutput();
 
         $this->assertSame([
+            'wikiIdentifier' => null,
             'language' => null,
             'name' => null,
             'resourceType' => null,

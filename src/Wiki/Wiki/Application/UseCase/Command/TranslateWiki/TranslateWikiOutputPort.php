@@ -14,7 +14,7 @@ interface TranslateWikiOutputPort
     public function setDraftWikis(array $draftWikis): void;
 
     /**
-     * @return array{draftWikis: array<int, array{language: string, name: string, resourceType: string, status: string}>}
+     * @return array{draftWikis: array<int, array{wikiIdentifier: string, language: string, name: string, resourceType: string, status: string}>}
      */
     public function toArray(): array;
 }

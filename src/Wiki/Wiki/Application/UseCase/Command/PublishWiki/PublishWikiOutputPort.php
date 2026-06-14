@@ -11,7 +11,7 @@ interface PublishWikiOutputPort
     public function setWiki(Wiki $wiki): void;
 
     /**
-     * @return array{language: ?string, name: ?string, resourceType: ?string, version: ?int}
+     * @return array{wikiIdentifier: ?string, language: ?string, name: ?string, resourceType: ?string, version: ?int}
      */
     public function toArray(): array;
 }

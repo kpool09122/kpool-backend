@@ -11,7 +11,7 @@ interface WithdrawWikiOutputPort
     public function setDraftWiki(DraftWiki $draftWiki): void;
 
     /**
-     * @return array{language: ?string, name: ?string, resourceType: ?string, status: ?string}
+     * @return array{wikiIdentifier: ?string, language: ?string, name: ?string, resourceType: ?string, status: ?string}
      */
     public function toArray(): array;
 }

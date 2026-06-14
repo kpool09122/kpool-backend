@@ -86,10 +86,12 @@ class RollbackWikiOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertCount(2, $result['wikis']);
+        $this->assertSame((string) $wiki1->wikiIdentifier(), $result['wikis'][0]['wikiIdentifier']);
         $this->assertSame('ko', $result['wikis'][0]['language']);
         $this->assertSame('TWICE', $result['wikis'][0]['name']);
         $this->assertSame('group', $result['wikis'][0]['resourceType']);
         $this->assertSame(3, $result['wikis'][0]['version']);
+        $this->assertSame((string) $wiki2->wikiIdentifier(), $result['wikis'][1]['wikiIdentifier']);
         $this->assertSame('ja', $result['wikis'][1]['language']);
     }
 

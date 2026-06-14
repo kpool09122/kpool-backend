@@ -92,10 +92,12 @@ class TranslateWikiOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertCount(2, $result['draftWikis']);
+        $this->assertSame((string) $draftWiki1->wikiIdentifier(), $result['draftWikis'][0]['wikiIdentifier']);
         $this->assertSame('ja', $result['draftWikis'][0]['language']);
         $this->assertSame('TWICE', $result['draftWikis'][0]['name']);
         $this->assertSame('group', $result['draftWikis'][0]['resourceType']);
         $this->assertSame('pending', $result['draftWikis'][0]['status']);
+        $this->assertSame((string) $draftWiki2->wikiIdentifier(), $result['draftWikis'][1]['wikiIdentifier']);
         $this->assertSame('en', $result['draftWikis'][1]['language']);
     }
 

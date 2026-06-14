@@ -20,7 +20,7 @@ class RollbackWikiOutput implements RollbackWikiOutputPort
     }
 
     /**
-     * @return array{wikis: array<int, array{language: string, name: string, resourceType: string, version: int}>}
+     * @return array{wikis: array<int, array{wikiIdentifier: string, language: string, name: string, resourceType: string, version: int}>}
      */
     public function toArray(): array
     {
@@ -31,6 +31,7 @@ class RollbackWikiOutput implements RollbackWikiOutputPort
         return [
             'wikis' => array_map(
                 static fn (Wiki $wiki) => [
+                    'wikiIdentifier' => (string) $wiki->wikiIdentifier(),
                     'language' => $wiki->language()->value,
                     'name' => (string) $wiki->basic()->name(),
                     'resourceType' => $wiki->resourceType()->value,
