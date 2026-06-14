@@ -12,6 +12,7 @@ readonly class SignupSession
     public function __construct(
         private ?AccountType $accountType = null,
         private ?InvitationToken $invitationToken = null,
+        private ?string $returnTo = null,
     ) {
     }
 
@@ -23,5 +24,10 @@ readonly class SignupSession
     public function invitationToken(): ?InvitationToken
     {
         return $this->invitationToken;
+    }
+
+    public function returnTo(): ?string
+    {
+        return $this->returnTo;
     }
 }

@@ -41,6 +41,8 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
     public function process(SocialLoginCallbackInputPort $input, SocialLoginCallbackOutputPort $output): void
     {
         $this->oauthStateRepository->consume($input->state());
+        $signupSession = $this->signupSessionRepository->find($input->state());
+        $redirectUrl = $signupSession?->returnTo() ?? self::DEFAULT_REDIRECT_URL;
 
         $profile = $this->socialOAuthClient->fetchProfile($input->provider(), $input->code());
         $connection = new SocialConnection($input->provider(), $profile->providerUserId());
@@ -48,7 +50,10 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
 
         if ($identity !== null) {
             $this->authService->login($identity);
-            $output->setRedirectUrl(self::DEFAULT_REDIRECT_URL);
+            if ($signupSession !== null) {
+                $this->signupSessionRepository->delete($input->state());
+            }
+            $output->setRedirectUrl($redirectUrl);
 
             return;
         }
@@ -61,12 +66,14 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
             }
 
             $this->authService->login($existingIdentity);
-            $output->setRedirectUrl(self::DEFAULT_REDIRECT_URL);
+            if ($signupSession !== null) {
+                $this->signupSessionRepository->delete($input->state());
+            }
+            $output->setRedirectUrl($redirectUrl);
 
             return;
         }
 
-        $signupSession = $this->signupSessionRepository->find($input->state());
         $accountType = $signupSession?->accountType() ?? AccountType::INDIVIDUAL;
 
         $newIdentity = $this->identityFactory->createFromSocialProfile($profile);
@@ -94,6 +101,6 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         }
 
         $this->authService->login($newIdentity);
-        $output->setRedirectUrl(self::DEFAULT_REDIRECT_URL);
+        $output->setRedirectUrl($redirectUrl);
     }
 }

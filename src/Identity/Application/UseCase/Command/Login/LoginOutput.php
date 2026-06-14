@@ -10,9 +10,16 @@ class LoginOutput implements LoginOutputPort
 {
     private ?Identity $identity = null;
 
+    private ?string $returnTo = null;
+
     public function setIdentity(Identity $identity): void
     {
         $this->identity = $identity;
+    }
+
+    public function setReturnTo(?string $returnTo): void
+    {
+        $this->returnTo = $returnTo;
     }
 
     /**
@@ -32,6 +39,7 @@ class LoginOutput implements LoginOutputPort
             'email' => (string) $identity->email(),
             'language' => $identity->language()->value,
             'profileImage' => $identity->profileImage() !== null ? (string) $identity->profileImage() : null,
+            'returnTo' => $this->returnTo,
         ];
     }
 }

@@ -37,4 +37,11 @@ class SignupSessionTest extends TestCase
 
         $this->assertSame($accountType, $session->accountType());
     }
+
+    public function test__constructWithReturnTo(): void
+    {
+        $session = new SignupSession(returnTo: '/mypage/wiki');
+
+        $this->assertSame('/mypage/wiki', $session->returnTo());
+    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SocialLogin\Callback;
 
+use Application\Http\Action\Identity\Support\ReturnToUrl;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use DateTimeImmutable;
@@ -79,6 +80,6 @@ readonly class SocialLoginCallbackAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return redirect()->away(rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/'));
+        return redirect()->away(ReturnToUrl::toFrontendUrl($output->redirectUrl()));
     }
 }

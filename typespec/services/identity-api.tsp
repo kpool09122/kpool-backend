@@ -25,6 +25,12 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountIdentifier: Uuid | null;
 }
 
+@doc("Identity summary returned after email login.")
+model LoginIdentitySummary extends IdentitySummary {
+  @doc("Normalized application return path after login.")
+  returnTo?: string | null;
+}
+
 @doc("Identity summary returned after switching active identity.")
 model SwitchedIdentitySummary extends IdentitySummary {
   @doc("Whether the active identity is delegated.")
@@ -81,6 +87,8 @@ model LoginRequestBody {
   email: string;
   @doc("Plain text password.")
   password: string;
+  @doc("Application return path after login.")
+  return_to?: string | null;
 }
 
 @doc("Request body for switching the active identity.")
@@ -105,6 +113,12 @@ model CreateIdentityResponse {
 model OkIdentityResponse {
   @statusCode statusCode: 200;
   @body body: IdentitySummary;
+}
+
+@doc("Response returned when email login succeeds.")
+model OkLoginResponse {
+  @statusCode statusCode: 200;
+  @body body: LoginIdentitySummary;
 }
 
 @doc("Response returned when fetching the current authenticated identity succeeds.")
@@ -159,7 +173,7 @@ interface IdentityAuthOperations {
   @doc("Authenticate with email and password.")
   login(
     @body body: LoginRequestBody,
-  ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): OkLoginResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/social/{provider}/redirect")
@@ -168,6 +182,7 @@ interface IdentityAuthOperations {
     @path provider: string,
     @query accountType?: string,
     @query invitationToken?: string,
+    @query return_to?: string | null,
   ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get

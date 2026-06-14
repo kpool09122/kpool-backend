@@ -6,9 +6,12 @@ namespace Tests\Wiki\Principal\Http\Action\Command\CreatePrincipal;
 
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalRequest;
+use Application\Http\Context\ActorContext;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Psr\Log\LoggerInterface;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInput;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
 use Source\Wiki\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalOutput;
@@ -22,14 +25,16 @@ class CreatePrincipalActionTest extends TestCase
     public function testInvokeReturnsCreatedResponse(): void
     {
         $identityIdentifier = StrTestHelper::generateUuid();
+        $accountIdentifier = StrTestHelper::generateUuid();
         $principalIdentifier = StrTestHelper::generateUuid();
 
         /** @var CreatePrincipalRequest&Mockery\MockInterface $request */
         $request = Mockery::mock(CreatePrincipalRequest::class);
         $request->shouldReceive('identityIdentifier')->andReturn($identityIdentifier);
-        $request->shouldReceive('accountIdentifier')->andReturn(StrTestHelper::generateUuid());
+        $request->shouldReceive('accountIdentifier')->andReturn($accountIdentifier);
         $request->shouldReceive('language')->andReturn('en');
 
+        $this->expectAccountMembershipCheck($accountIdentifier, $identityIdentifier, true);
         DB::shouldReceive('beginTransaction')->once();
         DB::shouldReceive('commit')->once();
 
@@ -60,7 +65,7 @@ class CreatePrincipalActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldNotReceive('error');
 
-        $action = new CreatePrincipalAction($useCase, $logger);
+        $action = new CreatePrincipalAction($useCase, $this->actorContext($identityIdentifier), $logger);
 
         $response = $action($request);
         $payload = $response->getData(true);
@@ -72,12 +77,16 @@ class CreatePrincipalActionTest extends TestCase
 
     public function testInvokeReturnsConflictResponseWhenPrincipalAlreadyExists(): void
     {
+        $identityIdentifier = StrTestHelper::generateUuid();
+        $accountIdentifier = StrTestHelper::generateUuid();
+
         /** @var CreatePrincipalRequest&Mockery\MockInterface $request */
         $request = Mockery::mock(CreatePrincipalRequest::class);
-        $request->shouldReceive('identityIdentifier')->andReturn(StrTestHelper::generateUuid());
-        $request->shouldReceive('accountIdentifier')->andReturn(StrTestHelper::generateUuid());
+        $request->shouldReceive('identityIdentifier')->andReturn($identityIdentifier);
+        $request->shouldReceive('accountIdentifier')->andReturn($accountIdentifier);
         $request->shouldReceive('language')->andReturn('en');
 
+        $this->expectAccountMembershipCheck($accountIdentifier, $identityIdentifier, true);
         DB::shouldReceive('beginTransaction')->once();
         DB::shouldReceive('rollBack')->once();
 
@@ -91,7 +100,7 @@ class CreatePrincipalActionTest extends TestCase
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
 
-        $action = new CreatePrincipalAction($useCase, $logger);
+        $action = new CreatePrincipalAction($useCase, $this->actorContext($identityIdentifier), $logger);
 
         $response = $action($request);
         /** @var array<string, mixed> $payload */
@@ -99,5 +108,91 @@ class CreatePrincipalActionTest extends TestCase
 
         $this->assertSame(Response::HTTP_CONFLICT, $response->getStatusCode());
         $this->assertSame(error_message('principal_already_exists', 'en'), $payload['detail']);
+    }
+
+    public function testInvokeReturnsUnprocessableWhenIdentityDoesNotMatchActor(): void
+    {
+        $actorIdentityIdentifier = StrTestHelper::generateUuid();
+
+        /** @var CreatePrincipalRequest&Mockery\MockInterface $request */
+        $request = Mockery::mock(CreatePrincipalRequest::class);
+        $request->shouldReceive('identityIdentifier')->andReturn(StrTestHelper::generateUuid());
+        $request->shouldReceive('accountIdentifier')->andReturn(StrTestHelper::generateUuid());
+
+        /** @var CreatePrincipalInterface&Mockery\MockInterface $useCase */
+        $useCase = Mockery::mock(CreatePrincipalInterface::class);
+        $useCase->shouldNotReceive('process');
+
+        /** @var LoggerInterface&Mockery\MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once();
+
+        $action = new CreatePrincipalAction($useCase, $this->actorContext($actorIdentityIdentifier), $logger);
+
+        $response = $action($request);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
+
+    public function testInvokeReturnsUnprocessableWhenAccountDoesNotBelongToActor(): void
+    {
+        $identityIdentifier = StrTestHelper::generateUuid();
+        $accountIdentifier = StrTestHelper::generateUuid();
+
+        /** @var CreatePrincipalRequest&Mockery\MockInterface $request */
+        $request = Mockery::mock(CreatePrincipalRequest::class);
+        $request->shouldReceive('identityIdentifier')->andReturn($identityIdentifier);
+        $request->shouldReceive('accountIdentifier')->andReturn($accountIdentifier);
+
+        $this->expectAccountMembershipCheck($accountIdentifier, $identityIdentifier, false);
+
+        /** @var CreatePrincipalInterface&Mockery\MockInterface $useCase */
+        $useCase = Mockery::mock(CreatePrincipalInterface::class);
+        $useCase->shouldNotReceive('process');
+
+        /** @var LoggerInterface&Mockery\MockInterface $logger */
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('error')->once();
+
+        $action = new CreatePrincipalAction($useCase, $this->actorContext($identityIdentifier), $logger);
+
+        $response = $action($request);
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+    }
+
+    private function actorContext(string $identityIdentifier): ActorContext
+    {
+        return new ActorContext(
+            new IdentityIdentifier($identityIdentifier),
+            Language::ENGLISH,
+            null,
+            null,
+        );
+    }
+
+    private function expectAccountMembershipCheck(string $accountIdentifier, string $identityIdentifier, bool $exists): void
+    {
+        $query = Mockery::mock();
+        $query->shouldReceive('join')
+            ->once()
+            ->with('identity_group_memberships', 'identity_groups.id', '=', 'identity_group_memberships.identity_group_id')
+            ->andReturnSelf();
+        $query->shouldReceive('where')
+            ->once()
+            ->with('identity_groups.account_id', $accountIdentifier)
+            ->andReturnSelf();
+        $query->shouldReceive('where')
+            ->once()
+            ->with('identity_group_memberships.identity_id', $identityIdentifier)
+            ->andReturnSelf();
+        $query->shouldReceive('exists')
+            ->once()
+            ->andReturn($exists);
+
+        DB::shouldReceive('table')
+            ->once()
+            ->with('identity_groups')
+            ->andReturn($query);
     }
 }

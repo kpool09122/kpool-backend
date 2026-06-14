@@ -113,7 +113,10 @@ class SocialLoginCallbackTest extends TestCase
         $identityFactory->shouldNotReceive('createFromSocialProfile');
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
-        $signupSessionRepository->shouldNotReceive('find');
+        $signupSessionRepository->shouldReceive('find')
+            ->once()
+            ->with($state)
+            ->andReturnNull();
         $signupSessionRepository->shouldNotReceive('delete');
 
         $authService = Mockery::mock(AuthServiceInterface::class);
@@ -188,7 +191,10 @@ class SocialLoginCallbackTest extends TestCase
         $identityFactory->shouldNotReceive('createFromSocialProfile');
 
         $signupSessionRepository = Mockery::mock(SignupSessionRepositoryInterface::class);
-        $signupSessionRepository->shouldNotReceive('find');
+        $signupSessionRepository->shouldReceive('find')
+            ->once()
+            ->with($state)
+            ->andReturnNull();
         $signupSessionRepository->shouldNotReceive('delete');
 
         $authService = Mockery::mock(AuthServiceInterface::class);
@@ -232,7 +238,7 @@ class SocialLoginCallbackTest extends TestCase
         $email = new Email('kakao-user@example.com');
         $profile = new SocialProfile($provider, 'provider-user-3', $email, 'Kakao User');
         $newUser = $this->createIdentity($email);
-        $signupSession = new SignupSession(AccountType::CORPORATION);
+        $signupSession = new SignupSession(AccountType::CORPORATION, returnTo: '/mypage/wiki');
 
         $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
         $oauthStateRepository->shouldReceive('consume')
@@ -306,7 +312,7 @@ class SocialLoginCallbackTest extends TestCase
 
         $useCase->process($input, $output);
 
-        $this->assertSame('/auth/callback', $output->redirectUrl());
+        $this->assertSame('/mypage/wiki', $output->redirectUrl());
     }
 
     /**

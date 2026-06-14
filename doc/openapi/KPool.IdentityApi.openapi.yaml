@@ -11,11 +11,11 @@ paths:
       parameters: []
       responses:
         '200':
-          description: Response returned when an identity operation succeeds.
+          description: Response returned when email login succeeds.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IdentitySummary'
+                $ref: '#/components/schemas/LoginIdentitySummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -235,6 +235,13 @@ paths:
           schema:
             type: string
           explode: false
+        - name: return_to
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+          explode: false
       responses:
         '200':
           description: Response returned by social login endpoints.
@@ -433,6 +440,16 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
+    LoginIdentitySummary:
+      type: object
+      properties:
+        returnTo:
+          type: string
+          nullable: true
+          description: Normalized application return path after login.
+      allOf:
+        - $ref: '#/components/schemas/IdentitySummary'
+      description: Identity summary returned after email login.
     LoginRequestBody:
       type: object
       required:
@@ -445,7 +462,19 @@ components:
         password:
           type: string
           description: Plain text password.
+        return_to:
+          type: string
+          nullable: true
+          description: Application return path after login.
       description: Request body for logging in.
+    OkIdentityResponse:
+      type: object
+      required:
+        - body
+      properties:
+        body:
+          $ref: '#/components/schemas/IdentitySummary'
+      description: Response returned when an identity operation succeeds.
     RedirectUrlResult:
       type: object
       required:

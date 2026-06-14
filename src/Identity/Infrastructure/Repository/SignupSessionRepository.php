@@ -26,6 +26,7 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
                 'invitation_token' => $session->invitationToken() !== null
                     ? (string) $session->invitationToken()
                     : null,
+                'return_to' => $session->returnTo(),
             ];
             Redis::setex($key, $ttl, json_encode($data));
         }
@@ -54,7 +55,9 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
             ? new InvitationToken($data['invitation_token'])
             : null;
 
-        return new SignupSession($accountType, $invitationToken);
+        $returnTo = isset($data['return_to']) ? (string) $data['return_to'] : null;
+
+        return new SignupSession($accountType, $invitationToken, $returnTo);
     }
 
     public function delete(OAuthState $state): void

@@ -47,6 +47,7 @@ class LoginOutputTest extends TestCase
         );
 
         $output = new LoginOutput();
+        $output->setReturnTo('/mypage/wiki');
         $output->setIdentity($identity);
 
         $result = $output->toArray();
@@ -56,6 +57,7 @@ class LoginOutputTest extends TestCase
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($language->value, $result['language']);
         $this->assertSame((string) $profileImage, $result['profileImage']);
+        $this->assertSame('/mypage/wiki', $result['returnTo']);
     }
 
     public function testToArrayReturnsNullProfileImageWhenNotSet(): void
