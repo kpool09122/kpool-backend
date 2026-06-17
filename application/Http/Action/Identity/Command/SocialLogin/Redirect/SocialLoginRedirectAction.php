@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Identity\Command\SocialLogin\Redirect;
 
+use Application\Http\Action\Identity\Support\ReturnToUrl;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +40,8 @@ readonly class SocialLoginRedirectAction
         try {
             try {
                 $provider = SocialProvider::fromString($request->provider());
-                $signupSession = ($request->accountType() !== null || $request->invitationToken() !== null)
+                $returnTo = ReturnToUrl::normalize($request->returnTo());
+                $signupSession = ($request->accountType() !== null || $request->invitationToken() !== null || $returnTo !== null)
                     ? new SignupSession(
                         accountType: $request->accountType() !== null
                             ? AccountType::from($request->accountType())
@@ -47,6 +49,7 @@ readonly class SocialLoginRedirectAction
                         invitationToken: $request->invitationToken() !== null
                             ? new InvitationToken($request->invitationToken())
                             : null,
+                        returnTo: $returnTo,
                     )
                     : null;
 

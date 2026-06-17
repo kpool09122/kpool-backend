@@ -70,6 +70,20 @@ class SignupSessionRepositoryTest extends TestCase
         $this->assertSame(AccountType::INDIVIDUAL, $foundSession->accountType());
     }
 
+    public function testStoreAndFindWithReturnTo(): void
+    {
+        $state = new OAuthState('test-state-token', new DateTimeImmutable('+10 minutes'));
+        $session = new SignupSession(returnTo: '/mypage/wiki');
+
+        $repository = $this->app->make(SignupSessionRepositoryInterface::class);
+        $repository->store($state, $session);
+
+        $foundSession = $repository->find($state);
+
+        $this->assertNotNull($foundSession);
+        $this->assertSame('/mypage/wiki', $foundSession->returnTo());
+    }
+
     /**
      * 正常系: AccountType::CORPORATIONのSignupSessionを保存し、取得できること.
      *

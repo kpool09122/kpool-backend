@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Identity\Command\Login;
 
 use Application\Http\Action\Identity\Support\IdentityResponsePayload;
+use Application\Http\Action\Identity\Support\ReturnToUrl;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -44,6 +45,7 @@ readonly class LoginAction
                     password: new PlainPassword($request->password()),
                 );
                 $output = new LoginOutput();
+                $output->setReturnTo(ReturnToUrl::normalize($request->returnTo()));
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             }

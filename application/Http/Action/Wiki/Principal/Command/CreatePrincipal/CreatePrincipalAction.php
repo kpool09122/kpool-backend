@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Principal\Command\CreatePrincipal;
 
+use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -24,6 +25,7 @@ readonly class CreatePrincipalAction
 {
     public function __construct(
         private CreatePrincipalInterface $createPrincipal,
+        private ActorContext $actorContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -39,6 +41,7 @@ readonly class CreatePrincipalAction
                     new IdentityIdentifier($request->identityIdentifier()),
                     new AccountIdentifier($request->accountIdentifier()),
                 );
+                $this->assertActorMatchesRequest($input);
                 $output = new CreatePrincipalOutput();
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
@@ -71,5 +74,22 @@ readonly class CreatePrincipalAction
         }
 
         return response()->json($output->toArray(), Response::HTTP_CREATED);
+    }
+
+    private function assertActorMatchesRequest(CreatePrincipalInput $input): void
+    {
+        if ((string) $input->identityIdentifier() !== (string) $this->actorContext->identityIdentifier) {
+            throw new UnprocessableEntityHttpException(detail: 'identityIdentifier must match authenticated identity');
+        }
+
+        $belongsToAccount = DB::table('identity_groups')
+            ->join('identity_group_memberships', 'identity_groups.id', '=', 'identity_group_memberships.identity_group_id')
+            ->where('identity_groups.account_id', (string) $input->accountIdentifier())
+            ->where('identity_group_memberships.identity_id', (string) $this->actorContext->identityIdentifier)
+            ->exists();
+
+        if (! $belongsToAccount) {
+            throw new UnprocessableEntityHttpException(detail: 'accountIdentifier must belong to authenticated identity');
+        }
     }
 }

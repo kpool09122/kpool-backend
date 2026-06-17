@@ -104,7 +104,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 
 // Principal
 Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
-Route::post('/principal/create', CreatePrincipalAction::class);
+Route::post('/principal/create', CreatePrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
 Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
 Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);

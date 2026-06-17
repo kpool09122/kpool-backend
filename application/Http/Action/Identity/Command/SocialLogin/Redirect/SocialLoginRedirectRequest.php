@@ -19,6 +19,7 @@ class SocialLoginRedirectRequest extends FormRequest
         return [
             'accountType' => ['nullable', 'string'],
             'invitationToken' => ['nullable', 'string'],
+            'return_to' => ['nullable', 'string'],
         ];
     }
 
@@ -37,6 +38,13 @@ class SocialLoginRedirectRequest extends FormRequest
     public function invitationToken(): ?string
     {
         $value = $this->input('invitationToken');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    public function returnTo(): ?string
+    {
+        $value = $this->input('return_to');
 
         return $value !== null ? (string) $value : null;
     }

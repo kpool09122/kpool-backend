@@ -19,6 +19,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+            'return_to' => ['nullable', 'string'],
         ];
     }
 
@@ -30,5 +31,12 @@ class LoginRequest extends FormRequest
     public function password(): string
     {
         return (string) $this->input('password');
+    }
+
+    public function returnTo(): ?string
+    {
+        $value = $this->input('return_to');
+
+        return $value !== null ? (string) $value : null;
     }
 }
