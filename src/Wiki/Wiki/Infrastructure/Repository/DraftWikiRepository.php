@@ -26,6 +26,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
@@ -153,6 +156,9 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 'image_identifier' => $draftWiki->imageIdentifier() ? (string) $draftWiki->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($draftWiki->sections()),
                 'theme_color' => $draftWiki->themeColor() ? (string) $draftWiki->themeColor() : null,
+                'title' => $draftWiki->title() ? (string) $draftWiki->title() : null,
+                'meta_description' => $draftWiki->metaDescription() ? (string) $draftWiki->metaDescription() : null,
+                'keywords' => $draftWiki->keywords()?->values(),
                 'status' => $draftWiki->status()->value,
                 'editor_id' => $draftWiki->editorIdentifier() ? (string) $draftWiki->editorIdentifier() : null,
                 'approver_id' => $draftWiki->approverIdentifier() ? (string) $draftWiki->approverIdentifier() : null,
@@ -242,6 +248,9 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->approved_at?->toDateTimeImmutable(),
             $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
             $model->edited_at?->toDateTimeImmutable(),
+            $model->title !== null ? new SeoTitle($model->title) : null,
+            $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
+            $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
         );
     }
 

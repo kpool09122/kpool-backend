@@ -21,6 +21,10 @@ readonly class WikiListItemReadModel
         private string $normalizedName,
         private ?string $publishedAt,
         private ?string $updatedAt,
+        private ?string $title = null,
+        private ?string $metaDescription = null,
+        /** @var list<string>|null */
+        private ?array $keywords = null,
     ) {
     }
 
@@ -47,6 +51,9 @@ readonly class WikiListItemReadModel
             'resourceType' => $this->resourceType,
             'version' => $this->version,
             'themeColor' => $this->themeColor,
+            'title' => $this->title,
+            'metaDescription' => $this->metaDescription,
+            'keywords' => $this->keywords,
             'imageIdentifier' => $this->imageIdentifier,
             'imageUrl' => $this->imageUrl,
             'imageAltText' => $this->imageAltText,

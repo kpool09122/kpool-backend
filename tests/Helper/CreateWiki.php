@@ -26,6 +26,9 @@ class CreateWiki
      *     translated_at?: ?string,
      *     approved_at?: ?string,
      *     published_at?: ?string,
+     *     title?: ?string,
+     *     meta_description?: ?string,
+     *     keywords?: ?string,
      * } $overrides
      * @param array<string, mixed> $basicOverrides
      */
@@ -50,6 +53,9 @@ class CreateWiki
             'translated_at' => $overrides['translated_at'] ?? null,
             'approved_at' => $overrides['approved_at'] ?? null,
             'published_at' => $overrides['published_at'] ?? null,
+            'title' => $overrides['title'] ?? null,
+            'meta_description' => $overrides['meta_description'] ?? null,
+            'keywords' => $overrides['keywords'] ?? null,
         ]);
 
         match ($resourceType) {

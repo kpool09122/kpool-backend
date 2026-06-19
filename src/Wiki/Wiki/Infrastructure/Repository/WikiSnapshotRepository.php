@@ -25,6 +25,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 
@@ -47,6 +50,9 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 'image_identifier' => $snapshot->imageIdentifier() ? (string) $snapshot->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($snapshot->sections()),
                 'theme_color' => $snapshot->themeColor() ? (string) $snapshot->themeColor() : null,
+                'title' => $snapshot->title() ? (string) $snapshot->title() : null,
+                'meta_description' => $snapshot->metaDescription() ? (string) $snapshot->metaDescription() : null,
+                'keywords' => $snapshot->keywords()?->values(),
                 'version' => $snapshot->version()->value(),
                 'editor_id' => $snapshot->editorIdentifier() ? (string) $snapshot->editorIdentifier() : null,
                 'approver_id' => $snapshot->approverIdentifier() ? (string) $snapshot->approverIdentifier() : null,
@@ -167,6 +173,9 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             $model->approved_at?->toDateTimeImmutable(),
             $model->created_at->toDateTimeImmutable(),
             $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
+            $model->title !== null ? new SeoTitle($model->title) : null,
+            $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
+            $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
         );
     }
 

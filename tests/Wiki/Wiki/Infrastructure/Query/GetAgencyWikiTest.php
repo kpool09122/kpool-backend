@@ -36,6 +36,9 @@ class GetAgencyWikiTest extends TestCase
                 'version' => 3,
                 'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
                 'theme_color' => '#1A1A1A',
+                'title' => 'JYP Agency Wiki',
+                'meta_description' => 'JYP Entertainment profile.',
+                'keywords' => json_encode(['JYP', 'agency']),
                 'sections' => json_encode([
                     [
                         'type' => 'section',
@@ -86,6 +89,9 @@ class GetAgencyWikiTest extends TestCase
         $this->assertSame('agency', $readModel->resourceType());
         $this->assertSame(3, $readModel->version());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
+        $this->assertSame('JYP Agency Wiki', $readModel->title());
+        $this->assertSame('JYP Entertainment profile.', $readModel->metaDescription());
+        $this->assertSame(['JYP', 'agency'], $readModel->keywords());
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
             'src' => 'http://127.0.0.1:8080/images/wiki/agency-hero.jpg',

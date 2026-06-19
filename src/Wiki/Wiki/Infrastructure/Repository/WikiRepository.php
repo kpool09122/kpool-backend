@@ -26,6 +26,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class WikiRepository implements WikiRepositoryInterface
@@ -159,6 +162,9 @@ readonly class WikiRepository implements WikiRepositoryInterface
                 'image_identifier' => $wiki->imageIdentifier() ? (string) $wiki->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($wiki->sections()),
                 'theme_color' => $wiki->themeColor() ? (string) $wiki->themeColor() : null,
+                'title' => $wiki->title() ? (string) $wiki->title() : null,
+                'meta_description' => $wiki->metaDescription() ? (string) $wiki->metaDescription() : null,
+                'keywords' => $wiki->keywords()?->values(),
                 'version' => $wiki->version()->value(),
                 'editor_id' => $wiki->editorIdentifier() ? (string) $wiki->editorIdentifier() : null,
                 'approver_id' => $wiki->approverIdentifier() ? (string) $wiki->approverIdentifier() : null,
@@ -239,6 +245,9 @@ readonly class WikiRepository implements WikiRepositoryInterface
             $model->translated_at?->toDateTimeImmutable(),
             $model->approved_at?->toDateTimeImmutable(),
             $model->image_identifier ? new ImageIdentifier($model->image_identifier) : null,
+            $model->title !== null ? new SeoTitle($model->title) : null,
+            $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
+            $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
         );
     }
 

@@ -30,6 +30,9 @@ class DraftWikiListItemReadModelTest extends TestCase
             approvedAt: '2026-05-03T00:00:00+00:00',
             translatedAt: '2026-05-04T00:00:00+00:00',
             mergedAt: '2026-05-05T00:00:00+00:00',
+            title: 'Chaeyoung Draft Wiki',
+            metaDescription: 'Draft profile for Chaeyoung.',
+            keywords: ['Chaeyoung', 'draft'],
         );
 
         $this->assertSame([
@@ -40,6 +43,9 @@ class DraftWikiListItemReadModelTest extends TestCase
             'language' => 'ko',
             'resourceType' => 'talent',
             'themeColor' => '#FE5F8F',
+            'title' => 'Chaeyoung Draft Wiki',
+            'metaDescription' => 'Draft profile for Chaeyoung.',
+            'keywords' => ['Chaeyoung', 'draft'],
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f104',
             'imageUrl' => 'http://localhost/storage/wiki/example.jpg',
             'imageAltText' => 'Chaeyoung profile image',

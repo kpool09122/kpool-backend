@@ -42,6 +42,9 @@ class ListVersionInconsistentWikisTest extends TestCase
         $this->assertSame($translationSetIdentifier, $payload['wikis'][0]['translationSetIdentifier']);
         $this->assertSame('ko', $payload['wikis'][0]['language']);
         $this->assertSame(3, $payload['wikis'][0]['version']);
+        $this->assertSame('Talent ko v3 Wiki', $payload['wikis'][0]['title']);
+        $this->assertSame('Talent ko v3 profile.', $payload['wikis'][0]['metaDescription']);
+        $this->assertSame(['Talent ko v3', 'talent'], $payload['wikis'][0]['keywords']);
     }
 
     #[Group('useDb')]
@@ -105,6 +108,9 @@ class ListVersionInconsistentWikisTest extends TestCase
                 'language' => $language,
                 'version' => $version,
                 'published_at' => '2026-04-01 00:00:00',
+                'title' => "Talent {$language} v{$version} Wiki",
+                'meta_description' => "Talent {$language} v{$version} profile.",
+                'keywords' => json_encode(["Talent {$language} v{$version}", 'talent']),
             ],
             [
                 'name' => "Talent {$language} v{$version}",

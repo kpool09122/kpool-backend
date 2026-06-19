@@ -47,6 +47,9 @@ class DraftWikiReadModelTest extends TestCase
                 ],
             ],
             status: 'under_review',
+            title: 'TWICE Draft Wiki',
+            metaDescription: 'Draft profile and history for TWICE.',
+            keywords: ['TWICE', 'draft'],
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
@@ -56,6 +59,9 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame('under_review', $readModel->status());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('TWICE Draft Wiki', $readModel->title());
+        $this->assertSame('Draft profile and history for TWICE.', $readModel->metaDescription());
+        $this->assertSame(['TWICE', 'draft'], $readModel->keywords());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
@@ -68,6 +74,9 @@ class DraftWikiReadModelTest extends TestCase
             'resourceType' => 'group',
             'status' => 'under_review',
             'themeColor' => '#FE5F8F',
+            'title' => 'TWICE Draft Wiki',
+            'metaDescription' => 'Draft profile and history for TWICE.',
+            'keywords' => ['TWICE', 'draft'],
             'heroImage' => [
                 'imageIdentifier' => null,
                 'src' => null,

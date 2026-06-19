@@ -47,6 +47,9 @@ class WikiReadModelTest extends TestCase
                     'content' => 'Published sample for checking the TWICE group wiki state.',
                 ],
             ],
+            title: 'TWICE Wiki',
+            metaDescription: 'Profile and history for TWICE.',
+            keywords: ['TWICE', 'K-pop'],
         );
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
@@ -56,6 +59,9 @@ class WikiReadModelTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(2, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('TWICE Wiki', $readModel->title());
+        $this->assertSame('Profile and history for TWICE.', $readModel->metaDescription());
+        $this->assertSame(['TWICE', 'K-pop'], $readModel->keywords());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
@@ -68,6 +74,9 @@ class WikiReadModelTest extends TestCase
             'resourceType' => 'group',
             'version' => 2,
             'themeColor' => '#FE5F8F',
+            'title' => 'TWICE Wiki',
+            'metaDescription' => 'Profile and history for TWICE.',
+            'keywords' => ['TWICE', 'K-pop'],
             'heroImage' => [
                 'imageIdentifier' => null,
                 'src' => null,

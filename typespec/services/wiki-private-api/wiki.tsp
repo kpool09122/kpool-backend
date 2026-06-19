@@ -19,6 +19,13 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
   themeColor?: string;
+  @doc("SEO title for the wiki.")
+  title?: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription?: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords?: SeoKeywordText[] | null;
   @doc("Published wiki identifier to branch from.")
   publishedWikiIdentifier?: Uuid;
 }
@@ -53,6 +60,13 @@ model UpdateWikiDraftRequestBody extends WikiAssociationTargets {
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
   themeColor?: string;
+  @doc("SEO title for the wiki.")
+  title?: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription?: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords?: SeoKeywordText[] | null;
 }
 
 @doc("Request body for wiki workflow actions.")
@@ -175,6 +189,13 @@ model WikiListItem {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Representative image identifier for the wiki.")
   imageIdentifier: Uuid | null;
   @doc("Absolute URL of the representative image.")
@@ -237,6 +258,13 @@ model DraftWikiListItem {
   resourceType: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the draft wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the draft wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the draft wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Approval status of the draft wiki.")
   status: DraftWikiStatus;
   @doc("Display name of the wiki.")

@@ -40,6 +40,9 @@ class ListWikisTest extends TestCase
         $this->assertArrayHasKey('imageIdentifier', $payload['wikis'][0]);
         $this->assertArrayHasKey('imageUrl', $payload['wikis'][0]);
         $this->assertArrayHasKey('imageAltText', $payload['wikis'][0]);
+        $this->assertSame('Beta Wiki', $payload['wikis'][0]['title']);
+        $this->assertSame('Beta profile.', $payload['wikis'][0]['metaDescription']);
+        $this->assertSame(['Beta', 'group'], $payload['wikis'][0]['keywords']);
         $this->assertArrayNotHasKey('sections', $payload['wikis'][0]);
     }
 
@@ -193,6 +196,9 @@ class ListWikisTest extends TestCase
                 'language' => $language,
                 'image_identifier' => $imageIdentifier,
                 'published_at' => '2026-04-01 00:00:00',
+                'title' => "{$name} Wiki",
+                'meta_description' => "{$name} profile.",
+                'keywords' => json_encode([$name, $resourceType]),
             ],
             [
                 'name' => $name,

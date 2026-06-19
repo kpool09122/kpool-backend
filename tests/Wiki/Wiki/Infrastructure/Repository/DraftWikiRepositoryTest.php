@@ -33,7 +33,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateWiki;
@@ -79,6 +82,9 @@ class DraftWikiRepositoryTest extends TestCase
             'approver_id' => $approverId,
             'merger_id' => $mergerId,
             'edited_at' => '2026-05-06 12:34:56',
+            'title' => 'TWICE Draft Wiki',
+            'meta_description' => 'Draft profile for TWICE.',
+            'keywords' => json_encode(['TWICE', 'draft']),
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
@@ -106,6 +112,9 @@ class DraftWikiRepositoryTest extends TestCase
         $this->assertNull($found->translatedAt());
         $this->assertNull($found->approvedAt());
         $this->assertSame('2026-05-06 12:34:56', $found->editedAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame('TWICE Draft Wiki', (string) $found->title());
+        $this->assertSame('Draft profile for TWICE.', (string) $found->metaDescription());
+        $this->assertSame(['TWICE', 'draft'], $found->keywords()?->values());
     }
 
     /**
@@ -220,6 +229,9 @@ class DraftWikiRepositoryTest extends TestCase
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
         $editedAt = new DateTimeImmutable('2026-05-06 12:34:56');
+        $title = new SeoTitle('TWICE Draft Wiki');
+        $metaDescription = new MetaDescription('Draft profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'draft']);
 
         $draftWiki = new DraftWiki(
             new DraftWikiIdentifier($wikiId),
@@ -247,6 +259,9 @@ class DraftWikiRepositoryTest extends TestCase
             ApprovalStatus::Pending,
             new PrincipalIdentifier($editorId),
             editedAt: $editedAt,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -265,7 +280,11 @@ class DraftWikiRepositoryTest extends TestCase
             'merger_id' => null,
             'source_editor_id' => null,
             'edited_at' => '2026-05-06 12:34:56',
+            'title' => 'TWICE Draft Wiki',
+            'meta_description' => 'Draft profile for TWICE.',
         ]);
+        $storedKeywords = DB::table('draft_wikis')->where('id', $wikiId)->value('keywords');
+        $this->assertSame(['TWICE', 'draft'], json_decode((string) $storedKeywords, true));
         $this->assertDatabaseHas('draft_wiki_group_basics', [
             'wiki_id' => $wikiId,
             'name' => 'TWICE',

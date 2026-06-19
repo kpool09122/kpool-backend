@@ -13,6 +13,10 @@ readonly class WikiReadModel
     private string $resourceType;
     private int $version;
     private ?string $themeColor;
+    private ?string $title;
+    private ?string $metaDescription;
+    /** @var list<string>|null */
+    private ?array $keywords;
     /** @var array<string, mixed> */
     private array $heroImage;
     private WikiBasicReadModel $basic;
@@ -23,6 +27,7 @@ readonly class WikiReadModel
      * @param array<string, mixed> $heroImage
      * @param array<string, mixed>|WikiBasicReadModel $basic
      * @param list<array<string, mixed>> $sections
+     * @param list<string>|null $keywords
      */
     public function __construct(
         string $wikiIdentifier,
@@ -35,6 +40,9 @@ readonly class WikiReadModel
         array $heroImage,
         array|WikiBasicReadModel $basic,
         array $sections,
+        ?string $title = null,
+        ?string $metaDescription = null,
+        ?array $keywords = null,
     ) {
         $this->wikiIdentifier = $wikiIdentifier;
         $this->translationSetIdentifier = $translationSetIdentifier;
@@ -43,6 +51,9 @@ readonly class WikiReadModel
         $this->resourceType = $resourceType;
         $this->version = $version;
         $this->themeColor = $themeColor;
+        $this->title = $title;
+        $this->metaDescription = $metaDescription;
+        $this->keywords = $keywords;
         $this->heroImage = $heroImage;
         $this->basic = is_array($basic) ? match ($resourceType) {
             'group' => WikiBasicReadModelFactory::group($basic),
@@ -89,6 +100,24 @@ readonly class WikiReadModel
         return $this->themeColor;
     }
 
+    public function title(): ?string
+    {
+        return $this->title;
+    }
+
+    public function metaDescription(): ?string
+    {
+        return $this->metaDescription;
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    public function keywords(): ?array
+    {
+        return $this->keywords;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -125,6 +154,9 @@ readonly class WikiReadModel
             'resourceType' => $this->resourceType,
             'version' => $this->version,
             'themeColor' => $this->themeColor,
+            'title' => $this->title,
+            'metaDescription' => $this->metaDescription,
+            'keywords' => $this->keywords,
             'heroImage' => $this->heroImage,
             'basic' => $this->basic->toArray(),
             'sections' => $this->sections,

@@ -32,7 +32,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\CreateWiki;
 use Tests\Helper\StrTestHelper;
@@ -75,6 +78,9 @@ class WikiRepositoryTest extends TestCase
             'editor_id' => $editorId,
             'approver_id' => $approverId,
             'merger_id' => $mergerId,
+            'title' => 'TWICE Wiki',
+            'meta_description' => 'Profile for TWICE.',
+            'keywords' => json_encode(['TWICE', 'K-pop']),
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
@@ -99,6 +105,9 @@ class WikiRepositoryTest extends TestCase
         $this->assertNull($found->mergedAt());
         $this->assertNull($found->translatedAt());
         $this->assertNull($found->approvedAt());
+        $this->assertSame('TWICE Wiki', (string) $found->title());
+        $this->assertSame('Profile for TWICE.', (string) $found->metaDescription());
+        $this->assertSame(['TWICE', 'K-pop'], $found->keywords()?->values());
     }
 
     /**
@@ -212,6 +221,9 @@ class WikiRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('Profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'K-pop']);
 
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
@@ -238,6 +250,9 @@ class WikiRepositoryTest extends TestCase
             new Version(1),
             null,
             new PrincipalIdentifier($editorId),
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
@@ -254,7 +269,11 @@ class WikiRepositoryTest extends TestCase
             'approver_id' => null,
             'merger_id' => null,
             'source_editor_id' => null,
+            'title' => 'TWICE Wiki',
+            'meta_description' => 'Profile for TWICE.',
         ]);
+        $storedKeywords = DB::table('wikis')->where('id', $wikiId)->value('keywords');
+        $this->assertSame(['TWICE', 'K-pop'], json_decode((string) $storedKeywords, true));
         $this->assertDatabaseHas('wiki_group_basics', [
             'wiki_id' => $wikiId,
             'name' => 'TWICE',

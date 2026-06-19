@@ -15,7 +15,10 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class DraftWiki
@@ -40,6 +43,9 @@ class DraftWiki
         private ?DateTimeImmutable $approvedAt = null,
         private ?ImageIdentifier $imageIdentifier = null,
         private ?DateTimeImmutable $editedAt = null,
+        private ?SeoTitle $title = null,
+        private ?MetaDescription $metaDescription = null,
+        private ?SeoKeywords $keywords = null,
     ) {
     }
 
@@ -106,6 +112,42 @@ class DraftWiki
     public function setThemeColor(?Color $themeColor): void
     {
         $this->themeColor = $themeColor;
+    }
+
+    public function title(): ?SeoTitle
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?SeoTitle $title): void
+    {
+        $this->title = $title;
+    }
+
+    public function metaDescription(): ?MetaDescription
+    {
+        return $this->metaDescription;
+    }
+
+    public function setMetaDescription(?MetaDescription $metaDescription): void
+    {
+        $this->metaDescription = $metaDescription;
+    }
+
+    /**
+     * @return SeoKeywords|null
+     */
+    public function keywords(): ?SeoKeywords
+    {
+        return $this->keywords;
+    }
+
+    /**
+     * @param SeoKeywords|null $keywords
+     */
+    public function setKeywords(?SeoKeywords $keywords): void
+    {
+        $this->keywords = $keywords;
     }
 
     public function status(): ApprovalStatus

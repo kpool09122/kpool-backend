@@ -54,6 +54,9 @@ readonly class GetMyGroupDraftWiki implements GetMyGroupDraftWikiInterface
             language: $model->language,
             resourceType: ResourceType::GROUP->value,
             themeColor: $model->theme_color,
+            title: $model->title,
+            metaDescription: $model->meta_description,
+            keywords: $model->keywords,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
                 'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),

@@ -47,6 +47,9 @@ readonly class GetSongWiki implements GetSongWikiInterface
             resourceType: ResourceType::SONG->value,
             version: $model->version,
             themeColor: $model->theme_color,
+            title: $model->title,
+            metaDescription: $model->meta_description,
+            keywords: $model->keywords,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
                 'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),

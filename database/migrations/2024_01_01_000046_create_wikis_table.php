@@ -20,6 +20,9 @@ return new class extends Migration
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
+            $table->string('title', 40)->nullable()->comment('SEOタイトル');
+            $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
+            $table->jsonb('keywords')->nullable()->comment('SEOキーワード');
             $table->unsignedInteger('version')->default(1)->comment('バージョン');
             $table->uuid('owner_account_id')->nullable()->comment('Owner account ID');
             $table->uuid('editor_id')->nullable()->comment('編集者ID');
@@ -47,6 +50,9 @@ return new class extends Migration
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
+            $table->string('title', 40)->nullable()->comment('SEOタイトル');
+            $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
+            $table->jsonb('keywords')->nullable()->comment('SEOキーワード');
             $table->string('status', 50)->default('pending')->comment('承認ステータス');
             $table->uuid('editor_id')->nullable()->comment('編集者ID');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
@@ -79,6 +85,9 @@ return new class extends Migration
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー');
+            $table->string('title', 40)->nullable()->comment('SEOタイトル');
+            $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
+            $table->jsonb('keywords')->nullable()->comment('SEOキーワード');
             $table->unsignedInteger('version')->comment('バージョン');
             $table->uuid('editor_id')->nullable()->comment('編集者ID');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
