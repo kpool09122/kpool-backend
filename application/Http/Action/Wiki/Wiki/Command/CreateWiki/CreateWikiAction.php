@@ -23,6 +23,9 @@ use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiOutput;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -62,6 +65,9 @@ readonly class CreateWikiAction
                     groupIdentifiers: array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
                     talentIdentifiers: array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
                     imageIdentifier: $request->imageIdentifier() !== null ? new ImageIdentifier($request->imageIdentifier()) : null,
+                    title: $request->title() !== null ? new SeoTitle($request->title()) : null,
+                    metaDescription: $request->metaDescription() !== null ? new MetaDescription($request->metaDescription()) : null,
+                    keywords: $request->keywords() !== null ? new SeoKeywords($request->keywords()) : null,
                 );
                 $output = new CreateWikiOutput();
             } catch (InvalidArgumentException $e) {

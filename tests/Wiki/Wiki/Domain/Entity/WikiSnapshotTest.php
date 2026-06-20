@@ -17,7 +17,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -57,6 +60,9 @@ class WikiSnapshotTest extends TestCase
         $translatedAt = new DateTimeImmutable('2025-01-02');
         $approvedAt = new DateTimeImmutable('2025-01-03');
         $createdAt = new DateTimeImmutable('2025-01-04');
+        $title = new SeoTitle('JYP Snapshot Wiki');
+        $metaDescription = new MetaDescription('Snapshot profile for JYP.');
+        $keywords = new SeoKeywords(['JYP', 'snapshot']);
 
         $snapshot = new WikiSnapshot(
             snapshotIdentifier: $snapshotIdentifier,
@@ -77,6 +83,9 @@ class WikiSnapshotTest extends TestCase
             translatedAt: $translatedAt,
             approvedAt: $approvedAt,
             createdAt: $createdAt,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $this->assertSame($snapshotIdentifier, $snapshot->snapshotIdentifier());
@@ -97,6 +106,9 @@ class WikiSnapshotTest extends TestCase
         $this->assertSame($translatedAt, $snapshot->translatedAt());
         $this->assertSame($approvedAt, $snapshot->approvedAt());
         $this->assertSame($createdAt, $snapshot->createdAt());
+        $this->assertSame($title, $snapshot->title());
+        $this->assertSame($metaDescription, $snapshot->metaDescription());
+        $this->assertSame($keywords, $snapshot->keywords());
     }
 
     /**
@@ -143,5 +155,8 @@ class WikiSnapshotTest extends TestCase
         $this->assertNull($snapshot->mergedAt());
         $this->assertNull($snapshot->translatedAt());
         $this->assertNull($snapshot->approvedAt());
+        $this->assertNull($snapshot->title());
+        $this->assertNull($snapshot->metaDescription());
+        $this->assertNull($snapshot->keywords());
     }
 }

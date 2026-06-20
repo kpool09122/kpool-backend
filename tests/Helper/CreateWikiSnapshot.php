@@ -25,6 +25,9 @@ class CreateWikiSnapshot
      *     merged_at?: ?string,
      *     translated_at?: ?string,
      *     approved_at?: ?string,
+     *     title?: ?string,
+     *     meta_description?: ?string,
+     *     keywords?: ?string,
      * } $overrides
      * @param array<string, mixed> $basicOverrides
      */
@@ -61,6 +64,9 @@ class CreateWikiSnapshot
             'translated_at' => $overrides['translated_at'] ?? null,
             'approved_at' => $overrides['approved_at'] ?? null,
             'created_at' => $overrides['created_at'] ?? now(),
+            'title' => $overrides['title'] ?? null,
+            'meta_description' => $overrides['meta_description'] ?? null,
+            'keywords' => $overrides['keywords'] ?? null,
         ]);
 
         match ($resourceType) {

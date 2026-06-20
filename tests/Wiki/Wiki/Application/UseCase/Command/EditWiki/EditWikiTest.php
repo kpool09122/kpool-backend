@@ -33,7 +33,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -86,6 +89,9 @@ class EditWikiTest extends TestCase
         );
         $updatedSections = new SectionContentCollection();
         $updatedThemeColor = new Color('#00FF00');
+        $updatedTitle = new SeoTitle('ITZY Wiki');
+        $updatedMetaDescription = new MetaDescription('Profile for ITZY.');
+        $updatedKeywords = new SeoKeywords(['ITZY', 'K-pop']);
 
         $input = new EditWikiInput(
             $testData->wikiIdentifier,
@@ -97,6 +103,9 @@ class EditWikiTest extends TestCase
             $testData->agencyIdentifier,
             $testData->groupIdentifiers,
             $testData->talentIdentifiers,
+            title: $updatedTitle,
+            metaDescription: $updatedMetaDescription,
+            keywords: $updatedKeywords,
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -133,6 +142,9 @@ class EditWikiTest extends TestCase
         $this->assertSame($testData->status->value, $result['status']);
         $this->assertSame($principalIdentifier, $testData->draftWiki->editorIdentifier());
         $this->assertNotNull($testData->draftWiki->editedAt());
+        $this->assertSame($updatedTitle, $testData->draftWiki->title());
+        $this->assertSame($updatedMetaDescription, $testData->draftWiki->metaDescription());
+        $this->assertSame($updatedKeywords, $testData->draftWiki->keywords());
     }
 
     /**

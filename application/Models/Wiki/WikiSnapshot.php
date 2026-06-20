@@ -18,6 +18,9 @@ use Illuminate\Support\Carbon;
  * @property ?string $image_identifier
  * @property array<array<string, mixed>> $sections
  * @property ?string $theme_color
+ * @property ?string $title
+ * @property ?string $meta_description
+ * @property list<string>|null $keywords
  * @property int $version
  * @property ?string $editor_id
  * @property ?string $merger_id
@@ -42,6 +45,9 @@ use Illuminate\Support\Carbon;
     'image_identifier',
     'sections',
     'theme_color',
+    'title',
+    'meta_description',
+    'keywords',
     'version',
     'editor_id',
     'merger_id',
@@ -62,6 +68,7 @@ class WikiSnapshot extends Model
     #[\Override]
     protected $casts = [
         'sections' => 'array',
+        'keywords' => 'array',
         'version' => 'integer',
         'merged_at' => 'datetime',
         'approved_at' => 'datetime',

@@ -30,6 +30,9 @@ class CreateDraftWiki
      *     approved_at?: ?string,
      *     created_at?: ?string,
      *     updated_at?: ?string,
+     *     title?: ?string,
+     *     meta_description?: ?string,
+     *     keywords?: ?string,
      * } $overrides
      * @param array<string, mixed> $basicOverrides
      */
@@ -56,6 +59,9 @@ class CreateDraftWiki
             'approved_at' => $overrides['approved_at'] ?? null,
             'created_at' => $overrides['created_at'] ?? null,
             'updated_at' => $overrides['updated_at'] ?? null,
+            'title' => $overrides['title'] ?? null,
+            'meta_description' => $overrides['meta_description'] ?? null,
+            'keywords' => $overrides['keywords'] ?? null,
         ]);
 
         match ($resourceType) {

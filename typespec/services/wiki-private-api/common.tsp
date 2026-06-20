@@ -3,6 +3,18 @@ using KPool.Common;
 
 namespace KPool.WikiPrivateApi;
 
+@doc("SEO title text. Must be 40 characters or less.")
+@maxLength(40)
+scalar SeoTitleText extends string;
+
+@doc("SEO meta description text. Empty text is allowed, but it must be 140 characters or less.")
+@maxLength(140)
+scalar MetaDescriptionText extends string;
+
+@doc("SEO keyword text. Must be 20 characters or less.")
+@maxLength(20)
+scalar SeoKeywordText extends string;
+
 @doc("Association targets that link a wiki to related agencies, groups, or talents.")
 model WikiAssociationTargets {
   @doc("Associated agency identifier.")
@@ -95,6 +107,13 @@ model DraftWikiDetail {
   status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic wiki content payload.")
@@ -119,6 +138,13 @@ model WikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic wiki content payload.")
@@ -213,6 +239,13 @@ model TalentDraftWikiDetail {
   status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic talent wiki content payload.")
@@ -237,6 +270,13 @@ model TalentWikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic talent wiki content payload.")
@@ -369,6 +409,13 @@ model SongDraftWikiDetail {
   status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic song wiki content payload.")
@@ -393,6 +440,13 @@ model SongWikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic song wiki content payload.")
@@ -439,6 +493,13 @@ model AgencyDraftWikiDetail {
   status: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload for the editor.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic agency wiki content payload.")
@@ -463,6 +524,13 @@ model AgencyWikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("SEO title for the wiki.")
+  title: SeoTitleText | null;
+  @doc("SEO meta description for the wiki.")
+  metaDescription: MetaDescriptionText | null;
+  @doc("SEO keywords for the wiki.")
+  @maxItems(5)
+  keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
   heroImage: DraftWikiHeroImage;
   @doc("Basic agency wiki content payload.")

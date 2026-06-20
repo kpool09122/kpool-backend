@@ -14,7 +14,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -50,6 +53,9 @@ class EditWikiInputTest extends TestCase
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
         $talentIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('Profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'edit']);
 
         $input = new EditWikiInput(
             $wikiIdentifier,
@@ -61,6 +67,9 @@ class EditWikiInputTest extends TestCase
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
@@ -72,5 +81,8 @@ class EditWikiInputTest extends TestCase
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $input->talentIdentifiers());
+        $this->assertSame($title, $input->title());
+        $this->assertSame($metaDescription, $input->metaDescription());
+        $this->assertSame($keywords, $input->keywords());
     }
 }

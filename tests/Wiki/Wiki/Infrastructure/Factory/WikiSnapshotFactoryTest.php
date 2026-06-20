@@ -21,7 +21,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Factory\WikiSnapshotFactory;
 use Tests\Helper\StrTestHelper;
@@ -78,6 +81,9 @@ class WikiSnapshotFactoryTest extends TestCase
         $mergedAt = new DateTimeImmutable('2024-01-02 00:00:00');
         $translatedAt = new DateTimeImmutable('2024-01-03 00:00:00');
         $approvedAt = new DateTimeImmutable('2024-01-04 00:00:00');
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('TWICE group profile.');
+        $keywords = new SeoKeywords(['TWICE', 'K-pop']);
 
         $wiki = new Wiki(
             $wikiIdentifier,
@@ -97,6 +103,9 @@ class WikiSnapshotFactoryTest extends TestCase
             $mergedAt,
             $translatedAt,
             $approvedAt,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $factory = $this->app->make(WikiSnapshotFactoryInterface::class);
@@ -120,6 +129,9 @@ class WikiSnapshotFactoryTest extends TestCase
         $this->assertSame($translatedAt->format('Y-m-d H:i:s'), $snapshot->translatedAt()->format('Y-m-d H:i:s'));
         $this->assertSame($approvedAt->format('Y-m-d H:i:s'), $snapshot->approvedAt()->format('Y-m-d H:i:s'));
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
+        $this->assertSame($title, $snapshot->title());
+        $this->assertSame($metaDescription, $snapshot->metaDescription());
+        $this->assertSame($keywords, $snapshot->keywords());
     }
 
     /**
@@ -167,6 +179,9 @@ class WikiSnapshotFactoryTest extends TestCase
         $this->assertNull($snapshot->mergedAt());
         $this->assertNull($snapshot->translatedAt());
         $this->assertNull($snapshot->approvedAt());
+        $this->assertNull($snapshot->title());
+        $this->assertNull($snapshot->metaDescription());
+        $this->assertNull($snapshot->keywords());
         $this->assertInstanceOf(DateTimeImmutable::class, $snapshot->createdAt());
     }
 }

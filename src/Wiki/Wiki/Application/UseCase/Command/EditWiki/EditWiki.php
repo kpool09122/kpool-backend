@@ -74,6 +74,9 @@ readonly class EditWiki implements EditWikiInterface
         $wiki->setSections($input->sections());
         $wiki->setThemeColor($input->themeColor());
         $wiki->setImageIdentifier($input->imageIdentifier());
+        $wiki->setTitle($input->title());
+        $wiki->setMetaDescription($input->metaDescription());
+        $wiki->setKeywords($input->keywords());
         $wiki->setEditorIdentifier($input->principalIdentifier());
         $wiki->setEditedAt(new DateTimeImmutable());
 

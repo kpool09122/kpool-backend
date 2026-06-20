@@ -55,7 +55,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kpool-network
@@ -69,7 +69,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - testing_db_data:/var/lib/postgresql/data
+      - testing_db_data:/var/lib/postgresql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kpool-network

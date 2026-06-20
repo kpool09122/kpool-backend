@@ -2461,6 +2461,9 @@ components:
         - resourceType
         - status
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -2489,6 +2492,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -2512,6 +2534,9 @@ components:
         - resourceType
         - version
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -2541,6 +2566,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -2707,6 +2751,25 @@ components:
         themeColor:
           type: string
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         publishedWikiIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -2837,6 +2900,9 @@ components:
         - resourceType
         - status
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -2865,6 +2931,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -2910,6 +2995,9 @@ components:
         - language
         - resourceType
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - status
         - name
         - normalizedName
@@ -2948,6 +3036,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the draft wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the draft wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the draft wiki.
         status:
           allOf:
             - $ref: '#/components/schemas/DraftWikiStatus'
@@ -3355,6 +3462,10 @@ components:
           format: int32
           description: Number of wikis per page.
       description: Response body for the wiki list endpoint.
+    MetaDescriptionText:
+      type: string
+      maxLength: 140
+      description: SEO meta description text. Empty text is allowed, but it must be 140 characters or less.
     MutatePrincipalGroupMemberRequestBody:
       type: object
       required:
@@ -3714,6 +3825,14 @@ components:
             $ref: '#/components/schemas/VideoLinkInput'
           description: Video links to save.
       description: Request body for saving video links.
+    SeoKeywordText:
+      type: string
+      maxLength: 20
+      description: SEO keyword text. Must be 20 characters or less.
+    SeoTitleText:
+      type: string
+      maxLength: 40
+      description: SEO title text. Must be 40 characters or less.
     SongDraftWikiBasic:
       type: object
       required:
@@ -3802,6 +3921,9 @@ components:
         - resourceType
         - status
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -3830,6 +3952,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -4022,6 +4163,9 @@ components:
         - resourceType
         - version
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -4051,6 +4195,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -4158,6 +4321,9 @@ components:
         - resourceType
         - status
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -4186,6 +4352,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -4287,6 +4472,9 @@ components:
         - resourceType
         - version
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -4316,6 +4504,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -4364,6 +4571,25 @@ components:
         themeColor:
           type: string
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
       description: Request body for updating a wiki draft.
@@ -4518,6 +4744,9 @@ components:
         - resourceType
         - version
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - heroImage
         - basic
         - sections
@@ -4547,6 +4776,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         heroImage:
           allOf:
             - $ref: '#/components/schemas/DraftWikiHeroImage'
@@ -4570,6 +4818,9 @@ components:
         - resourceType
         - version
         - themeColor
+        - title
+        - metaDescription
+        - keywords
         - imageIdentifier
         - imageUrl
         - imageAltText
@@ -4603,6 +4854,25 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        title:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/SeoTitleText'
+          nullable: true
+          description: SEO title for the wiki.
+        metaDescription:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/MetaDescriptionText'
+          nullable: true
+          description: SEO meta description for the wiki.
+        keywords:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeoKeywordText'
+          nullable: true
+          maxItems: 5
+          description: SEO keywords for the wiki.
         imageIdentifier:
           type: string
           allOf:

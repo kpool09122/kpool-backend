@@ -15,7 +15,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -52,6 +55,9 @@ class MergeWikiInputTest extends TestCase
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
         $talentIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('Merged profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'merge']);
 
         $input = new MergeWikiInput(
             $wikiIdentifier,
@@ -64,6 +70,9 @@ class MergeWikiInputTest extends TestCase
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
@@ -76,6 +85,9 @@ class MergeWikiInputTest extends TestCase
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $input->talentIdentifiers());
+        $this->assertSame($title, $input->title());
+        $this->assertSame($metaDescription, $input->metaDescription());
+        $this->assertSame($keywords, $input->keywords());
     }
 
     /**
@@ -125,5 +137,8 @@ class MergeWikiInputTest extends TestCase
         $this->assertNull($input->agencyIdentifier());
         $this->assertSame([], $input->groupIdentifiers());
         $this->assertSame([], $input->talentIdentifiers());
+        $this->assertNull($input->title());
+        $this->assertNull($input->metaDescription());
+        $this->assertNull($input->keywords());
     }
 }

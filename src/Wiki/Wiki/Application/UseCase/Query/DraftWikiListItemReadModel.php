@@ -24,6 +24,10 @@ readonly class DraftWikiListItemReadModel
         private ?string $approvedAt,
         private ?string $translatedAt,
         private ?string $mergedAt,
+        private ?string $title = null,
+        private ?string $metaDescription = null,
+        /** @var list<string>|null */
+        private ?array $keywords = null,
     ) {
     }
 
@@ -40,6 +44,9 @@ readonly class DraftWikiListItemReadModel
             'language' => $this->language,
             'resourceType' => $this->resourceType,
             'themeColor' => $this->themeColor,
+            'title' => $this->title,
+            'metaDescription' => $this->metaDescription,
+            'keywords' => $this->keywords,
             'imageIdentifier' => $this->imageIdentifier,
             'imageUrl' => $this->imageUrl,
             'imageAltText' => $this->imageAltText,

@@ -15,7 +15,10 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class Wiki
@@ -39,6 +42,9 @@ class Wiki
         private ?DateTimeImmutable $translatedAt = null,
         private ?DateTimeImmutable $approvedAt = null,
         private ?ImageIdentifier $imageIdentifier = null,
+        private ?SeoTitle $title = null,
+        private ?MetaDescription $metaDescription = null,
+        private ?SeoKeywords $keywords = null,
     ) {
     }
 
@@ -95,6 +101,42 @@ class Wiki
     public function setThemeColor(?Color $themeColor): void
     {
         $this->themeColor = $themeColor;
+    }
+
+    public function title(): ?SeoTitle
+    {
+        return $this->title;
+    }
+
+    public function setTitle(?SeoTitle $title): void
+    {
+        $this->title = $title;
+    }
+
+    public function metaDescription(): ?MetaDescription
+    {
+        return $this->metaDescription;
+    }
+
+    public function setMetaDescription(?MetaDescription $metaDescription): void
+    {
+        $this->metaDescription = $metaDescription;
+    }
+
+    /**
+     * @return SeoKeywords|null
+     */
+    public function keywords(): ?SeoKeywords
+    {
+        return $this->keywords;
+    }
+
+    /**
+     * @param SeoKeywords|null $keywords
+     */
+    public function setKeywords(?SeoKeywords $keywords): void
+    {
+        $this->keywords = $keywords;
     }
 
     public function version(): Version

@@ -45,6 +45,9 @@ class GetAgencyDraftWikiTest extends TestCase
                 'language' => 'ko',
                 'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
                 'theme_color' => '#1A1A1A',
+                'title' => 'JYP Draft Wiki',
+                'meta_description' => 'Draft profile for JYP.',
+                'keywords' => json_encode(['JYP', 'draft']),
                 'sections' => json_encode([
                     [
                         'type' => 'section',
@@ -93,6 +96,9 @@ class GetAgencyDraftWikiTest extends TestCase
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
+        $this->assertSame('JYP Draft Wiki', $readModel->title());
+        $this->assertSame('Draft profile for JYP.', $readModel->metaDescription());
+        $this->assertSame(['JYP', 'draft'], $readModel->keywords());
         $this->assertSame([
             'imageIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
             'src' => 'http://127.0.0.1:8080/images/wiki/agency-hero.jpg',

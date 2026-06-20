@@ -47,7 +47,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
@@ -109,6 +112,12 @@ class PublishWikiTest extends TestCase
             $principalIdentifier,
             $dummyPublishWiki->resourceType,
         );
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('Published profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'publish']);
+        $dummyPublishWiki->draftWiki->setTitle($title);
+        $dummyPublishWiki->draftWiki->setMetaDescription($metaDescription);
+        $dummyPublishWiki->draftWiki->setKeywords($keywords);
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalRepository->shouldReceive('findById')
@@ -181,6 +190,9 @@ class PublishWikiTest extends TestCase
         $this->assertSame($dummyPublishWiki->language->value, $result['language']);
         $this->assertSame((string) $dummyPublishWiki->name, $result['name']);
         $this->assertSame($dummyPublishWiki->publishedVersion->value() + 1, $result['version']);
+        $this->assertSame($title, $dummyPublishWiki->publishedWiki->title());
+        $this->assertSame($metaDescription, $dummyPublishWiki->publishedWiki->metaDescription());
+        $this->assertSame($keywords, $dummyPublishWiki->publishedWiki->keywords());
     }
 
     /**

@@ -35,7 +35,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -117,6 +120,9 @@ class CreateWikiTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('Profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'K-pop']);
 
         $input = new CreateWikiInput(
             $testData->publishedWikiIdentifier,
@@ -130,6 +136,9 @@ class CreateWikiTest extends TestCase
             $testData->agencyIdentifier,
             $testData->groupIdentifiers,
             $testData->talentIdentifiers,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -171,6 +180,9 @@ class CreateWikiTest extends TestCase
 
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
+        $title = new SeoTitle('TWICE Wiki');
+        $metaDescription = new MetaDescription('Profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'K-pop']);
 
         $input = new CreateWikiInput(
             $testData->publishedWikiIdentifier,
@@ -184,6 +196,9 @@ class CreateWikiTest extends TestCase
             $testData->agencyIdentifier,
             $testData->groupIdentifiers,
             $testData->talentIdentifiers,
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
@@ -236,6 +251,9 @@ class CreateWikiTest extends TestCase
         $this->assertSame((string) $testData->basic->name(), $result['name']);
         $this->assertSame($testData->resourceType->value, $result['resourceType']);
         $this->assertSame($testData->status->value, $result['status']);
+        $this->assertSame($title, $testData->draftWiki->title());
+        $this->assertSame($metaDescription, $testData->draftWiki->metaDescription());
+        $this->assertSame($keywords, $testData->draftWiki->keywords());
     }
 
     /**

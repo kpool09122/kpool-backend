@@ -16,7 +16,10 @@ use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -124,6 +127,32 @@ class WikiTest extends TestCase
         // nullを設定
         $wiki->setThemeColor(null);
         $this->assertNull($wiki->themeColor());
+    }
+
+    public function testSetSeoMeta(): void
+    {
+        $data = $this->createDummyWiki();
+        $wiki = $data->wiki;
+
+        $title = new SeoTitle('JYP Wiki');
+        $metaDescription = new MetaDescription('JYP Entertainment profile.');
+        $keywords = new SeoKeywords(['JYP', 'K-pop']);
+
+        $wiki->setTitle($title);
+        $wiki->setMetaDescription($metaDescription);
+        $wiki->setKeywords($keywords);
+
+        $this->assertSame($title, $wiki->title());
+        $this->assertSame($metaDescription, $wiki->metaDescription());
+        $this->assertSame($keywords, $wiki->keywords());
+
+        $wiki->setTitle(null);
+        $wiki->setMetaDescription(null);
+        $wiki->setKeywords(null);
+
+        $this->assertNull($wiki->title());
+        $this->assertNull($wiki->metaDescription());
+        $this->assertNull($wiki->keywords());
     }
 
     /**

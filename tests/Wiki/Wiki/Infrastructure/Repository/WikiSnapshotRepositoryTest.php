@@ -32,7 +32,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 use Tests\Helper\CreateWiki;
@@ -54,6 +57,9 @@ class WikiSnapshotRepositoryTest extends TestCase
         $wikiId = StrTestHelper::generateUuid();
         $editorId = StrTestHelper::generateUuid();
         $translationSetId = StrTestHelper::generateUuid();
+        $title = new SeoTitle('TWICE Snapshot Wiki');
+        $metaDescription = new MetaDescription('Snapshot profile for TWICE.');
+        $keywords = new SeoKeywords(['TWICE', 'snapshot']);
 
         CreateWiki::create($wikiId, 'group', ['slug' => 'gr-twice-wiki']);
 
@@ -89,6 +95,9 @@ class WikiSnapshotRepositoryTest extends TestCase
             null,
             null,
             new DateTimeImmutable(),
+            title: $title,
+            metaDescription: $metaDescription,
+            keywords: $keywords,
         );
 
         $repository = $this->app->make(WikiSnapshotRepositoryInterface::class);
@@ -106,7 +115,11 @@ class WikiSnapshotRepositoryTest extends TestCase
             'approver_id' => null,
             'merger_id' => null,
             'source_editor_id' => null,
+            'title' => 'TWICE Snapshot Wiki',
+            'meta_description' => 'Snapshot profile for TWICE.',
         ]);
+        $storedKeywords = DB::table('wiki_snapshots')->where('id', $snapshotId)->value('keywords');
+        $this->assertSame(['TWICE', 'snapshot'], json_decode((string) $storedKeywords, true));
         $this->assertDatabaseHas('wiki_snapshot_group_basics', [
             'snapshot_id' => $snapshotId,
             'name' => 'TWICE',
@@ -397,6 +410,9 @@ class WikiSnapshotRepositoryTest extends TestCase
             'wiki_id' => $wikiId,
             'slug' => 'gr-twice-v2',
             'version' => 2,
+            'title' => 'TWICE Snapshot Wiki',
+            'meta_description' => 'Snapshot profile for TWICE.',
+            'keywords' => json_encode(['TWICE', 'snapshot']),
         ], [
             'name' => 'TWICE',
             'normalized_name' => 'twice',
@@ -412,6 +428,9 @@ class WikiSnapshotRepositoryTest extends TestCase
         $this->assertSame(ResourceType::GROUP, $found->resourceType());
         $this->assertSame('TWICE', (string) $found->basic()->name());
         $this->assertSame('twice', $found->basic()->normalizedName());
+        $this->assertSame('TWICE Snapshot Wiki', (string) $found->title());
+        $this->assertSame('Snapshot profile for TWICE.', (string) $found->metaDescription());
+        $this->assertSame(['TWICE', 'snapshot'], $found->keywords()?->values());
     }
 
     /**

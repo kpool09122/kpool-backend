@@ -17,6 +17,9 @@ use Illuminate\Support\Carbon;
  * @property ?string $image_identifier
  * @property array<array<string, mixed>> $sections
  * @property ?string $theme_color
+ * @property ?string $title
+ * @property ?string $meta_description
+ * @property list<string>|null $keywords
  * @property int $version
  * @property ?string $owner_account_id
  * @property ?string $editor_id
@@ -41,6 +44,9 @@ use Illuminate\Support\Carbon;
     'image_identifier',
     'sections',
     'theme_color',
+    'title',
+    'meta_description',
+    'keywords',
     'version',
     'owner_account_id',
     'editor_id',
@@ -61,6 +67,7 @@ class Wiki extends Model
     #[\Override]
     protected $casts = [
         'sections' => 'array',
+        'keywords' => 'array',
         'version' => 'integer',
         'merged_at' => 'datetime',
         'approved_at' => 'datetime',

@@ -11,7 +11,10 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface CreateWikiInputPort
@@ -29,6 +32,12 @@ interface CreateWikiInputPort
     public function themeColor(): ?Color;
 
     public function imageIdentifier(): ?ImageIdentifier;
+
+    public function title(): ?SeoTitle;
+
+    public function metaDescription(): ?MetaDescription;
+
+    public function keywords(): ?SeoKeywords;
 
     public function slug(): Slug;
 

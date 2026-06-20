@@ -57,6 +57,9 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
             language: $model->language,
             resourceType: ResourceType::AGENCY->value,
             themeColor: $model->theme_color,
+            title: $model->title,
+            metaDescription: $model->meta_description,
+            keywords: $model->keywords,
             heroImage: [
                 'imageIdentifier' => $model->image_identifier,
                 'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),

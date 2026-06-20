@@ -16,7 +16,10 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -149,6 +152,32 @@ class DraftWikiTest extends TestCase
         // nullを設定
         $draftWiki->setThemeColor(null);
         $this->assertNull($draftWiki->themeColor());
+    }
+
+    public function testSetSeoMeta(): void
+    {
+        $data = $this->createDummyDraftWiki();
+        $draftWiki = $data->draftWiki;
+
+        $title = new SeoTitle('JYP Draft Wiki');
+        $metaDescription = new MetaDescription('JYP draft profile.');
+        $keywords = new SeoKeywords(['JYP', 'draft']);
+
+        $draftWiki->setTitle($title);
+        $draftWiki->setMetaDescription($metaDescription);
+        $draftWiki->setKeywords($keywords);
+
+        $this->assertSame($title, $draftWiki->title());
+        $this->assertSame($metaDescription, $draftWiki->metaDescription());
+        $this->assertSame($keywords, $draftWiki->keywords());
+
+        $draftWiki->setTitle(null);
+        $draftWiki->setMetaDescription(null);
+        $draftWiki->setKeywords(null);
+
+        $this->assertNull($draftWiki->title());
+        $this->assertNull($draftWiki->metaDescription());
+        $this->assertNull($draftWiki->keywords());
     }
 
     /**

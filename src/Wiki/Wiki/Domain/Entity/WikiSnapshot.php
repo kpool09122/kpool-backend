@@ -14,7 +14,10 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
+use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 
@@ -40,6 +43,9 @@ readonly class WikiSnapshot
         private ?DateTimeImmutable       $approvedAt,
         private DateTimeImmutable        $createdAt,
         private ?ImageIdentifier         $imageIdentifier = null,
+        private ?SeoTitle                $title = null,
+        private ?MetaDescription         $metaDescription = null,
+        private ?SeoKeywords             $keywords = null,
     ) {
     }
 
@@ -86,6 +92,24 @@ readonly class WikiSnapshot
     public function themeColor(): ?Color
     {
         return $this->themeColor;
+    }
+
+    public function title(): ?SeoTitle
+    {
+        return $this->title;
+    }
+
+    public function metaDescription(): ?MetaDescription
+    {
+        return $this->metaDescription;
+    }
+
+    /**
+     * @return SeoKeywords|null
+     */
+    public function keywords(): ?SeoKeywords
+    {
+        return $this->keywords;
     }
 
     public function version(): Version

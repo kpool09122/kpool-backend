@@ -24,6 +24,10 @@ class CreateWikiRequest extends FormRequest
             'sections' => ['nullable', 'array'],
             'themeColor' => ['nullable', 'string'],
             'imageIdentifier' => ['nullable', 'uuid'],
+            'title' => ['nullable', 'string', 'max:40'],
+            'metaDescription' => ['nullable', 'string', 'max:140'],
+            'keywords' => ['nullable', 'array', 'max:5'],
+            'keywords.*' => ['string', 'max:20'],
             'publishedWikiIdentifier' => ['nullable', 'uuid'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
@@ -79,6 +83,30 @@ class CreateWikiRequest extends FormRequest
         $value = $this->input('imageIdentifier');
 
         return $value !== null ? (string) $value : null;
+    }
+
+    public function title(): ?string
+    {
+        $value = $this->input('title');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    public function metaDescription(): ?string
+    {
+        $value = $this->input('metaDescription');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    public function keywords(): ?array
+    {
+        $value = $this->input('keywords');
+
+        return is_array($value) ? array_values(array_map('strval', $value)) : null;
     }
 
     public function publishedWikiIdentifier(): ?string
