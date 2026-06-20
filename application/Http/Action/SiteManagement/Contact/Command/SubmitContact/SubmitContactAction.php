@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactOutput;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -36,7 +37,7 @@ readonly class SubmitContactAction
      */
     public function __invoke(SubmitContactRequest $request): JsonResponse
     {
-        $contactIdentifier = null;
+        $output = new SubmitContactOutput();
 
         try {
             try {
@@ -54,7 +55,7 @@ readonly class SubmitContactAction
             DB::beginTransaction();
 
             try {
-                $contactIdentifier = $this->submitContact->process($input);
+                $this->submitContact->process($input, $output);
                 DB::commit();
             } catch (FailedToSendEmailException $e) {
                 DB::rollBack();
@@ -75,12 +76,10 @@ readonly class SubmitContactAction
             throw new InternalServerErrorHttpException(previous: $e);
         }
 
-        if ($contactIdentifier === null) {
+        if ($output->contact() === null) {
             throw new InternalServerErrorHttpException();
         }
 
-        return response()->json([
-            'id' => (string) $contactIdentifier,
-        ], Response::HTTP_CREATED);
+        return response()->json($output->toArray(), Response::HTTP_CREATED);
     }
 }
