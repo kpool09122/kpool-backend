@@ -13,6 +13,8 @@ use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Throwable;
 
 readonly class ReplyContact implements ReplyContactInterface
@@ -22,15 +24,22 @@ readonly class ReplyContact implements ReplyContactInterface
         private ReplyContactFactoryInterface $replyContactFactory,
         private ReplyContactRepositoryInterface $replyContactRepository,
         private EmailServiceInterface $emailService,
+        private UserRepositoryInterface $userRepository,
     ) {
     }
 
     /**
      * @throws ContactNotFoundException
      * @throws FailedToSendEmailException
+     * @throws UnauthorizedException
      */
     public function process(ReplyContactInputPort $input): void
     {
+        $user = $this->userRepository->findByIdentityIdentifier($input->identityIdentifier());
+        if (! $user?->isAdmin()) {
+            throw new UnauthorizedException();
+        }
+
         $contact = $this->contactRepository->findById($input->contactIdentifier());
         if ($contact === null) {
             throw new ContactNotFoundException();

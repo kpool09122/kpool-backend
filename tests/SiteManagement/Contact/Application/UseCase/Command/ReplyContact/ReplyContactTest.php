@@ -27,6 +27,9 @@ use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Entity\User;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -75,6 +78,7 @@ class ReplyContactTest extends TestCase
             $identityIdentifier,
             $expectedContent,
         );
+        $this->bindAdminUser($identityIdentifier);
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('findById')
@@ -154,6 +158,50 @@ class ReplyContactTest extends TestCase
     }
 
     /**
+     * 異常系：管理者ではない場合、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testWhenUserIsNotAdmin(): void
+    {
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $input = new ReplyContactInput(
+            $contactIdentifier,
+            $identityIdentifier,
+            '返信内容',
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findByIdentityIdentifier')
+            ->once()
+            ->with($identityIdentifier)
+            ->andReturnNull();
+
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldNotReceive('findById');
+
+        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService->shouldNotReceive('sendReplyToUser');
+
+        $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
+        $replyContactFactory->shouldNotReceive('create');
+
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldNotReceive('save');
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app->instance(EmailServiceInterface::class, $emailService);
+
+        $this->expectException(UnauthorizedException::class);
+        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
      * 異常系：問い合わせが存在しない場合、例外がスローされること.
      *
      * @throws BindingResolutionException
@@ -171,6 +219,7 @@ class ReplyContactTest extends TestCase
             $identityIdentifier,
             $expectedContent,
         );
+        $this->bindAdminUser($identityIdentifier);
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('findById')
@@ -224,6 +273,7 @@ class ReplyContactTest extends TestCase
             $identityIdentifier,
             $expectedContent,
         );
+        $this->bindAdminUser($identityIdentifier);
 
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldReceive('findById')
@@ -297,5 +347,21 @@ class ReplyContactTest extends TestCase
         $this->expectException(FailedToSendEmailException::class);
         $useCase = $this->app->make(ReplyContactInterface::class);
         $useCase->process($input);
+    }
+
+    private function bindAdminUser(IdentityIdentifier $identityIdentifier): void
+    {
+        $user = Mockery::mock(User::class);
+        $user->shouldReceive('isAdmin')
+            ->once()
+            ->andReturnTrue();
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findByIdentityIdentifier')
+            ->once()
+            ->with($identityIdentifier)
+            ->andReturn($user);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
     }
 }

@@ -237,7 +237,7 @@ class ReplyContactRepositoryTest extends TestCase
         $this->assertNull($savedReply->identityIdentifier());
         $this->assertNull($savedReply->sentAt());
         $this->assertNotNull($savedReply->failedAt());
-        $this->assertSame($reply->failedAt()?->format('Y-m-d H:i:s'), $savedReply->failedAt()?->format('Y-m-d H:i:s'));
+        $this->assertSame($reply->failedAt()->format('Y-m-d H:i:s'), $savedReply->failedAt()->format('Y-m-d H:i:s'));
         $this->assertSame((string)$toEmail, (string)$savedReply->toEmail());
         $this->assertSame($reply->createdAt()->format('Y-m-d H:i:s'), $savedReply->createdAt()->format('Y-m-d H:i:s'));
     }

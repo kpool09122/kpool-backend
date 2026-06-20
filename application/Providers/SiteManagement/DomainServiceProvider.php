@@ -6,6 +6,7 @@ namespace Application\Providers\SiteManagement;
 
 use Illuminate\Support\ServiceProvider;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
+use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Infrastructure\Service\Encryption\EncryptionService;
 use Source\SiteManagement\Announcement\Domain\Factory\AnnouncementFactoryInterface;
 use Source\SiteManagement\Announcement\Domain\Factory\DraftAnnouncementFactoryInterface;
@@ -17,10 +18,12 @@ use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ReplyContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ReplyContactFactory;
+use Source\SiteManagement\Contact\Infrastructure\Service\ContactEmailService;
 use Source\SiteManagement\User\Domain\Factory\UserFactoryInterface;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
 use Source\SiteManagement\User\Infrastructure\Factory\UserFactory;
@@ -40,5 +43,11 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(ContactRepositoryInterface::class, ContactRepository::class);
         $this->app->singleton(ReplyContactRepositoryInterface::class, ReplyContactRepository::class);
         $this->app->singleton(EncryptionServiceInterface::class, EncryptionService::class);
+        $this->app->singleton(
+            EmailServiceInterface::class,
+            fn (): ContactEmailService => new ContactEmailService(
+                new Email((string) config('mail.from.address'))
+            )
+        );
     }
 }
