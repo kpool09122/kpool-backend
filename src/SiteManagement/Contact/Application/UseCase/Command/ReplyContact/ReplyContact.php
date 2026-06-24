@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
+
+use DateTimeImmutable;
+use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
+use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
+use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
+use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use Throwable;
+
+readonly class ReplyContact implements ReplyContactInterface
+{
+    public function __construct(
+        private ContactRepositoryInterface $contactRepository,
+        private ReplyContactFactoryInterface $replyContactFactory,
+        private ReplyContactRepositoryInterface $replyContactRepository,
+        private EmailServiceInterface $emailService,
+        private UserRepositoryInterface $userRepository,
+    ) {
+    }
+
+    /**
+     * @throws ContactNotFoundException
+     * @throws FailedToSendEmailException
+     * @throws UnauthorizedException
+     */
+    public function process(ReplyContactInputPort $input): void
+    {
+        $user = $this->userRepository->findByIdentityIdentifier($input->identityIdentifier());
+        if (! $user?->isAdmin()) {
+            throw new UnauthorizedException();
+        }
+
+        $contact = $this->contactRepository->findById($input->contactIdentifier());
+        if ($contact === null) {
+            throw new ContactNotFoundException();
+        }
+
+        $content = new ReplyContent($input->content());
+
+        $reply = $this->replyContactFactory->create(
+            $contact->contactIdentifier(),
+            $input->identityIdentifier(),
+            $contact->email(),
+            $content,
+            null,
+            null,
+        );
+        $this->replyContactRepository->save($reply);
+
+        try {
+            $this->emailService->sendReplyToUser(
+                $contact->email(),
+                $content,
+            );
+        } catch (Throwable $e) {
+            $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+            $failed = new ReplyCotact(
+                $persisted->replyIdentifier(),
+                $persisted->contactIdentifier(),
+                $persisted->identityIdentifier(),
+                $persisted->toEmail(),
+                $persisted->content(),
+                null,
+                new DateTimeImmutable('now'),
+                $persisted->createdAt(),
+            );
+            $this->replyContactRepository->save($failed);
+
+            throw new FailedToSendEmailException($e->getMessage());
+        }
+
+        // findById で取得してから送信完了日時を更新
+        $persisted = $this->replyContactRepository->findById($reply->replyIdentifier());
+        $sentAt = new DateTimeImmutable('now');
+        $sent = new ReplyCotact(
+            $persisted->replyIdentifier(),
+            $persisted->contactIdentifier(),
+            $persisted->identityIdentifier(),
+            $persisted->toEmail(),
+            $persisted->content(),
+            $sentAt,
+            null,
+            $persisted->createdAt(),
+        );
+        $this->replyContactRepository->save($sent);
+    }
+}
