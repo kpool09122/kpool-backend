@@ -29,6 +29,41 @@ parameters:
     reportUnmatchedIgnoredErrors: true
 services:
     -
+        class: Kpool\PHPStan\Rules\ForbiddenExternalLibraryInDomainAndUseCaseRule
+        arguments:
+            targetFilePathPatterns:
+                - '#/src/(?:[^/]+/)*Domain/#'
+                - '#/src/(?:[^/]+/)*Application/UseCase/#'
+            forbiddenClassNamePatterns:
+                - '#^Source\\(?:[^\\]+\\)*Infrastructure\\#'
+            allowedNamespacePrefixes:
+                - Source\
+                - Random\
+            allowedClassNames:
+                - ArrayAccess
+                - ArrayIterator
+                - BackedEnum
+                - Closure
+                - Countable
+                - DateTimeImmutable
+                - DateTimeInterface
+                - DomainException
+                - Exception
+                - Generator
+                - InvalidArgumentException
+                - IteratorAggregate
+                - JsonSerializable
+                - LogicException
+                - Psr\Log\LoggerInterface
+                - RuntimeException
+                - Stringable
+                - Throwable
+                - Traversable
+                - UnitEnum
+                - ValueError
+        tags:
+            - phpstan.rules.rule
+    -
         class: Kpool\PHPStan\Rules\SourceExceptionRequiresHttpConversionRule
         arguments:
             targetClassNamePattern: '#^Application\\Http\\Action\\.*Action$#'
