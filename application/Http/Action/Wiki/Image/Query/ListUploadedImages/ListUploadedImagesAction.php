@@ -18,6 +18,8 @@ readonly class ListUploadedImagesAction
 {
     public function __construct(
         private ListUploadedImagesInterface $listUploadedImages,
+        // 防御的catch内でのみ利用され、PHPStanのchecked exception解析では未到達扱いになるため。
+        // @phpstan-ignore property.onlyWritten
         private LoggerInterface $logger,
     ) {
     }

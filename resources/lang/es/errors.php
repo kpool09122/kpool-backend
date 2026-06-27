@@ -19,6 +19,7 @@ return [
     'monetization_account_not_found' => 'No se encontró la cuenta de monetización especificada.',
     'monetization_account_already_exists' => 'La cuenta de monetización ya existe.',
     'capability_already_granted' => 'La capacidad especificada ya ha sido otorgada.',
+    'capability_not_granted' => 'La capacidad requerida no ha sido otorgada.',
     'stripe_connect_error' => 'Se ha producido un error en Stripe Connect.',
     'empty_invoice_lines' => 'Se requiere al menos una línea de producto.',
     'invalid_invoice_amounts' => 'Los montos de la factura no son válidos.',

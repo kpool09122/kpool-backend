@@ -19,6 +19,7 @@ return [
     'monetization_account_not_found' => '指定されたマネタイズアカウントが見つかりません。',
     'monetization_account_already_exists' => 'マネタイズアカウントは既に存在します。',
     'capability_already_granted' => '指定された権限は既に付与されています。',
+    'capability_not_granted' => '必要な権限が付与されていません。',
     'stripe_connect_error' => 'Stripe Connectエラーが発生しました。',
     'empty_invoice_lines' => '少なくとも1つの商品明細が必要です。',
     'invalid_invoice_amounts' => '請求書の金額が無効です。',

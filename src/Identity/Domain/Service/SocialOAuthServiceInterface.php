@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Domain\Service;
 
+use Source\Identity\Domain\Exception\SocialOAuthException;
 use Source\Identity\Domain\ValueObject\OAuthCode;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SocialProfile;
@@ -13,5 +14,8 @@ interface SocialOAuthServiceInterface
 {
     public function buildRedirectUrl(SocialProvider $provider, OAuthState $state): string;
 
+    /**
+     * @throws SocialOAuthException
+     */
     public function fetchProfile(SocialProvider $provider, OAuthCode $code): SocialProfile;
 }

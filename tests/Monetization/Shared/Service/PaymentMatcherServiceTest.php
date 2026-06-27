@@ -120,9 +120,6 @@ class PaymentMatcherServiceTest extends TestCase
         $matcher->match($invoice, $payment, new DateTimeImmutable());
     }
 
-    /**
-     * @throws Exception
-     */
     private function createInvoice(OrderIdentifier $orderIdentifier): Invoice
     {
         $issuedAt = new DateTimeImmutable('2024-01-01');
