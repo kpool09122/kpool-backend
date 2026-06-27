@@ -1,0 +1,42 @@
+name: Notify assignee changes
+
+on:
+  issues:
+    types: [assigned, unassigned]
+  pull_request:
+    types: [assigned, unassigned]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          ACTION: ${{ github.event.action }}
+          ITEM_TYPE: ${{ github.event.issue && 'Issue' || 'Pull request' }}
+          ITEM_TITLE: ${{ github.event.issue.title || github.event.pull_request.title }}
+          ITEM_URL: ${{ github.event.issue.html_url || github.event.pull_request.html_url }}
+          ITEM_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          ACTOR: ${{ github.actor }}
+          ASSIGNEE: ${{ github.event.assignee.login }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL is not set."
+            exit 1
+          fi
+
+          if [ "$ACTION" = "assigned" ]; then
+            ICON=":bust_in_silhouette:"
+            STATUS="assigned"
+          else
+            ICON=":no_entry_sign:"
+            STATUS="unassigned"
+          fi
+
+          MESSAGE="${ICON} ${ITEM_TYPE} ${STATUS}: #${ITEM_NUMBER} ${ITEM_TITLE}\nAssignee: ${ASSIGNEE}\nChanged by: ${ACTOR}\n${ITEM_URL}"
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$(jq -n --arg text "$MESSAGE" '{text: $text}')" \
+            "$SLACK_WEBHOOK_URL"
