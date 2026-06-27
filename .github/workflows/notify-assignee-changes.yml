@@ -6,6 +6,8 @@ on:
   pull_request:
     types: [assigned, unassigned]
 
+permissions: {}
+
 jobs:
   notify:
     runs-on: ubuntu-latest
