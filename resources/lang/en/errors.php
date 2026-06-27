@@ -19,6 +19,7 @@ return [
     'monetization_account_not_found' => 'The specified monetization account was not found.',
     'monetization_account_already_exists' => 'The monetization account already exists.',
     'capability_already_granted' => 'The specified capability has already been granted.',
+    'capability_not_granted' => 'The required capability has not been granted.',
     'stripe_connect_error' => 'A Stripe Connect error has occurred.',
     'empty_invoice_lines' => 'At least one product line is required.',
     'invalid_invoice_amounts' => 'The invoice amounts are invalid.',

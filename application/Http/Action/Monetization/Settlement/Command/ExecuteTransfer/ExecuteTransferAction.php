@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Monetization\Account\Domain\Exception\CapabilityNotGrantedException;
 use Source\Monetization\Account\Domain\Exception\MonetizationAccountNotFoundException;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInput;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInterface;
@@ -58,6 +59,10 @@ readonly class ExecuteTransferAction
                 DB::rollBack();
 
                 throw new NotFoundHttpException(detail: error_message('monetization_account_not_found', $language), previous: $e);
+            } catch (CapabilityNotGrantedException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('capability_not_granted', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

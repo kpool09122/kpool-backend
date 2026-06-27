@@ -19,6 +19,7 @@ return [
     'monetization_account_not_found' => '지정된 수익화 계정을 찾을 수 없습니다.',
     'monetization_account_already_exists' => '수익화 계정이 이미 존재합니다.',
     'capability_already_granted' => '지정된 권한은 이미 부여되었습니다.',
+    'capability_not_granted' => '필요한 권한이 부여되지 않았습니다.',
     'stripe_connect_error' => 'Stripe Connect 오류가 발생했습니다.',
     'empty_invoice_lines' => '최소 하나의 상품 항목이 필요합니다.',
     'invalid_invoice_amounts' => '청구서 금액이 유효하지 않습니다.',

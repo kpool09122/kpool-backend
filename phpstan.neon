@@ -4,6 +4,7 @@ parameters:
     level: 6
     paths:
         - src
+        - application/Http/Action
         - tests
     excludePaths:
         - vendor/*
@@ -26,3 +27,19 @@ parameters:
     checkUninitializedProperties: true
     checkDynamicProperties: true
     reportUnmatchedIgnoredErrors: true
+services:
+    -
+        class: Kpool\PHPStan\Rules\SourceExceptionRequiresHttpConversionRule
+        arguments:
+            targetClassNamePattern: '#^Application\\Http\\Action\\.*Action$#'
+            targetMethodNames:
+                - __invoke
+            broadCatchTypes:
+                - Throwable
+                - Exception
+            sourceExceptionRegexes:
+                - '#^Source\\(?:[^\\]+\\)*Application\\Exception\\[^\\]+Exception$#'
+                - '#^Source\\(?:[^\\]+\\)*Domain\\Exception\\[^\\]+Exception$#'
+            httpExceptionClass: Application\Http\Exceptions\HttpException
+        tags:
+            - phpstan.rules.rule

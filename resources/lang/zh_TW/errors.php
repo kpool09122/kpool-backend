@@ -19,6 +19,7 @@ return [
     'monetization_account_not_found' => '找不到指定的收益化帳戶。',
     'monetization_account_already_exists' => '收益化帳戶已存在。',
     'capability_already_granted' => '指定的權限已被授予。',
+    'capability_not_granted' => '尚未授予所需權限。',
     'stripe_connect_error' => 'Stripe Connect發生錯誤。',
     'empty_invoice_lines' => '至少需要一個商品明細。',
     'invalid_invoice_amounts' => '發票金額無效。',
