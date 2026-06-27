@@ -7,5 +7,6 @@ import "./common/problem-details.tsp";
 import "./services/account-api.tsp";
 import "./services/identity-api.tsp";
 import "./services/monetization-api.tsp";
+import "./services/site-management-public-api.tsp";
 import "./services/webhook.tsp";
 import "./services/wiki-private-api.tsp";

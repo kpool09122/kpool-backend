@@ -10,8 +10,9 @@ interface SubmitContactInterface
 {
     /**
      * @param SubmitContactInputPort $input
+     * @param SubmitContactOutputPort $output
      * @return void
      * @throws FailedToSendEmailException
      */
-    public function process(SubmitContactInputPort $input): void;
+    public function process(SubmitContactInputPort $input, SubmitContactOutputPort $output): void;
 }
