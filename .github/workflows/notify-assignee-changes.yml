@@ -32,12 +32,14 @@ jobs:
           if [ "$ACTION" = "assigned" ]; then
             ICON=":bust_in_silhouette:"
             STATUS="assigned"
+            ASSIGNEE_LABEL="Assignee"
           else
             ICON=":no_entry_sign:"
             STATUS="unassigned"
+            ASSIGNEE_LABEL="Unassigned"
           fi
 
-          MESSAGE="${ICON} ${ITEM_TYPE} ${STATUS}: #${ITEM_NUMBER} ${ITEM_TITLE}\nAssignee: ${ASSIGNEE}\nChanged by: ${ACTOR}\n${ITEM_URL}"
+          MESSAGE="${ICON} ${ITEM_TYPE} ${STATUS}: #${ITEM_NUMBER} ${ITEM_TITLE}\n${ASSIGNEE_LABEL}: ${ASSIGNEE}\nChanged by: ${ACTOR}\n${ITEM_URL}"
 
           curl -X POST -H 'Content-type: application/json' \
             --data "$(jq -n --arg text "$MESSAGE" '{text: $text}')" \
