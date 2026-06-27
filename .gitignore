@@ -40,6 +40,7 @@ clover.xml
 /build/
 /dist/
 /node_modules/
+/.pnpm-store/
 /public/storage/
 
 .codex/*
