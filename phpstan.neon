@@ -97,3 +97,10 @@ services:
             internalServerErrorHttpExceptionClass: Application\Http\Exceptions\InternalServerErrorHttpException
         tags:
             - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\ForbiddenReflectionClassInTestRule
+        arguments:
+            targetFilePathPatterns:
+                - '#/tests/#'
+        tags:
+            - phpstan.rules.rule

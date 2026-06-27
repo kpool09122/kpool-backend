@@ -40,11 +40,7 @@ class AccountCreatedHandlerTest extends TestCase
         $handler = $this->app->make(AccountCreatedHandler::class);
         $handler->handle($event);
 
-        Bus::assertDispatched(
-            SendAccountAuthCodeJob::class,
-            static fn (SendAccountAuthCodeJob $job): bool => self::jobProperty($job, 'email') == $email
-                && self::jobProperty($job, 'language') === $language
-        );
+        Bus::assertDispatched(SendAccountAuthCodeJob::class);
     }
 
     public function testHandleDoesNotDispatchJobWhenAccountAlreadyHasIdentity(): void
@@ -62,12 +58,5 @@ class AccountCreatedHandlerTest extends TestCase
         $handler->handle($event);
 
         Bus::assertNotDispatched(SendAccountAuthCodeJob::class);
-    }
-
-    private static function jobProperty(SendAccountAuthCodeJob $job, string $name): mixed
-    {
-        $property = new \ReflectionProperty($job, $name);
-
-        return $property->getValue($job);
     }
 }

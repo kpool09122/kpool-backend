@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis;
+namespace Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-interface ListDraftWikisInputPort
+interface ListMyDraftWikisInputPort
 {
     public function perPage(): int;
 
@@ -19,5 +19,5 @@ interface ListDraftWikisInputPort
 
     public function resourceType(): ?ResourceType;
 
-    public function principalIdentifier(): PrincipalIdentifier;
+    public function editorIdentifier(): PrincipalIdentifier;
 }

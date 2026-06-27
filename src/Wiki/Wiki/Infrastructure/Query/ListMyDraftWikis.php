@@ -11,22 +11,15 @@ use Application\Models\Wiki\DraftWikiSongBasic;
 use Application\Models\Wiki\DraftWikiTalentBasic;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use Source\Shared\Infrastructure\Support\ImageUrl;
-use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
-use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
-use Source\Wiki\Shared\Domain\Exception\DisallowedException;
-use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\ValueObject\Action;
-use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiListItemReadModel;
-use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInputPort;
-use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInterface;
-use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisOutputPort;
+use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisInputPort;
+use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisOutputPort;
 
-readonly class ListDraftWikis implements ListDraftWikisInterface
+readonly class ListMyDraftWikis implements ListMyDraftWikisInterface
 {
     /** @var array<string, string> */
     private const BASIC_RELATIONS = [
@@ -36,17 +29,7 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
         ResourceType::SONG->value => 'songBasic',
     ];
 
-    public function __construct(
-        private PrincipalRepositoryInterface $principalRepository,
-        private PolicyEvaluatorInterface $policyEvaluator,
-    ) {
-    }
-
-    /**
-     * @throws DisallowedException
-     * @throws PrincipalNotFoundException
-     */
-    public function process(ListDraftWikisInputPort $input, ListDraftWikisOutputPort $output): void
+    public function process(ListMyDraftWikisInputPort $input, ListMyDraftWikisOutputPort $output): void
     {
         $query = DraftWiki::query()
             ->with([
@@ -58,6 +41,7 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
                 'songBasic.talents',
             ])
             ->where('draft_wikis.status', $input->status()->value)
+            ->where('draft_wikis.editor_id', (string) $input->editorIdentifier())
             ->orderBy('draft_wikis.edited_at', 'desc')
             ->orderBy('draft_wikis.updated_at', 'desc');
 
@@ -74,8 +58,6 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
         /** @var LengthAwarePaginator<int, DraftWiki> $paginator */
         $paginator = $query->paginate($input->perPage());
 
-        $this->authorize($input, $paginator->items());
-
         $output->output(
             array_map(
                 fn (DraftWiki $wiki): DraftWikiListItemReadModel => $this->toReadModel($wiki),
@@ -86,84 +68,6 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             $paginator->total(),
             $paginator->perPage(),
         );
-    }
-
-    /**
-     * @param DraftWiki[] $wikis
-     * @throws DisallowedException
-     * @throws PrincipalNotFoundException
-     */
-    private function authorize(ListDraftWikisInputPort $input, array $wikis): void
-    {
-        $principal = $this->principalRepository->findById($input->principalIdentifier());
-        if ($principal === null) {
-            throw new PrincipalNotFoundException();
-        }
-
-        foreach ($wikis as $wiki) {
-            if (! $this->policyEvaluator->evaluate($principal, Action::READ, $this->toResource($wiki))) {
-                throw new DisallowedException();
-            }
-        }
-    }
-
-    private function toResource(DraftWiki $wiki): Resource
-    {
-        $resourceType = ResourceType::from($wiki->resource_type);
-
-        if ($resourceType === ResourceType::AGENCY) {
-            return new Resource(
-                type: $resourceType,
-                agencyId: $wiki->id,
-                editorId: $wiki->editor_id,
-            );
-        }
-
-        if ($resourceType === ResourceType::GROUP) {
-            $basic = $wiki->groupBasic;
-            if (! $basic instanceof DraftWikiGroupBasic) {
-                throw new InvalidArgumentException("Group basic not found for DraftWiki: {$wiki->id}");
-            }
-
-            return new Resource(
-                type: $resourceType,
-                agencyId: $basic->agency_identifier,
-                groupIds: [$wiki->id],
-                editorId: $wiki->editor_id,
-            );
-        }
-
-        if ($resourceType === ResourceType::TALENT) {
-            $basic = $wiki->talentBasic;
-            if (! $basic instanceof DraftWikiTalentBasic) {
-                throw new InvalidArgumentException("Talent basic not found for DraftWiki: {$wiki->id}");
-            }
-
-            return new Resource(
-                type: $resourceType,
-                agencyId: $basic->agency_identifier,
-                groupIds: $basic->groups->map(static fn (Model $group): string => (string) $group->id)->all(),
-                talentIds: [$wiki->id],
-                editorId: $wiki->editor_id,
-            );
-        }
-
-        if ($resourceType === ResourceType::SONG) {
-            $basic = $wiki->songBasic;
-            if (! $basic instanceof DraftWikiSongBasic) {
-                throw new InvalidArgumentException("Song basic not found for DraftWiki: {$wiki->id}");
-            }
-
-            return new Resource(
-                type: $resourceType,
-                agencyId: $basic->agency_identifier,
-                groupIds: $basic->groups->map(static fn (Model $group): string => (string) $group->id)->all(),
-                talentIds: $basic->talents->map(static fn (Model $talent): string => (string) $talent->id)->all(),
-                editorId: $wiki->editor_id,
-            );
-        }
-
-        throw new InvalidArgumentException("Unsupported draft wiki resource type: {$wiki->resource_type}");
     }
 
     private function toReadModel(DraftWiki $wiki): DraftWikiListItemReadModel

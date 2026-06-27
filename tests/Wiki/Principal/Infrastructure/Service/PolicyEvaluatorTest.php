@@ -1201,7 +1201,7 @@ class PolicyEvaluatorTest extends TestCase
         $talentManagementGroupPolicy = $this->createAndSavePolicy([
             new Statement(
                 Effect::ALLOW,
-                [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                [Action::READ, Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                 [ResourceType::GROUP],
                 new Condition([
                     new ConditionClause(
@@ -1217,7 +1217,7 @@ class PolicyEvaluatorTest extends TestCase
         $talentManagementTalentPolicy = $this->createAndSavePolicy([
             new Statement(
                 Effect::ALLOW,
-                [Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                [Action::READ, Action::EDIT, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                 [ResourceType::TALENT],
                 new Condition([
                     new ConditionClause(
@@ -1264,11 +1264,13 @@ class PolicyEvaluatorTest extends TestCase
         // 自分のGroupへの承認は許可される
         $ownGroup = new Resource(ResourceType::GROUP, null, [$groupId]);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $ownGroup));
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::READ, $ownGroup));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::TRANSLATE, $ownGroup));
 
         // 自分のTalentへの承認は許可される
         $ownTalent = new Resource(ResourceType::TALENT, null, [], [$talentId]);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $ownTalent));
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::READ, $ownTalent));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::TRANSLATE, $ownTalent));
     }
 
@@ -1294,7 +1296,7 @@ class PolicyEvaluatorTest extends TestCase
         $agencyManagementPolicy = $this->createAndSavePolicy([
             new Statement(
                 Effect::ALLOW,
-                [Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
+                [Action::READ, Action::APPROVE, Action::REJECT, Action::TRANSLATE, Action::PUBLISH, Action::MERGE],
                 ResourceType::cases(),
                 new Condition([
                     new ConditionClause(
@@ -1326,11 +1328,13 @@ class PolicyEvaluatorTest extends TestCase
         // 自分のAgencyへの承認は許可される
         $ownAgency = new Resource(ResourceType::AGENCY, $agencyId);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $ownAgency));
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::READ, $ownAgency));
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::TRANSLATE, $ownAgency));
 
         // 他のAgencyへの承認は拒否される
         $otherAgency = new Resource(ResourceType::AGENCY, StrTestHelper::generateUuid());
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $otherAgency));
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::READ, $otherAgency));
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::TRANSLATE, $otherAgency));
 
         // agencyIdがnullのAgencyへの承認は拒否される
@@ -1341,10 +1345,12 @@ class PolicyEvaluatorTest extends TestCase
         // Group（agencyIdが一致）への承認は許可される
         $groupInAgency = new Resource(ResourceType::GROUP, $agencyId);
         $this->assertTrue($policyEvaluator->evaluate($principal, Action::APPROVE, $groupInAgency));
+        $this->assertTrue($policyEvaluator->evaluate($principal, Action::READ, $groupInAgency));
 
         // Group（agencyIdが異なる）への承認は拒否される
         $groupOtherAgency = new Resource(ResourceType::GROUP, StrTestHelper::generateUuid());
         $this->assertFalse($policyEvaluator->evaluate($principal, Action::APPROVE, $groupOtherAgency));
+        $this->assertFalse($policyEvaluator->evaluate($principal, Action::READ, $groupOtherAgency));
 
         // agencyIdがnullのPrincipalは承認できない
         $principalNoAgency = $this->createPrincipal(null);

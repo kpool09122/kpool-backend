@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Wiki\Wiki\Query\ListDraftWikis;
+namespace Application\Http\Action\Wiki\Wiki\Query\ListMyDraftWikis;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-class ListDraftWikisRequest extends FormRequest
+class ListMyDraftWikisRequest extends FormRequest
 {
     use ResolvesLanguage;
 

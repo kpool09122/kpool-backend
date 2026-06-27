@@ -179,7 +179,7 @@ readonly class AffiliationActivatedHandler
             // Group: AgencyがGroupに紐づいている AND 自身のTalentがそのGroupに紐づいている
             new Statement(
                 Effect::ALLOW,
-                [Action::CREATE, Action::EDIT, Action::SUBMIT],
+                [Action::READ, Action::CREATE, Action::EDIT, Action::SUBMIT],
                 [ResourceType::GROUP],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
@@ -189,7 +189,7 @@ readonly class AffiliationActivatedHandler
             // Song (Group経由): AgencyがSongに紐づいている AND 自身が所属するGroupがSongに紐づいている
             new Statement(
                 Effect::ALLOW,
-                [Action::CREATE, Action::EDIT, Action::SUBMIT],
+                [Action::READ, Action::CREATE, Action::EDIT, Action::SUBMIT],
                 [ResourceType::SONG],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
@@ -199,7 +199,7 @@ readonly class AffiliationActivatedHandler
             // Song (Talent経由): AgencyがSongに紐づいている AND 自身のTalentがSongに紐づいている
             new Statement(
                 Effect::ALLOW,
-                [Action::CREATE, Action::EDIT, Action::SUBMIT],
+                [Action::READ, Action::CREATE, Action::EDIT, Action::SUBMIT],
                 [ResourceType::SONG],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_AGENCY_ID, ConditionOperator::EQUALS, $agencyId),
@@ -226,7 +226,7 @@ readonly class AffiliationActivatedHandler
         return [
             new Statement(
                 Effect::ALLOW,
-                [Action::CREATE, Action::EDIT, Action::SUBMIT],
+                [Action::READ, Action::CREATE, Action::EDIT, Action::SUBMIT],
                 [ResourceType::TALENT],
                 new Condition([
                     new ConditionClause(ConditionKey::RESOURCE_TALENT_ID, ConditionOperator::IN, $talentId),

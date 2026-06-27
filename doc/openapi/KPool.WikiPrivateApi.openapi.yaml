@@ -59,7 +59,7 @@ paths:
   /draft-wikis:
     get:
       operationId: DraftWikiListOperations_listDraftWikis
-      description: List draft wikis.
+      description: List draft wikis with read policy authorization.
       parameters:
         - name: perPage
           in: query
@@ -86,12 +86,6 @@ paths:
           schema:
             type: string
           explode: false
-        - name: onlyMine
-          in: query
-          required: false
-          schema:
-            type: boolean
-          explode: false
       responses:
         '200':
           description: Response returned when draft wiki list retrieval succeeds.
@@ -101,6 +95,12 @@ paths:
                 $ref: '#/components/schemas/ListDraftWikisResponseBody'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
           content:
             application/json:
               schema:
@@ -511,6 +511,67 @@ paths:
                 $ref: '#/components/schemas/ListUploadedImagesResponseBody'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /my/draft-wikis:
+    get:
+      operationId: MyDraftWikiListOperations_listMyDraftWikis
+      description: List draft wikis edited by the current principal.
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: translationSetIdentifier
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          explode: false
+        - name: status
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/DraftWikiStatus'
+          explode: false
+        - name: resourceType
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: Response returned when draft wiki list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDraftWikisResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:

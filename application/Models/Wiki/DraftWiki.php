@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @property-read ?DraftWikiGroupBasic $groupBasic
  * @property-read ?DraftWikiAgencyBasic $agencyBasic
  * @property-read ?DraftWikiSongBasic $songBasic
+ * @property-read ?WikiImage $image
  * @property-read ?Wiki $publishedWiki
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
@@ -107,6 +108,14 @@ class DraftWiki extends Model
     public function songBasic(): HasOne
     {
         return $this->hasOne(DraftWikiSongBasic::class, 'wiki_id', 'id');
+    }
+
+    /**
+     * @return BelongsTo<WikiImage, DraftWiki>
+     */
+    public function image(): BelongsTo
+    {
+        return $this->belongsTo(WikiImage::class, 'image_identifier', 'id');
     }
 
     /**

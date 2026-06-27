@@ -2,36 +2,36 @@
 
 declare(strict_types=1);
 
-namespace Tests\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis;
+namespace Tests\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
-use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInput;
+use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisInput;
 use Tests\TestCase;
 
-class ListDraftWikisInputTest extends TestCase
+class ListMyDraftWikisInputTest extends TestCase
 {
     public function testDefaults(): void
     {
-        $input = new ListDraftWikisInput(
+        $input = new ListMyDraftWikisInput(
             status: ApprovalStatus::UnderReview,
-            principalIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f101'),
+            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f101'),
         );
 
         $this->assertSame(10, $input->perPage());
         $this->assertNull($input->translationSetIdentifier());
         $this->assertSame(ApprovalStatus::UnderReview, $input->status());
         $this->assertNull($input->resourceType());
-        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', (string) $input->principalIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', (string) $input->editorIdentifier());
     }
 
     public function testAccessors(): void
     {
-        $input = new ListDraftWikisInput(
+        $input = new ListMyDraftWikisInput(
             status: ApprovalStatus::Pending,
-            principalIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f104'),
+            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f103'),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f102'),
             resourceType: ResourceType::TALENT,
             perPage: 20,
@@ -41,6 +41,6 @@ class ListDraftWikisInputTest extends TestCase
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f102', (string) $input->translationSetIdentifier());
         $this->assertSame(ApprovalStatus::Pending, $input->status());
         $this->assertSame(ResourceType::TALENT, $input->resourceType());
-        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f104', (string) $input->principalIdentifier());
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f103', (string) $input->editorIdentifier());
     }
 }

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis;
+namespace Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
-readonly class ListDraftWikisInput implements ListDraftWikisInputPort
+readonly class ListMyDraftWikisInput implements ListMyDraftWikisInputPort
 {
     public function __construct(
         private ApprovalStatus $status,
-        private PrincipalIdentifier $principalIdentifier,
+        private PrincipalIdentifier $editorIdentifier,
         private ?TranslationSetIdentifier $translationSetIdentifier = null,
         private ?ResourceType $resourceType = null,
         private ?int $perPage = null,
@@ -40,8 +40,8 @@ readonly class ListDraftWikisInput implements ListDraftWikisInputPort
         return $this->resourceType;
     }
 
-    public function principalIdentifier(): PrincipalIdentifier
+    public function editorIdentifier(): PrincipalIdentifier
     {
-        return $this->principalIdentifier;
+        return $this->editorIdentifier;
     }
 }
