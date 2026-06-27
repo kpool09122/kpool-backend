@@ -8,6 +8,11 @@ on:
         required: true
         default: main
         type: string
+  push:
+    branches:
+      - main
+    paths:
+      - doc/openapi/**
 
 permissions:
   contents: read
@@ -20,6 +25,7 @@ env:
   OPENAPI_ZOD_CLIENT_VERSION: 1.18.3
   FRONTEND_ZOD_VERSION: 3.25.76
   FRONTEND_ZODIOS_CORE_VERSION: 10.9.6
+  FRONTEND_BASE_BRANCH: ${{ github.event_name == 'workflow_dispatch' && inputs.frontend_base_branch || 'main' }}
 
 jobs:
   update-frontend-zod-schemas:
@@ -52,7 +58,7 @@ jobs:
         with:
           repository: ${{ env.FRONTEND_REPOSITORY }}
           path: ${{ env.FRONTEND_CHECKOUT_PATH }}
-          ref: ${{ inputs.frontend_base_branch }}
+          ref: ${{ env.FRONTEND_BASE_BRANCH }}
           # This token must be able to read, push, and create pull requests on kpool09122/kpool-frontend.
           token: ${{ secrets.KPOOL_FRONTEND_PR_TOKEN }}
 
@@ -94,7 +100,6 @@ jobs:
         if: steps.changes.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.KPOOL_FRONTEND_PR_TOKEN }}
-          FRONTEND_BASE_BRANCH: ${{ inputs.frontend_base_branch }}
         working-directory: ${{ env.FRONTEND_CHECKOUT_PATH }}
         run: |
           gh pr create \
