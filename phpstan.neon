@@ -43,3 +43,22 @@ services:
             httpExceptionClass: Application\Http\Exceptions\HttpException
         tags:
             - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\ActionHttpExceptionResponseRule
+        arguments:
+            targetClassNamePattern: '#^Application\\Http\\Action\\.*Action$#'
+            targetMethodNames:
+                - __invoke
+            broadCatchTypes:
+                - Throwable
+                - Exception
+            clientErrorHttpExceptionClasses:
+                - Application\Http\Exceptions\BadRequestHttpException
+                - Application\Http\Exceptions\UnauthorizedHttpException
+                - Application\Http\Exceptions\ForbiddenHttpException
+                - Application\Http\Exceptions\NotFoundHttpException
+                - Application\Http\Exceptions\ConflictHttpException
+                - Application\Http\Exceptions\UnprocessableEntityHttpException
+            internalServerErrorHttpExceptionClass: Application\Http\Exceptions\InternalServerErrorHttpException
+        tags:
+            - phpstan.rules.rule
