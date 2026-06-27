@@ -9,6 +9,18 @@ parameters:
         - vendor/*
     ignoreErrors:
         - '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::#'
+    exceptions:
+        implicitThrows: false
+        reportUncheckedExceptionDeadCatch: false
+        uncheckedExceptionClasses:
+            - Throwable
+        checkedExceptionRegexes:
+            - '#^Source\\(?:[^\\]+\\)*Application\\Exception\\[^\\]+Exception$#'
+            - '#^Source\\(?:[^\\]+\\)*Domain\\Exception\\[^\\]+Exception$#'
+        check:
+            missingCheckedExceptionInThrows: true
+            tooWideThrowType: true
+            throwTypeCovariance: true
     treatPhpDocTypesAsCertain: false
     checkTooWideReturnTypesInProtectedAndPublicMethods: true
     checkUninitializedProperties: true

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Application\UseCase\Command\EditWiki;
 
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\InvalidStatusException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 
@@ -15,6 +16,7 @@ interface EditWikiInterface
      * @param EditWikiOutputPort $output
      * @return void
      * @throws WikiNotFoundException
+     * @throws InvalidStatusException
      * @throws DisallowedException
      * @throws PrincipalNotFoundException
      */
