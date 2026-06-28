@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Query\GetMyTalentDraftWiki;
 
-use Application\Http\Context\ActorContext;
+use Application\Http\Context\WikiContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
@@ -12,10 +12,6 @@ use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInput;
-use Source\Wiki\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
-use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetMyTalentDraftWiki\GetMyTalentDraftWikiInput;
@@ -28,8 +24,7 @@ readonly class GetMyTalentDraftWikiAction
 {
     public function __construct(
         private GetMyTalentDraftWikiInterface $getMyTalentDraftWiki,
-        private GetCurrentPrincipalInterface $getCurrentPrincipal,
-        private ActorContext $actorContext,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -42,7 +37,7 @@ readonly class GetMyTalentDraftWikiAction
                 $input = new GetMyTalentDraftWikiInput(
                     new Slug($request->slug()),
                     Language::from($request->language()),
-                    $this->currentPrincipalIdentifier(),
+                    $this->wikiContext->principalIdentifier,
                 );
             } catch (InvalidArgumentException|ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
@@ -64,19 +59,5 @@ readonly class GetMyTalentDraftWikiAction
         }
 
         return response()->json($readModel->toArray(), Response::HTTP_OK);
-    }
-
-    private function currentPrincipalIdentifier(): PrincipalIdentifier
-    {
-        try {
-            $principal = $this->getCurrentPrincipal->process(new GetCurrentPrincipalInput($this->actorContext->identityIdentifier));
-        } catch (PrincipalNotFoundException $e) {
-            throw new NotFoundHttpException(detail: error_message('principal_not_found', $this->actorContext->language->value), previous: $e);
-        }
-
-        /** @var array{principalIdentifier: string} $payload */
-        $payload = $principal->toArray();
-
-        return new PrincipalIdentifier($payload['principalIdentifier']);
     }
 }

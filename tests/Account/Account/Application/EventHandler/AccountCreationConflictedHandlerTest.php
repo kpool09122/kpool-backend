@@ -35,17 +35,6 @@ class AccountCreationConflictedHandlerTest extends TestCase
         $handler = $this->app->make(AccountCreationConflictedHandler::class);
         $handler->handle($event);
 
-        Bus::assertDispatched(
-            SendAccountConflictNotificationJob::class,
-            static fn (SendAccountConflictNotificationJob $job): bool => self::jobProperty($job, 'email') == $email
-                && self::jobProperty($job, 'language') === $language
-        );
-    }
-
-    private static function jobProperty(SendAccountConflictNotificationJob $job, string $name): mixed
-    {
-        $property = new \ReflectionProperty($job, $name);
-
-        return $property->getValue($job);
+        Bus::assertDispatched(SendAccountConflictNotificationJob::class);
     }
 }

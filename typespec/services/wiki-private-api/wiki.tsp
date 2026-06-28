@@ -364,17 +364,28 @@ interface WikiListOperations {
   ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
+@route("/my/draft-wikis")
+interface MyDraftWikiListOperations {
+  @get
+  @doc("List draft wikis edited by the current principal.")
+  listMyDraftWikis(
+    @query perPage?: int32,
+    @query translationSetIdentifier?: Uuid,
+    @query status: DraftWikiStatus,
+    @query resourceType?: string,
+  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
 @route("/draft-wikis")
 interface DraftWikiListOperations {
   @get
-  @doc("List draft wikis.")
+  @doc("List draft wikis with read policy authorization.")
   listDraftWikis(
     @query perPage?: int32,
     @query translationSetIdentifier?: Uuid,
     @query status: DraftWikiStatus,
     @query resourceType?: string,
-    @query onlyMine?: boolean,
-  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/wiki")

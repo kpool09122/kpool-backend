@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
+use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Principal\Domain\Entity\Principal;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInterface;
@@ -50,6 +59,7 @@ class ListDraftWikisTest extends TestCase
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::UnderReview,
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
         ))->toArray();
 
         $this->assertSame(1, $payload['current_page']);
@@ -89,6 +99,7 @@ class ListDraftWikisTest extends TestCase
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::UnderReview,
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f401'),
         ))->toArray();
 
@@ -119,6 +130,7 @@ class ListDraftWikisTest extends TestCase
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::UnderReview,
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
             resourceType: ResourceType::GROUP,
         ))->toArray();
 
@@ -147,6 +159,7 @@ class ListDraftWikisTest extends TestCase
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::Pending,
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
             perPage: 2,
         ))->toArray();
 
@@ -157,33 +170,97 @@ class ListDraftWikisTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessFiltersByEditorIdentifierWhenSpecified(): void
+    public function testProcessAuthorizesAdminListWithReadAction(): void
     {
-        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f601', 'talent', [
+        $principalIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f711');
+        $principal = new Principal(
+            $principalIdentifier,
+            new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f712'),
+            null,
+            [],
+            [],
+        );
+
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f611', 'group', [
             'status' => ApprovalStatus::UnderReview->value,
-            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
-            'edited_at' => '2026-05-01 00:00:00',
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f713',
+        ], [
+            'agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f714',
         ]);
-        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f602', 'talent', [
-            'status' => ApprovalStatus::UnderReview->value,
-            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f702',
-            'edited_at' => '2026-05-02 00:00:00',
-        ]);
-        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f603', 'talent', [
-            'status' => ApprovalStatus::Pending->value,
-            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
-            'edited_at' => '2026-05-03 00:00:00',
-        ]);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')
+            ->once()
+            ->with($principal, Action::READ, Mockery::on(
+                static fn (Resource $resource): bool => $resource->type() === ResourceType::GROUP
+                    && $resource->agencyId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f714'
+                    && $resource->groupIds() === ['01965bb2-bcc9-7c6f-8b90-89f7f217f611']
+                    && $resource->editorId() === '01965bb2-bcc9-7c6f-8b90-89f7f217f713'
+            ))
+            ->andReturn(true);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::UnderReview,
-            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
+            principalIdentifier: $principalIdentifier,
         ))->toArray();
 
         $this->assertSame(1, $payload['total']);
-        $this->assertSame([
-            '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
-        ], array_column($payload['wikis'], 'wikiIdentifier'));
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f611', $payload['wikis'][0]['wikiIdentifier']);
+    }
+
+    #[Group('useDb')]
+    public function testProcessThrowsDisallowedWhenReadPolicyDeniesAdminList(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f721');
+        $principal = new Principal(
+            $principalIdentifier,
+            new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f722'),
+            null,
+            [],
+            [],
+        );
+
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f621', 'talent', [
+            'status' => ApprovalStatus::UnderReview->value,
+        ]);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturn(false);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+
+        $this->expectException(DisallowedException::class);
+
+        $this->process(new ListDraftWikisInput(
+            status: ApprovalStatus::UnderReview,
+            principalIdentifier: $principalIdentifier,
+        ));
+    }
+
+    #[Group('useDb')]
+    public function testProcessThrowsPrincipalNotFoundWhenAdminPrincipalIsMissing(): void
+    {
+        $principalIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f731');
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f631', 'talent', [
+            'status' => ApprovalStatus::UnderReview->value,
+        ]);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->with($principalIdentifier)->andReturn(null);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+
+        $this->expectException(PrincipalNotFoundException::class);
+
+        $this->process(new ListDraftWikisInput(
+            status: ApprovalStatus::UnderReview,
+            principalIdentifier: $principalIdentifier,
+        ));
     }
 
     #[Group('useDb')]
@@ -217,6 +294,7 @@ class ListDraftWikisTest extends TestCase
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::Approved,
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f601'),
         ))->toArray();
 
@@ -261,6 +339,7 @@ class ListDraftWikisTest extends TestCase
 
         $payload = $this->process(new ListDraftWikisInput(
             status: ApprovalStatus::Pending,
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f901'),
         ))->toArray();
 
@@ -276,9 +355,40 @@ class ListDraftWikisTest extends TestCase
 
     private function process(ListDraftWikisInput $input): ListDraftWikisOutput
     {
+        $this->allowReadPoliciesForDefaultPrincipal($input);
+
         $output = new ListDraftWikisOutput();
         $this->listDraftWikis()->process($input, $output);
 
         return $output;
+    }
+
+    private function defaultPrincipalIdentifier(): PrincipalIdentifier
+    {
+        return new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f700');
+    }
+
+    private function allowReadPoliciesForDefaultPrincipal(ListDraftWikisInput $input): void
+    {
+        if ((string) $input->principalIdentifier() !== (string) $this->defaultPrincipalIdentifier()) {
+            return;
+        }
+
+        $principal = new Principal(
+            $this->defaultPrincipalIdentifier(),
+            new IdentityIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
+            null,
+            [],
+            [],
+        );
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')
+            ->with(Mockery::on(fn (PrincipalIdentifier $principalIdentifier): bool => (string) $principalIdentifier === (string) $this->defaultPrincipalIdentifier()))
+            ->andReturn($principal);
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->andReturn(true);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
     }
 }

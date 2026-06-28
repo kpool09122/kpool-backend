@@ -49,6 +49,7 @@ use Application\Http\Action\Wiki\Wiki\Query\GetSongWiki\GetSongWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentDraftWiki\GetTalentDraftWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentWiki\GetTalentWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListDraftWikis\ListDraftWikisAction;
+use Application\Http\Action\Wiki\Wiki\Query\ListMyDraftWikis\ListMyDraftWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListRelatedProfiles\ListRelatedProfilesAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
@@ -76,20 +77,21 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 });
 Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::get('/wikis/{language}', ListWikisAction::class);
-Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/my/draft-wikis', ListMyDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
+Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
 Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class);
-Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);
 Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class);
-Route::get('/wiki/{language}/group/{slug}/my/draft', GetMyGroupDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/wiki/{language}/group/{slug}/my/draft', GetMyGroupDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/song/{slug}', GetSongWikiAction::class);
 Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class);
-Route::get('/wiki/{language}/song/{slug}/my/draft', GetMySongDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/wiki/{language}/song/{slug}/my/draft', GetMySongDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/talent/{slug}', GetTalentWikiAction::class);
 Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class);
-Route::get('/wiki/{language}/talent/{slug}/my/draft', GetMyTalentDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/wiki/{language}/talent/{slug}/my/draft', GetMyTalentDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 
 // Image
 Route::get('/draft-images', ListDraftImagesAction::class)->middleware('auth.api');

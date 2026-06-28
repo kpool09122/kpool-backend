@@ -7,6 +7,7 @@ namespace Source\Wiki\Shared\Domain\ValueObject;
 enum Action: string
 {
     case CREATE = 'create';
+    case READ = 'read';
     case EDIT = 'edit';
     case SUBMIT = 'submit';
     case WITHDRAW = 'withdraw';
