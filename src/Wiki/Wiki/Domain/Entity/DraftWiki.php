@@ -46,6 +46,7 @@ class DraftWiki
         private ?SeoTitle $title = null,
         private ?MetaDescription $metaDescription = null,
         private ?SeoKeywords $keywords = null,
+        private ?string $rejectionReason = null,
     ) {
     }
 
@@ -148,6 +149,16 @@ class DraftWiki
     public function setKeywords(?SeoKeywords $keywords): void
     {
         $this->keywords = $keywords;
+    }
+
+    public function rejectionReason(): ?string
+    {
+        return $this->rejectionReason;
+    }
+
+    public function setRejectionReason(?string $rejectionReason): void
+    {
+        $this->rejectionReason = $rejectionReason;
     }
 
     public function status(): ApprovalStatus

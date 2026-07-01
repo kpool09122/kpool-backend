@@ -185,6 +185,7 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             imageUrl: ImageUrl::fromPath($wiki->image?->image_path),
             imageAltText: $wiki->image?->alt_text,
             status: $wiki->status,
+            rejectionReason: $wiki->rejection_reason,
             name: $basic->name,
             normalizedName: $basic->normalized_name,
             editedAt: $this->formatDateTime($wiki->edited_at),

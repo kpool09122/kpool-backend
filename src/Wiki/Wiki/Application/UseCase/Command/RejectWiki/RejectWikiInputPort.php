@@ -17,6 +17,8 @@ interface RejectWikiInputPort
 
     public function resourceType(): ResourceType;
 
+    public function reason(): string;
+
     public function agencyIdentifier(): ?WikiIdentifier;
 
     /** @return WikiIdentifier[] */

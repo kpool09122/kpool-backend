@@ -15,6 +15,11 @@ scalar MetaDescriptionText extends string;
 @maxLength(20)
 scalar SeoKeywordText extends string;
 
+@doc("Reason text for rejecting a draft wiki. Must be 1000 characters or less.")
+@minLength(1)
+@maxLength(1000)
+scalar DraftWikiRejectionReasonText extends string;
+
 @doc("Association targets that link a wiki to related agencies, groups, or talents.")
 model WikiAssociationTargets {
   @doc("Associated agency identifier.")
@@ -105,6 +110,8 @@ model DraftWikiDetail {
   resourceType: string;
   @doc("Current workflow status of the draft wiki.")
   status: string;
+  @doc("Reason for the latest rejection of the draft wiki.")
+  rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("SEO title for the wiki.")
@@ -237,6 +244,8 @@ model TalentDraftWikiDetail {
   resourceType: string;
   @doc("Current workflow status of the draft wiki.")
   status: string;
+  @doc("Reason for the latest rejection of the draft wiki.")
+  rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("SEO title for the wiki.")
@@ -407,6 +416,8 @@ model SongDraftWikiDetail {
   resourceType: string;
   @doc("Current workflow status of the draft wiki.")
   status: string;
+  @doc("Reason for the latest rejection of the draft wiki.")
+  rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("SEO title for the wiki.")
@@ -491,6 +502,8 @@ model AgencyDraftWikiDetail {
   resourceType: string;
   @doc("Current workflow status of the draft wiki.")
   status: string;
+  @doc("Reason for the latest rejection of the draft wiki.")
+  rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
   @doc("SEO title for the wiki.")

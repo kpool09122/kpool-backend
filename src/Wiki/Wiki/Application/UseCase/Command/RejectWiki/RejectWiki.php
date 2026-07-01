@@ -76,6 +76,7 @@ readonly class RejectWiki implements RejectWikiInterface
 
         $previousStatus = $wiki->status();
         $wiki->setStatus(ApprovalStatus::Rejected);
+        $wiki->setRejectionReason($input->reason());
 
         $this->draftWikiRepository->save($wiki);
 

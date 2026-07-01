@@ -25,6 +25,7 @@ class ListMyDraftWikisOutputTest extends TestCase
             imageUrl: null,
             imageAltText: null,
             status: ApprovalStatus::Pending->value,
+            rejectionReason: '内容が不十分です',
             name: 'Chaeyoung',
             normalizedName: 'chaeyoung',
             editedAt: '2026-05-01T00:00:00+00:00',
