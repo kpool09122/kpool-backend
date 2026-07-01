@@ -44,6 +44,7 @@ class GetAgencyDraftWikiTest extends TestCase
                 'slug' => 'ag-jyp-entertainment',
                 'language' => 'ko',
                 'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f404',
+                'rejection_reason' => '事務所の沿革を追記してください',
                 'theme_color' => '#1A1A1A',
                 'title' => 'JYP Draft Wiki',
                 'meta_description' => 'Draft profile for JYP.',
@@ -95,6 +96,7 @@ class GetAgencyDraftWikiTest extends TestCase
         $this->assertSame('ag-jyp-entertainment', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('agency', $readModel->resourceType());
+        $this->assertSame('事務所の沿革を追記してください', $readModel->rejectionReason());
         $this->assertSame('#1A1A1A', $readModel->themeColor());
         $this->assertSame('JYP Draft Wiki', $readModel->title());
         $this->assertSame('Draft profile for JYP.', $readModel->metaDescription());

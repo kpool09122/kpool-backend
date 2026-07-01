@@ -33,6 +33,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -78,6 +79,7 @@ class DraftWikiRepositoryTest extends TestCase
             'slug' => 'gr-twice',
             'language' => Language::KOREAN->value,
             'status' => ApprovalStatus::Pending->value,
+            'rejection_reason' => '内容が不十分です',
             'editor_id' => $editorId,
             'approver_id' => $approverId,
             'merger_id' => $mergerId,
@@ -104,6 +106,8 @@ class DraftWikiRepositoryTest extends TestCase
         $this->assertSame('TWICE', (string)$found->basic()->name());
         $this->assertSame('twice', $found->basic()->normalizedName());
         $this->assertSame(ApprovalStatus::Pending, $found->status());
+        $this->assertInstanceOf(DraftWikiRejectionReason::class, $found->rejectionReason());
+        $this->assertSame('内容が不十分です', (string) $found->rejectionReason());
         $this->assertSame($editorId, (string)$found->editorIdentifier());
         $this->assertSame($approverId, (string)$found->approverIdentifier());
         $this->assertSame($mergerId, (string)$found->mergerIdentifier());
@@ -262,6 +266,7 @@ class DraftWikiRepositoryTest extends TestCase
             title: $title,
             metaDescription: $metaDescription,
             keywords: $keywords,
+            rejectionReason: new DraftWikiRejectionReason('内容が不十分です'),
         );
 
         $repository = $this->app->make(DraftWikiRepositoryInterface::class);
@@ -275,6 +280,7 @@ class DraftWikiRepositoryTest extends TestCase
             'language' => Language::KOREAN->value,
             'resource_type' => ResourceType::GROUP->value,
             'status' => ApprovalStatus::Pending->value,
+            'rejection_reason' => '内容が不十分です',
             'editor_id' => $editorId,
             'approver_id' => null,
             'merger_id' => null,

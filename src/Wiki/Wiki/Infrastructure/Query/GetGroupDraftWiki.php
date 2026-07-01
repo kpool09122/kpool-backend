@@ -83,6 +83,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
             ),
             sections: $this->sectionsWithImages($model->sections),
             status: $model->status,
+            rejectionReason: $model->rejection_reason,
         );
     }
 

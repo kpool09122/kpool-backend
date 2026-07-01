@@ -54,6 +54,7 @@ return new class extends Migration
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
             $table->jsonb('keywords')->nullable()->comment('SEOキーワード');
             $table->string('status', 50)->default('pending')->comment('承認ステータス');
+            $table->text('rejection_reason')->nullable()->comment('却下理由');
             $table->uuid('editor_id')->nullable()->comment('編集者ID');
             $table->uuid('approver_id')->nullable()->comment('承認者ID');
             $table->uuid('merger_id')->nullable()->comment('マージ者ID');

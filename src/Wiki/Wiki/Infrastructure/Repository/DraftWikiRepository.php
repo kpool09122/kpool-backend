@@ -26,6 +26,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -160,6 +161,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 'meta_description' => $draftWiki->metaDescription() ? (string) $draftWiki->metaDescription() : null,
                 'keywords' => $draftWiki->keywords()?->values(),
                 'status' => $draftWiki->status()->value,
+                'rejection_reason' => $draftWiki->rejectionReason() ? (string) $draftWiki->rejectionReason() : null,
                 'editor_id' => $draftWiki->editorIdentifier() ? (string) $draftWiki->editorIdentifier() : null,
                 'approver_id' => $draftWiki->approverIdentifier() ? (string) $draftWiki->approverIdentifier() : null,
                 'merger_id' => $draftWiki->mergerIdentifier() ? (string) $draftWiki->mergerIdentifier() : null,
@@ -251,6 +253,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->title !== null ? new SeoTitle($model->title) : null,
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
             $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
+            $model->rejection_reason !== null ? new DraftWikiRejectionReason($model->rejection_reason) : null,
         );
     }
 

@@ -87,6 +87,7 @@ readonly class GetSongDraftWiki implements GetSongDraftWikiInterface
             ),
             sections: $this->sectionsWithImages($model->sections),
             status: $model->status,
+            rejectionReason: $model->rejection_reason,
         );
     }
 

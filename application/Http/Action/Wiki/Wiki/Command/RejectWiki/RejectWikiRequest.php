@@ -30,6 +30,7 @@ class RejectWikiRequest extends FormRequest
         return [
             'wikiId' => ['required', 'uuid'],
             'resourceType' => ['required', 'string'],
+            'reason' => ['required', 'string', 'filled', 'not_regex:/^\\s*$/u', 'max:1000'],
             'agencyIdentifier' => ['nullable', 'uuid'],
             'groupIdentifiers' => ['nullable', 'array'],
             'groupIdentifiers.*' => ['uuid'],
@@ -46,6 +47,11 @@ class RejectWikiRequest extends FormRequest
     public function resourceType(): string
     {
         return (string) $this->input('resourceType');
+    }
+
+    public function reason(): string
+    {
+        return (string) $this->input('reason');
     }
 
     public function agencyIdentifier(): ?string

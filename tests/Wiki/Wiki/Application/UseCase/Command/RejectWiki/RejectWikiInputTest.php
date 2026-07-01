@@ -24,6 +24,7 @@ class RejectWikiInputTest extends TestCase
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::GROUP;
+        $reason = '内容が不十分です';
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
         $talentIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
@@ -32,6 +33,7 @@ class RejectWikiInputTest extends TestCase
             $wikiIdentifier,
             $principalIdentifier,
             $resourceType,
+            $reason,
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
@@ -40,6 +42,7 @@ class RejectWikiInputTest extends TestCase
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType->value, $input->resourceType()->value);
+        $this->assertSame($reason, $input->reason());
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $input->talentIdentifiers());
@@ -60,11 +63,13 @@ class RejectWikiInputTest extends TestCase
             $wikiIdentifier,
             $principalIdentifier,
             $resourceType,
+            '内容が不十分です',
         );
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType->value, $input->resourceType()->value);
+        $this->assertSame('内容が不十分です', $input->reason());
         $this->assertNull($input->agencyIdentifier());
         $this->assertSame([], $input->groupIdentifiers());
         $this->assertSame([], $input->talentIdentifiers());

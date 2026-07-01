@@ -21,7 +21,7 @@ class GetMyTalentDraftWikiTest extends TestCase
     {
         $editorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217fa03');
         $otherEditorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff');
-        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a201', $editorIdentifier, 'My Talent');
+        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a201', $editorIdentifier, 'My Talent', '人物情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a202', $otherEditorIdentifier, 'Other Talent');
 
         $useCase = $this->app->make(GetMyTalentDraftWikiInterface::class);
@@ -33,6 +33,7 @@ class GetMyTalentDraftWikiTest extends TestCase
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217a201', $readModel->wikiIdentifier());
         $this->assertSame('My Talent', $readModel->basic()['name']);
+        $this->assertSame('人物情報を補足してください', $readModel->rejectionReason());
     }
 
     #[Group('useDb')]
@@ -55,8 +56,12 @@ class GetMyTalentDraftWikiTest extends TestCase
         ));
     }
 
-    private function createDraft(string $wikiIdentifier, PrincipalIdentifier $editorIdentifier, string $name): void
-    {
+    private function createDraft(
+        string $wikiIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        string $name,
+        ?string $rejectionReason = null,
+    ): void {
         CreateDraftWiki::create(
             $wikiIdentifier,
             'talent',
@@ -65,6 +70,7 @@ class GetMyTalentDraftWikiTest extends TestCase
                 'slug' => 'tl-my-talent',
                 'language' => 'ko',
                 'editor_id' => (string) $editorIdentifier,
+                'rejection_reason' => $rejectionReason,
             ],
             [
                 'name' => $name,

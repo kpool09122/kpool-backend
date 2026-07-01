@@ -21,7 +21,7 @@ class GetMyAgencyDraftWikiTest extends TestCase
     {
         $editorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217fa03');
         $otherEditorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff');
-        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a401', $editorIdentifier, 'My Agency');
+        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a401', $editorIdentifier, 'My Agency', '事務所情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a402', $otherEditorIdentifier, 'Other Agency');
 
         $useCase = $this->app->make(GetMyAgencyDraftWikiInterface::class);
@@ -33,6 +33,7 @@ class GetMyAgencyDraftWikiTest extends TestCase
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217a401', $readModel->wikiIdentifier());
         $this->assertSame('My Agency', $readModel->basic()['name']);
+        $this->assertSame('事務所情報を補足してください', $readModel->rejectionReason());
     }
 
     #[Group('useDb')]
@@ -55,8 +56,12 @@ class GetMyAgencyDraftWikiTest extends TestCase
         ));
     }
 
-    private function createDraft(string $wikiIdentifier, PrincipalIdentifier $editorIdentifier, string $name): void
-    {
+    private function createDraft(
+        string $wikiIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        string $name,
+        ?string $rejectionReason = null,
+    ): void {
         CreateDraftWiki::create(
             $wikiIdentifier,
             'agency',
@@ -65,6 +70,7 @@ class GetMyAgencyDraftWikiTest extends TestCase
                 'slug' => 'ag-my-agency',
                 'language' => 'ko',
                 'editor_id' => (string) $editorIdentifier,
+                'rejection_reason' => $rejectionReason,
             ],
             [
                 'name' => $name,
