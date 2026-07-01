@@ -160,6 +160,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 'meta_description' => $draftWiki->metaDescription() ? (string) $draftWiki->metaDescription() : null,
                 'keywords' => $draftWiki->keywords()?->values(),
                 'status' => $draftWiki->status()->value,
+                'rejection_reason' => $draftWiki->rejectionReason(),
                 'editor_id' => $draftWiki->editorIdentifier() ? (string) $draftWiki->editorIdentifier() : null,
                 'approver_id' => $draftWiki->approverIdentifier() ? (string) $draftWiki->approverIdentifier() : null,
                 'merger_id' => $draftWiki->mergerIdentifier() ? (string) $draftWiki->mergerIdentifier() : null,
@@ -251,6 +252,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->title !== null ? new SeoTitle($model->title) : null,
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
             $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
+            $model->rejection_reason,
         );
     }
 

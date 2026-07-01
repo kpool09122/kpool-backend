@@ -87,6 +87,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -131,6 +132,7 @@ class RejectWikiTest extends TestCase
         $rejectWiki->process($input, $output);
         $result = $output->toArray();
         $this->assertSame(ApprovalStatus::Rejected->value, $result['status']);
+        $this->assertSame('内容が不十分です', $dummyRejectWiki->draftWiki->rejectionReason());
     }
 
     /**
@@ -152,6 +154,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -198,6 +201,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -247,6 +251,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -294,6 +299,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,

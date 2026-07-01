@@ -75,6 +75,14 @@ model WikiWorkflowRequestBody extends WikiAssociationTargets {
   resourceType: string;
 }
 
+@doc("Request body for rejecting a wiki draft.")
+model RejectWikiRequestBody extends WikiAssociationTargets {
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+  @doc("Reason for rejecting the draft wiki.")
+  reason: DraftWikiRejectionReasonText;
+}
+
 @doc("Request body for deleting a wiki draft.")
 model DeleteWikiRequestBody extends WikiAssociationTargets {}
 
@@ -267,6 +275,8 @@ model DraftWikiListItem {
   keywords: SeoKeywordText[] | null;
   @doc("Approval status of the draft wiki.")
   status: DraftWikiStatus;
+  @doc("Reason for the latest rejection of the draft wiki.")
+  rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Display name of the wiki.")
   name: string;
   @doc("Normalized name used for search.")
@@ -449,7 +459,7 @@ interface WikiOperations {
   @doc("Reject a wiki draft.")
   rejectWiki(
     @path wikiId: Uuid,
-    @body body: WikiWorkflowRequestBody,
+    @body body: RejectWikiRequestBody,
   ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post

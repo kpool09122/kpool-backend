@@ -15,6 +15,7 @@ readonly class RejectWikiInput implements RejectWikiInputPort
      * @param DraftWikiIdentifier $wikiIdentifier
      * @param PrincipalIdentifier $principalIdentifier
      * @param ResourceType $resourceType
+     * @param string $reason
      * @param WikiIdentifier|null $agencyIdentifier
      * @param WikiIdentifier[] $groupIdentifiers
      * @param WikiIdentifier[] $talentIdentifiers
@@ -23,6 +24,7 @@ readonly class RejectWikiInput implements RejectWikiInputPort
         private DraftWikiIdentifier $wikiIdentifier,
         private PrincipalIdentifier $principalIdentifier,
         private ResourceType        $resourceType,
+        private string              $reason,
         private ?WikiIdentifier     $agencyIdentifier = null,
         private array               $groupIdentifiers = [],
         private array               $talentIdentifiers = [],
@@ -42,6 +44,11 @@ readonly class RejectWikiInput implements RejectWikiInputPort
     public function resourceType(): ResourceType
     {
         return $this->resourceType;
+    }
+
+    public function reason(): string
+    {
+        return $this->reason;
     }
 
     public function agencyIdentifier(): ?WikiIdentifier

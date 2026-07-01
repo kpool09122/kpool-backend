@@ -49,6 +49,7 @@ readonly class RejectWikiAction
                     new DraftWikiIdentifier($request->wikiId()),
                     $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
+                    $request->reason(),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),

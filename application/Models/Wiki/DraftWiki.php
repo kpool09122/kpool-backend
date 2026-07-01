@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $meta_description
  * @property list<string>|null $keywords
  * @property string $status
+ * @property ?string $rejection_reason
  * @property ?string $editor_id
  * @property ?string $approver_id
  * @property ?string $merger_id
@@ -53,6 +54,7 @@ use Illuminate\Support\Carbon;
     'meta_description',
     'keywords',
     'status',
+    'rejection_reason',
     'editor_id',
     'approver_id',
     'merger_id',

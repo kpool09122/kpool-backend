@@ -86,6 +86,7 @@ readonly class GetMyTalentDraftWiki implements GetMyTalentDraftWikiInterface
             ),
             sections: $this->sectionsWithImages($model->sections),
             status: $model->status,
+            rejectionReason: $model->rejection_reason,
         );
     }
 
