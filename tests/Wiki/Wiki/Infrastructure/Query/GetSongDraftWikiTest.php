@@ -95,6 +95,7 @@ class GetSongDraftWikiTest extends TestCase
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f302',
                 'slug' => 'sg-signal',
                 'language' => 'ko',
+                'rejection_reason' => '楽曲説明を見直してください',
                 'theme_color' => '#FE5F8F',
                 'sections' => json_encode([
                     [
@@ -131,6 +132,7 @@ class GetSongDraftWikiTest extends TestCase
         $this->assertSame('sg-signal', $readModel->slug());
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('song', $readModel->resourceType());
+        $this->assertSame('楽曲説明を見直してください', $readModel->rejectionReason());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
         $this->assertInstanceOf(SongWikiBasicReadModel::class, $readModel->basic());

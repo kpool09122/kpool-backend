@@ -47,6 +47,7 @@ class DraftWikiReadModelTest extends TestCase
                 ],
             ],
             status: 'under_review',
+            rejectionReason: '内容が不十分です',
             title: 'TWICE Draft Wiki',
             metaDescription: 'Draft profile and history for TWICE.',
             keywords: ['TWICE', 'draft'],
@@ -58,6 +59,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('ko', $readModel->language());
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame('under_review', $readModel->status());
+        $this->assertSame('内容が不十分です', $readModel->rejectionReason());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
         $this->assertSame('TWICE Draft Wiki', $readModel->title());
         $this->assertSame('Draft profile and history for TWICE.', $readModel->metaDescription());
@@ -73,6 +75,7 @@ class DraftWikiReadModelTest extends TestCase
             'language' => 'ko',
             'resourceType' => 'group',
             'status' => 'under_review',
+            'rejectionReason' => '内容が不十分です',
             'themeColor' => '#FE5F8F',
             'title' => 'TWICE Draft Wiki',
             'metaDescription' => 'Draft profile and history for TWICE.',

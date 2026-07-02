@@ -313,6 +313,7 @@ class ListDraftWikisTest extends TestCase
             'imageUrl' => null,
             'imageAltText' => null,
             'status' => ApprovalStatus::Approved->value,
+            'rejectionReason' => null,
             'name' => 'TWICE',
             'normalizedName' => 'twice',
             'editedAt' => '2026-05-01T00:00:00+00:00',

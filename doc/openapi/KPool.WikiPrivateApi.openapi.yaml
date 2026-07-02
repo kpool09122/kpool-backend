@@ -2132,7 +2132,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WikiWorkflowRequestBody'
+              $ref: '#/components/schemas/RejectWikiRequestBody'
   /wiki/{wikiId}/rollback:
     post:
       operationId: WikiOperations_rollbackWiki
@@ -2521,6 +2521,7 @@ components:
         - language
         - resourceType
         - status
+        - rejectionReason
         - themeColor
         - title
         - metaDescription
@@ -2549,6 +2550,12 @@ components:
         status:
           type: string
           description: Current workflow status of the draft wiki.
+        rejectionReason:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
+          nullable: true
+          description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
           nullable: true
@@ -2960,6 +2967,7 @@ components:
         - language
         - resourceType
         - status
+        - rejectionReason
         - themeColor
         - title
         - metaDescription
@@ -2988,6 +2996,12 @@ components:
         status:
           type: string
           description: Current workflow status of the draft wiki.
+        rejectionReason:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
+          nullable: true
+          description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
           nullable: true
@@ -3060,6 +3074,7 @@ components:
         - metaDescription
         - keywords
         - status
+        - rejectionReason
         - name
         - normalizedName
         - imageIdentifier
@@ -3120,6 +3135,12 @@ components:
           allOf:
             - $ref: '#/components/schemas/DraftWikiStatus'
           description: Approval status of the draft wiki.
+        rejectionReason:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
+          nullable: true
+          description: Reason for the latest rejection of the draft wiki.
         name:
           type: string
           description: Display name of the wiki.
@@ -3157,6 +3178,11 @@ components:
           nullable: true
           description: Timestamp when the draft was merged.
       description: Draft wiki list item returned by the draft wiki list endpoint.
+    DraftWikiRejectionReasonText:
+      type: string
+      minLength: 1
+      maxLength: 1000
+      description: Reason text for rejecting a draft wiki. Must be 1000 characters or less.
     DraftWikiStatus:
       type: string
       enum:
@@ -3725,6 +3751,22 @@ components:
           format: int32
           description: Published version number.
       description: Summary of a published wiki.
+    RejectWikiRequestBody:
+      type: object
+      required:
+        - resourceType
+        - reason
+      properties:
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+        reason:
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
+          description: Reason for rejecting the draft wiki.
+      allOf:
+        - $ref: '#/components/schemas/WikiAssociationTargets'
+      description: Request body for rejecting a wiki draft.
     RelatedProfileItem:
       type: object
       required:
@@ -3981,6 +4023,7 @@ components:
         - language
         - resourceType
         - status
+        - rejectionReason
         - themeColor
         - title
         - metaDescription
@@ -4009,6 +4052,12 @@ components:
         status:
           type: string
           description: Current workflow status of the draft wiki.
+        rejectionReason:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
+          nullable: true
+          description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
           nullable: true
@@ -4381,6 +4430,7 @@ components:
         - language
         - resourceType
         - status
+        - rejectionReason
         - themeColor
         - title
         - metaDescription
@@ -4409,6 +4459,12 @@ components:
         status:
           type: string
           description: Current workflow status of the draft wiki.
+        rejectionReason:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
+          nullable: true
+          description: Reason for the latest rejection of the draft wiki.
         themeColor:
           type: string
           nullable: true

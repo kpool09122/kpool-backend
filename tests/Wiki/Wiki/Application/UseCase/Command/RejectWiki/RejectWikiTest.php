@@ -38,6 +38,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -87,6 +88,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -131,6 +133,8 @@ class RejectWikiTest extends TestCase
         $rejectWiki->process($input, $output);
         $result = $output->toArray();
         $this->assertSame(ApprovalStatus::Rejected->value, $result['status']);
+        $this->assertInstanceOf(DraftWikiRejectionReason::class, $dummyRejectWiki->draftWiki->rejectionReason());
+        $this->assertSame('内容が不十分です', (string) $dummyRejectWiki->draftWiki->rejectionReason());
     }
 
     /**
@@ -152,6 +156,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -198,6 +203,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -247,6 +253,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,
@@ -294,6 +301,7 @@ class RejectWikiTest extends TestCase
             $dummyRejectWiki->wikiIdentifier,
             $principalIdentifier,
             $dummyRejectWiki->resourceType,
+            '内容が不十分です',
             $dummyRejectWiki->agencyIdentifier,
             $dummyRejectWiki->groupIdentifiers,
             $dummyRejectWiki->talentIdentifiers,

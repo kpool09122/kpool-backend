@@ -12,6 +12,7 @@ readonly class DraftWikiReadModel
     private string $language;
     private string $resourceType;
     private ?string $status;
+    private ?string $rejectionReason;
     private ?string $themeColor;
     private ?string $title;
     private ?string $metaDescription;
@@ -40,6 +41,7 @@ readonly class DraftWikiReadModel
         array|WikiBasicReadModel $basic,
         array $sections,
         ?string $status = null,
+        ?string $rejectionReason = null,
         ?string $title = null,
         ?string $metaDescription = null,
         ?array $keywords = null,
@@ -50,6 +52,7 @@ readonly class DraftWikiReadModel
         $this->language = $language;
         $this->resourceType = $resourceType;
         $this->status = $status;
+        $this->rejectionReason = $rejectionReason;
         $this->themeColor = $themeColor;
         $this->title = $title;
         $this->metaDescription = $metaDescription;
@@ -93,6 +96,11 @@ readonly class DraftWikiReadModel
     public function status(): ?string
     {
         return $this->status;
+    }
+
+    public function rejectionReason(): ?string
+    {
+        return $this->rejectionReason;
     }
 
     public function themeColor(): ?string
@@ -153,6 +161,7 @@ readonly class DraftWikiReadModel
             'language' => $this->language,
             'resourceType' => $this->resourceType,
             'status' => $this->status,
+            'rejectionReason' => $this->rejectionReason,
             'themeColor' => $this->themeColor,
             'title' => $this->title,
             'metaDescription' => $this->metaDescription,

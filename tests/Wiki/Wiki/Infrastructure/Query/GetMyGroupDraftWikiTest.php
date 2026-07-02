@@ -21,7 +21,7 @@ class GetMyGroupDraftWikiTest extends TestCase
     {
         $editorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217fa03');
         $otherEditorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff');
-        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a101', $editorIdentifier, 'My Group');
+        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a101', $editorIdentifier, 'My Group', 'グループ情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a102', $otherEditorIdentifier, 'Other Group');
 
         $useCase = $this->app->make(GetMyGroupDraftWikiInterface::class);
@@ -33,6 +33,7 @@ class GetMyGroupDraftWikiTest extends TestCase
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217a101', $readModel->wikiIdentifier());
         $this->assertSame('My Group', $readModel->basic()['name']);
+        $this->assertSame('グループ情報を補足してください', $readModel->rejectionReason());
     }
 
     #[Group('useDb')]
@@ -55,8 +56,12 @@ class GetMyGroupDraftWikiTest extends TestCase
         ));
     }
 
-    private function createDraft(string $wikiIdentifier, PrincipalIdentifier $editorIdentifier, string $name): void
-    {
+    private function createDraft(
+        string $wikiIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        string $name,
+        ?string $rejectionReason = null,
+    ): void {
         CreateDraftWiki::create(
             $wikiIdentifier,
             'group',
@@ -65,6 +70,7 @@ class GetMyGroupDraftWikiTest extends TestCase
                 'slug' => 'gr-my-group',
                 'language' => 'ko',
                 'editor_id' => (string) $editorIdentifier,
+                'rejection_reason' => $rejectionReason,
             ],
             [
                 'name' => $name,

@@ -15,6 +15,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -46,6 +47,7 @@ class DraftWiki
         private ?SeoTitle $title = null,
         private ?MetaDescription $metaDescription = null,
         private ?SeoKeywords $keywords = null,
+        private ?DraftWikiRejectionReason $rejectionReason = null,
     ) {
     }
 
@@ -148,6 +150,16 @@ class DraftWiki
     public function setKeywords(?SeoKeywords $keywords): void
     {
         $this->keywords = $keywords;
+    }
+
+    public function rejectionReason(): ?DraftWikiRejectionReason
+    {
+        return $this->rejectionReason;
+    }
+
+    public function setRejectionReason(?DraftWikiRejectionReason $rejectionReason): void
+    {
+        $this->rejectionReason = $rejectionReason;
     }
 
     public function status(): ApprovalStatus

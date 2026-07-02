@@ -21,7 +21,7 @@ class GetMySongDraftWikiTest extends TestCase
     {
         $editorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217fa03');
         $otherEditorIdentifier = new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff');
-        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a301', $editorIdentifier, 'My Song');
+        $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a301', $editorIdentifier, 'My Song', '楽曲情報を補足してください');
         $this->createDraft('01965bb2-bcc9-7c6f-8b90-89f7f217a302', $otherEditorIdentifier, 'Other Song');
 
         $useCase = $this->app->make(GetMySongDraftWikiInterface::class);
@@ -33,6 +33,7 @@ class GetMySongDraftWikiTest extends TestCase
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217a301', $readModel->wikiIdentifier());
         $this->assertSame('My Song', $readModel->basic()['name']);
+        $this->assertSame('楽曲情報を補足してください', $readModel->rejectionReason());
     }
 
     #[Group('useDb')]
@@ -55,8 +56,12 @@ class GetMySongDraftWikiTest extends TestCase
         ));
     }
 
-    private function createDraft(string $wikiIdentifier, PrincipalIdentifier $editorIdentifier, string $name): void
-    {
+    private function createDraft(
+        string $wikiIdentifier,
+        PrincipalIdentifier $editorIdentifier,
+        string $name,
+        ?string $rejectionReason = null,
+    ): void {
         CreateDraftWiki::create(
             $wikiIdentifier,
             'song',
@@ -65,6 +70,7 @@ class GetMySongDraftWikiTest extends TestCase
                 'slug' => 'sg-my-song',
                 'language' => 'ko',
                 'editor_id' => (string) $editorIdentifier,
+                'rejection_reason' => $rejectionReason,
             ],
             [
                 'name' => $name,

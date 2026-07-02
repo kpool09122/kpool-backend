@@ -49,6 +49,7 @@ class GetGroupDraftWikiTest extends TestCase
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f103',
                 'slug' => 'gr-nullable-basic',
                 'language' => 'en',
+                'rejection_reason' => 'グループ基本情報が不足しています',
             ],
             [
                 'name' => 'Test',
@@ -63,6 +64,7 @@ class GetGroupDraftWikiTest extends TestCase
 
         $this->assertNull($readModel->basic()['groupType']);
         $this->assertNull($readModel->basic()['generation']);
+        $this->assertSame('グループ基本情報が不足しています', $readModel->rejectionReason());
     }
 
     #[Group('useDb')]

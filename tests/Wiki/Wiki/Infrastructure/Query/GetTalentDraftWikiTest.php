@@ -51,6 +51,7 @@ class GetTalentDraftWikiTest extends TestCase
                 'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f202',
                 'slug' => 'tl-momo',
                 'language' => 'ja',
+                'rejection_reason' => '人物プロフィールを補足してください',
                 'theme_color' => '#FE5F8F',
             ],
             [
@@ -68,6 +69,7 @@ class GetTalentDraftWikiTest extends TestCase
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f202', $readModel->translationSetIdentifier());
         $this->assertSame('tl-momo', $readModel->slug());
         $this->assertSame('ja', $readModel->language());
+        $this->assertSame('人物プロフィールを補足してください', $readModel->rejectionReason());
         $this->assertSame('モモ', $readModel->basic()['name']);
     }
 
