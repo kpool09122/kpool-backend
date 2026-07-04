@@ -36,7 +36,7 @@ class ListWikisRequest extends FormRequest
                 ResourceType::SONG->value,
             ])],
             'keyword' => ['nullable', 'string'],
-            'sort' => ['nullable', 'string', Rule::in(['updatedAt', 'name'])],
+            'sort' => ['nullable', 'string', Rule::in(['updatedAt', 'name', 'createdAt', 'version'])],
             'order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
         ];
     }
