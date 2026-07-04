@@ -101,12 +101,20 @@ readonly class ListWikis implements ListWikisInterface
     {
         if ($sort === 'name') {
             $query->orderBy(DB::raw($this->nameSortExpression()), $order)
-                ->orderBy('wikis.updated_at', 'desc');
+                ->orderBy('wikis.updated_at', 'desc')
+                ->orderBy('wikis.id');
 
             return;
         }
 
-        $query->orderBy('wikis.updated_at', $order);
+        $sortColumns = [
+            'createdAt' => 'wikis.created_at',
+            'updatedAt' => 'wikis.updated_at',
+            'version' => 'wikis.version',
+        ];
+
+        $query->orderBy($sortColumns[$sort], $order)
+            ->orderBy('wikis.id');
     }
 
     private function nameSortExpression(): string

@@ -114,6 +114,55 @@ class ListWikisTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessSortsByCreatedAtAscending(): void
+    {
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f611', 'talent', 'tl-alpha', 'Alpha', 'alpha', '2026-05-03 00:00:00', createdAt: '2026-05-01 00:00:00');
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f612', 'group', 'gr-beta', 'Beta', 'beta', '2026-05-01 00:00:00', createdAt: '2026-05-02 00:00:00');
+
+        $payload = $this->process(new ListWikisInput(language: Language::KOREAN, sort: 'createdAt', order: 'asc'))->toArray();
+
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f611',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f612',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
+    }
+
+    #[Group('useDb')]
+    public function testProcessSortsByCreatedAtDescending(): void
+    {
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f621', 'talent', 'tl-alpha', 'Alpha', 'alpha', '2026-05-03 00:00:00', createdAt: '2026-05-01 00:00:00');
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f622', 'group', 'gr-beta', 'Beta', 'beta', '2026-05-01 00:00:00', createdAt: '2026-05-02 00:00:00');
+
+        $payload = $this->process(new ListWikisInput(language: Language::KOREAN, sort: 'createdAt', order: 'desc'))->toArray();
+
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f622',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f621',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
+    }
+
+    #[Group('useDb')]
+    public function testProcessSortsByVersionDescendingWithResourceType(): void
+    {
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f631', 'talent', 'tl-alpha', 'Alpha', 'alpha', '2026-05-01 00:00:00', version: 2);
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f632', 'talent', 'tl-beta', 'Beta', 'beta', '2026-05-02 00:00:00', version: 5);
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f633', 'group', 'gr-gamma', 'Gamma', 'gamma', '2026-05-03 00:00:00', version: 9);
+
+        $payload = $this->process(new ListWikisInput(
+            language: Language::KOREAN,
+            resourceType: ResourceType::TALENT,
+            sort: 'version',
+            order: 'desc',
+        ))->toArray();
+
+        $this->assertSame(2, $payload['total']);
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f632',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f631',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
+    }
+
+    #[Group('useDb')]
     public function testProcessFiltersByLanguage(): void
     {
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f701', 'talent', 'tl-alpha-ko', 'Alpha KO', 'alpha', '2026-05-01 00:00:00', 'ko');
@@ -187,6 +236,8 @@ class ListWikisTest extends TestCase
         string $updatedAt,
         string $language = 'ko',
         ?string $imageIdentifier = null,
+        ?string $createdAt = null,
+        int $version = 1,
     ): void {
         CreateWiki::create(
             $wikiId,
@@ -199,6 +250,7 @@ class ListWikisTest extends TestCase
                 'title' => "{$name} Wiki",
                 'meta_description' => "{$name} profile.",
                 'keywords' => json_encode([$name, $resourceType]),
+                'version' => $version,
             ],
             [
                 'name' => $name,
@@ -210,7 +262,7 @@ class ListWikisTest extends TestCase
             ->where('id', $wikiId)
             ->update([
                 'updated_at' => $updatedAt,
-                'created_at' => $updatedAt,
+                'created_at' => $createdAt ?? $updatedAt,
             ]);
     }
 }

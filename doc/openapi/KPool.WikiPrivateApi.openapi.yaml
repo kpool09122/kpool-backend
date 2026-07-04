@@ -2436,8 +2436,15 @@ paths:
         - name: sort
           in: query
           required: false
+          description: Sort field. Use createdAt for newly created wikis and version for most frequently updated wikis.
           schema:
             type: string
+            enum:
+              - updatedAt
+              - name
+              - createdAt
+              - version
+            nullable: true
           explode: false
         - name: order
           in: query

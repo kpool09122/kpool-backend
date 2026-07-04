@@ -369,7 +369,8 @@ interface WikiListOperations {
     @query perPage?: int32,
     @query resourceType?: string,
     @query keyword?: string,
-    @query sort?: string,
+    @doc("Sort field. Use createdAt for newly created wikis and version for most frequently updated wikis.")
+    @query sort?: "updatedAt" | "name" | "createdAt" | "version" | null,
     @query order?: string,
   ): ListWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
