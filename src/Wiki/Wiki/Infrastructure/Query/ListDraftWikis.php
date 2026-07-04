@@ -19,6 +19,7 @@ use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiListItemReadModel;
@@ -57,7 +58,10 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
                 'songBasic.groups',
                 'songBasic.talents',
             ])
-            ->where('draft_wikis.status', $input->status()->value)
+            ->whereIn(
+                'draft_wikis.status',
+                array_map(static fn (ApprovalStatus $status): string => $status->value, $input->statuses()),
+            )
             ->orderBy('draft_wikis.edited_at', 'desc')
             ->orderBy('draft_wikis.updated_at', 'desc');
 

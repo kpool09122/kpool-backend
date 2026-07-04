@@ -15,7 +15,8 @@ interface ListMyDraftWikisInputPort
 
     public function translationSetIdentifier(): ?TranslationSetIdentifier;
 
-    public function status(): ApprovalStatus;
+    /** @return ApprovalStatus[] */
+    public function statuses(): array;
 
     public function resourceType(): ?ResourceType;
 

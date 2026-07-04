@@ -36,7 +36,10 @@ readonly class ListMyDraftWikisAction
         try {
             try {
                 $input = new ListMyDraftWikisInput(
-                    status: ApprovalStatus::from($request->status()),
+                    statuses: array_map(
+                        static fn (string $status): ApprovalStatus => ApprovalStatus::from($status),
+                        $request->statuses(),
+                    ),
                     editorIdentifier: $this->wikiContext->principalIdentifier,
                     translationSetIdentifier: $request->translationSetIdentifier() !== null ? new TranslationSetIdentifier($request->translationSetIdentifier()) : null,
                     resourceType: $request->resourceType() !== null ? ResourceType::from($request->resourceType()) : null,

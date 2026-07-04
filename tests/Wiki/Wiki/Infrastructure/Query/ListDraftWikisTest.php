@@ -58,7 +58,7 @@ class ListDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             principalIdentifier: $this->defaultPrincipalIdentifier(),
         ))->toArray();
 
@@ -74,6 +74,38 @@ class ListDraftWikisTest extends TestCase
         $this->assertSame([
             ApprovalStatus::UnderReview->value,
             ApprovalStatus::UnderReview->value,
+            ApprovalStatus::UnderReview->value,
+        ], array_column($payload['wikis'], 'status'));
+    }
+
+    #[Group('useDb')]
+    public function testProcessFiltersByStatuses(): void
+    {
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f111', 'talent', [
+            'status' => ApprovalStatus::UnderReview->value,
+            'edited_at' => '2026-05-01 00:00:00',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f112', 'group', [
+            'status' => ApprovalStatus::Pending->value,
+            'edited_at' => '2026-05-02 00:00:00',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f113', 'song', [
+            'status' => ApprovalStatus::Approved->value,
+            'edited_at' => '2026-05-03 00:00:00',
+        ]);
+
+        $payload = $this->process(new ListDraftWikisInput(
+            statuses: [ApprovalStatus::UnderReview, ApprovalStatus::Pending],
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
+        ))->toArray();
+
+        $this->assertSame(2, $payload['total']);
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f112',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f111',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
+        $this->assertSame([
+            ApprovalStatus::Pending->value,
             ApprovalStatus::UnderReview->value,
         ], array_column($payload['wikis'], 'status'));
     }
@@ -98,7 +130,7 @@ class ListDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             principalIdentifier: $this->defaultPrincipalIdentifier(),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f401'),
         ))->toArray();
@@ -129,7 +161,7 @@ class ListDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             principalIdentifier: $this->defaultPrincipalIdentifier(),
             resourceType: ResourceType::GROUP,
         ))->toArray();
@@ -158,7 +190,7 @@ class ListDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::Pending,
+            statuses: [ApprovalStatus::Pending],
             principalIdentifier: $this->defaultPrincipalIdentifier(),
             perPage: 2,
         ))->toArray();
@@ -204,7 +236,7 @@ class ListDraftWikisTest extends TestCase
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             principalIdentifier: $principalIdentifier,
         ))->toArray();
 
@@ -238,7 +270,7 @@ class ListDraftWikisTest extends TestCase
         $this->expectException(DisallowedException::class);
 
         $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             principalIdentifier: $principalIdentifier,
         ));
     }
@@ -258,7 +290,7 @@ class ListDraftWikisTest extends TestCase
         $this->expectException(PrincipalNotFoundException::class);
 
         $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             principalIdentifier: $principalIdentifier,
         ));
     }
@@ -293,7 +325,7 @@ class ListDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::Approved,
+            statuses: [ApprovalStatus::Approved],
             principalIdentifier: $this->defaultPrincipalIdentifier(),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f601'),
         ))->toArray();
@@ -339,7 +371,7 @@ class ListDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListDraftWikisInput(
-            status: ApprovalStatus::Pending,
+            statuses: [ApprovalStatus::Pending],
             principalIdentifier: $this->defaultPrincipalIdentifier(),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f901'),
         ))->toArray();

@@ -12,7 +12,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 readonly class ListMyDraftWikisInput implements ListMyDraftWikisInputPort
 {
     public function __construct(
-        private ApprovalStatus $status,
+        /** @var ApprovalStatus[] */
+        private array $statuses,
         private PrincipalIdentifier $editorIdentifier,
         private ?TranslationSetIdentifier $translationSetIdentifier = null,
         private ?ResourceType $resourceType = null,
@@ -30,9 +31,10 @@ readonly class ListMyDraftWikisInput implements ListMyDraftWikisInputPort
         return $this->translationSetIdentifier;
     }
 
-    public function status(): ApprovalStatus
+    /** @return ApprovalStatus[] */
+    public function statuses(): array
     {
-        return $this->status;
+        return $this->statuses;
     }
 
     public function resourceType(): ?ResourceType

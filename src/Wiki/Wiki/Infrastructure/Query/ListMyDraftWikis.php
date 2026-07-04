@@ -13,6 +13,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiListItemReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisInputPort;
@@ -40,7 +41,10 @@ readonly class ListMyDraftWikis implements ListMyDraftWikisInterface
                 'songBasic.groups',
                 'songBasic.talents',
             ])
-            ->where('draft_wikis.status', $input->status()->value)
+            ->whereIn(
+                'draft_wikis.status',
+                array_map(static fn (ApprovalStatus $status): string => $status->value, $input->statuses()),
+            )
             ->where('draft_wikis.editor_id', (string) $input->editorIdentifier())
             ->orderBy('draft_wikis.edited_at', 'desc')
             ->orderBy('draft_wikis.updated_at', 'desc');

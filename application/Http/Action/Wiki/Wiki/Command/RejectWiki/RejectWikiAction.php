@@ -23,6 +23,7 @@ use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiOutput;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -49,7 +50,7 @@ readonly class RejectWikiAction
                     new DraftWikiIdentifier($request->wikiId()),
                     $this->wikiContext->principalIdentifier,
                     ResourceType::from($request->resourceType()),
-                    $request->reason(),
+                    new DraftWikiRejectionReason($request->rejectionReason()),
                     $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
                     array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),

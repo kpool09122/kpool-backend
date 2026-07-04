@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class RejectWikiInput implements RejectWikiInputPort
@@ -15,7 +16,7 @@ readonly class RejectWikiInput implements RejectWikiInputPort
      * @param DraftWikiIdentifier $wikiIdentifier
      * @param PrincipalIdentifier $principalIdentifier
      * @param ResourceType $resourceType
-     * @param string $reason
+     * @param DraftWikiRejectionReason $rejectionReason
      * @param WikiIdentifier|null $agencyIdentifier
      * @param WikiIdentifier[] $groupIdentifiers
      * @param WikiIdentifier[] $talentIdentifiers
@@ -24,7 +25,7 @@ readonly class RejectWikiInput implements RejectWikiInputPort
         private DraftWikiIdentifier $wikiIdentifier,
         private PrincipalIdentifier $principalIdentifier,
         private ResourceType        $resourceType,
-        private string              $reason,
+        private DraftWikiRejectionReason $rejectionReason,
         private ?WikiIdentifier     $agencyIdentifier = null,
         private array               $groupIdentifiers = [],
         private array               $talentIdentifiers = [],
@@ -46,9 +47,9 @@ readonly class RejectWikiInput implements RejectWikiInputPort
         return $this->resourceType;
     }
 
-    public function reason(): string
+    public function rejectionReason(): DraftWikiRejectionReason
     {
-        return $this->reason;
+        return $this->rejectionReason;
     }
 
     public function agencyIdentifier(): ?WikiIdentifier
