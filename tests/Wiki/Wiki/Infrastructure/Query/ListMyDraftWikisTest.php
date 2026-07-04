@@ -37,7 +37,7 @@ class ListMyDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListMyDraftWikisInput(
-            status: ApprovalStatus::UnderReview,
+            statuses: [ApprovalStatus::UnderReview],
             editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
         ))->toArray();
 
@@ -45,6 +45,41 @@ class ListMyDraftWikisTest extends TestCase
         $this->assertSame([
             '01965bb2-bcc9-7c6f-8b90-89f7f217f601',
         ], array_column($payload['wikis'], 'wikiIdentifier'));
+    }
+
+    #[Group('useDb')]
+    public function testProcessFiltersByStatuses(): void
+    {
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f621', 'talent', [
+            'status' => ApprovalStatus::UnderReview->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+            'edited_at' => '2026-05-01 00:00:00',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f622', 'group', [
+            'status' => ApprovalStatus::Pending->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+            'edited_at' => '2026-05-02 00:00:00',
+        ]);
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f623', 'song', [
+            'status' => ApprovalStatus::Approved->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+            'edited_at' => '2026-05-03 00:00:00',
+        ]);
+
+        $payload = $this->process(new ListMyDraftWikisInput(
+            statuses: [ApprovalStatus::UnderReview, ApprovalStatus::Pending],
+            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
+        ))->toArray();
+
+        $this->assertSame(2, $payload['total']);
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f622',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f621',
+        ], array_column($payload['wikis'], 'wikiIdentifier'));
+        $this->assertSame([
+            ApprovalStatus::Pending->value,
+            ApprovalStatus::UnderReview->value,
+        ], array_column($payload['wikis'], 'status'));
     }
 
     #[Group('useDb')]
@@ -64,7 +99,7 @@ class ListMyDraftWikisTest extends TestCase
         ]);
 
         $payload = $this->process(new ListMyDraftWikisInput(
-            status: ApprovalStatus::Pending,
+            statuses: [ApprovalStatus::Pending],
             editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
             translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f711'),
             resourceType: ResourceType::GROUP,

@@ -14,6 +14,20 @@ class ListDraftWikisRequest extends FormRequest
 {
     use ResolvesLanguage;
 
+    protected function prepareForValidation(): void
+    {
+        $statuses = $this->query('statuses');
+
+        if (is_string($statuses)) {
+            $this->merge([
+                'statuses' => array_values(array_filter(
+                    explode(',', $statuses),
+                    static fn (string $status): bool => $status !== '',
+                )),
+            ]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -22,7 +36,8 @@ class ListDraftWikisRequest extends FormRequest
         return [
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'translationSetIdentifier' => ['nullable', 'uuid'],
-            'status' => ['required', 'string', Rule::in(array_column(ApprovalStatus::cases(), 'value'))],
+            'statuses' => ['required', 'array', 'min:1'],
+            'statuses.*' => ['required', 'string', Rule::in(array_column(ApprovalStatus::cases(), 'value'))],
             'resourceType' => ['nullable', 'string', Rule::in([
                 ResourceType::AGENCY->value,
                 ResourceType::GROUP->value,
@@ -46,9 +61,15 @@ class ListDraftWikisRequest extends FormRequest
         return $translationSetIdentifier === null ? null : (string) $translationSetIdentifier;
     }
 
-    public function status(): string
+    /**
+     * @return string[]
+     */
+    public function statuses(): array
     {
-        return (string) $this->query('status');
+        /** @var string[] $statuses */
+        $statuses = $this->input('statuses');
+
+        return $statuses;
     }
 
     public function resourceType(): ?string

@@ -80,7 +80,7 @@ model RejectWikiRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
   resourceType: string;
   @doc("Reason for rejecting the draft wiki.")
-  reason: DraftWikiRejectionReasonText;
+  rejectionReason: DraftWikiRejectionReasonText;
 }
 
 @doc("Request body for deleting a wiki draft.")
@@ -381,7 +381,7 @@ interface MyDraftWikiListOperations {
   listMyDraftWikis(
     @query perPage?: int32,
     @query translationSetIdentifier?: Uuid,
-    @query status: DraftWikiStatus,
+    @query statuses: DraftWikiStatus[],
     @query resourceType?: string,
   ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
@@ -393,7 +393,7 @@ interface DraftWikiListOperations {
   listDraftWikis(
     @query perPage?: int32,
     @query translationSetIdentifier?: Uuid,
-    @query status: DraftWikiStatus,
+    @query statuses: DraftWikiStatus[],
     @query resourceType?: string,
   ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

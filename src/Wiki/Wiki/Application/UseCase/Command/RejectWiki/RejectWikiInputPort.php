@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface RejectWikiInputPort
@@ -17,7 +18,7 @@ interface RejectWikiInputPort
 
     public function resourceType(): ResourceType;
 
-    public function reason(): string;
+    public function rejectionReason(): DraftWikiRejectionReason;
 
     public function agencyIdentifier(): ?WikiIdentifier;
 

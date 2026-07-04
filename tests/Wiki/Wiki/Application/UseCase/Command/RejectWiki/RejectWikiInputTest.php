@@ -8,6 +8,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Command\RejectWiki\RejectWikiInput;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -24,7 +25,7 @@ class RejectWikiInputTest extends TestCase
         $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $resourceType = ResourceType::GROUP;
-        $reason = '内容が不十分です';
+        $rejectionReason = new DraftWikiRejectionReason('内容が不十分です');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
         $talentIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
@@ -33,7 +34,7 @@ class RejectWikiInputTest extends TestCase
             $wikiIdentifier,
             $principalIdentifier,
             $resourceType,
-            $reason,
+            $rejectionReason,
             $agencyIdentifier,
             $groupIdentifiers,
             $talentIdentifiers,
@@ -42,7 +43,7 @@ class RejectWikiInputTest extends TestCase
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType->value, $input->resourceType()->value);
-        $this->assertSame($reason, $input->reason());
+        $this->assertSame($rejectionReason, $input->rejectionReason());
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
         $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
         $this->assertSame($talentIdentifiers, $input->talentIdentifiers());
@@ -63,13 +64,13 @@ class RejectWikiInputTest extends TestCase
             $wikiIdentifier,
             $principalIdentifier,
             $resourceType,
-            '内容が不十分です',
+            new DraftWikiRejectionReason('内容が不十分です'),
         );
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType->value, $input->resourceType()->value);
-        $this->assertSame('内容が不十分です', $input->reason());
+        $this->assertSame('内容が不十分です', (string) $input->rejectionReason());
         $this->assertNull($input->agencyIdentifier());
         $this->assertSame([], $input->groupIdentifiers());
         $this->assertSame([], $input->talentIdentifiers());

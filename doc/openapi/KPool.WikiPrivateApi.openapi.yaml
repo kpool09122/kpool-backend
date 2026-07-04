@@ -74,11 +74,13 @@ paths:
           schema:
             $ref: '#/components/schemas/KPool.Common.Uuid'
           explode: false
-        - name: status
+        - name: statuses
           in: query
           required: true
           schema:
-            $ref: '#/components/schemas/DraftWikiStatus'
+            type: array
+            items:
+              $ref: '#/components/schemas/DraftWikiStatus'
           explode: false
         - name: resourceType
           in: query
@@ -545,11 +547,13 @@ paths:
           schema:
             $ref: '#/components/schemas/KPool.Common.Uuid'
           explode: false
-        - name: status
+        - name: statuses
           in: query
           required: true
           schema:
-            $ref: '#/components/schemas/DraftWikiStatus'
+            type: array
+            items:
+              $ref: '#/components/schemas/DraftWikiStatus'
           explode: false
         - name: resourceType
           in: query
@@ -3755,12 +3759,12 @@ components:
       type: object
       required:
         - resourceType
-        - reason
+        - rejectionReason
       properties:
         resourceType:
           type: string
           description: Resource type that the wiki belongs to.
-        reason:
+        rejectionReason:
           allOf:
             - $ref: '#/components/schemas/DraftWikiRejectionReasonText'
           description: Reason for rejecting the draft wiki.

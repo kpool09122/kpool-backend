@@ -18,7 +18,6 @@ use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class RejectWiki implements RejectWikiInterface
@@ -77,7 +76,7 @@ readonly class RejectWiki implements RejectWikiInterface
 
         $previousStatus = $wiki->status();
         $wiki->setStatus(ApprovalStatus::Rejected);
-        $wiki->setRejectionReason(new DraftWikiRejectionReason($input->reason()));
+        $wiki->setRejectionReason($input->rejectionReason());
 
         $this->draftWikiRepository->save($wiki);
 
