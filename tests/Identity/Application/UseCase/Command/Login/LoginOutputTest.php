@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\Login\LoginOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -29,7 +29,7 @@ class LoginOutputTest extends TestCase
     public function testToArrayReturnsIdentityData(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -38,7 +38,7 @@ class LoginOutputTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             $profileImage,
@@ -53,7 +53,7 @@ class LoginOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
-        $this->assertSame((string) $userName, $result['username']);
+        $this->assertSame((string) $identityName, $result['identityName']);
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($language->value, $result['language']);
         $this->assertSame((string) $profileImage, $result['profileImage']);
@@ -64,7 +64,7 @@ class LoginOutputTest extends TestCase
     {
         $identity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new UserName('test-user'),
+            new IdentityName('test-user'),
             new Email('user@example.com'),
             Language::JAPANESE,
             null,

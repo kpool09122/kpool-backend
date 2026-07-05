@@ -39,7 +39,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
 
         return new AuthenticatedIdentityReadModel(
             identityIdentifier: $model->id,
-            username: $model->username,
+            identityName: $model->identity_name,
             email: $model->email,
             language: $model->language,
             profileImage: ImageUrl::fromPath($model->profile_image),

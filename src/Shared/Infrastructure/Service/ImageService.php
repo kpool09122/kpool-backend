@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Source\Shared\Infrastructure\Service;
 
 use GdImage;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
+use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\ImagePath;
+use Throwable;
 
 class ImageService implements ImageServiceInterface
 {
@@ -34,6 +37,36 @@ class ImageService implements ImageServiceInterface
             throw new InvalidBase64ImageException();
         }
 
+        return $this->storeImage($gdImage);
+    }
+
+    public function importFromUrl(string $imageUrl): ImageUploadResult
+    {
+        try {
+            $response = Http::timeout(5)->get($imageUrl);
+        } catch (Throwable $e) {
+            throw new InvalidRemoteImageException('Failed to download remote image.', previous: $e);
+        }
+
+        if (! $response->successful()) {
+            throw new InvalidRemoteImageException('Failed to download remote image.');
+        }
+
+        $imageData = $response->body();
+        if ($imageData === '') {
+            throw new InvalidRemoteImageException('Remote image is empty.');
+        }
+
+        $gdImage = @imagecreatefromstring($imageData);
+        if ($gdImage === false) {
+            throw new InvalidRemoteImageException('Remote URL did not contain a valid image.');
+        }
+
+        return $this->storeImage($gdImage);
+    }
+
+    private function storeImage(GdImage $gdImage): ImageUploadResult
+    {
         $baseFileName = 'images/' . Str::uuid();
 
         // オリジナル画像をwebpで保存
@@ -42,8 +75,6 @@ class ImageService implements ImageServiceInterface
         // リサイズ版を作成して保存
         $resizedImage = $this->resizeImage($gdImage);
         $resizedPath = $this->saveAsWebp($resizedImage, $baseFileName . '_resized.webp');
-        if ($resizedImage !== $gdImage) {
-        }
 
         return new ImageUploadResult(
             new ImagePath($originalPath),

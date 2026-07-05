@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
+namespace Tests\Identity\Application\UseCase\Command\UpdateIdentity;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityOutput;
+use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentityOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
@@ -17,11 +17,11 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\StrTestHelper;
 
-class CreateIdentityOutputTest extends TestCase
+class UpdateIdentityOutputTest extends TestCase
 {
     public function testToArrayReturnsEmptyWhenIdentityIsNull(): void
     {
-        $output = new CreateIdentityOutput();
+        $output = new UpdateIdentityOutput();
 
         $this->assertSame([], $output->toArray());
     }
@@ -29,10 +29,10 @@ class CreateIdentityOutputTest extends TestCase
     public function testToArrayReturnsIdentityData(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $identityName = new IdentityName('test-user');
+        $identityName = new IdentityName('updated-user');
         $email = new Email('user@example.com');
-        $language = Language::JAPANESE;
-        $profileImage = new ImagePath('/resources/path/test.png');
+        $language = Language::KOREAN;
+        $profileImage = new ImagePath('/resources/path/updated.png');
         $hashedPassword = HashedPassword::fromPlain(new PlainPassword('PlainPass1!'));
         $emailVerifiedAt = new DateTimeImmutable();
 
@@ -46,7 +46,7 @@ class CreateIdentityOutputTest extends TestCase
             $emailVerifiedAt,
         );
 
-        $output = new CreateIdentityOutput();
+        $output = new UpdateIdentityOutput();
         $output->setIdentity($identity);
 
         $result = $output->toArray();
@@ -56,5 +56,23 @@ class CreateIdentityOutputTest extends TestCase
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($language->value, $result['language']);
         $this->assertSame((string) $profileImage, $result['profileImage']);
+    }
+
+    public function testToArrayReturnsNullProfileImageWhenIdentityHasNoProfileImage(): void
+    {
+        $identity = new Identity(
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new IdentityName('updated-user'),
+            new Email('user@example.com'),
+            Language::JAPANESE,
+            null,
+            HashedPassword::fromPlain(new PlainPassword('PlainPass1!')),
+            new DateTimeImmutable(),
+        );
+
+        $output = new UpdateIdentityOutput();
+        $output->setIdentity($identity);
+
+        $this->assertNull($output->toArray()['profileImage']);
     }
 }

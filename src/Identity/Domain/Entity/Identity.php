@@ -9,9 +9,9 @@ use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -22,7 +22,7 @@ class Identity
 {
     /**
      * @param IdentityIdentifier $identityIdentifier
-     * @param UserName $username
+     * @param IdentityName $identityName
      * @param Email $email
      * @param Language $language
      * @param ?ImagePath $profileImage
@@ -34,9 +34,9 @@ class Identity
      */
     public function __construct(
         private readonly IdentityIdentifier $identityIdentifier,
-        private readonly UserName                    $username,
+        private IdentityName                    $identityName,
         private readonly Email                       $email,
-        private readonly Language                    $language,
+        private Language                    $language,
         private ?ImagePath                  $profileImage,
         private readonly HashedPassword              $hashedPassword,
         private ?DateTimeImmutable          $emailVerifiedAt,
@@ -51,9 +51,14 @@ class Identity
         return $this->identityIdentifier;
     }
 
-    public function username(): UserName
+    public function identityName(): IdentityName
     {
-        return $this->username;
+        return $this->identityName;
+    }
+
+    public function setIdentityName(IdentityName $identityName): void
+    {
+        $this->identityName = $identityName;
     }
 
     public function email(): Email
@@ -64,6 +69,11 @@ class Identity
     public function language(): Language
     {
         return $this->language;
+    }
+
+    public function setLanguage(Language $language): void
+    {
+        $this->language = $language;
     }
 
     public function profileImage(): ?ImagePath

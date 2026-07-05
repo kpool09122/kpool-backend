@@ -54,7 +54,7 @@ readonly class CreateIdentity implements CreateIdentityInterface
         }
 
         $identity = $this->identityFactory->create(
-            $input->username(),
+            $input->identityName(),
             $input->email(),
             $input->language(),
             $input->password(),

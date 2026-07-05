@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string $username
+ * @property string $identity_name
  * @property string $email
  * @property string $language
  * @property ?string $profile_image
@@ -25,7 +25,7 @@ use Illuminate\Support\Carbon;
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
-    'username',
+    'identity_name',
     'email',
     'language',
     'profile_image',

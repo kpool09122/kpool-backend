@@ -6,10 +6,10 @@ namespace Tests\Identity\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Identity\Domain\ValueObject\UserName;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Tests\Helper\StrTestHelper;
 
-class UserNameTest extends TestCase
+class IdentityNameTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,8 +19,8 @@ class UserNameTest extends TestCase
     public function test__construct(): void
     {
         $name = 'test-user';
-        $userName = new UserName($name);
-        $this->assertSame($name, (string)$userName);
+        $identityName = new IdentityName($name);
+        $this->assertSame($name, (string)$identityName);
     }
 
     /**
@@ -31,7 +31,7 @@ class UserNameTest extends TestCase
     public function testWhenEmpty(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new UserName('');
+        new IdentityName('');
     }
 
     /**
@@ -42,7 +42,7 @@ class UserNameTest extends TestCase
     public function testWhenOnlySpace(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new UserName('    ');
+        new IdentityName('    ');
     }
 
     /**
@@ -53,6 +53,6 @@ class UserNameTest extends TestCase
     public function testExceedMaxChars(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new UserName(StrTestHelper::generateStr(UserName::MAX_LENGTH + 1));
+        new IdentityName(StrTestHelper::generateStr(IdentityName::MAX_LENGTH + 1));
     }
 }

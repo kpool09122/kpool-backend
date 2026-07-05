@@ -272,13 +272,13 @@ class PrincipalRepositoryTest extends TestCase
         $identityIdentifier1 = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier1, [
             'email' => 'test1@example.com',
-            'username' => 'test-identity-1',
+            'identity_name' => 'test-identity-1',
         ]);
 
         $identityIdentifier2 = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier2, [
             'email' => 'test2@example.com',
-            'username' => 'test-identity-2',
+            'identity_name' => 'test-identity-2',
         ]);
 
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
@@ -331,19 +331,19 @@ class PrincipalRepositoryTest extends TestCase
         $identityIdentifier1 = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier1, [
             'email' => 'findbyids1@example.com',
-            'username' => 'findbyids-identity-1',
+            'identity_name' => 'findbyids-identity-1',
         ]);
 
         $identityIdentifier2 = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier2, [
             'email' => 'findbyids2@example.com',
-            'username' => 'findbyids-identity-2',
+            'identity_name' => 'findbyids-identity-2',
         ]);
 
         $identityIdentifier3 = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier3, [
             'email' => 'findbyids3@example.com',
-            'username' => 'findbyids-identity-3',
+            'identity_name' => 'findbyids-identity-3',
         ]);
 
         $principalIdentifier1 = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -398,7 +398,7 @@ class PrincipalRepositoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier, [
             'email' => 'existing-principal@example.com',
-            'username' => 'existing-principal-user',
+            'identity_name' => 'existing-principal-user',
         ]);
 
         $existingPrincipalId = new PrincipalIdentifier(StrTestHelper::generateUuid());

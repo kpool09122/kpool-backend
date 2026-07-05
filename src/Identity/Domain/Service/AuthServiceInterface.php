@@ -13,4 +13,6 @@ interface AuthServiceInterface
     public function logout(): void;
 
     public function isLoggedIn(): bool;
+
+    public function refreshAuthenticatedIdentity(Identity $identity): void;
 }

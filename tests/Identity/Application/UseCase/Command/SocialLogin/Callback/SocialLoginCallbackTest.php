@@ -24,6 +24,7 @@ use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\OAuthCode;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\PlainPassword;
@@ -31,7 +32,6 @@ use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -550,13 +550,13 @@ class SocialLoginCallbackTest extends TestCase
     private function createIdentity(Email $email, ?IdentityIdentifier $identityIdentifier = null, array $connections = []): Identity
     {
         $identityIdentifier ??= new IdentityIdentifier(StrTestHelper::generateUuid());
-        $username = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $hashedPassword = HashedPassword::fromPlain(new PlainPassword('PlainPass1!'));
         $language = Language::ENGLISH;
 
         return new Identity(
             $identityIdentifier,
-            $username,
+            $identityName,
             $email,
             $language,
             null,

@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
 readonly class CreateIdentityInput implements CreateIdentityInputPort
 {
     public function __construct(
-        private UserName         $username,
+        private IdentityName         $identityName,
         private Email            $email,
         private Language         $language,
         private PlainPassword    $password,
@@ -23,9 +23,9 @@ readonly class CreateIdentityInput implements CreateIdentityInputPort
     ) {
     }
 
-    public function username(): UserName
+    public function identityName(): IdentityName
     {
-        return $this->username;
+        return $this->identityName;
     }
 
     public function email(): Email

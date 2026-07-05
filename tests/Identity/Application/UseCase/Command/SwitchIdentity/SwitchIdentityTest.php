@@ -18,8 +18,8 @@ use Source\Identity\Domain\Exception\InvalidDelegationException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -497,7 +497,7 @@ class SwitchIdentityTest extends TestCase
     {
         return new Identity(
             $identityIdentifier,
-            new UserName('test-user'),
+            new IdentityName('test-user'),
             new Email('user@example.com'),
             Language::KOREAN,
             new ImagePath('/resources/path/test.png'),
@@ -513,7 +513,7 @@ class SwitchIdentityTest extends TestCase
     ): Identity {
         return new Identity(
             $identityIdentifier,
-            new UserName('delegated-user'),
+            new IdentityName('delegated-user'),
             new Email('delegated@example.com'),
             Language::KOREAN,
             new ImagePath('/resources/path/test.png'),

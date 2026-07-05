@@ -24,8 +24,8 @@ use Source\Identity\Domain\Repository\AuthCodeSessionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
@@ -71,14 +71,14 @@ class CreateIdentityTest extends TestCase
      */
     public function testProcess(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AAusB9xyxOvUAAAAASUVORK5CYII=';
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -92,7 +92,7 @@ class CreateIdentityTest extends TestCase
 
         $identity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $userName,
+            $identityName,
             $email,
             $language,
             null,
@@ -130,7 +130,7 @@ class CreateIdentityTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')
             ->once()
-            ->with($userName, $email, $language, $password)
+            ->with($identityName, $email, $language, $password)
             ->andReturn($identity);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -161,14 +161,14 @@ class CreateIdentityTest extends TestCase
      */
     public function testThrowsAuthCodeSessionNotFoundException(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -217,14 +217,14 @@ class CreateIdentityTest extends TestCase
      */
     public function testThrowsAlreadyUserExistsException(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -237,7 +237,7 @@ class CreateIdentityTest extends TestCase
 
         $existingIdentity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $userName,
+            $identityName,
             $email,
             $language,
             null,
@@ -290,14 +290,14 @@ class CreateIdentityTest extends TestCase
      */
     public function testThrowsInvalidArgumentExceptionWhenPasswordsMatch(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass2@');
         $base64EncodedImage = null;
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -335,14 +335,14 @@ class CreateIdentityTest extends TestCase
      */
     public function testThrowsUnauthorizedEmailExceptionWhenSessionIsNotVerified(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -368,7 +368,7 @@ class CreateIdentityTest extends TestCase
 
         $identity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $userName,
+            $identityName,
             $email,
             $language,
             null,
@@ -378,7 +378,7 @@ class CreateIdentityTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')
             ->once()
-            ->with($userName, $email, $language, $password)
+            ->with($identityName, $email, $language, $password)
             ->andReturn($identity);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -410,7 +410,7 @@ class CreateIdentityTest extends TestCase
      */
     public function testProcessDispatchesIdentityCreatedViaInvitationEvent(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
@@ -419,7 +419,7 @@ class CreateIdentityTest extends TestCase
         $invitationToken = new InvitationToken(bin2hex(random_bytes(32)));
 
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -435,7 +435,7 @@ class CreateIdentityTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             null,
@@ -461,7 +461,7 @@ class CreateIdentityTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')
             ->once()
-            ->with($userName, $email, $language, $password)
+            ->with($identityName, $email, $language, $password)
             ->andReturn($identity);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);
@@ -500,7 +500,7 @@ class CreateIdentityTest extends TestCase
      */
     public function testProcessDoesNotDispatchIdentityCreatedViaInvitationEventWhenTokenIsNull(): void
     {
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $password = new PlainPassword('PlainPass1!');
@@ -508,7 +508,7 @@ class CreateIdentityTest extends TestCase
         $base64EncodedImage = null;
 
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -522,7 +522,7 @@ class CreateIdentityTest extends TestCase
 
         $identity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $userName,
+            $identityName,
             $email,
             $language,
             null,
@@ -548,7 +548,7 @@ class CreateIdentityTest extends TestCase
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')
             ->once()
-            ->with($userName, $email, $language, $password)
+            ->with($identityName, $email, $language, $password)
             ->andReturn($identity);
 
         $imageService = Mockery::mock(ImageServiceInterface::class);

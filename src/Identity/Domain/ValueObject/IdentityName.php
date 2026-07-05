@@ -7,7 +7,7 @@ namespace Source\Identity\Domain\ValueObject;
 use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class UserName extends StringBaseValue
+class IdentityName extends StringBaseValue
 {
     public const int MAX_LENGTH = 32;
 
@@ -22,11 +22,11 @@ class UserName extends StringBaseValue
         string $value,
     ): void {
         if (empty($value)) {
-            throw new InvalidArgumentException('User name cannot be empty');
+            throw new InvalidArgumentException('Identity name cannot be empty');
         }
 
         if (mb_strlen($value) > self::MAX_LENGTH) {
-            throw new InvalidArgumentException('User name cannot exceed  ' . self::MAX_LENGTH . '  characters');
+            throw new InvalidArgumentException('Identity name cannot exceed  ' . self::MAX_LENGTH . '  characters');
         }
     }
 }

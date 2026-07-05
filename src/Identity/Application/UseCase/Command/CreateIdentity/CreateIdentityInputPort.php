@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
 interface CreateIdentityInputPort
 {
-    public function userName(): UserName;
+    public function identityName(): IdentityName;
 
     public function email(): Email;
 

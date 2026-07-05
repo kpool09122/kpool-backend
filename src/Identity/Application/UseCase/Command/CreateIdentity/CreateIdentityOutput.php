@@ -28,7 +28,7 @@ class CreateIdentityOutput implements CreateIdentityOutputPort
 
         return [
             'identityIdentifier' => (string) $identity->identityIdentifier(),
-            'username' => (string) $identity->username(),
+            'identityName' => (string) $identity->identityName(),
             'email' => (string) $identity->email(),
             'language' => $identity->language()->value,
             'profileImage' => $identity->profileImage() !== null ? (string) $identity->profileImage() : null,

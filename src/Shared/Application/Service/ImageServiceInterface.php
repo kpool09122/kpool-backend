@@ -6,6 +6,7 @@ namespace Source\Shared\Application\Service;
 
 use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
+use Source\Shared\Application\Exception\InvalidRemoteImageException;
 
 interface ImageServiceInterface
 {
@@ -15,4 +16,11 @@ interface ImageServiceInterface
      * @throws InvalidBase64ImageException
      */
     public function upload(string $base64EncodedImage): ImageUploadResult;
+
+    /**
+     * @param string $imageUrl
+     * @return ImageUploadResult
+     * @throws InvalidRemoteImageException
+     */
+    public function importFromUrl(string $imageUrl): ImageUploadResult;
 }

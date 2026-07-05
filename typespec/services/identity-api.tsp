@@ -9,8 +9,8 @@ namespace KPool.IdentityApi;
 model IdentitySummary {
   @doc("Identity identifier.")
   identityIdentifier: Uuid;
-  @doc("Username.")
-  username: string;
+  @doc("IdentityName.")
+  identityName: string;
   @doc("Email address.")
   email: string;
   @doc("Language code associated with the identity.")
@@ -67,8 +67,8 @@ model VerifyEmailRequestBody {
 
 @doc("Request body for registering a new identity.")
 model CreateIdentityRequestBody {
-  @doc("Requested username.")
-  username: string;
+  @doc("Requested identityName.")
+  identityName: string;
   @doc("Email address.")
   email: string;
   @doc("Plain text password.")
@@ -79,6 +79,17 @@ model CreateIdentityRequestBody {
   base64EncodedImage?: string | null;
   @doc("Invitation token used during signup.")
   invitationToken?: string | null;
+}
+
+
+@doc("Request body for updating an identity profile.")
+model UpdateIdentityRequestBody {
+  @doc("Identity display name.")
+  identityName?: string | null;
+  @doc("Language code associated with the identity.")
+  language?: string | null;
+  @doc("Base64-encoded profile image.")
+  base64EncodedImage?: string | null;
 }
 
 @doc("Request body for logging in.")
@@ -210,4 +221,14 @@ interface IdentityAuthOperations {
   switchIdentity(
     @body body: SwitchIdentityRequestBody,
   ): SwitchIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+
+@route("/identities")
+interface IdentityOperations {
+  @patch
+  @route("/me")
+  @doc("Update the current identity profile.")
+  updateIdentity(
+    @body body: UpdateIdentityRequestBody,
+  ): OkIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
