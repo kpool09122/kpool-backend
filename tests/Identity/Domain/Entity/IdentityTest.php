@@ -10,10 +10,10 @@ use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Exception\SocialConnectionAlreadyExistsException;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -30,7 +30,7 @@ class IdentityTest extends TestCase
     public function test__construct(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $profileImage = new ImagePath('/resources/path/test.png');
         $language = Language::JAPANESE;
@@ -40,10 +40,10 @@ class IdentityTest extends TestCase
         $socialConnection = new SocialConnection(SocialProvider::GOOGLE, 'provider-user-id');
         $connections = [$socialConnection];
 
-        $identity = new Identity($identityIdentifier, $userName, $email, $language, $profileImage, $hashedPassword, $verifiedAt, $connections);
+        $identity = new Identity($identityIdentifier, $identityName, $email, $language, $profileImage, $hashedPassword, $verifiedAt, $connections);
 
         $this->assertSame($identityIdentifier, $identity->identityIdentifier());
-        $this->assertSame($userName, $identity->username());
+        $this->assertSame($identityName, $identity->identityName());
         $this->assertSame($email, $identity->email());
         $this->assertSame($language, $identity->language());
         $this->assertSame($profileImage, $identity->profileImage());
@@ -107,7 +107,7 @@ class IdentityTest extends TestCase
 
     /**
      * @param IdentityIdentifier|null $identityIdentifier
-     * @param UserName|null $userName
+     * @param IdentityName|null $identityName
      * @param Email|null $email
      * @param Language|null $language
      * @param ImagePath|null $profileImage
@@ -118,7 +118,7 @@ class IdentityTest extends TestCase
      */
     private function createIdentity(
         ?IdentityIdentifier $identityIdentifier = null,
-        ?UserName           $userName = null,
+        ?IdentityName           $identityName = null,
         ?Email              $email = null,
         ?Language           $language = null,
         ?ImagePath          $profileImage = null,
@@ -128,7 +128,7 @@ class IdentityTest extends TestCase
     ): Identity {
         return new Identity(
             $identityIdentifier ?? new IdentityIdentifier(StrTestHelper::generateUuid()),
-            $userName ?? new UserName('test-user'),
+            $identityName ?? new IdentityName('test-user'),
             $email ?? new Email('user@example.com'),
             $language ?? Language::JAPANESE,
             $profileImage ?? new ImagePath('/resources/path/test.png'),

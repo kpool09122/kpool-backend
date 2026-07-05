@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\SwitchIdentity\SwitchIdentityOutput;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -32,7 +32,7 @@ class SwitchIdentityOutputTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $originalIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $delegationIdentifier = new DelegationIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('delegated-user');
+        $identityName = new IdentityName('delegated-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -41,7 +41,7 @@ class SwitchIdentityOutputTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             $profileImage,
@@ -58,7 +58,7 @@ class SwitchIdentityOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame((string) $identityIdentifier, $result['identityIdentifier']);
-        $this->assertSame((string) $userName, $result['username']);
+        $this->assertSame((string) $identityName, $result['identityName']);
         $this->assertSame((string) $email, $result['email']);
         $this->assertSame($language->value, $result['language']);
         $this->assertSame((string) $profileImage, $result['profileImage']);
@@ -69,7 +69,7 @@ class SwitchIdentityOutputTest extends TestCase
     {
         $identity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new UserName('test-user'),
+            new IdentityName('test-user'),
             new Email('user@example.com'),
             Language::KOREAN,
             new ImagePath('/resources/path/test.png'),

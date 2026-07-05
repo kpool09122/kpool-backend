@@ -6,8 +6,8 @@ namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 
 use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
 
@@ -15,7 +15,7 @@ class CreateIdentityInputTest extends TestCase
 {
     public function test__construct(): void
     {
-        $userName = new UserName('userName');
+        $identityName = new IdentityName('identityName');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $password = new PlainPassword('PlainPass1!');
@@ -24,7 +24,7 @@ class CreateIdentityInputTest extends TestCase
 
 
         $input = new CreateIdentityInput(
-            $userName,
+            $identityName,
             $email,
             $language,
             $password,
@@ -32,7 +32,7 @@ class CreateIdentityInputTest extends TestCase
             $base64EncodedImage,
         );
 
-        $this->assertSame($userName, $input->userName());
+        $this->assertSame($identityName, $input->identityName());
         $this->assertSame($email, $input->email());
         $this->assertSame($language, $input->language());
         $this->assertSame($password, $input->password());

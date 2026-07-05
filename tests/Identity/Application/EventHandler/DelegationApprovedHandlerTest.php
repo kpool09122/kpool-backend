@@ -15,8 +15,8 @@ use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -159,7 +159,7 @@ class DelegationApprovedHandlerTest extends TestCase
     {
         return new Identity(
             $identityIdentifier,
-            new UserName('test-user'),
+            new IdentityName('test-user'),
             new Email('test@example.com'),
             Language::JAPANESE,
             null,
@@ -175,7 +175,7 @@ class DelegationApprovedHandlerTest extends TestCase
     ): Identity {
         return new Identity(
             $identityIdentifier,
-            new UserName('delegated-user'),
+            new IdentityName('delegated-user'),
             new Email('delegated@example.com'),
             Language::JAPANESE,
             null,

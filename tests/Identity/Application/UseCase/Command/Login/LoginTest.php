@@ -17,8 +17,8 @@ use Source\Identity\Domain\Exception\InvalidCredentialsException;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -54,7 +54,7 @@ class LoginTest extends TestCase
     public function testProcess(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -66,7 +66,7 @@ class LoginTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             $profileImage,
@@ -137,7 +137,7 @@ class LoginTest extends TestCase
     public function testWhenEmailIsNotVerified(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -149,7 +149,7 @@ class LoginTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             $profileImage,
@@ -186,7 +186,7 @@ class LoginTest extends TestCase
     public function testWhenFailedToVerifyPassword(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::KOREAN;
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -198,7 +198,7 @@ class LoginTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             $profileImage,

@@ -339,6 +339,54 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/VerifyEmailRequestBody'
+  /identities/me:
+    patch:
+      operationId: IdentityOperations_updateIdentity
+      description: Update the current identity profile.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an identity operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentitySummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIdentityRequestBody'
 components:
   schemas:
     AuthenticatedIdentitySummary:
@@ -358,14 +406,14 @@ components:
     CreateIdentityRequestBody:
       type: object
       required:
-        - username
+        - identityName
         - email
         - password
         - confirmedPassword
       properties:
-        username:
+        identityName:
           type: string
-          description: Requested username.
+          description: Requested identityName.
         email:
           type: string
           description: Email address.
@@ -388,7 +436,7 @@ components:
       type: object
       required:
         - identityIdentifier
-        - username
+        - identityName
         - email
         - language
       properties:
@@ -396,9 +444,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier.
-        username:
+        identityName:
           type: string
-          description: Username.
+          description: IdentityName.
         email:
           type: string
           description: Email address.
@@ -467,14 +515,6 @@ components:
           nullable: true
           description: Application return path after login.
       description: Request body for logging in.
-    OkIdentityResponse:
-      type: object
-      required:
-        - body
-      properties:
-        body:
-          $ref: '#/components/schemas/IdentitySummary'
-      description: Response returned when an identity operation succeeds.
     RedirectUrlResult:
       type: object
       required:
@@ -514,6 +554,22 @@ components:
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Identity summary returned after switching active identity.
+    UpdateIdentityRequestBody:
+      type: object
+      properties:
+        identityName:
+          type: string
+          nullable: true
+          description: Identity display name.
+        language:
+          type: string
+          nullable: true
+          description: Language code associated with the identity.
+        base64EncodedImage:
+          type: string
+          nullable: true
+          description: Base64-encoded profile image.
+      description: Request body for updating an identity profile.
     VerifyEmailRequestBody:
       type: object
       required:

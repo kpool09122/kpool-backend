@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Service;
 
+use Application\Models\Identity\Identity as IdentityEloquent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Source\Identity\Domain\Entity\Identity;
@@ -36,5 +37,14 @@ readonly class AuthService implements AuthServiceInterface
     public function isLoggedIn(): bool
     {
         return Auth::check();
+    }
+
+    public function refreshAuthenticatedIdentity(Identity $identity): void
+    {
+        $eloquent = IdentityEloquent::query()->find((string) $identity->identityIdentifier());
+        if ($eloquent !== null) {
+            Auth::setUser($eloquent);
+            $this->request->setUserResolver(static fn () => $eloquent);
+        }
     }
 }

@@ -8,7 +8,7 @@ readonly class AuthenticatedIdentityReadModel
 {
     public function __construct(
         private string $identityIdentifier,
-        private string $username,
+        private string $identityName,
         private string $email,
         private string $language,
         private ?string $profileImage,
@@ -21,9 +21,9 @@ readonly class AuthenticatedIdentityReadModel
         return $this->identityIdentifier;
     }
 
-    public function username(): string
+    public function identityName(): string
     {
-        return $this->username;
+        return $this->identityName;
     }
 
     public function email(): string
@@ -53,7 +53,7 @@ readonly class AuthenticatedIdentityReadModel
     {
         return [
             'identityIdentifier' => $this->identityIdentifier,
-            'username' => $this->username,
+            'identityName' => $this->identityName,
             'email' => $this->email,
             'language' => $this->language,
             'profileImage' => $this->profileImage,

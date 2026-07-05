@@ -8,11 +8,11 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProfile;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
@@ -45,7 +45,7 @@ class IdentityFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $name = new UserName('user-name');
+        $name = new IdentityName('user-name');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $plainPassword = new PlainPassword('user-password');
@@ -80,7 +80,7 @@ class IdentityFactoryTest extends TestCase
         $this->assertTrue(UuidValidator::isValid((string)$identity->identityIdentifier()));
         $this->assertSame((string)$email, (string)$identity->email());
         $this->assertSame(Language::ENGLISH, $identity->language());
-        $this->assertSame($name, (string)$identity->username());
+        $this->assertSame($name, (string)$identity->identityName());
         $this->assertNull($identity->profileImage());
         $this->assertNull($identity->emailVerifiedAt());
         $this->assertTrue($identity->hasSocialConnection(new SocialConnection($provider, $providerUserId)));
@@ -106,7 +106,7 @@ class IdentityFactoryTest extends TestCase
 
         $identity = $identityFactory->createFromSocialProfile($profile);
 
-        $this->assertSame('user', (string)$identity->username());
+        $this->assertSame('user', (string)$identity->identityName());
         $this->assertNull($identity->profileImage());
     }
 
@@ -120,7 +120,7 @@ class IdentityFactoryTest extends TestCase
     {
         $originalIdentity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new UserName('original-user'),
+            new IdentityName('original-user'),
             new Email('original@example.com'),
             Language::JAPANESE,
             new ImagePath('/resources/path/original.png'),
@@ -142,7 +142,7 @@ class IdentityFactoryTest extends TestCase
         );
 
         // 元のIdentityの情報がコピーされる
-        $this->assertSame((string)$originalIdentity->username(), (string)$delegatedIdentity->username());
+        $this->assertSame((string)$originalIdentity->identityName(), (string)$delegatedIdentity->identityName());
         $this->assertSame((string)$originalIdentity->email(), (string)$delegatedIdentity->email());
         $this->assertSame($originalIdentity->language(), $delegatedIdentity->language());
         $this->assertSame((string)$originalIdentity->profileImage(), (string)$delegatedIdentity->profileImage());
@@ -171,7 +171,7 @@ class IdentityFactoryTest extends TestCase
     {
         $originalIdentity = new Identity(
             new IdentityIdentifier(StrTestHelper::generateUuid()),
-            new UserName('original-user'),
+            new IdentityName('original-user'),
             new Email('original@example.com'),
             Language::KOREAN,
             null,

@@ -17,7 +17,7 @@ class CreateIdentityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => ['required', 'string'],
+            'identityName' => ['required', 'string'],
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
             'confirmedPassword' => ['required', 'string'],
@@ -26,9 +26,9 @@ class CreateIdentityRequest extends FormRequest
         ];
     }
 
-    public function username(): string
+    public function identityName(): string
     {
-        return (string) $this->input('username');
+        return (string) $this->input('identityName');
     }
 
     public function email(): string

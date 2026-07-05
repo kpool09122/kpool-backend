@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('identities', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('アイデンティティID');
-            $table->string('username', 32)->comment('ユーザー名');
+            $table->string('identity_name', 32)->comment('ユーザー名');
             $table->string('email', 255)->unique()->comment('メールアドレス');
             $table->string('language', 8)->comment('言語設定');
             $table->string('profile_image', 2048)->nullable()->comment('プロフィール画像');

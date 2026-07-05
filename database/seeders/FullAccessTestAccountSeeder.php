@@ -45,7 +45,7 @@ class FullAccessTestAccountSeeder extends Seeder
         DB::table('identities')->upsert([
             [
                 'id' => self::IDENTITY_ID,
-                'username' => 'full-access-test',
+                'identity_name' => 'full-access-test',
                 'email' => self::EMAIL,
                 'language' => 'ja',
                 'profile_image' => null,

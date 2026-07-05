@@ -28,7 +28,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
         CreateAccount::create((string) $accountIdentifier);
         CreateIdentity::create($identityIdentifier, [
-            'username' => 'test-user',
+            'identity_name' => 'test-user',
             'email' => 'test@example.com',
             'language' => 'ja',
             'profile_image' => 'profile/test.png',
@@ -46,7 +46,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5fe', $readModel->identityIdentifier());
-        $this->assertSame('test-user', $readModel->username());
+        $this->assertSame('test-user', $readModel->identityName());
         $this->assertSame('test@example.com', $readModel->email());
         $this->assertSame('ja', $readModel->language());
         $this->assertSame('http://127.0.0.1:8080/storage/profile/test.png', $readModel->profileImage());
@@ -58,7 +58,7 @@ class GetAuthenticatedIdentityTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
         CreateIdentity::create($identityIdentifier, [
-            'username' => 'test-user',
+            'identity_name' => 'test-user',
             'email' => 'test@example.com',
             'language' => 'ja',
             'profile_image' => null,
@@ -68,7 +68,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5fe', $readModel->identityIdentifier());
-        $this->assertSame('test-user', $readModel->username());
+        $this->assertSame('test-user', $readModel->identityName());
         $this->assertSame('test@example.com', $readModel->email());
         $this->assertSame('ja', $readModel->language());
         $this->assertNull($readModel->profileImage());

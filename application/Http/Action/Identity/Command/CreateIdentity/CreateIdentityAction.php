@@ -22,8 +22,8 @@ use Source\Identity\Domain\Exception\AlreadyUserExistsException;
 use Source\Identity\Domain\Exception\AuthCodeSessionNotFoundException;
 use Source\Identity\Domain\Exception\PasswordMismatchException;
 use Source\Identity\Domain\Exception\UnauthorizedEmailException;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
@@ -48,7 +48,7 @@ readonly class CreateIdentityAction
         try {
             try {
                 $input = new CreateIdentityInput(
-                    username: new UserName($request->username()),
+                    identityName: new IdentityName($request->identityName()),
                     email: new Email($request->email()),
                     language: Language::from($request->language()),
                     password: new PlainPassword($request->password()),

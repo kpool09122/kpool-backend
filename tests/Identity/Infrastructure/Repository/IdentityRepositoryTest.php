@@ -10,10 +10,10 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -131,7 +131,7 @@ class IdentityRepositoryTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            new UserName('new-identity'),
+            new IdentityName('new-identity'),
             $email,
             Language::JAPANESE,
             new ImagePath('/images/profile.jpg'),
@@ -145,7 +145,7 @@ class IdentityRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('identities', [
             'id' => (string) $identityIdentifier,
-            'username' => 'new-identity',
+            'identity_name' => 'new-identity',
             'email' => 'newidentity@example.com',
             'language' => 'ja',
             'profile_image' => '/images/profile.jpg',
@@ -179,12 +179,12 @@ class IdentityRepositoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier, [
             'email' => 'original@example.com',
-            'username' => 'original-identity',
+            'identity_name' => 'original-identity',
         ]);
 
         $updatedIdentity = new Identity(
             $identityIdentifier,
-            new UserName('updated-identity'),
+            new IdentityName('updated-identity'),
             new Email('updated@example.com'),
             Language::KOREAN,
             null,
@@ -198,7 +198,7 @@ class IdentityRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('identities', [
             'id' => (string) $identityIdentifier,
-            'username' => 'updated-identity',
+            'identity_name' => 'updated-identity',
             'email' => 'updated@example.com',
             'language' => 'ko',
             'profile_image' => null,
@@ -219,7 +219,7 @@ class IdentityRepositoryTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            new UserName('unverified-identity'),
+            new IdentityName('unverified-identity'),
             $email,
             Language::ENGLISH,
             null,
@@ -251,7 +251,7 @@ class IdentityRepositoryTest extends TestCase
 
         $identity = new Identity(
             $identityIdentifier,
-            new UserName('multi-social-identity'),
+            new IdentityName('multi-social-identity'),
             $email,
             Language::JAPANESE,
             null,
@@ -285,7 +285,7 @@ class IdentityRepositoryTest extends TestCase
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         CreateIdentity::create($identityIdentifier, [
             'email' => 'findbyid@example.com',
-            'username' => 'find-by-id-user',
+            'identity_name' => 'find-by-id-user',
         ]);
 
         $repository = $this->app->make(IdentityRepositoryInterface::class);
@@ -295,7 +295,7 @@ class IdentityRepositoryTest extends TestCase
         $this->assertInstanceOf(Identity::class, $result);
         $this->assertSame((string) $identityIdentifier, (string) $result->identityIdentifier());
         $this->assertSame('findbyid@example.com', (string) $result->email());
-        $this->assertSame('find-by-id-user', (string) $result->username());
+        $this->assertSame('find-by-id-user', (string) $result->identityName());
     }
 
     /**
@@ -510,7 +510,7 @@ class IdentityRepositoryTest extends TestCase
 
         $delegatedIdentity = new Identity(
             $delegatedIdentityId,
-            new UserName('delegated-user'),
+            new IdentityName('delegated-user'),
             new Email('delegated-save@example.com'),
             Language::JAPANESE,
             null,
@@ -551,15 +551,15 @@ class IdentityRepositoryTest extends TestCase
 
         CreateIdentity::create($identityIdentifier1, [
             'email' => 'findbyids1@example.com',
-            'username' => 'find-by-ids-user1',
+            'identity_name' => 'find-by-ids-user1',
         ]);
         CreateIdentity::create($identityIdentifier2, [
             'email' => 'findbyids2@example.com',
-            'username' => 'find-by-ids-user2',
+            'identity_name' => 'find-by-ids-user2',
         ]);
         CreateIdentity::create($identityIdentifier3, [
             'email' => 'findbyids3@example.com',
-            'username' => 'find-by-ids-user3',
+            'identity_name' => 'find-by-ids-user3',
         ]);
         CreateIdentity::createSocialConnection($identityIdentifier1, SocialProvider::GOOGLE, 'google-findbyids-1');
 
@@ -608,7 +608,7 @@ class IdentityRepositoryTest extends TestCase
 
         CreateIdentity::create($existingIdentityId, [
             'email' => 'existing@example.com',
-            'username' => 'existing-user',
+            'identity_name' => 'existing-user',
         ]);
 
         $repository = $this->app->make(IdentityRepositoryInterface::class);

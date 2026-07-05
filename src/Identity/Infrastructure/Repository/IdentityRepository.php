@@ -10,9 +10,9 @@ use Illuminate\Support\Carbon;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\SocialConnection;
 use Source\Identity\Domain\ValueObject\SocialProvider;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -63,7 +63,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
         $eloquent = IdentityEloquent::query()->updateOrCreate(
             ['id' => (string) $identity->identityIdentifier()],
             [
-                'username' => (string) $identity->username(),
+                'identity_name' => (string) $identity->identityName(),
                 'email' => (string) $identity->email(),
                 'language' => $identity->language()->value,
                 'profile_image' => $identity->profileImage() !== null ? (string) $identity->profileImage() : null,
@@ -178,7 +178,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
 
         return new Identity(
             new IdentityIdentifier($eloquent->id),
-            new UserName($eloquent->username),
+            new IdentityName($eloquent->identity_name),
             new Email($eloquent->email),
             Language::from($eloquent->language),
             $eloquent->profile_image !== null ? new ImagePath($eloquent->profile_image) : null,

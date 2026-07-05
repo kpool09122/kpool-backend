@@ -18,8 +18,8 @@ use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthCodeServiceInterface;
 use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
@@ -114,7 +114,7 @@ class SendAuthCodeTest extends TestCase
     public function testWhenEmailAlreadyExists(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $userName = new UserName('test-user');
+        $identityName = new IdentityName('test-user');
         $email = new Email('user@example.com');
         $language = Language::JAPANESE;
         $profileImage = new ImagePath('/resources/path/test.png');
@@ -123,7 +123,7 @@ class SendAuthCodeTest extends TestCase
         $emailVerifiedAt = new DateTimeImmutable();
         $identity = new Identity(
             $identityIdentifier,
-            $userName,
+            $identityName,
             $email,
             $language,
             $profileImage,

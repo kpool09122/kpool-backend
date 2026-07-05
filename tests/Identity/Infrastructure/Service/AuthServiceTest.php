@@ -10,8 +10,8 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Identity\Infrastructure\Service\AuthService;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -131,7 +131,7 @@ class AuthServiceTest extends TestCase
     {
         return new Identity(
             $identityIdentifier,
-            new UserName('test-user'),
+            new IdentityName('test-user'),
             new Email('test@example.com'),
             Language::JAPANESE,
             null,

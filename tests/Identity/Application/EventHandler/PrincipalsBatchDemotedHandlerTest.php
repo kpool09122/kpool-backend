@@ -12,8 +12,8 @@ use Source\Identity\Application\Service\CollaboratorNotificationServiceInterface
 use Source\Identity\Domain\Entity\Identity;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
+use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Identity\Domain\ValueObject\UserName;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -118,7 +118,7 @@ class PrincipalsBatchDemotedHandlerTest extends TestCase
     ): Identity {
         return new Identity(
             $identityIdentifier,
-            new UserName('test-user'),
+            new IdentityName('test-user'),
             new Email($email),
             $language,
             null,

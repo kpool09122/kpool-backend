@@ -14,7 +14,8 @@ class CreateIdentity
 {
     /**
      * @param array{
-     *     username?: string,
+     *     identityName?: string,
+     *     identity_name?: string,
      *     email?: string,
      *     language?: string,
      *     profile_image?: ?string,
@@ -28,7 +29,7 @@ class CreateIdentity
     {
         DB::table('identities')->insert([
             'id' => (string) $identityIdentifier,
-            'username' => $overrides['username'] ?? 'test-identity',
+            'identity_name' => $overrides['identity_name'] ?? $overrides['identityName'] ?? 'test-identity',
             'email' => $overrides['email'] ?? 'test@example.com',
             'language' => $overrides['language'] ?? 'ja',
             'profile_image' => $overrides['profile_image'] ?? null,

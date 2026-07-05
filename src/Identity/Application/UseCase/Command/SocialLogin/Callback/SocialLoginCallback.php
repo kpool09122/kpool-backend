@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\SocialLogin\Callback;
 
+use Psr\Log\LoggerInterface;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
@@ -15,7 +16,9 @@ use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\ValueObject\SocialConnection;
+use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
+use Source\Shared\Application\Service\ImageServiceInterface;
 
 readonly class SocialLoginCallback implements SocialLoginCallbackInterface
 {
@@ -29,6 +32,8 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         private SignupSessionRepositoryInterface   $signupSessionRepository,
         private AuthServiceInterface               $authService,
         private EventDispatcherInterface           $eventDispatcher,
+        private ImageServiceInterface              $imageService,
+        private LoggerInterface                    $logger,
     ) {
     }
 
@@ -77,6 +82,18 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         $accountType = $signupSession?->accountType() ?? AccountType::INDIVIDUAL;
 
         $newIdentity = $this->identityFactory->createFromSocialProfile($profile);
+        if ($profile->avatarUrl() !== null) {
+            try {
+                $uploadResult = $this->imageService->importFromUrl($profile->avatarUrl());
+                $newIdentity->setProfileImage($uploadResult->resized);
+            } catch (InvalidRemoteImageException $e) {
+                $this->logger->warning('Failed to import social profile image.', [
+                    'provider' => $input->provider()->value,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         if (! $newIdentity->hasSocialConnection($connection)) {
             $newIdentity->addSocialConnection($connection);
         }
