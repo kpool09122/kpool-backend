@@ -12,6 +12,7 @@ use Application\Http\Action\Identity\Command\SwitchIdentity\SwitchIdentityAction
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
+use Application\Http\Action\Identity\Query\GetIdentityProfile\GetIdentityProfileAction;
 use Illuminate\Support\Facades\Route;
 
 // Public Auth
@@ -27,6 +28,7 @@ Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class)
 // Authenticated
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
+    Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);
     Route::post('/auth/switch-identity', SwitchIdentityAction::class);
     Route::patch('/identities/me', UpdateIdentityAction::class);

@@ -25,6 +25,18 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   accountIdentifier: Uuid | null;
 }
 
+@doc("Public profile fields for a requested identity.")
+model IdentityProfileSummary {
+  @doc("Identity identifier.")
+  identityIdentifier: Uuid;
+  @doc("IdentityName.")
+  identityName: string;
+  @doc("Language code associated with the identity.")
+  language: string;
+  @doc("Profile image URL.")
+  profileImage?: string | null;
+}
+
 @doc("Identity summary returned after email login.")
 model LoginIdentitySummary extends IdentitySummary {
   @doc("Normalized application return path after login.")
@@ -138,6 +150,12 @@ model AuthenticatedIdentityResponse {
   @body body: AuthenticatedIdentitySummary;
 }
 
+@doc("Response returned when fetching a requested identity profile succeeds.")
+model IdentityProfileResponse {
+  @statusCode statusCode: 200;
+  @body body: IdentityProfileSummary;
+}
+
 @doc("Response returned when email verification succeeds.")
 model VerifyEmailResponse {
   @statusCode statusCode: 200;
@@ -214,6 +232,13 @@ interface IdentityAuthOperations {
   @route("/me")
   @doc("Get the current authenticated identity.")
   getAuthenticatedIdentity(): AuthenticatedIdentityResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/identities/{identityIdentifier}/profile")
+  @doc("Get profile fields for the requested identity. Any authenticated identity may fetch the profile.")
+  getIdentityProfile(
+    @path identityIdentifier: Uuid,
+  ): IdentityProfileResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/switch-identity")

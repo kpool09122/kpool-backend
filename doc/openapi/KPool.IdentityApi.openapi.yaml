@@ -4,6 +4,47 @@ info:
   version: 0.0.0
 tags: []
 paths:
+  /auth/identities/{identityIdentifier}/profile:
+    get:
+      operationId: IdentityAuthOperations_getIdentityProfile
+      description: Get profile fields for the requested identity. Any authenticated identity may fetch the profile.
+      parameters:
+        - name: identityIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when fetching a requested identity profile succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentityProfileSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /auth/login:
     post:
       operationId: IdentityAuthOperations_login
@@ -432,6 +473,28 @@ components:
           nullable: true
           description: Invitation token used during signup.
       description: Request body for registering a new identity.
+    IdentityProfileSummary:
+      type: object
+      required:
+        - identityIdentifier
+        - identityName
+        - language
+      properties:
+        identityIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier.
+        identityName:
+          type: string
+          description: IdentityName.
+        language:
+          type: string
+          description: Language code associated with the identity.
+        profileImage:
+          type: string
+          nullable: true
+          description: Profile image URL.
+      description: Public profile fields for a requested identity.
     IdentitySummary:
       type: object
       required:
