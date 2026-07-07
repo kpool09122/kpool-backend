@@ -30,6 +30,7 @@ class UpdateIdentityInputTest extends TestCase
             $identityName,
             $language,
             $base64EncodedImage,
+            true,
         );
 
         $this->assertSame($identityIdentifier, $input->identityIdentifier());
@@ -38,6 +39,7 @@ class UpdateIdentityInputTest extends TestCase
         $this->assertSame($identityName, $input->identityName());
         $this->assertSame($language, $input->language());
         $this->assertSame($base64EncodedImage, $input->base64EncodedImage());
+        $this->assertTrue($input->profileImageProvided());
     }
 
     public function testNullableValuesCanBeRetrieved(): void
@@ -51,6 +53,7 @@ class UpdateIdentityInputTest extends TestCase
             null,
             null,
             null,
+            false,
         );
 
         $this->assertSame($identityIdentifier, $input->identityIdentifier());
@@ -59,5 +62,24 @@ class UpdateIdentityInputTest extends TestCase
         $this->assertNull($input->identityName());
         $this->assertNull($input->language());
         $this->assertNull($input->base64EncodedImage());
+        $this->assertFalse($input->profileImageProvided());
+    }
+
+    public function testProfileImageCanBeExplicitlyProvidedAsNull(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+
+        $input = new UpdateIdentityInput(
+            $identityIdentifier,
+            null,
+            null,
+            null,
+            null,
+            null,
+            true,
+        );
+
+        $this->assertNull($input->base64EncodedImage());
+        $this->assertTrue($input->profileImageProvided());
     }
 }

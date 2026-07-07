@@ -10,6 +10,8 @@ use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
+use Source\Shared\Domain\ValueObject\ImagePath;
+use Throwable;
 
 readonly class UpdateIdentity implements UpdateIdentityInterface
 {
@@ -36,19 +38,40 @@ readonly class UpdateIdentity implements UpdateIdentityInterface
             throw new IdentityNotFoundException('Identity not found.');
         }
 
+        $oldProfileImage = $identity->profileImage();
+
         if ($input->identityName() !== null) {
             $identity->setIdentityName($input->identityName());
         }
         if ($input->language() !== null) {
             $identity->setLanguage($input->language());
         }
-        if ($input->base64EncodedImage() !== null) {
-            $uploadResult = $this->imageService->upload($input->base64EncodedImage());
-            $identity->setProfileImage($uploadResult->resized);
+        if ($input->profileImageProvided()) {
+            if ($input->base64EncodedImage() !== null) {
+                $uploadResult = $this->imageService->upload($input->base64EncodedImage());
+                $identity->setProfileImage($uploadResult->resized);
+            } else {
+                $identity->setProfileImage(null);
+            }
         }
 
         $this->identityRepository->save($identity);
         $this->authService->refreshAuthenticatedIdentity($identity);
         $output->setIdentity($identity);
+
+        $this->deleteProfileImageBestEffort($oldProfileImage, $identity->profileImage());
+    }
+
+    private function deleteProfileImageBestEffort(?ImagePath $oldProfileImage, ?ImagePath $currentProfileImage): void
+    {
+        if ($oldProfileImage === null || (string) $oldProfileImage === (string) $currentProfileImage) {
+            return;
+        }
+
+        try {
+            $this->imageService->delete($oldProfileImage);
+        } catch (Throwable) {
+            // Old profile image deletion is best effort; profile updates must not fail because cleanup failed.
+        }
     }
 }

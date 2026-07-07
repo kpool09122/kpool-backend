@@ -18,6 +18,7 @@ readonly class UpdateIdentityInput implements UpdateIdentityInputPort
         private ?IdentityName $identityName,
         private ?Language $language,
         private ?string $base64EncodedImage,
+        private bool $profileImageProvided,
     ) {
     }
 
@@ -49,5 +50,10 @@ readonly class UpdateIdentityInput implements UpdateIdentityInputPort
     public function base64EncodedImage(): ?string
     {
         return $this->base64EncodedImage;
+    }
+
+    public function profileImageProvided(): bool
+    {
+        return $this->profileImageProvided;
     }
 }
