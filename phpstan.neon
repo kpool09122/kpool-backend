@@ -104,3 +104,20 @@ services:
                 - '#/tests/#'
         tags:
             - phpstan.rules.rule
+    -
+        class: Kpool\PHPStan\Rules\ForbiddenDirectLikeWhereRule
+        arguments:
+            targetFilePathPatterns:
+                - '#/src/#'
+                - '#/application/Http/Action/#'
+                - '#/tests/#'
+            allowedFilePathPatterns:
+                - '#/src/Shared/Infrastructure/Trait/WhereLike\.php$#'
+            targetMethodNames:
+                - where
+                - orWhere
+            allowedFunctionNames:
+                - whereLike
+                - whereStartsWith
+        tags:
+            - phpstan.rules.rule
