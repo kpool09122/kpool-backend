@@ -53,6 +53,7 @@ use Application\Http\Action\Wiki\Wiki\Query\ListMyDraftWikis\ListMyDraftWikisAct
 use Application\Http\Action\Wiki\Wiki\Query\ListRelatedProfiles\ListRelatedProfilesAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
+use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisAction;
 use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\RequestImageHide\RequestImageHideAction;
@@ -76,6 +77,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
 });
 Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
+Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class);
 Route::get('/wikis/{language}', ListWikisAction::class);
 Route::get('/my/draft-wikis', ListMyDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);

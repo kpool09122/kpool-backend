@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Shared\Infrastructure\Trait\WhereLike;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListWikis\ListWikisInterface;
@@ -24,6 +25,8 @@ use Source\Wiki\Wiki\Application\UseCase\Query\WikiListItemReadModel;
 
 readonly class ListWikis implements ListWikisInterface
 {
+    use WhereLike;
+
     /** @var array<string, array{relation: string, table: string}> */
     private const BASIC_TABLES = [
         ResourceType::TALENT->value => ['relation' => 'talentBasic', 'table' => 'wiki_talent_basics'],
@@ -87,8 +90,8 @@ readonly class ListWikis implements ListWikisInterface
         $query->where(function (Builder $query) use ($keyword, $resourceType): void {
             foreach ($this->targetBasicTables($resourceType) as $type => $basic) {
                 $query->orWhere(function (Builder $query) use ($type, $basic, $keyword): void {
-                    $query->where('wikis.resource_type', $type)
-                        ->where("{$basic['table']}.normalized_name", 'like', $keyword . '%');
+                    $query->where('wikis.resource_type', $type);
+                    $this->whereStartsWith($query, "{$basic['table']}.normalized_name", $keyword);
                 });
             }
         });

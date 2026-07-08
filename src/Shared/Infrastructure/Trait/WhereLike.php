@@ -21,4 +21,16 @@ trait WhereLike
     {
         return $query->where($column, 'LIKE', '%' . addcslashes($value, '%_\\') . '%');
     }
+
+    /**
+     * @template TModel of Model
+     * @param EloquentBuilder<TModel>|QueryBuilder $query
+     * @param string $column
+     * @param string $value
+     * @return EloquentBuilder<TModel>|QueryBuilder
+     */
+    public function whereStartsWith(EloquentBuilder|QueryBuilder $query, string $column, string $value): EloquentBuilder|QueryBuilder
+    {
+        return $query->where($column, 'LIKE', addcslashes($value, '%_\\') . '%');
+    }
 }

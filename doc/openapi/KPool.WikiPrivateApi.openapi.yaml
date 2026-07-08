@@ -2471,6 +2471,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /wikis/{language}/masters:
+    get:
+      operationId: WikiListOperations_searchMasterWikis
+      description: Search published wiki masters for lightweight selection candidates.
+      parameters:
+        - name: language
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resourceType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - agency
+              - group
+              - talent
+              - song
+          explode: false
+        - name: keyword
+          in: query
+          required: true
+          schema:
+            type: string
+          explode: false
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+          explode: false
+      responses:
+        '200':
+          description: Response returned when wiki master search succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchMasterWikisResponseBody'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
 components:
   schemas:
     AgencyDraftWikiBasic:
@@ -3939,6 +3992,17 @@ components:
             $ref: '#/components/schemas/VideoLinkInput'
           description: Video links to save.
       description: Request body for saving video links.
+    SearchMasterWikisResponseBody:
+      type: object
+      required:
+        - wikis
+      properties:
+        wikis:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiMasterSearchItem'
+          description: Candidate master wikis.
+      description: Response body for the wiki master search endpoint.
     SeoKeywordText:
       type: string
       maxLength: 20
@@ -5030,6 +5094,28 @@ components:
           nullable: true
           description: Last updated timestamp.
       description: Wiki list item returned by the wiki list endpoint.
+    WikiMasterSearchItem:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - resourceType
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Wiki identifier.
+        name:
+          type: string
+          description: Display name of the wiki master.
+        slug:
+          type: string
+          description: Unique slug for the wiki.
+        resourceType:
+          type: string
+          description: Resource type that the wiki belongs to.
+      description: Wiki master search candidate returned by the master search endpoint.
     WikiWorkflowRequestBody:
       type: object
       required:

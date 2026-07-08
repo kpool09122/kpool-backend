@@ -79,6 +79,30 @@ class WhereLikeTest extends TestCase
         $subject->whereLike($query, 'name', 'test\\value');
     }
 
+    public function testWhereStartsWith(): void
+    {
+        $subject = $this->createSubject();
+        $query = Mockery::mock(QueryBuilder::class);
+        $query->shouldReceive('where')
+            ->once()
+            ->with('name', 'LIKE', 'test%')
+            ->andReturnSelf();
+
+        $subject->whereStartsWith($query, 'name', 'test');
+    }
+
+    public function testWhereStartsWithEscapesLikeWildcards(): void
+    {
+        $subject = $this->createSubject();
+        $query = Mockery::mock(QueryBuilder::class);
+        $query->shouldReceive('where')
+            ->once()
+            ->with('name', 'LIKE', '100\%\_test%')
+            ->andReturnSelf();
+
+        $subject->whereStartsWith($query, 'name', '100%_test');
+    }
+
     /**
      * @return object traitを使用するオブジェクト
      */

@@ -297,6 +297,18 @@ model DraftWikiListItem {
   mergedAt: string | null;
 }
 
+@doc("Wiki master search candidate returned by the master search endpoint.")
+model WikiMasterSearchItem {
+  @doc("Wiki identifier.")
+  id: Uuid;
+  @doc("Display name of the wiki master.")
+  name: string;
+  @doc("Unique slug for the wiki.")
+  slug: string;
+  @doc("Resource type that the wiki belongs to.")
+  resourceType: string;
+}
+
 @doc("Response body for the wiki list endpoint.")
 model ListWikisResponseBody {
   @doc("Wiki list for the requested page.")
@@ -309,6 +321,12 @@ model ListWikisResponseBody {
   total: int32;
   @doc("Number of wikis per page.")
   per_page: int32;
+}
+
+@doc("Response body for the wiki master search endpoint.")
+model SearchMasterWikisResponseBody {
+  @doc("Candidate master wikis.")
+  wikis: WikiMasterSearchItem[];
 }
 
 @doc("Response body for the draft wiki list endpoint.")
@@ -337,6 +355,12 @@ model ListWikisResponse {
   @body body: ListWikisResponseBody;
 }
 
+@doc("Response returned when wiki master search succeeds.")
+model SearchMasterWikisResponse {
+  @statusCode statusCode: 200;
+  @body body: SearchMasterWikisResponseBody;
+}
+
 @doc("Response returned when related profile retrieval succeeds.")
 model ListRelatedProfilesResponse {
   @statusCode statusCode: 200;
@@ -360,6 +384,16 @@ interface WikiListOperations {
     @query sort?: string,
     @query order?: string,
   ): ListWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @get
+  @route("/{language}/masters")
+  @doc("Search published wiki masters for lightweight selection candidates.")
+  searchMasterWikis(
+    @path language: string,
+    @query resourceType: "agency" | "group" | "talent" | "song",
+    @query keyword: string,
+    @query limit?: int32,
+  ): SearchMasterWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @get
   @route("/{language}")
