@@ -81,7 +81,7 @@ class Identity
         return $this->profileImage;
     }
 
-    public function setProfileImage(ImagePath $image): void
+    public function setProfileImage(?ImagePath $image): void
     {
         $this->profileImage = $image;
     }

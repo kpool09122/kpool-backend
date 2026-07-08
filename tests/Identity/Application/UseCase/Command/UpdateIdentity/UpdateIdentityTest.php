@@ -32,7 +32,10 @@ class UpdateIdentityTest extends TestCase
     public function testProcessUpdatesIdentityProfileAndRefreshesAuthenticatedIdentity(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $identity = $this->createIdentity($identityIdentifier);
+        $identity = $this->createIdentity(
+            $identityIdentifier,
+            new ImagePath('images/current_profile.webp'),
+        );
         $updatedName = new IdentityName('updated-identity');
         $base64Image = base64_encode('dummy-image');
         $resizedPath = new ImagePath('images/profile_resized.webp');
@@ -52,6 +55,10 @@ class UpdateIdentityTest extends TestCase
             ->once()
             ->with($base64Image)
             ->andReturn(new ImageUploadResult(new ImagePath('images/profile_original.webp'), $resizedPath));
+        $imageService->shouldReceive('delete')
+            ->once()
+            ->with(Mockery::on(static fn (ImagePath $path): bool => (string) $path === 'images/current_profile.webp'))
+            ->andReturnTrue();
 
         /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
         $authService = Mockery::mock(AuthServiceInterface::class);
@@ -64,6 +71,7 @@ class UpdateIdentityTest extends TestCase
             identityName: $updatedName,
             language: Language::KOREAN,
             base64EncodedImage: $base64Image,
+            profileImageProvided: true,
         );
         $output = new UpdateIdentityOutput();
 
@@ -75,6 +83,89 @@ class UpdateIdentityTest extends TestCase
         $this->assertSame('images/profile_resized.webp', $output->toArray()['profileImage']);
     }
 
+    public function testProcessDeletesProfileImageWhenImageFieldIsProvidedAsNull(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $identity = $this->createIdentity(
+            $identityIdentifier,
+            new ImagePath('images/current_profile.webp'),
+        );
+
+        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $repository */
+        $repository = Mockery::mock(IdentityRepositoryInterface::class);
+        $repository->shouldReceive('findById')->once()->with($identityIdentifier)->andReturn($identity);
+        $repository->shouldReceive('save')->once()->with(Mockery::on(
+            static fn (Identity $saved): bool => $saved->profileImage() === null
+        ))->andReturnNull();
+
+        /** @var ImageServiceInterface&\Mockery\MockInterface $imageService */
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldNotReceive('upload');
+        $imageService->shouldReceive('delete')
+            ->once()
+            ->with(Mockery::on(static fn (ImagePath $path): bool => (string) $path === 'images/current_profile.webp'))
+            ->andReturnTrue();
+
+        /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldReceive('refreshAuthenticatedIdentity')->once()->with($identity)->andReturnNull();
+
+        $input = new UpdateIdentityInput(
+            identityIdentifier: $identityIdentifier,
+            delegationIdentifier: null,
+            originalIdentityIdentifier: null,
+            identityName: null,
+            language: null,
+            base64EncodedImage: null,
+            profileImageProvided: true,
+        );
+        $output = new UpdateIdentityOutput();
+
+        $useCase = new UpdateIdentity($repository, $imageService, $authService);
+        $useCase->process($input, $output);
+
+        $this->assertNull($output->toArray()['profileImage']);
+    }
+
+    public function testProcessDoesNotFailWhenOldProfileImageDeletionFails(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $identity = $this->createIdentity(
+            $identityIdentifier,
+            new ImagePath('images/current_profile.webp'),
+        );
+
+        /** @var IdentityRepositoryInterface&\Mockery\MockInterface $repository */
+        $repository = Mockery::mock(IdentityRepositoryInterface::class);
+        $repository->shouldReceive('findById')->once()->with($identityIdentifier)->andReturn($identity);
+        $repository->shouldReceive('save')->once()->andReturnNull();
+
+        /** @var ImageServiceInterface&\Mockery\MockInterface $imageService */
+        $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldNotReceive('upload');
+        $imageService->shouldReceive('delete')->once()->andThrow(new \RuntimeException('delete failed'));
+
+        /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
+        $authService = Mockery::mock(AuthServiceInterface::class);
+        $authService->shouldReceive('refreshAuthenticatedIdentity')->once()->with($identity)->andReturnNull();
+
+        $input = new UpdateIdentityInput(
+            identityIdentifier: $identityIdentifier,
+            delegationIdentifier: null,
+            originalIdentityIdentifier: null,
+            identityName: null,
+            language: null,
+            base64EncodedImage: null,
+            profileImageProvided: true,
+        );
+        $output = new UpdateIdentityOutput();
+
+        $useCase = new UpdateIdentity($repository, $imageService, $authService);
+        $useCase->process($input, $output);
+
+        $this->assertNull($output->toArray()['profileImage']);
+    }
+
     public function testProcessRejectsDelegatedSession(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -83,6 +174,7 @@ class UpdateIdentityTest extends TestCase
         $repository->shouldNotReceive('findById');
         /** @var ImageServiceInterface&\Mockery\MockInterface $imageService */
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldNotReceive('delete');
         /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
         $authService = Mockery::mock(AuthServiceInterface::class);
 
@@ -96,6 +188,7 @@ class UpdateIdentityTest extends TestCase
                 identityName: null,
                 language: null,
                 base64EncodedImage: null,
+                profileImageProvided: false,
             ),
             new UpdateIdentityOutput(),
         );
@@ -109,6 +202,7 @@ class UpdateIdentityTest extends TestCase
         $repository->shouldReceive('findById')->once()->with($identityIdentifier)->andReturnNull();
         /** @var ImageServiceInterface&\Mockery\MockInterface $imageService */
         $imageService = Mockery::mock(ImageServiceInterface::class);
+        $imageService->shouldNotReceive('delete');
         /** @var AuthServiceInterface&\Mockery\MockInterface $authService */
         $authService = Mockery::mock(AuthServiceInterface::class);
 
@@ -122,19 +216,22 @@ class UpdateIdentityTest extends TestCase
                 identityName: null,
                 language: null,
                 base64EncodedImage: null,
+                profileImageProvided: false,
             ),
             new UpdateIdentityOutput(),
         );
     }
 
-    private function createIdentity(IdentityIdentifier $identityIdentifier): Identity
-    {
+    private function createIdentity(
+        IdentityIdentifier $identityIdentifier,
+        ?ImagePath $profileImage = null,
+    ): Identity {
         return new Identity(
             $identityIdentifier,
             new IdentityName('identity-name'),
             new Email('identity@example.com'),
             Language::ENGLISH,
-            null,
+            $profileImage,
             HashedPassword::fromPlain(new PlainPassword('Password123!')),
             new DateTimeImmutable(),
         );

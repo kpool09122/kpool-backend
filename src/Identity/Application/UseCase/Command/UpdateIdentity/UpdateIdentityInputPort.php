@@ -22,4 +22,6 @@ interface UpdateIdentityInputPort
     public function language(): ?Language;
 
     public function base64EncodedImage(): ?string;
+
+    public function profileImageProvided(): bool;
 }

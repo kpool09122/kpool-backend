@@ -45,6 +45,7 @@ readonly class UpdateIdentityAction
                     identityName: $request->identityName() !== null ? new IdentityName($request->identityName()) : null,
                     language: $request->language() !== null ? Language::from($request->language()) : null,
                     base64EncodedImage: $request->base64EncodedImage(),
+                    profileImageProvided: $request->exists('base64EncodedImage'),
                 );
                 $output = new UpdateIdentityOutput();
             } catch (InvalidArgumentException $e) {

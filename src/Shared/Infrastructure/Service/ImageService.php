@@ -65,6 +65,11 @@ class ImageService implements ImageServiceInterface
         return $this->storeImage($gdImage);
     }
 
+    public function delete(ImagePath $path): bool
+    {
+        return Storage::disk((string) config('filesystems.image_disk', 'public'))->delete((string) $path);
+    }
+
     private function storeImage(GdImage $gdImage): ImageUploadResult
     {
         $baseFileName = 'images/' . Str::uuid();
