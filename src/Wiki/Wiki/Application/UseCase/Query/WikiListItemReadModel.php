@@ -25,6 +25,7 @@ readonly class WikiListItemReadModel
         private ?string $metaDescription = null,
         /** @var list<string>|null */
         private ?array $keywords = null,
+        private ?string $fontStyle = null,
     ) {
     }
 
@@ -51,6 +52,7 @@ readonly class WikiListItemReadModel
             'resourceType' => $this->resourceType,
             'version' => $this->version,
             'themeColor' => $this->themeColor,
+            'fontStyle' => $this->fontStyle,
             'title' => $this->title,
             'metaDescription' => $this->metaDescription,
             'keywords' => $this->keywords,

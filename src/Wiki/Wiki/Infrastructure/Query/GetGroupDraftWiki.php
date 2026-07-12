@@ -59,6 +59,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
             language: $model->language,
             resourceType: ResourceType::GROUP->value,
             themeColor: $model->theme_color,
+            fontStyle: $model->font_style,
             title: $model->title,
             metaDescription: $model->meta_description,
             keywords: $model->keywords,

@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $image_identifier
  * @property array<array<string, mixed>> $sections
  * @property ?string $theme_color
+ * @property ?string $font_style
  * @property ?string $title
  * @property ?string $meta_description
  * @property list<string>|null $keywords
@@ -50,6 +51,7 @@ use Illuminate\Support\Carbon;
     'image_identifier',
     'sections',
     'theme_color',
+    'font_style',
     'title',
     'meta_description',
     'keywords',

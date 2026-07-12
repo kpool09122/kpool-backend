@@ -18,6 +18,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 
@@ -46,6 +47,7 @@ readonly class WikiSnapshot
         private ?SeoTitle                $title = null,
         private ?MetaDescription         $metaDescription = null,
         private ?SeoKeywords             $keywords = null,
+        private ?WikiFontStyle           $fontStyle = null,
     ) {
     }
 
@@ -92,6 +94,11 @@ readonly class WikiSnapshot
     public function themeColor(): ?Color
     {
         return $this->themeColor;
+    }
+
+    public function fontStyle(): ?WikiFontStyle
+    {
+        return $this->fontStyle;
     }
 
     public function title(): ?SeoTitle

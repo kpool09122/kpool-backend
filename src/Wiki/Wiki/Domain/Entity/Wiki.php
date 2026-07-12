@@ -19,6 +19,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class Wiki
@@ -46,6 +47,7 @@ class Wiki
         private ?MetaDescription $metaDescription = null,
         private ?SeoKeywords $keywords = null,
         private ?DateTimeImmutable $publishedAt = null,
+        private ?WikiFontStyle $fontStyle = null,
     ) {
     }
 
@@ -102,6 +104,16 @@ class Wiki
     public function setThemeColor(?Color $themeColor): void
     {
         $this->themeColor = $themeColor;
+    }
+
+    public function fontStyle(): ?WikiFontStyle
+    {
+        return $this->fontStyle;
+    }
+
+    public function setFontStyle(?WikiFontStyle $fontStyle): void
+    {
+        $this->fontStyle = $fontStyle;
     }
 
     public function title(): ?SeoTitle

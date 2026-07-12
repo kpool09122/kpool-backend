@@ -29,6 +29,7 @@ class WikiListItemReadModelTest extends TestCase
             title: 'Chaeyoung Wiki',
             metaDescription: 'Profile for Chaeyoung.',
             keywords: ['Chaeyoung', 'TWICE'],
+            fontStyle: 'ja_pop',
         );
 
         $this->assertSame([
@@ -39,6 +40,7 @@ class WikiListItemReadModelTest extends TestCase
             'resourceType' => 'talent',
             'version' => 2,
             'themeColor' => '#FE5F8F',
+            'fontStyle' => 'ja_pop',
             'title' => 'Chaeyoung Wiki',
             'metaDescription' => 'Profile for Chaeyoung.',
             'keywords' => ['Chaeyoung', 'TWICE'],

@@ -28,6 +28,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -59,6 +60,7 @@ readonly class MergeWikiAction
                     $basic,
                     $sections,
                     themeColor: $request->themeColor() !== null ? new Color($request->themeColor()) : null,
+                    fontStyle: $request->fontStyle() !== null ? WikiFontStyle::from($request->fontStyle()) : null,
                     principalIdentifier: $this->wikiContext->principalIdentifier,
                     resourceType: $resourceType,
                     mergedAt: new DateTimeImmutable(),

@@ -112,6 +112,26 @@ model GroupDraftWikiBasic {
   representativeSymbol: string;
 }
 
+
+@doc("Stable Wiki font style identifiers supported by the backend contract.")
+union WikiFontStyle {
+  "ja_pop",
+  "ja_gothic",
+  "ja_mincho",
+  "ja_artistic",
+  "ja_handwritten",
+  "ko_rounded",
+  "ko_gothic",
+  "ko_myungjo",
+  "ko_modern",
+  "ko_handwritten",
+  "en_sans",
+  "en_serif",
+  "en_display",
+  "en_modern",
+  "en_handwritten",
+}
+
 @doc("Detailed draft wiki payload used by the editor.")
 model DraftWikiDetail {
   @doc("Draft wiki identifier.")
@@ -130,6 +150,8 @@ model DraftWikiDetail {
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -161,6 +183,8 @@ model WikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -266,6 +290,8 @@ model TalentDraftWikiDetail {
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -297,6 +323,8 @@ model TalentWikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -440,6 +468,8 @@ model SongDraftWikiDetail {
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -471,6 +501,8 @@ model SongWikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -526,6 +558,8 @@ model AgencyDraftWikiDetail {
   rejectionReason: DraftWikiRejectionReasonText | null;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -557,6 +591,8 @@ model AgencyWikiDetail {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")

@@ -18,7 +18,9 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
   @doc("Section content payloads.")
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
-  themeColor?: string;
+  themeColor?: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle?: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title?: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -59,7 +61,9 @@ model UpdateWikiDraftRequestBody extends WikiAssociationTargets {
   @doc("Section content payloads.")
   sections?: unknown[];
   @doc("Theme color applied to the wiki.")
-  themeColor?: string;
+  themeColor?: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle?: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title?: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -197,6 +201,8 @@ model WikiListItem {
   version: int32;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the wiki.")
@@ -266,6 +272,8 @@ model DraftWikiListItem {
   resourceType: string;
   @doc("Theme color applied to the wiki.")
   themeColor: string | null;
+  @doc("Stable font style identifier applied to the wiki.")
+  fontStyle: WikiFontStyle | null;
   @doc("SEO title for the draft wiki.")
   title: SeoTitleText | null;
   @doc("SEO meta description for the draft wiki.")

@@ -19,6 +19,7 @@ class DraftWikiReadModelTest extends TestCase
             language: 'ko',
             resourceType: 'group',
             themeColor: '#FE5F8F',
+            fontStyle: 'ja_pop',
             heroImage: [
                 'imageIdentifier' => null,
                 'src' => null,
@@ -62,6 +63,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('under_review', $readModel->status());
         $this->assertSame('内容が不十分です', $readModel->rejectionReason());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('ja_pop', $readModel->fontStyle());
         $this->assertSame('TWICE Draft Wiki', $readModel->title());
         $this->assertSame('Draft profile and history for TWICE.', $readModel->metaDescription());
         $this->assertSame(['TWICE', 'draft'], $readModel->keywords());
@@ -78,6 +80,7 @@ class DraftWikiReadModelTest extends TestCase
             'status' => 'under_review',
             'rejectionReason' => '内容が不十分です',
             'themeColor' => '#FE5F8F',
+            'fontStyle' => 'ja_pop',
             'title' => 'TWICE Draft Wiki',
             'metaDescription' => 'Draft profile and history for TWICE.',
             'keywords' => ['TWICE', 'draft'],

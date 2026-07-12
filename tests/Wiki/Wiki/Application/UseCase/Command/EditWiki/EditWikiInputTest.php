@@ -18,6 +18,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -49,6 +50,7 @@ class EditWikiInputTest extends TestCase
         );
         $sections = new SectionContentCollection();
         $themeColor = new Color('#FF5733');
+        $fontStyle = WikiFontStyle::JA_POP;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
@@ -70,12 +72,14 @@ class EditWikiInputTest extends TestCase
             title: $title,
             metaDescription: $metaDescription,
             keywords: $keywords,
+            fontStyle: $fontStyle,
         );
 
         $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
         $this->assertSame($basic, $input->basic());
         $this->assertSame($sections, $input->sections());
         $this->assertSame((string) $themeColor, (string) $input->themeColor());
+        $this->assertSame($fontStyle, $input->fontStyle());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
         $this->assertSame($resourceType->value, $input->resourceType()->value);
         $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());

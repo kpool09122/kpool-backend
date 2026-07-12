@@ -118,6 +118,7 @@ readonly class PublishWiki implements PublishWikiInterface
         }
         $publishedWiki->setSections($wiki->sections());
         $publishedWiki->setThemeColor($wiki->themeColor());
+        $publishedWiki->setFontStyle($wiki->fontStyle());
         $publishedWiki->setImageIdentifier($wiki->imageIdentifier());
         $publishedWiki->setTitle($wiki->title());
         $publishedWiki->setMetaDescription($wiki->metaDescription());

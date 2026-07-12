@@ -338,6 +338,7 @@ class ListDraftWikisTest extends TestCase
             'language' => 'ko',
             'resourceType' => 'group',
             'themeColor' => '#ff3366',
+            'fontStyle' => null,
             'title' => 'TWICE Draft Wiki',
             'metaDescription' => 'Draft profile for TWICE.',
             'keywords' => ['TWICE', 'draft'],

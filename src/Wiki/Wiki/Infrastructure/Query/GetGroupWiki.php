@@ -45,6 +45,7 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
             resourceType: ResourceType::GROUP->value,
             version: $model->version,
             themeColor: $model->theme_color,
+            fontStyle: $model->font_style,
             title: $model->title,
             metaDescription: $model->meta_description,
             keywords: $model->keywords,

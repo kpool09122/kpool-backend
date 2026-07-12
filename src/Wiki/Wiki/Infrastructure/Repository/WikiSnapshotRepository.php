@@ -28,6 +28,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 
@@ -50,6 +51,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
                 'image_identifier' => $snapshot->imageIdentifier() ? (string) $snapshot->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($snapshot->sections()),
                 'theme_color' => $snapshot->themeColor() ? (string) $snapshot->themeColor() : null,
+                'font_style' => $snapshot->fontStyle()?->value,
                 'title' => $snapshot->title() ? (string) $snapshot->title() : null,
                 'meta_description' => $snapshot->metaDescription() ? (string) $snapshot->metaDescription() : null,
                 'keywords' => $snapshot->keywords()?->values(),
@@ -176,6 +178,7 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
             $model->title !== null ? new SeoTitle($model->title) : null,
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
             $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
+            fontStyle: $model->font_style ? WikiFontStyle::from($model->font_style) : null,
         );
     }
 

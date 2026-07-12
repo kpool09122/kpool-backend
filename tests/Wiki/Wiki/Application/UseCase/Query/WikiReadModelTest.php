@@ -20,6 +20,7 @@ class WikiReadModelTest extends TestCase
             resourceType: 'group',
             version: 2,
             themeColor: '#FE5F8F',
+            fontStyle: 'ja_pop',
             heroImage: [
                 'imageIdentifier' => null,
                 'src' => null,
@@ -60,6 +61,7 @@ class WikiReadModelTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame(2, $readModel->version());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
+        $this->assertSame('ja_pop', $readModel->fontStyle());
         $this->assertSame('TWICE Wiki', $readModel->title());
         $this->assertSame('Profile and history for TWICE.', $readModel->metaDescription());
         $this->assertSame(['TWICE', 'K-pop'], $readModel->keywords());
@@ -75,6 +77,7 @@ class WikiReadModelTest extends TestCase
             'resourceType' => 'group',
             'version' => 2,
             'themeColor' => '#FE5F8F',
+            'fontStyle' => 'ja_pop',
             'title' => 'TWICE Wiki',
             'metaDescription' => 'Profile and history for TWICE.',
             'keywords' => ['TWICE', 'K-pop'],

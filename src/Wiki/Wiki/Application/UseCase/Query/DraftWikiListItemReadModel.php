@@ -29,6 +29,7 @@ readonly class DraftWikiListItemReadModel
         private ?string $metaDescription = null,
         /** @var list<string>|null */
         private ?array $keywords = null,
+        private ?string $fontStyle = null,
     ) {
     }
 
@@ -45,6 +46,7 @@ readonly class DraftWikiListItemReadModel
             'language' => $this->language,
             'resourceType' => $this->resourceType,
             'themeColor' => $this->themeColor,
+            'fontStyle' => $this->fontStyle,
             'title' => $this->title,
             'metaDescription' => $this->metaDescription,
             'keywords' => $this->keywords,

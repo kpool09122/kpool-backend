@@ -26,6 +26,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -59,6 +60,7 @@ readonly class CreateWikiAction
                     $basic,
                     $sections,
                     themeColor: $request->themeColor() !== null ? new Color($request->themeColor()) : null,
+                    fontStyle: $request->fontStyle() !== null ? WikiFontStyle::from($request->fontStyle()) : null,
                     slug: new Slug($request->slug()),
                     principalIdentifier: $this->wikiContext->principalIdentifier,
                     agencyIdentifier: $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
