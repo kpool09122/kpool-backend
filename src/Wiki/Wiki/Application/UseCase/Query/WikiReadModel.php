@@ -13,6 +13,7 @@ readonly class WikiReadModel
     private string $resourceType;
     private int $version;
     private ?string $themeColor;
+    private ?string $fontStyle;
     private ?string $title;
     private ?string $metaDescription;
     /** @var list<string>|null */
@@ -43,6 +44,7 @@ readonly class WikiReadModel
         ?string $title = null,
         ?string $metaDescription = null,
         ?array $keywords = null,
+        ?string $fontStyle = null,
     ) {
         $this->wikiIdentifier = $wikiIdentifier;
         $this->translationSetIdentifier = $translationSetIdentifier;
@@ -51,6 +53,7 @@ readonly class WikiReadModel
         $this->resourceType = $resourceType;
         $this->version = $version;
         $this->themeColor = $themeColor;
+        $this->fontStyle = $fontStyle;
         $this->title = $title;
         $this->metaDescription = $metaDescription;
         $this->keywords = $keywords;
@@ -98,6 +101,11 @@ readonly class WikiReadModel
     public function themeColor(): ?string
     {
         return $this->themeColor;
+    }
+
+    public function fontStyle(): ?string
+    {
+        return $this->fontStyle;
     }
 
     public function title(): ?string
@@ -154,6 +162,7 @@ readonly class WikiReadModel
             'resourceType' => $this->resourceType,
             'version' => $this->version,
             'themeColor' => $this->themeColor,
+            'fontStyle' => $this->fontStyle,
             'title' => $this->title,
             'metaDescription' => $this->metaDescription,
             'keywords' => $this->keywords,

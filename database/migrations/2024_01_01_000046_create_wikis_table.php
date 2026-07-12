@@ -20,6 +20,7 @@ return new class extends Migration
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
+            $table->string('font_style', 32)->nullable()->comment('文字スタイル識別子');
             $table->string('title', 40)->nullable()->comment('SEOタイトル');
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
             $table->jsonb('keywords')->nullable()->comment('SEOキーワード');
@@ -50,6 +51,7 @@ return new class extends Migration
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー (#RRGGBB)');
+            $table->string('font_style', 32)->nullable()->comment('文字スタイル識別子');
             $table->string('title', 40)->nullable()->comment('SEOタイトル');
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
             $table->jsonb('keywords')->nullable()->comment('SEOキーワード');
@@ -86,6 +88,7 @@ return new class extends Migration
             $table->uuid('image_identifier')->nullable()->comment('代表画像識別子');
             $table->jsonb('sections')->default('[]')->comment('セクションコレクション');
             $table->string('theme_color', 7)->nullable()->comment('テーマカラー');
+            $table->string('font_style', 32)->nullable()->comment('文字スタイル識別子');
             $table->string('title', 40)->nullable()->comment('SEOタイトル');
             $table->string('meta_description', 140)->nullable()->comment('SEOメタディスクリプション');
             $table->jsonb('keywords')->nullable()->comment('SEOキーワード');

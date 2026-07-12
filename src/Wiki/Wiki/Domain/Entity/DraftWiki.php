@@ -20,6 +20,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 class DraftWiki
@@ -48,6 +49,7 @@ class DraftWiki
         private ?MetaDescription $metaDescription = null,
         private ?SeoKeywords $keywords = null,
         private ?DraftWikiRejectionReason $rejectionReason = null,
+        private ?WikiFontStyle $fontStyle = null,
     ) {
     }
 
@@ -114,6 +116,16 @@ class DraftWiki
     public function setThemeColor(?Color $themeColor): void
     {
         $this->themeColor = $themeColor;
+    }
+
+    public function fontStyle(): ?WikiFontStyle
+    {
+        return $this->fontStyle;
+    }
+
+    public function setFontStyle(?WikiFontStyle $fontStyle): void
+    {
+        $this->fontStyle = $fontStyle;
     }
 
     public function title(): ?SeoTitle

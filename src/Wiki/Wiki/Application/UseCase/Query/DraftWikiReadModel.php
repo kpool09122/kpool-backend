@@ -14,6 +14,7 @@ readonly class DraftWikiReadModel
     private ?string $status;
     private ?string $rejectionReason;
     private ?string $themeColor;
+    private ?string $fontStyle;
     private ?string $title;
     private ?string $metaDescription;
     /** @var list<string>|null */
@@ -45,6 +46,7 @@ readonly class DraftWikiReadModel
         ?string $title = null,
         ?string $metaDescription = null,
         ?array $keywords = null,
+        ?string $fontStyle = null,
     ) {
         $this->wikiIdentifier = $wikiIdentifier;
         $this->translationSetIdentifier = $translationSetIdentifier;
@@ -54,6 +56,7 @@ readonly class DraftWikiReadModel
         $this->status = $status;
         $this->rejectionReason = $rejectionReason;
         $this->themeColor = $themeColor;
+        $this->fontStyle = $fontStyle;
         $this->title = $title;
         $this->metaDescription = $metaDescription;
         $this->keywords = $keywords;
@@ -106,6 +109,11 @@ readonly class DraftWikiReadModel
     public function themeColor(): ?string
     {
         return $this->themeColor;
+    }
+
+    public function fontStyle(): ?string
+    {
+        return $this->fontStyle;
     }
 
     public function title(): ?string
@@ -163,6 +171,7 @@ readonly class DraftWikiReadModel
             'status' => $this->status,
             'rejectionReason' => $this->rejectionReason,
             'themeColor' => $this->themeColor,
+            'fontStyle' => $this->fontStyle,
             'title' => $this->title,
             'metaDescription' => $this->metaDescription,
             'keywords' => $this->keywords,

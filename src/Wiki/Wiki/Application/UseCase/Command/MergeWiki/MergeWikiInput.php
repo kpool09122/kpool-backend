@@ -15,6 +15,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class MergeWikiInput implements MergeWikiInputPort
@@ -24,6 +25,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
      * @param BasicInterface $basic
      * @param SectionContentCollection $sections
      * @param Color|null $themeColor
+     * @param WikiFontStyle|null $fontStyle
      * @param ImageIdentifier|null $imageIdentifier
      * @param SeoKeywords|null $keywords
      * @param PrincipalIdentifier $principalIdentifier
@@ -48,6 +50,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
         private ?SeoTitle                $title = null,
         private ?MetaDescription         $metaDescription = null,
         private ?SeoKeywords             $keywords = null,
+        private ?WikiFontStyle           $fontStyle = null,
     ) {
     }
 
@@ -69,6 +72,11 @@ readonly class MergeWikiInput implements MergeWikiInputPort
     public function themeColor(): ?Color
     {
         return $this->themeColor;
+    }
+
+    public function fontStyle(): ?WikiFontStyle
+    {
+        return $this->fontStyle;
     }
 
     public function imageIdentifier(): ?ImageIdentifier

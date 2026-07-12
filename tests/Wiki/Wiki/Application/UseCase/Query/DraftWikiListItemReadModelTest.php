@@ -34,6 +34,7 @@ class DraftWikiListItemReadModelTest extends TestCase
             title: 'Chaeyoung Draft Wiki',
             metaDescription: 'Draft profile for Chaeyoung.',
             keywords: ['Chaeyoung', 'draft'],
+            fontStyle: 'ja_pop',
         );
 
         $this->assertSame([
@@ -44,6 +45,7 @@ class DraftWikiListItemReadModelTest extends TestCase
             'language' => 'ko',
             'resourceType' => 'talent',
             'themeColor' => '#FE5F8F',
+            'fontStyle' => 'ja_pop',
             'title' => 'Chaeyoung Draft Wiki',
             'metaDescription' => 'Draft profile for Chaeyoung.',
             'keywords' => ['Chaeyoung', 'draft'],

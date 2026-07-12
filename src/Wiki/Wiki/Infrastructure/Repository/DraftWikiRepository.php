@@ -30,6 +30,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
@@ -157,6 +158,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
                 'image_identifier' => $draftWiki->imageIdentifier() ? (string) $draftWiki->imageIdentifier() : null,
                 'sections' => SectionContentMapper::collectionToArray($draftWiki->sections()),
                 'theme_color' => $draftWiki->themeColor() ? (string) $draftWiki->themeColor() : null,
+                'font_style' => $draftWiki->fontStyle()?->value,
                 'title' => $draftWiki->title() ? (string) $draftWiki->title() : null,
                 'meta_description' => $draftWiki->metaDescription() ? (string) $draftWiki->metaDescription() : null,
                 'keywords' => $draftWiki->keywords()?->values(),
@@ -254,6 +256,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
             $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
             $model->rejection_reason !== null ? new DraftWikiRejectionReason($model->rejection_reason) : null,
+            fontStyle: $model->font_style ? WikiFontStyle::from($model->font_style) : null,
         );
     }
 

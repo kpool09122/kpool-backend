@@ -182,6 +182,7 @@ readonly class ListDraftWikis implements ListDraftWikisInterface
             language: $wiki->language,
             resourceType: $wiki->resource_type,
             themeColor: $wiki->theme_color,
+            fontStyle: $wiki->font_style,
             title: $wiki->title,
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,

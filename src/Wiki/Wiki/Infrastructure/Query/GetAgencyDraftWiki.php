@@ -57,6 +57,7 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
             language: $model->language,
             resourceType: ResourceType::AGENCY->value,
             themeColor: $model->theme_color,
+            fontStyle: $model->font_style,
             title: $model->title,
             metaDescription: $model->meta_description,
             keywords: $model->keywords,

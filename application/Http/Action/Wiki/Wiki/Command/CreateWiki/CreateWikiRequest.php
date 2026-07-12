@@ -6,6 +6,8 @@ namespace Application\Http\Action\Wiki\Wiki\Command\CreateWiki;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 
 class CreateWikiRequest extends FormRequest
 {
@@ -23,6 +25,7 @@ class CreateWikiRequest extends FormRequest
             'basic' => ['required', 'array'],
             'sections' => ['nullable', 'array'],
             'themeColor' => ['nullable', 'string'],
+            'fontStyle' => ['nullable', 'string', Rule::in(WikiFontStyle::values())],
             'imageIdentifier' => ['nullable', 'uuid'],
             'title' => ['nullable', 'string', 'max:40'],
             'metaDescription' => ['nullable', 'string', 'max:140'],
@@ -74,6 +77,13 @@ class CreateWikiRequest extends FormRequest
     public function themeColor(): ?string
     {
         $value = $this->input('themeColor');
+
+        return $value !== null ? (string) $value : null;
+    }
+
+    public function fontStyle(): ?string
+    {
+        $value = $this->input('fontStyle');
 
         return $value !== null ? (string) $value : null;
     }

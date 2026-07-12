@@ -48,6 +48,7 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
             resourceType: ResourceType::TALENT->value,
             version: $model->version,
             themeColor: $model->theme_color,
+            fontStyle: $model->font_style,
             title: $model->title,
             metaDescription: $model->meta_description,
             keywords: $model->keywords,

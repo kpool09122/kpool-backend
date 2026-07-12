@@ -43,6 +43,7 @@ readonly class WikiSnapshotFactory implements WikiSnapshotFactoryInterface
             $wiki->title(),
             $wiki->metaDescription(),
             $wiki->keywords(),
+            fontStyle: $wiki->fontStyle(),
         );
     }
 }

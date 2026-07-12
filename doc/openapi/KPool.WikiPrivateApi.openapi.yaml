@@ -2587,6 +2587,7 @@ components:
         - status
         - rejectionReason
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -2624,6 +2625,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -2666,6 +2672,7 @@ components:
         - resourceType
         - version
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -2698,6 +2705,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -2882,7 +2894,13 @@ components:
           description: Section content payloads.
         themeColor:
           type: string
+          nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -3033,6 +3051,7 @@ components:
         - status
         - rejectionReason
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -3070,6 +3089,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -3134,6 +3158,7 @@ components:
         - language
         - resourceType
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -3176,6 +3201,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -4114,6 +4144,7 @@ components:
         - status
         - rejectionReason
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -4151,6 +4182,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -4362,6 +4398,7 @@ components:
         - resourceType
         - version
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -4394,6 +4431,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -4528,6 +4570,7 @@ components:
         - status
         - rejectionReason
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -4565,6 +4608,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -4685,6 +4733,7 @@ components:
         - resourceType
         - version
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -4717,6 +4766,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -4783,7 +4837,13 @@ components:
           description: Section content payloads.
         themeColor:
           type: string
+          nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -4983,6 +5043,7 @@ components:
         - resourceType
         - version
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -5015,6 +5076,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:
@@ -5047,6 +5113,25 @@ components:
           items: {}
           description: Section content payloads.
       description: Detailed published group wiki payload.
+    WikiFontStyle:
+      type: string
+      enum:
+        - ja_pop
+        - ja_gothic
+        - ja_mincho
+        - ja_artistic
+        - ja_handwritten
+        - ko_rounded
+        - ko_gothic
+        - ko_myungjo
+        - ko_modern
+        - ko_handwritten
+        - en_sans
+        - en_serif
+        - en_display
+        - en_modern
+        - en_handwritten
+      description: Stable Wiki font style identifiers supported by the backend contract.
     WikiListItem:
       type: object
       required:
@@ -5057,6 +5142,7 @@ components:
         - resourceType
         - version
         - themeColor
+        - fontStyle
         - title
         - metaDescription
         - keywords
@@ -5093,6 +5179,11 @@ components:
           type: string
           nullable: true
           description: Theme color applied to the wiki.
+        fontStyle:
+          allOf:
+            - $ref: '#/components/schemas/WikiFontStyle'
+          nullable: true
+          description: Stable font style identifier applied to the wiki.
         title:
           type: string
           allOf:

@@ -64,6 +64,7 @@ readonly class MergeWiki implements MergeWikiInterface
         $wiki->setBasic($input->basic());
         $wiki->setSections($input->sections());
         $wiki->setThemeColor($input->themeColor());
+        $wiki->setFontStyle($input->fontStyle());
         $wiki->setImageIdentifier($input->imageIdentifier());
         $wiki->setTitle($input->title());
         $wiki->setMetaDescription($input->metaDescription());

@@ -15,6 +15,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
+use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 interface CreateWikiInputPort
@@ -30,6 +31,8 @@ interface CreateWikiInputPort
     public function sections(): SectionContentCollection;
 
     public function themeColor(): ?Color;
+
+    public function fontStyle(): ?WikiFontStyle;
 
     public function imageIdentifier(): ?ImageIdentifier;
 

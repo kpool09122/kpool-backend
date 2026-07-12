@@ -149,6 +149,7 @@ readonly class ListWikis implements ListWikisInterface
             resourceType: $wiki->resource_type,
             version: $wiki->version,
             themeColor: $wiki->theme_color,
+            fontStyle: $wiki->font_style,
             title: $wiki->title,
             metaDescription: $wiki->meta_description,
             keywords: $wiki->keywords,
