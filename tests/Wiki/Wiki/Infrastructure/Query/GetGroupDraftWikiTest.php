@@ -12,6 +12,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWi
 use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Tests\Helper\CreateDraftWiki;
+use Tests\Helper\CreateWiki;
 use Tests\TestCase;
 
 class GetGroupDraftWikiTest extends TestCase
@@ -42,6 +43,18 @@ class GetGroupDraftWikiTest extends TestCase
     #[Group('useDb')]
     public function testProcessReturnsNullableOptionalGroupBasicValues(): void
     {
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
+            'agency',
+            [
+                'slug' => 'ag-jyp',
+                'language' => 'ko',
+            ],
+            [
+                'name' => 'JYP Entertainment',
+                'normalized_name' => 'jyp entertainment',
+            ],
+        );
         CreateDraftWiki::create(
             '01965bb2-bcc9-7c6f-8b90-89f7f217f102',
             'group',
@@ -54,6 +67,7 @@ class GetGroupDraftWikiTest extends TestCase
             [
                 'name' => 'Test',
                 'normalized_name' => '',
+                'agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
                 'group_type' => null,
                 'generation' => null,
             ],
@@ -62,6 +76,14 @@ class GetGroupDraftWikiTest extends TestCase
         $useCase = $this->app->make(GetGroupDraftWikiInterface::class);
         $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f102')));
 
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', $readModel->basic()['agencyIdentifier']);
+        $this->assertSame([
+            'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f101',
+            'slug' => 'ag-jyp',
+            'language' => 'ko',
+            'name' => 'JYP Entertainment',
+            'normalizedName' => 'jyp entertainment',
+        ], $readModel->basic()['agency']);
         $this->assertNull($readModel->basic()['groupType']);
         $this->assertNull($readModel->basic()['generation']);
         $this->assertSame('グループ基本情報が不足しています', $readModel->rejectionReason());

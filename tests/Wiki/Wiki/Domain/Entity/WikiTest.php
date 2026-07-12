@@ -415,6 +415,21 @@ class WikiTest extends TestCase
         $this->assertNull($wiki->approvedAt());
     }
 
+    public function testSetPublishedAt(): void
+    {
+        $data = $this->createDummyWiki();
+        $wiki = $data->wiki;
+
+        $this->assertNull($wiki->publishedAt());
+
+        $publishedAt = new DateTimeImmutable('2026-01-02 12:00:00');
+        $wiki->setPublishedAt($publishedAt);
+        $this->assertSame($publishedAt, $wiki->publishedAt());
+
+        $wiki->setPublishedAt(null);
+        $this->assertNull($wiki->publishedAt());
+    }
+
     /**
      * 正常系：非公式のWikiにmarkOfficialを呼ぶと公式になること.
      *

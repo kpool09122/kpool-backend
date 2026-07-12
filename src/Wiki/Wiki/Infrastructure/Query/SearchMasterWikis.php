@@ -37,7 +37,6 @@ readonly class SearchMasterWikis implements SearchMasterWikisInterface
             ->join($basicTable, "{$basicTable}.wiki_id", '=', 'wikis.id')
             ->where('wikis.language', $input->language()->value)
             ->where('wikis.resource_type', $resourceType)
-            ->whereNotNull('wikis.published_at')
             ->where(function (Builder $query) use ($basicTable, $keyword): void {
                 $query
                     ->where(fn (Builder $query) => $this->whereLike($query, "{$basicTable}.name", $keyword))

@@ -68,6 +68,20 @@ model DraftWikiHeroImage {
   alt: string | null;
 }
 
+@doc("Summary of a published agency linked from a wiki basic payload.")
+model WikiAgencySummary {
+  @doc("Published agency wiki identifier.")
+  wikiIdentifier: Uuid;
+  @doc("Unique slug of the published agency wiki.")
+  slug: string;
+  @doc("Language of the published agency wiki.")
+  language: string;
+  @doc("Display name of the agency.")
+  name: string;
+  @doc("Normalized name of the agency.")
+  normalizedName: string;
+}
+
 @doc("Basic payload for a group draft wiki.")
 model GroupDraftWikiBasic {
   @doc("Display name of the group.")
@@ -76,6 +90,8 @@ model GroupDraftWikiBasic {
   normalizedName: string;
   @doc("Associated agency identifier.")
   agencyIdentifier: Uuid | null;
+  @doc("Related published agency linked to the group.")
+  agency: WikiAgencySummary | null;
   @doc("Group type.")
   groupType: string | null;
   @doc("Current activity status of the group.")
@@ -208,6 +224,8 @@ model TalentDraftWikiBasic {
   birthday: plainDate | null;
   @doc("Associated agency identifier.")
   agencyIdentifier: Uuid | null;
+  @doc("Related published agency linked to the talent.")
+  agency: WikiAgencySummary | null;
   @doc("Emoji representing the talent.")
   emoji: string;
   @doc("Representative symbol of the talent.")
@@ -380,6 +398,8 @@ model SongDraftWikiBasic {
   genres: string[];
   @doc("Associated agency identifier.")
   agencyIdentifier: Uuid | null;
+  @doc("Related published agency linked to the song.")
+  agency: WikiAgencySummary | null;
   @doc("Release date of the song.")
   releaseDate: plainDate | null;
   @doc("Album name.")

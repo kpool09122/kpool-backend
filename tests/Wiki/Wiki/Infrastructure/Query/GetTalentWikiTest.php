@@ -21,6 +21,18 @@ class GetTalentWikiTest extends TestCase
     public function testProcessReturnsTalentWiki(): void
     {
         CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f001',
+            'agency',
+            [
+                'slug' => 'ag-jyp',
+                'language' => 'ko',
+            ],
+            [
+                'name' => 'JYP Entertainment',
+                'normalized_name' => 'jyp entertainment',
+            ],
+        );
+        CreateWiki::create(
             '01965bb2-bcc9-7c6f-8b90-89f7f217f002',
             'group',
             [
@@ -70,6 +82,7 @@ class GetTalentWikiTest extends TestCase
                 'height' => 159,
                 'blood_type' => 'B',
                 'fandom_name' => 'ONCE',
+                'agency_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f001',
                 'group_identifiers' => json_encode(['01965bb2-bcc9-7c6f-8b90-89f7f217f002']),
             ],
         );
@@ -89,6 +102,14 @@ class GetTalentWikiTest extends TestCase
         $this->assertInstanceOf(TalentWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('채영', $readModel->basic()['name']);
         $this->assertSame('손채영', $readModel->basic()['realName']);
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f001', $readModel->basic()['agencyIdentifier']);
+        $this->assertSame([
+            'wikiIdentifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f001',
+            'slug' => 'ag-jyp',
+            'language' => 'ko',
+            'name' => 'JYP Entertainment',
+            'normalizedName' => 'jyp entertainment',
+        ], $readModel->basic()['agency']);
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->basic()['groups'][0]['wikiIdentifier']);
         $this->assertSame('TWICE', $readModel->basic()['groups'][0]['name']);
         $this->assertSame('girl_group', $readModel->basic()['groups'][0]['groupType']);

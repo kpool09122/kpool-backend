@@ -3311,6 +3311,7 @@ components:
         - name
         - normalizedName
         - agencyIdentifier
+        - agency
         - groupType
         - status
         - generation
@@ -3333,6 +3334,12 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Associated agency identifier.
+        agency:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/WikiAgencySummary'
+          nullable: true
+          description: Related published agency linked to the group.
         groupType:
           type: string
           nullable: true
@@ -4019,6 +4026,7 @@ components:
         - songType
         - genres
         - agencyIdentifier
+        - agency
         - releaseDate
         - albumName
         - lyricist
@@ -4051,6 +4059,12 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Associated agency identifier.
+        agency:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/WikiAgencySummary'
+          nullable: true
+          description: Related published agency linked to the song.
         releaseDate:
           type: string
           format: date
@@ -4421,6 +4435,7 @@ components:
         - normalizedRealName
         - birthday
         - agencyIdentifier
+        - agency
         - emoji
         - representativeSymbol
         - position
@@ -4455,6 +4470,12 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Associated agency identifier.
+        agency:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/WikiAgencySummary'
+          nullable: true
+          description: Related published agency linked to the talent.
         emoji:
           type: string
           description: Emoji representing the talent.
@@ -4908,6 +4929,32 @@ components:
           type: string
           description: Publication timestamp of the video.
       description: Input payload for a single video link.
+    WikiAgencySummary:
+      type: object
+      required:
+        - wikiIdentifier
+        - slug
+        - language
+        - name
+        - normalizedName
+      properties:
+        wikiIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published agency wiki identifier.
+        slug:
+          type: string
+          description: Unique slug of the published agency wiki.
+        language:
+          type: string
+          description: Language of the published agency wiki.
+        name:
+          type: string
+          description: Display name of the agency.
+        normalizedName:
+          type: string
+          description: Normalized name of the agency.
+      description: Summary of a published agency linked from a wiki basic payload.
     WikiAssociationTargets:
       type: object
       properties:

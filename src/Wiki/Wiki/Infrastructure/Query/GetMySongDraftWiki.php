@@ -71,6 +71,7 @@ readonly class GetMySongDraftWiki implements GetMySongDraftWikiInterface
                 songType: $basic->song_type,
                 genres: $basic->genres,
                 agencyIdentifier: $basic->agency_identifier,
+                agency: WikiAgencySummaryResolver::resolve($basic->agency_identifier),
                 releaseDate: $basic->release_date,
                 albumName: $basic->album_name,
                 lyricist: $basic->lyricist,

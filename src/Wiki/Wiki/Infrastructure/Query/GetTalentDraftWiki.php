@@ -76,6 +76,7 @@ readonly class GetTalentDraftWiki implements GetTalentDraftWikiInterface
                 normalizedRealName: $basic->normalized_real_name,
                 birthday: $basic->birthday,
                 agencyIdentifier: $basic->agency_identifier,
+                agency: WikiAgencySummaryResolver::resolve($basic->agency_identifier),
                 emoji: $basic->emoji,
                 representativeSymbol: $basic->representative_symbol,
                 position: $basic->position,
