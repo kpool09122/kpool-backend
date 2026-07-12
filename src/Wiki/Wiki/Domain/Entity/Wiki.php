@@ -45,6 +45,7 @@ class Wiki
         private ?SeoTitle $title = null,
         private ?MetaDescription $metaDescription = null,
         private ?SeoKeywords $keywords = null,
+        private ?DateTimeImmutable $publishedAt = null,
     ) {
     }
 
@@ -250,6 +251,16 @@ class Wiki
     public function setApprovedAt(?DateTimeImmutable $approvedAt): void
     {
         $this->approvedAt = $approvedAt;
+    }
+
+    public function publishedAt(): ?DateTimeImmutable
+    {
+        return $this->publishedAt;
+    }
+
+    public function setPublishedAt(?DateTimeImmutable $publishedAt): void
+    {
+        $this->publishedAt = $publishedAt;
     }
 
     public function imageIdentifier(): ?ImageIdentifier

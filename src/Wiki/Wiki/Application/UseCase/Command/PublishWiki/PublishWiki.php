@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\PublishWiki;
 
+use DateTimeImmutable;
 use Source\Wiki\Principal\Application\Service\ContributionPointServiceInterface;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -128,6 +129,7 @@ readonly class PublishWiki implements PublishWikiInterface
         $publishedWiki->setSourceEditorIdentifier($wiki->sourceEditorIdentifier());
         $publishedWiki->setTranslatedAt($wiki->translatedAt());
         $publishedWiki->setApprovedAt($wiki->approvedAt());
+        $publishedWiki->setPublishedAt(new DateTimeImmutable());
 
         $this->wikiRepository->save($publishedWiki);
 

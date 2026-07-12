@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
+use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -224,6 +225,7 @@ class WikiRepositoryTest extends TestCase
         $title = new SeoTitle('TWICE Wiki');
         $metaDescription = new MetaDescription('Profile for TWICE.');
         $keywords = new SeoKeywords(['TWICE', 'K-pop']);
+        $publishedAt = new DateTimeImmutable('2026-07-12 10:30:00');
 
         $wiki = new Wiki(
             new WikiIdentifier($wikiId),
@@ -253,6 +255,7 @@ class WikiRepositoryTest extends TestCase
             title: $title,
             metaDescription: $metaDescription,
             keywords: $keywords,
+            publishedAt: $publishedAt,
         );
 
         $repository = $this->app->make(WikiRepositoryInterface::class);
@@ -274,12 +277,20 @@ class WikiRepositoryTest extends TestCase
         ]);
         $storedKeywords = DB::table('wikis')->where('id', $wikiId)->value('keywords');
         $this->assertSame(['TWICE', 'K-pop'], json_decode((string) $storedKeywords, true));
+        $storedPublishedAt = DB::table('wikis')->where('id', $wikiId)->value('published_at');
+        $this->assertSame('2026-07-12 10:30:00', (string) $storedPublishedAt);
         $this->assertDatabaseHas('wiki_group_basics', [
             'wiki_id' => $wikiId,
             'name' => 'TWICE',
             'normalized_name' => 'twice',
             'fandom_name' => 'ONCE',
         ]);
+
+        $found = $repository->findById(new WikiIdentifier($wikiId));
+        $this->assertSame(
+            $publishedAt->format('Y-m-d H:i:s'),
+            $found?->publishedAt()?->format('Y-m-d H:i:s'),
+        );
     }
 
     /**

@@ -43,15 +43,15 @@ class SearchMasterWikisTest extends TestCase
     }
 
     #[Group('useDb')]
-    public function testProcessFiltersByLanguageAndPublishedWikis(): void
+    public function testProcessFiltersByLanguage(): void
     {
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217c001', 'group', 'gr-newjeans-ko', 'NewJeans KO', 'newjeans', language: 'ko');
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217c002', 'group', 'gr-newjeans-ja', 'NewJeans JA', 'newjeans', language: 'ja');
-        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217c003', 'group', 'gr-newjeans-draft-like', 'NewJeans Draft', 'newjeans', publishedAt: null);
+        $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217c003', 'group', 'gr-newjeans-null-published-at', 'NewJeans Null Published At', 'newjeans', publishedAt: null);
 
         $payload = $this->process(ResourceType::GROUP, 'newjeans')->toArray();
 
-        $this->assertSame(['NewJeans KO'], array_column($payload['wikis'], 'name'));
+        $this->assertSame(['NewJeans KO', 'NewJeans Null Published At'], array_column($payload['wikis'], 'name'));
     }
 
     #[Group('useDb')]

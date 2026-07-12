@@ -15,6 +15,7 @@ final class WikiBasicReadModelFactory
             name: $basic['name'],
             normalizedName: $basic['normalizedName'],
             agencyIdentifier: $basic['agencyIdentifier'],
+            agency: isset($basic['agency']) && is_array($basic['agency']) ? self::agencySummary($basic['agency']) : null,
             groupType: $basic['groupType'],
             status: $basic['status'],
             generation: $basic['generation'],
@@ -39,6 +40,7 @@ final class WikiBasicReadModelFactory
             normalizedRealName: $basic['normalizedRealName'],
             birthday: $basic['birthday'],
             agencyIdentifier: $basic['agencyIdentifier'],
+            agency: isset($basic['agency']) && is_array($basic['agency']) ? self::agencySummary($basic['agency']) : null,
             emoji: $basic['emoji'],
             representativeSymbol: $basic['representativeSymbol'],
             position: $basic['position'],
@@ -68,6 +70,7 @@ final class WikiBasicReadModelFactory
             songType: $basic['songType'],
             genres: $basic['genres'],
             agencyIdentifier: $basic['agencyIdentifier'],
+            agency: isset($basic['agency']) && is_array($basic['agency']) ? self::agencySummary($basic['agency']) : null,
             releaseDate: $basic['releaseDate'],
             albumName: $basic['albumName'],
             lyricist: $basic['lyricist'],
@@ -106,6 +109,20 @@ final class WikiBasicReadModelFactory
             status: $basic['status'],
             officialWebsite: $basic['officialWebsite'],
             socialLinks: $basic['socialLinks'],
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $agency
+     */
+    private static function agencySummary(array $agency): WikiAgencySummaryReadModel
+    {
+        return new WikiAgencySummaryReadModel(
+            wikiIdentifier: $agency['wikiIdentifier'],
+            slug: $agency['slug'],
+            language: $agency['language'],
+            name: $agency['name'],
+            normalizedName: $agency['normalizedName'],
         );
     }
 

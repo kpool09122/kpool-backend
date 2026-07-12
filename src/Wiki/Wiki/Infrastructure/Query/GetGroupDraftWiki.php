@@ -71,6 +71,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
                 name: $basic->name,
                 normalizedName: $basic->normalized_name,
                 agencyIdentifier: $basic->agency_identifier,
+                agency: WikiAgencySummaryResolver::resolve($basic->agency_identifier),
                 groupType: $basic->group_type,
                 status: $basic->status,
                 generation: $basic->generation,

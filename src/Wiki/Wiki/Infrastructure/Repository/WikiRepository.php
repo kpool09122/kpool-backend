@@ -174,6 +174,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
                 'source_editor_id' => $wiki->sourceEditorIdentifier() ? (string) $wiki->sourceEditorIdentifier() : null,
                 'translated_at' => $wiki->translatedAt(),
                 'approved_at' => $wiki->approvedAt(),
+                'published_at' => $wiki->publishedAt(),
             ]
         );
 
@@ -248,6 +249,7 @@ readonly class WikiRepository implements WikiRepositoryInterface
             $model->title !== null ? new SeoTitle($model->title) : null,
             $model->meta_description !== null ? new MetaDescription($model->meta_description) : null,
             $model->keywords !== null ? new SeoKeywords($model->keywords) : null,
+            $model->published_at?->toDateTimeImmutable(),
         );
     }
 

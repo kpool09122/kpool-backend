@@ -193,6 +193,7 @@ class PublishWikiTest extends TestCase
         $this->assertSame($title, $dummyPublishWiki->publishedWiki->title());
         $this->assertSame($metaDescription, $dummyPublishWiki->publishedWiki->metaDescription());
         $this->assertSame($keywords, $dummyPublishWiki->publishedWiki->keywords());
+        $this->assertNotNull($dummyPublishWiki->publishedWiki->publishedAt());
     }
 
     /**
@@ -405,6 +406,7 @@ class PublishWikiTest extends TestCase
         $result = $output->toArray();
         $this->assertSame($dummyPublishWiki->language->value, $result['language']);
         $this->assertSame($dummyPublishWiki->version->value(), $result['version']);
+        $this->assertNotNull($dummyPublishWiki->createdWiki->publishedAt());
     }
 
     public function testProcessForNewTranslatedLanguageUsesResolvedLatestVersion(): void
