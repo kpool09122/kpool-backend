@@ -2783,8 +2783,10 @@ components:
           type: string
           description: Display name of the wiki.
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         groupIdentifiers:
           type: array
@@ -5019,8 +5021,10 @@ components:
       type: object
       properties:
         agencyIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Associated agency identifier.
         groupIdentifiers:
           type: array
