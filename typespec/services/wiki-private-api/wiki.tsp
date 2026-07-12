@@ -43,7 +43,7 @@ model AutoCreateWikiRequestBody {
   @doc("Display name of the wiki.")
   name: string;
   @doc("Associated agency identifier.")
-  agencyIdentifier?: Uuid;
+  agencyIdentifier?: Uuid | null;
   @doc("Associated group identifiers.")
   groupIdentifiers?: Uuid[];
   @doc("Associated talent identifiers.")
