@@ -159,34 +159,18 @@ final readonly class GroupBasic implements BasicInterface
             disbandDate: isset($data['disband_date']) ? new DisbandDate(new DateTimeImmutable($data['disband_date'])) : null,
             fandomName: new FandomName($data['fandom_name'] ?? ''),
             officialColors: isset($data['official_colors'])
-                ? array_map(static fn (mixed $color) => self::colorFromStoredValue($color), $data['official_colors'])
+                ? array_map(static fn (array $color) => self::colorFromStoredValue($color), $data['official_colors'])
                 : [],
             emoji: new Emoji($data['emoji'] ?? ''),
             representativeSymbol: new RepresentativeSymbol($data['representative_symbol'] ?? ''),
         );
     }
 
-    private static function colorFromStoredValue(mixed $value): Color
+    /**
+     * @param array{color_code: string, label: string} $value
+     */
+    private static function colorFromStoredValue(array $value): Color
     {
-        if (is_string($value)) {
-            return new Color(new HexColor($value), $value);
-        }
-
-        if (! is_array($value)) {
-            throw new InvalidArgumentException('Official color must be a string or object.');
-        }
-
-        $colorCode = $value['color_code'] ?? $value['colorCode'] ?? null;
-        $label = $value['label'] ?? null;
-
-        if (! is_string($colorCode)) {
-            throw new InvalidArgumentException('Official color color_code must be a string.');
-        }
-
-        if (! is_string($label)) {
-            throw new InvalidArgumentException('Official color label must be a string.');
-        }
-
-        return new Color(new HexColor($colorCode), $label);
+        return new Color(new HexColor($value['color_code']), $value['label']);
     }
 }

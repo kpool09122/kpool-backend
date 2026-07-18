@@ -38,17 +38,6 @@ final readonly class Color
         ];
     }
 
-    /**
-     * @return array{colorCode: string, label: string}
-     */
-    public function toApiArray(): array
-    {
-        return [
-            'colorCode' => (string) $this->colorCode,
-            'label' => $this->label,
-        ];
-    }
-
     public function __toString(): string
     {
         return (string) $this->colorCode;

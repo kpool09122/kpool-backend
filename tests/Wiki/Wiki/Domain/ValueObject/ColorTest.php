@@ -20,7 +20,6 @@ class ColorTest extends TestCase
         $this->assertSame('Apricot', $color->label());
         $this->assertSame('#FF5733', (string) $color);
         $this->assertSame(['color_code' => '#FF5733', 'label' => 'Apricot'], $color->toArray());
-        $this->assertSame(['colorCode' => '#FF5733', 'label' => 'Apricot'], $color->toApiArray());
     }
 
     #[DataProvider('invalidLabelProvider')]

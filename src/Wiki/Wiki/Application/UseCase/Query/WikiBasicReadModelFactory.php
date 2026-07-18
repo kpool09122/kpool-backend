@@ -22,7 +22,7 @@ final class WikiBasicReadModelFactory
             debutDate: $basic['debutDate'],
             disbandDate: $basic['disbandDate'],
             fandomName: $basic['fandomName'],
-            officialColors: OfficialColorReadModelMapper::toApiArray($basic['officialColors']),
+            officialColors: $basic['officialColors'],
             emoji: $basic['emoji'],
             representativeSymbol: $basic['representativeSymbol'],
         );
@@ -144,7 +144,7 @@ final class WikiBasicReadModelFactory
             debutDate: $group['debutDate'],
             disbandDate: $group['disbandDate'],
             fandomName: $group['fandomName'],
-            officialColors: OfficialColorReadModelMapper::toApiArray($group['officialColors']),
+            officialColors: $group['officialColors'],
             emoji: $group['emoji'],
             representativeSymbol: $group['representativeSymbol'],
         );

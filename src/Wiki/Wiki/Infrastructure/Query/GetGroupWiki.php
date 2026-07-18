@@ -66,7 +66,7 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
                 debutDate: $basic->debut_date,
                 disbandDate: $basic->disband_date,
                 fandomName: $basic->fandom_name,
-                officialColors: OfficialColorReadModelMapper::toApiArray($basic->official_colors),
+                officialColors: OfficialColorReadModelMapper::toArray($basic->official_colors),
                 emoji: $basic->emoji,
                 representativeSymbol: $basic->representative_symbol,
             ),

@@ -190,7 +190,7 @@ class GroupBasicTest extends TestCase
             'fandom_name' => 'ONCE',
             'official_colors' => [
                 ['color_code' => '#FF5FA2', 'label' => 'Apricot'],
-                ['colorCode' => '#FFC0CB', 'label' => 'Pink'],
+                ['color_code' => '#FFC0CB', 'label' => 'Pink'],
             ],
             'emoji' => '🍭',
             'representative_symbol' => 'candy',
@@ -242,19 +242,6 @@ class GroupBasicTest extends TestCase
         $this->assertEmpty($groupBasic->officialColors());
         $this->assertSame('', $groupBasic->emoji()->value());
         $this->assertSame('', $groupBasic->representativeSymbol()->value());
-    }
-
-    public function testFromArrayWithLegacyStringOfficialColors(): void
-    {
-        $groupBasic = GroupBasic::fromArray([
-            'name' => 'TWICE',
-            'agency_identifier' => null,
-            'official_colors' => ['#FF5FA2'],
-        ]);
-
-        $this->assertCount(1, $groupBasic->officialColors());
-        $this->assertSame('#FF5FA2', (string) $groupBasic->officialColors()[0]->colorCode());
-        $this->assertSame('#FF5FA2', $groupBasic->officialColors()[0]->label());
     }
 
     public function testThrowsInvalidArgumentExceptionWithMoreThanTwoOfficialColors(): void

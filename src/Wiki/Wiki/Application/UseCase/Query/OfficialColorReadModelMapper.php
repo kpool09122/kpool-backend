@@ -7,46 +7,17 @@ namespace Source\Wiki\Wiki\Application\UseCase\Query;
 final class OfficialColorReadModelMapper
 {
     /**
-     * @param mixed $officialColors
+     * @param list<array{color_code: string, label: string}> $officialColors
      * @return list<array{colorCode: string, label: string}>
      */
-    public static function toApiArray(mixed $officialColors): array
+    public static function toArray(array $officialColors): array
     {
-        if (! is_array($officialColors)) {
-            return [];
-        }
-
         return array_values(array_map(
-            static fn (mixed $color): array => self::colorToApiArray($color),
+            static fn (array $color): array => [
+                'colorCode' => $color['color_code'],
+                'label' => $color['label'],
+            ],
             $officialColors,
         ));
-    }
-
-    /**
-     * @return array{colorCode: string, label: string}
-     */
-    private static function colorToApiArray(mixed $color): array
-    {
-        if (is_string($color)) {
-            return [
-                'colorCode' => $color,
-                'label' => $color,
-            ];
-        }
-
-        if (! is_array($color)) {
-            return [
-                'colorCode' => '',
-                'label' => '',
-            ];
-        }
-
-        $colorCode = $color['colorCode'] ?? $color['color_code'] ?? '';
-        $label = $color['label'] ?? '';
-
-        return [
-            'colorCode' => is_string($colorCode) ? $colorCode : '',
-            'label' => is_string($label) ? $label : '',
-        ];
     }
 }
