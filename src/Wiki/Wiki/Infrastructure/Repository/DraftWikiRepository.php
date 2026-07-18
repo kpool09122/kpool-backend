@@ -24,9 +24,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -241,7 +241,7 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             $resourceType,
             $basic,
             SectionContentMapper::collectionFromArray($model->sections, 1),
-            $model->theme_color ? new Color($model->theme_color) : null,
+            $model->theme_color ? new HexColor($model->theme_color) : null,
             ApprovalStatus::from($model->status),
             $model->editor_id ? new PrincipalIdentifier($model->editor_id) : null,
             $model->approver_id ? new PrincipalIdentifier($model->approver_id) : null,

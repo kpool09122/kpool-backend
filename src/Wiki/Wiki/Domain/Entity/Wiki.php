@@ -14,7 +14,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -32,7 +32,7 @@ class Wiki
         private readonly ResourceType $resourceType,
         private BasicInterface $basic,
         private SectionContentCollection $sections,
-        private ?Color $themeColor,
+        private ?HexColor $themeColor,
         private Version $version,
         private ?AccountIdentifier $ownerAccountIdentifier = null,
         private ?PrincipalIdentifier $editorIdentifier = null,
@@ -96,12 +96,12 @@ class Wiki
         $this->sections = $sections;
     }
 
-    public function themeColor(): ?Color
+    public function themeColor(): ?HexColor
     {
         return $this->themeColor;
     }
 
-    public function setThemeColor(?Color $themeColor): void
+    public function setThemeColor(?HexColor $themeColor): void
     {
         $this->themeColor = $themeColor;
     }

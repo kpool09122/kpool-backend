@@ -82,6 +82,16 @@ model WikiAgencySummary {
   normalizedName: string;
 }
 
+
+@doc("Official color with a HEX color code and display label.")
+model OfficialColor {
+  @doc("HEX color code in #RRGGBB format.")
+  colorCode: string;
+  @doc("Human-readable color label.")
+  @maxLength(16)
+  label: string;
+}
+
 @doc("Basic payload for a group draft wiki.")
 model GroupDraftWikiBasic {
   @doc("Display name of the group.")
@@ -105,7 +115,7 @@ model GroupDraftWikiBasic {
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official colors of the group.")
-  officialColors: string[];
+  officialColors: OfficialColor[];
   @doc("Representative emoji of the group.")
   emoji: string;
   @doc("Representative symbol of the group.")
@@ -227,7 +237,7 @@ model TalentDraftWikiGroupSummary {
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official color palette of the group.")
-  officialColors: string[];
+  officialColors: OfficialColor[];
   @doc("Emoji representing the group.")
   emoji: string;
   @doc("Representative symbol of the group.")
@@ -367,7 +377,7 @@ model SongDraftWikiGroupSummary {
   @doc("Fandom name of the group.")
   fandomName: string;
   @doc("Official color palette of the group.")
-  officialColors: string[];
+  officialColors: OfficialColor[];
   @doc("Emoji representing the group.")
   emoji: string;
   @doc("Representative symbol of the group.")

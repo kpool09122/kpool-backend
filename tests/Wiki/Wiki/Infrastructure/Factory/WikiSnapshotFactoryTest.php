@@ -20,7 +20,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -72,7 +72,7 @@ class WikiSnapshotFactoryTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection([], allowBlocks: false);
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
         $version = new Version(3);
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

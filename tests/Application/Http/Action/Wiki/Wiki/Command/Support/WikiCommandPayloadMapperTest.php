@@ -8,6 +8,7 @@ use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
@@ -97,6 +98,20 @@ class WikiCommandPayloadMapperTest extends TestCase
             '01965bb2-bcc9-7c6f-8b90-89f7f217f001',
             (string) $basic->groupIdentifiers()[0],
         );
+    }
+
+    public function testGroupBasicMapsOfficialColorsToDomainStructure(): void
+    {
+        $basic = WikiCommandPayloadMapper::basic(ResourceType::GROUP, [
+            'name' => 'TWICE',
+            'officialColors' => [
+                ['colorCode' => '#FF5FA2', 'label' => 'Apricot'],
+            ],
+        ]);
+
+        $this->assertInstanceOf(GroupBasic::class, $basic);
+        $this->assertSame('#FF5FA2', (string) $basic->officialColors()[0]->colorCode());
+        $this->assertSame('Apricot', $basic->officialColors()[0]->label());
     }
 
     public function testSongBasicMapsRelatedIdentifiersFromDetailSummaries(): void

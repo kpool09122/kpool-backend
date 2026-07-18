@@ -12,6 +12,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiTalentSummaryReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiGroupSummaryReadModel;
@@ -109,7 +110,7 @@ readonly class GetSongWiki implements GetSongWikiInterface
             debutDate: $basic->debut_date,
             disbandDate: $basic->disband_date,
             fandomName: $basic->fandom_name,
-            officialColors: $basic->official_colors,
+            officialColors: OfficialColorReadModelMapper::toArray($basic->official_colors),
             emoji: $basic->emoji,
             representativeSymbol: $basic->representative_symbol,
         );

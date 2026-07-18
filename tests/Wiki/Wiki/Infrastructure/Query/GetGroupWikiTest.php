@@ -47,7 +47,7 @@ class GetGroupWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode(['#FE5F8F', '#FEE500']),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
                 'representative_symbol' => 'Candy Bong',
             ],
         );
@@ -67,7 +67,7 @@ class GetGroupWikiTest extends TestCase
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('girl_group', $readModel->basic()['groupType']);
-        $this->assertSame(['#FE5F8F', '#FEE500'], $readModel->basic()['officialColors']);
+        $this->assertSame([['colorCode' => '#FE5F8F', 'label' => 'Apricot'], ['colorCode' => '#FEE500', 'label' => 'Yellow']], $readModel->basic()['officialColors']);
         $this->assertSame('overview', $readModel->sections()[0]['id']);
     }
 
@@ -143,7 +143,7 @@ class GetGroupWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode(['#FE5F8F', '#FEE500']),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
                 'representative_symbol' => 'Candy Bong',
             ],
         );

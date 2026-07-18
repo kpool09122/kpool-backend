@@ -13,6 +13,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupWiki\GetGroupWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
 
 readonly class GetGroupWiki implements GetGroupWikiInterface
@@ -65,7 +66,7 @@ readonly class GetGroupWiki implements GetGroupWikiInterface
                 debutDate: $basic->debut_date,
                 disbandDate: $basic->disband_date,
                 fandomName: $basic->fandom_name,
-                officialColors: $basic->official_colors,
+                officialColors: OfficialColorReadModelMapper::toArray($basic->official_colors),
                 emoji: $basic->emoji,
                 representativeSymbol: $basic->representative_symbol,
             ),

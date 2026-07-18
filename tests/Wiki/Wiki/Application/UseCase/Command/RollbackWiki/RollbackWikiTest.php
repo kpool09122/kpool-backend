@@ -39,7 +39,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -638,7 +638,7 @@ class RollbackWikiTest extends TestCase
             ResourceType::GROUP,
             $basic,
             new SectionContentCollection(),
-            new Color('#FF5733'),
+            new HexColor('#FF5733'),
             $version,
         );
     }
@@ -673,7 +673,7 @@ class RollbackWikiTest extends TestCase
             ResourceType::GROUP,
             $basic,
             new SectionContentCollection(),
-            new Color('#0000FF'),
+            new HexColor('#0000FF'),
             $version,
             null,
             null,

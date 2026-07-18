@@ -14,6 +14,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
+use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
@@ -79,7 +80,7 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
                 debutDate: $basic->debut_date,
                 disbandDate: $basic->disband_date,
                 fandomName: $basic->fandom_name,
-                officialColors: $basic->official_colors,
+                officialColors: OfficialColorReadModelMapper::toArray($basic->official_colors),
                 emoji: $basic->emoji,
                 representativeSymbol: $basic->representative_symbol,
             ),

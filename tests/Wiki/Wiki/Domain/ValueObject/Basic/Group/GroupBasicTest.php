@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\DebutDate;
@@ -18,6 +19,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -139,7 +141,10 @@ class GroupBasicTest extends TestCase
         $this->assertSame($testData->debutDate->format('Y-m-d'), $array['debut_date']);
         $this->assertSame($testData->disbandDate->format('Y-m-d'), $array['disband_date']);
         $this->assertSame($testData->fandomName->value(), $array['fandom_name']);
-        $this->assertCount(count($testData->officialColors), $array['official_colors']);
+        $this->assertSame([
+            ['color_code' => '#FF5FA2', 'label' => 'Apricot'],
+            ['color_code' => '#FFC0CB', 'label' => 'Pink'],
+        ], $array['official_colors']);
         $this->assertSame($testData->emoji->value(), $array['emoji']);
         $this->assertSame($testData->representativeSymbol->value(), $array['representative_symbol']);
     }
@@ -183,7 +188,10 @@ class GroupBasicTest extends TestCase
             'debut_date' => '2015-10-20',
             'disband_date' => '2030-12-31',
             'fandom_name' => 'ONCE',
-            'official_colors' => ['#FF5FA2', '#FFC0CB'],
+            'official_colors' => [
+                ['color_code' => '#FF5FA2', 'label' => 'Apricot'],
+                ['color_code' => '#FFC0CB', 'label' => 'Pink'],
+            ],
             'emoji' => '🍭',
             'representative_symbol' => 'candy',
         ];
@@ -200,8 +208,10 @@ class GroupBasicTest extends TestCase
         $this->assertSame('2030-12-31', $groupBasic->disbandDate()->format('Y-m-d'));
         $this->assertSame('ONCE', $groupBasic->fandomName()->value());
         $this->assertCount(2, $groupBasic->officialColors());
-        $this->assertSame('#FF5FA2', (string) $groupBasic->officialColors()[0]);
-        $this->assertSame('#FFC0CB', (string) $groupBasic->officialColors()[1]);
+        $this->assertSame('#FF5FA2', (string) $groupBasic->officialColors()[0]->colorCode());
+        $this->assertSame('Apricot', $groupBasic->officialColors()[0]->label());
+        $this->assertSame('#FFC0CB', (string) $groupBasic->officialColors()[1]->colorCode());
+        $this->assertSame('Pink', $groupBasic->officialColors()[1]->label());
         $this->assertSame('🍭', $groupBasic->emoji()->value());
         $this->assertSame('candy', $groupBasic->representativeSymbol()->value());
     }
@@ -234,6 +244,31 @@ class GroupBasicTest extends TestCase
         $this->assertSame('', $groupBasic->representativeSymbol()->value());
     }
 
+    public function testThrowsInvalidArgumentExceptionWithMoreThanTwoOfficialColors(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Official colors must be 2 colors or less.');
+
+        new GroupBasic(
+            name: new Name('TWICE'),
+            normalizedName: 'twice',
+            agencyIdentifier: null,
+            groupType: null,
+            status: null,
+            generation: null,
+            debutDate: null,
+            disbandDate: null,
+            fandomName: new FandomName('ONCE'),
+            officialColors: [
+                new Color(new HexColor('#FF5FA2'), 'Apricot'),
+                new Color(new HexColor('#FFC0CB'), 'Pink'),
+                new Color(new HexColor('#000000'), 'Black'),
+            ],
+            emoji: new Emoji(''),
+            representativeSymbol: new RepresentativeSymbol(''),
+        );
+    }
+
     private function createDummyGroupBasic(
         bool $withNullableValues = true,
     ): GroupBasicTestData {
@@ -247,8 +282,8 @@ class GroupBasicTest extends TestCase
         $disbandDate = $withNullableValues ? new DisbandDate(new DateTimeImmutable('2030-12-31')) : null;
         $fandomName = new FandomName('ONCE');
         $officialColors = $withNullableValues ? [
-            new Color('#FF5FA2'),
-            new Color('#FFC0CB'),
+            new Color(new HexColor('#FF5FA2'), 'Apricot'),
+            new Color(new HexColor('#FFC0CB'), 'Pink'),
         ] : [];
         $emoji = new Emoji('🍭');
         $representativeSymbol = new RepresentativeSymbol('candy');

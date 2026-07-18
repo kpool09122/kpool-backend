@@ -9,7 +9,7 @@ readonly class GroupWikiBasicReadModel implements WikiBasicReadModel
     use ArrayAccessibleReadModel;
 
     /**
-     * @param list<string> $officialColors
+     * @param list<array{colorCode: string, label: string}> $officialColors
      */
     public function __construct(
         private string $name,

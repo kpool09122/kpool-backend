@@ -10,7 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -30,7 +30,7 @@ interface CreateWikiInputPort
 
     public function sections(): SectionContentCollection;
 
-    public function themeColor(): ?Color;
+    public function themeColor(): ?HexColor;
 
     public function fontStyle(): ?WikiFontStyle;
 

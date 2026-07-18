@@ -5,22 +5,52 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject;
 
 use InvalidArgumentException;
-use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class Color extends StringBaseValue
+final readonly class Color
 {
-    private const string HEX_PATTERN = '/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/';
+    private const int MAX_LABEL_LENGTH = 16;
 
-    protected function validate(string $value): void
+    public function __construct(
+        private HexColor $colorCode,
+        private string $label,
+    ) {
+        $this->validateLabel($label);
+    }
+
+    public function colorCode(): HexColor
     {
-        if (empty($value)) {
-            throw new InvalidArgumentException('Color cannot be empty.');
+        return $this->colorCode;
+    }
+
+    public function label(): string
+    {
+        return $this->label;
+    }
+
+    /**
+     * @return array{color_code: string, label: string}
+     */
+    public function toArray(): array
+    {
+        return [
+            'color_code' => (string) $this->colorCode,
+            'label' => $this->label,
+        ];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->colorCode;
+    }
+
+    private function validateLabel(string $label): void
+    {
+        if (trim($label) === '') {
+            throw new InvalidArgumentException('Color label cannot be empty.');
         }
 
-        if (! preg_match(self::HEX_PATTERN, $value)) {
-            throw new InvalidArgumentException(
-                'Color must be a valid HEX color code (e.g., #FF5733 or #F00).'
-            );
+        if (mb_strlen($label) > self::MAX_LABEL_LENGTH) {
+            throw new InvalidArgumentException('Color label must be 16 characters or less.');
         }
     }
 }

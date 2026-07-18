@@ -10,7 +10,7 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -26,7 +26,7 @@ readonly class CreateWikiInput implements CreateWikiInputPort
      * @param ResourceType $resourceType
      * @param BasicInterface $basic
      * @param SectionContentCollection $sections
-     * @param Color|null $themeColor
+     * @param HexColor|null $themeColor
      * @param WikiFontStyle|null $fontStyle
      * @param ImageIdentifier|null $imageIdentifier
      * @param SeoKeywords|null $keywords
@@ -42,7 +42,7 @@ readonly class CreateWikiInput implements CreateWikiInputPort
         private ResourceType             $resourceType,
         private BasicInterface           $basic,
         private SectionContentCollection $sections,
-        private ?Color                   $themeColor,
+        private ?HexColor                   $themeColor,
         private Slug                     $slug,
         private PrincipalIdentifier      $principalIdentifier,
         private ?WikiIdentifier          $agencyIdentifier = null,
@@ -81,7 +81,7 @@ readonly class CreateWikiInput implements CreateWikiInputPort
         return $this->sections;
     }
 
-    public function themeColor(): ?Color
+    public function themeColor(): ?HexColor
     {
         return $this->themeColor;
     }

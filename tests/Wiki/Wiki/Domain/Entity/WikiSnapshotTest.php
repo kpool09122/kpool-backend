@@ -16,7 +16,7 @@ use Source\Wiki\Wiki\Domain\Entity\WikiSnapshot;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\CEO;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -50,7 +50,7 @@ class WikiSnapshotTest extends TestCase
             socialLinks: [],
         );
         $sections = new SectionContentCollection();
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
         $version = new Version(1);
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());

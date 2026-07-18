@@ -132,7 +132,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             'debut_date' => $this->validDate($params->debutDate()),
             'disband_date' => $this->validDate($params->disbandDate()),
             'fandom_name' => $params->fandomName() ?? '',
-            'official_colors' => $this->validHexColors($params->officialColors()),
+            'official_colors' => $this->validOfficialColors($params->officialColors()),
             'emoji' => $params->emoji() ?? '',
             'representative_symbol' => $params->representativeSymbol() ?? '',
         ]);
@@ -573,14 +573,16 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
     }
 
     /**
-     * @param string[] $values
-     * @return string[]
+     * @param list<array{color_code: string, label: string}> $values
+     * @return list<array{color_code: string, label: string}>
      */
-    private function validHexColors(array $values): array
+    private function validOfficialColors(array $values): array
     {
         return array_values(array_filter(
             $values,
-            static fn (string $value) => preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value) === 1,
+            static fn (array $value) => preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value['color_code']) === 1
+                && trim($value['label']) !== ''
+                && mb_strlen($value['label']) <= 16,
         ));
     }
 }

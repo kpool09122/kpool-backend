@@ -31,8 +31,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -88,7 +88,7 @@ class EditWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $updatedSections = new SectionContentCollection();
-        $updatedThemeColor = new Color('#00FF00');
+        $updatedThemeColor = new HexColor('#00FF00');
         $updatedTitle = new SeoTitle('ITZY Wiki');
         $updatedMetaDescription = new MetaDescription('Profile for ITZY.');
         $updatedKeywords = new SeoKeywords(['ITZY', 'K-pop']);
@@ -450,7 +450,7 @@ class EditWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
         $slug = new Slug('gr-twice');
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
         $groupIdentifiers = [];
@@ -507,7 +507,7 @@ readonly class EditWikiTestData
         public ResourceType             $resourceType,
         public GroupBasic               $basic,
         public SectionContentCollection $sections,
-        public ?Color                   $themeColor,
+        public ?HexColor                   $themeColor,
         public Slug                     $slug,
         public ?WikiIdentifier          $agencyIdentifier,
         public array                    $groupIdentifiers,

@@ -9,8 +9,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -24,7 +24,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
      * @param DraftWikiIdentifier $wikiIdentifier
      * @param BasicInterface $basic
      * @param SectionContentCollection $sections
-     * @param Color|null $themeColor
+     * @param HexColor|null $themeColor
      * @param WikiFontStyle|null $fontStyle
      * @param ImageIdentifier|null $imageIdentifier
      * @param SeoKeywords|null $keywords
@@ -39,7 +39,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
         private DraftWikiIdentifier      $wikiIdentifier,
         private BasicInterface           $basic,
         private SectionContentCollection $sections,
-        private ?Color                   $themeColor,
+        private ?HexColor                   $themeColor,
         private PrincipalIdentifier      $principalIdentifier,
         private ResourceType             $resourceType,
         private DateTimeImmutable        $mergedAt,
@@ -69,7 +69,7 @@ readonly class MergeWikiInput implements MergeWikiInputPort
         return $this->sections;
     }
 
-    public function themeColor(): ?Color
+    public function themeColor(): ?HexColor
     {
         return $this->themeColor;
     }

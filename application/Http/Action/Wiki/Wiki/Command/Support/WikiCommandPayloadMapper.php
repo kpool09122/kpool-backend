@@ -76,10 +76,33 @@ final class WikiCommandPayloadMapper
             'debut_date' => $basic['debutDate'] ?? null,
             'disband_date' => $basic['disbandDate'] ?? null,
             'fandom_name' => $basic['fandomName'] ?? '',
-            'official_colors' => $basic['officialColors'] ?? [],
+            'official_colors' => self::officialColors($basic),
             'emoji' => $basic['emoji'] ?? '',
             'representative_symbol' => $basic['representativeSymbol'] ?? '',
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $basic
+     * @return list<array{color_code: string, label: string}>
+     */
+    private static function officialColors(array $basic): array
+    {
+        if (! isset($basic['officialColors'])) {
+            return [];
+        }
+
+        if (! is_array($basic['officialColors'])) {
+            throw new InvalidArgumentException('officialColors must be an array.');
+        }
+
+        return array_values(array_map(
+            static fn (array $color): array => [
+                'color_code' => $color['colorCode'],
+                'label' => $color['label'],
+            ],
+            $basic['officialColors'],
+        ));
     }
 
     /**

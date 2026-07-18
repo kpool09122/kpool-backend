@@ -12,8 +12,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -49,7 +49,7 @@ class EditWikiInputTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
         $fontStyle = WikiFontStyle::JA_POP;
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());

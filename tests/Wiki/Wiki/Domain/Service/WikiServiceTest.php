@@ -25,8 +25,8 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -601,7 +601,7 @@ class WikiServiceTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new Color('#FF5733'),
+            new HexColor('#FF5733'),
             $version,
         );
     }
@@ -645,7 +645,7 @@ class WikiServiceTest extends TestCase
                 representativeSymbol: new RepresentativeSymbol(''),
             ),
             new SectionContentCollection(),
-            new Color('#FF5733'),
+            new HexColor('#FF5733'),
             $status,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             translatedAt: $translatedAt,

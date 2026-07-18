@@ -22,7 +22,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\CreateWiki\CreateWikiOutput;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -59,7 +59,7 @@ readonly class CreateWikiAction
                     $resourceType,
                     $basic,
                     $sections,
-                    themeColor: $request->themeColor() !== null ? new Color($request->themeColor()) : null,
+                    themeColor: $request->themeColor() !== null ? new HexColor($request->themeColor()) : null,
                     fontStyle: $request->fontStyle() !== null ? WikiFontStyle::from($request->fontStyle()) : null,
                     slug: new Slug($request->slug()),
                     principalIdentifier: $this->wikiContext->principalIdentifier,
