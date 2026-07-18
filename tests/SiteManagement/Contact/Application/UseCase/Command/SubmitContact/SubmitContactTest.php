@@ -16,7 +16,7 @@ use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmai
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -34,8 +34,8 @@ class SubmitContactTest extends TestCase
      */
     public function test__construct(): void
     {
-        $emailService = Mockery::mock(EmailServiceInterface::class);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
         $submitContact = $this->app->make(SubmitContactInterface::class);
         $this->assertInstanceOf(SubmitContact::class, $submitContact);
     }
@@ -83,7 +83,7 @@ class SubmitContactTest extends TestCase
             ->with($category, $name, $email, $content, $identityIdentifier)
             ->andReturn($contact);
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldReceive('sendContactToAdministrator')
             ->once()
             ->with($contact)
@@ -100,7 +100,7 @@ class SubmitContactTest extends TestCase
             ->andReturnNull();
 
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $submitContact = $this->app->make(SubmitContactInterface::class);
         $submitContact->process($input);
@@ -149,7 +149,7 @@ class SubmitContactTest extends TestCase
             ->with($category, $name, $email, $content, $identityIdentifier)
             ->andReturn($contact);
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldReceive('sendContactToAdministrator')
             ->once()
             ->with($contact)
@@ -162,7 +162,7 @@ class SubmitContactTest extends TestCase
             ->andReturnNull();
 
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
 
         $this->expectException(FailedToSendEmailException::class);
@@ -213,7 +213,7 @@ class SubmitContactTest extends TestCase
             ->with($category, $name, $email, $content, $identityIdentifier)
             ->andReturn($contact);
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldReceive('sendContactToAdministrator')
             ->once()
             ->with($contact)
@@ -230,7 +230,7 @@ class SubmitContactTest extends TestCase
             ->andReturnNull();
 
         $this->app->instance(ContactFactoryInterface::class, $contactFactory);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
 
         $this->expectException(FailedToSendEmailException::class);

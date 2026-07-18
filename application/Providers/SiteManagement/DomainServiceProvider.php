@@ -18,7 +18,7 @@ use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Adapters\Repository\ReplyContactRepository;
 use Source\SiteManagement\Contact\Infrastructure\Factory\ContactFactory;
@@ -44,7 +44,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(ReplyContactRepositoryInterface::class, ReplyContactRepository::class);
         $this->app->singleton(EncryptionServiceInterface::class, EncryptionService::class);
         $this->app->singleton(
-            EmailServiceInterface::class,
+            ContactEmailServiceInterface::class,
             fn (): ContactEmailService => new ContactEmailService(
                 new Email((string) config('mail.from.address'))
             )

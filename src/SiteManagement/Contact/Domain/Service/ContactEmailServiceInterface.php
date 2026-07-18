@@ -8,7 +8,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 
-interface EmailServiceInterface
+interface ContactEmailServiceInterface
 {
     public function sendContactToUser(
         Contact $contact,

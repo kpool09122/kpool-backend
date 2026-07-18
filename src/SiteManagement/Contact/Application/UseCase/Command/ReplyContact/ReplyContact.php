@@ -11,7 +11,7 @@ use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
 use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
@@ -23,7 +23,7 @@ readonly class ReplyContact implements ReplyContactInterface
         private ContactRepositoryInterface $contactRepository,
         private ReplyContactFactoryInterface $replyContactFactory,
         private ReplyContactRepositoryInterface $replyContactRepository,
-        private EmailServiceInterface $emailService,
+        private ContactEmailServiceInterface $emailService,
         private UserRepositoryInterface $userRepository,
     ) {
     }

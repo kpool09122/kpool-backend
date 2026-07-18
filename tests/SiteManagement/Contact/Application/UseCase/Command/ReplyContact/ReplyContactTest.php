@@ -20,7 +20,7 @@ use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
 use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -42,8 +42,8 @@ class ReplyContactTest extends TestCase
      */
     public function test__construct(): void
     {
-        $emailService = Mockery::mock(EmailServiceInterface::class);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
 
         $replyContact = $this->app->make(ReplyContactInterface::class);
         $this->assertInstanceOf(ReplyContact::class, $replyContact);
@@ -86,7 +86,7 @@ class ReplyContactTest extends TestCase
             ->with($contactIdentifier)
             ->andReturn($contact);
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldReceive('sendReplyToUser')
             ->once()
             ->withArgs(function (Email $toEmail, ReplyContent $content) use ($contact, $expectedContent): bool {
@@ -151,7 +151,7 @@ class ReplyContactTest extends TestCase
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
 
         $useCase = $this->app->make(ReplyContactInterface::class);
         $useCase->process($input);
@@ -181,7 +181,7 @@ class ReplyContactTest extends TestCase
         $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
         $contactRepository->shouldNotReceive('findById');
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldNotReceive('sendReplyToUser');
 
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
@@ -194,7 +194,7 @@ class ReplyContactTest extends TestCase
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(UnauthorizedException::class);
         $useCase = $this->app->make(ReplyContactInterface::class);
@@ -227,7 +227,7 @@ class ReplyContactTest extends TestCase
             ->with($contactIdentifier)
             ->andReturnNull();
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldNotReceive('sendReplyToUser');
 
         $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
@@ -239,7 +239,7 @@ class ReplyContactTest extends TestCase
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(ContactNotFoundException::class);
         $useCase = $this->app->make(ReplyContactInterface::class);
@@ -281,7 +281,7 @@ class ReplyContactTest extends TestCase
             ->with($contactIdentifier)
             ->andReturn($contact);
 
-        $emailService = Mockery::mock(EmailServiceInterface::class);
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldReceive('sendReplyToUser')
             ->once()
             ->andThrow(new RuntimeException('send failed'));
@@ -342,7 +342,7 @@ class ReplyContactTest extends TestCase
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
         $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
-        $this->app->instance(EmailServiceInterface::class, $emailService);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
 
         $this->expectException(FailedToSendEmailException::class);
         $useCase = $this->app->make(ReplyContactInterface::class);
