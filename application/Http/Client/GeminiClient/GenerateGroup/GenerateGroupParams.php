@@ -49,7 +49,7 @@ final readonly class GenerateGroupParams
             debutDate: self::nullableString($data['debut_date'] ?? null),
             disbandDate: self::nullableString($data['disband_date'] ?? null),
             fandomName: self::nullableString($data['fandom_name'] ?? null),
-            officialColors: self::stringArray($data['official_colors'] ?? []),
+            officialColors: self::officialColorsArray($data['official_colors'] ?? []),
             emoji: self::nullableString($data['emoji'] ?? null),
             representativeSymbol: self::nullableString($data['representative_symbol'] ?? null),
             overview: self::nullableString($data['overview'] ?? null),
@@ -119,7 +119,7 @@ final readonly class GenerateGroupParams
     }
 
     /**
-     * @return string[]
+     * @return list<array{color_code: string, label: string}>
      */
     public function officialColors(): array
     {
@@ -188,6 +188,23 @@ final readonly class GenerateGroupParams
         }
 
         return array_values(array_filter($value, static fn (mixed $item) => is_string($item)));
+    }
+
+    /**
+     * @return list<array{color_code: string, label: string}>
+     */
+    private static function officialColorsArray(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $value,
+            static fn (mixed $item) => is_array($item)
+                && is_string($item['color_code'] ?? null)
+                && is_string($item['label'] ?? null),
+        ));
     }
 
     private static function nullableString(mixed $value): ?string

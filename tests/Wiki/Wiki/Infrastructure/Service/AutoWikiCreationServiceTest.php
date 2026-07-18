@@ -279,7 +279,10 @@ class AutoWikiCreationServiceTest extends TestCase
             'debut_date' => '2015-10-20',
             'disband_date' => 'invalid-date',
             'fandom_name' => 'ONCE',
-            'official_colors' => ['#FF5FA2', 'apricot'],
+            'official_colors' => [
+                ['color_code' => '#FF5FA2', 'label' => 'Apricot'],
+                ['color_code' => 'apricot', 'label' => 'Apricot'],
+            ],
             'emoji' => '🍭',
             'representative_symbol' => 'Candy Bong',
             'overview' => $overview,
@@ -326,7 +329,8 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertSame('2015-10-20', $basic->debutDate()?->format('Y-m-d'));
         $this->assertNull($basic->disbandDate());
         $this->assertSame('ONCE', $basic->fandomName()->value());
-        $this->assertSame(['#FF5FA2'], array_map('strval', $basic->officialColors()));
+        $this->assertSame('#FF5FA2', (string) $basic->officialColors()[0]->colorCode());
+        $this->assertSame('Apricot', $basic->officialColors()[0]->label());
         $this->assertSame('🍭', $basic->emoji()->value());
         $this->assertSame('Candy Bong', $basic->representativeSymbol()->value());
 
