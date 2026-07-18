@@ -8,80 +8,39 @@ use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 
 class ColorTest extends TestCase
 {
-    /**
-     * 正常系: 6桁のHEXカラーコードでインスタンスが生成されること
-     */
-    public function test__constructWithSixDigitHex(): void
+    public function test__constructWithColorCodeAndLabel(): void
     {
-        $color = new Color('#FF5733');
+        $color = new Color(new HexColor('#FF5733'), 'Apricot');
+
+        $this->assertSame('#FF5733', (string) $color->colorCode());
+        $this->assertSame('Apricot', $color->label());
         $this->assertSame('#FF5733', (string) $color);
+        $this->assertSame(['color_code' => '#FF5733', 'label' => 'Apricot'], $color->toArray());
+        $this->assertSame(['colorCode' => '#FF5733', 'label' => 'Apricot'], $color->toApiArray());
     }
 
-    /**
-     * 正常系: 3桁のHEXカラーコードでインスタンスが生成されること
-     */
-    public function test__constructWithThreeDigitHex(): void
-    {
-        $color = new Color('#F00');
-        $this->assertSame('#F00', (string) $color);
-    }
-
-    /**
-     * 正常系: 小文字のHEXカラーコードでインスタンスが生成されること
-     */
-    public function test__constructWithLowercaseHex(): void
-    {
-        $color = new Color('#ff5733');
-        $this->assertSame('#ff5733', (string) $color);
-    }
-
-    /**
-     * 正常系: 大文字小文字混在のHEXカラーコードでインスタンスが生成されること
-     */
-    public function test__constructWithMixedCaseHex(): void
-    {
-        $color = new Color('#Ff5733');
-        $this->assertSame('#Ff5733', (string) $color);
-    }
-
-    /**
-     * 異常系: 空文字で例外がスローされること
-     */
-    public function testThrowsInvalidArgumentExceptionWithEmptyColor(): void
+    #[DataProvider('invalidLabelProvider')]
+    public function testThrowsInvalidArgumentExceptionWithInvalidLabel(string $label, string $message): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Color cannot be empty.');
-        new Color('');
+        $this->expectExceptionMessage($message);
+
+        new Color(new HexColor('#FF5733'), $label);
     }
 
     /**
-     * 異常系: 不正なカラーコードで例外がスローされること
+     * @return array<string, array{string, string}>
      */
-    #[DataProvider('invalidColorProvider')]
-    public function testThrowsInvalidArgumentExceptionWithInvalidColor(string $invalidColor): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Color must be a valid HEX color code (e.g., #FF5733 or #F00).');
-        new Color($invalidColor);
-    }
-
-    /**
-     * @return array<string, array<string>>
-     */
-    public static function invalidColorProvider(): array
+    public static function invalidLabelProvider(): array
     {
         return [
-            '色名' => ['red'],
-            '#なし' => ['FF5733'],
-            '4桁' => ['#FF57'],
-            '5桁' => ['#FF573'],
-            '7桁' => ['#FF57331'],
-            '不正な文字を含む' => ['#GG5733'],
-            'RGB形式' => ['rgb(255, 87, 51)'],
-            'スペースを含む' => ['#FF 5733'],
+            '空文字' => ['', 'Color label cannot be empty.'],
+            'trim後空文字' => ['   ', 'Color label cannot be empty.'],
+            '17文字' => ['12345678901234567', 'Color label must be 16 characters or less.'],
         ];
     }
 }

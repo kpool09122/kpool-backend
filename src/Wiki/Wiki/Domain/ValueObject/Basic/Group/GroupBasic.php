@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\ValueObject\Basic\Group;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
@@ -12,6 +13,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
 use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 
 final readonly class GroupBasic implements BasicInterface
@@ -33,6 +35,9 @@ final readonly class GroupBasic implements BasicInterface
         private Emoji $emoji,
         private RepresentativeSymbol $representativeSymbol,
     ) {
+        if (count($this->officialColors) > 2) {
+            throw new InvalidArgumentException('Official colors must be 2 colors or less.');
+        }
     }
 
     public function name(): Name
@@ -130,7 +135,7 @@ final readonly class GroupBasic implements BasicInterface
             'disband_date' => $this->disbandDate?->format('Y-m-d'),
             'fandom_name' => $this->fandomName->value(),
             'official_colors' => array_map(
-                static fn (Color $color) => (string) $color,
+                static fn (Color $color) => $color->toArray(),
                 $this->officialColors
             ),
             'emoji' => $this->emoji->value(),
@@ -154,10 +159,34 @@ final readonly class GroupBasic implements BasicInterface
             disbandDate: isset($data['disband_date']) ? new DisbandDate(new DateTimeImmutable($data['disband_date'])) : null,
             fandomName: new FandomName($data['fandom_name'] ?? ''),
             officialColors: isset($data['official_colors'])
-                ? array_map(static fn (string $color) => new Color($color), $data['official_colors'])
+                ? array_map(static fn (mixed $color) => self::colorFromStoredValue($color), $data['official_colors'])
                 : [],
             emoji: new Emoji($data['emoji'] ?? ''),
             representativeSymbol: new RepresentativeSymbol($data['representative_symbol'] ?? ''),
         );
+    }
+
+    private static function colorFromStoredValue(mixed $value): Color
+    {
+        if (is_string($value)) {
+            return new Color(new HexColor($value), $value);
+        }
+
+        if (! is_array($value)) {
+            throw new InvalidArgumentException('Official color must be a string or object.');
+        }
+
+        $colorCode = $value['color_code'] ?? $value['colorCode'] ?? null;
+        $label = $value['label'] ?? null;
+
+        if (! is_string($colorCode)) {
+            throw new InvalidArgumentException('Official color color_code must be a string.');
+        }
+
+        if (! is_string($label)) {
+            throw new InvalidArgumentException('Official color label must be a string.');
+        }
+
+        return new Color(new HexColor($colorCode), $label);
     }
 }

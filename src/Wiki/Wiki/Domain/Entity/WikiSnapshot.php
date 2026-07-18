@@ -13,7 +13,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -33,7 +33,7 @@ readonly class WikiSnapshot
         private ResourceType             $resourceType,
         private BasicInterface           $basic,
         private SectionContentCollection $sections,
-        private ?Color                   $themeColor,
+        private ?HexColor                   $themeColor,
         private Version                  $version,
         private ?PrincipalIdentifier     $editorIdentifier,
         private ?PrincipalIdentifier     $approverIdentifier,
@@ -91,7 +91,7 @@ readonly class WikiSnapshot
         return $this->sections;
     }
 
-    public function themeColor(): ?Color
+    public function themeColor(): ?HexColor
     {
         return $this->themeColor;
     }

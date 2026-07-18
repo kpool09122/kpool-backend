@@ -14,8 +14,8 @@ use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\Entity\DraftWiki;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -144,7 +144,7 @@ class DraftWikiTest extends TestCase
         $this->assertSame($data->themeColor, $draftWiki->themeColor());
 
         // 新しい色を設定
-        $newColor = new Color('#00FF00');
+        $newColor = new HexColor('#00FF00');
         $draftWiki->setThemeColor($newColor);
         $this->assertSame($newColor, $draftWiki->themeColor());
         $this->assertNotSame($data->themeColor, $draftWiki->themeColor());
@@ -389,7 +389,7 @@ class DraftWikiTest extends TestCase
             'social_links' => [],
         ]);
         $sections = new SectionContentCollection();
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
         $status = ApprovalStatus::Pending;
         $editorIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $approverIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -441,7 +441,7 @@ readonly class DraftWikiTestData
         public ResourceType              $resourceType,
         public BasicInterface            $basic,
         public SectionContentCollection  $sections,
-        public ?Color                    $themeColor,
+        public ?HexColor                    $themeColor,
         public ApprovalStatus            $status,
         public ?PrincipalIdentifier      $editorIdentifier,
         public ?PrincipalIdentifier      $approverIdentifier,

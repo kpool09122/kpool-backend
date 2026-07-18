@@ -7,7 +7,7 @@ namespace Source\Wiki\Wiki\Application\UseCase\Query;
 readonly class TalentWikiGroupSummaryReadModel
 {
     /**
-     * @param list<string> $officialColors
+     * @param list<array{colorCode: string, label: string}> $officialColors
      */
     public function __construct(
         private string $wikiIdentifier,

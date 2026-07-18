@@ -15,7 +15,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Agency\AgencyBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -119,7 +119,7 @@ class WikiTest extends TestCase
         $this->assertSame($data->themeColor, $wiki->themeColor());
 
         // 新しい色を設定
-        $newColor = new Color('#00FF00');
+        $newColor = new HexColor('#00FF00');
         $wiki->setThemeColor($newColor);
         $this->assertSame($newColor, $wiki->themeColor());
         $this->assertNotSame($data->themeColor, $wiki->themeColor());
@@ -495,7 +495,7 @@ class WikiTest extends TestCase
             'social_links' => [],
         ]);
         $sections = new SectionContentCollection();
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
         $version = new Version(1);
         $isOfficial ??= false;
         $ownerAccountIdentifier = $isOfficial ? new AccountIdentifier(StrTestHelper::generateUuid()) : null;
@@ -549,7 +549,7 @@ readonly class WikiTestData
         public ResourceType              $resourceType,
         public BasicInterface            $basic,
         public SectionContentCollection  $sections,
-        public ?Color                    $themeColor,
+        public ?HexColor                    $themeColor,
         public Version                   $version,
         public ?AccountIdentifier        $ownerAccountIdentifier,
         public ?PrincipalIdentifier      $editorIdentifier,

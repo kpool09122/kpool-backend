@@ -24,8 +24,8 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\EditWiki\EditWikiOutput;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -60,7 +60,7 @@ readonly class EditWikiAction
                     new DraftWikiIdentifier($request->wikiId()),
                     $basic,
                     $sections,
-                    themeColor: $request->themeColor() !== null ? new Color($request->themeColor()) : null,
+                    themeColor: $request->themeColor() !== null ? new HexColor($request->themeColor()) : null,
                     fontStyle: $request->fontStyle() !== null ? WikiFontStyle::from($request->fontStyle()) : null,
                     principalIdentifier: $this->wikiContext->principalIdentifier,
                     resourceType: $resourceType,

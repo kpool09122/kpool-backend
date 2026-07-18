@@ -3400,7 +3400,7 @@ components:
         officialColors:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/OfficialColor'
           description: Official colors of the group.
         emoji:
           type: string
@@ -3689,6 +3689,20 @@ components:
           type: string
           description: Current workflow status of the certification.
       description: Summary of an official certification request.
+    OfficialColor:
+      type: object
+      required:
+        - colorCode
+        - label
+      properties:
+        colorCode:
+          type: string
+          description: 'HEX color code in #RRGGBB format.'
+        label:
+          type: string
+          maxLength: 16
+          description: Human-readable color label.
+      description: Official color with a HEX color code and display label.
     PolicyCondition:
       type: object
       properties:
@@ -4290,7 +4304,7 @@ components:
         officialColors:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/OfficialColor'
           description: Official color palette of the group.
         emoji:
           type: string
@@ -4716,7 +4730,7 @@ components:
         officialColors:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/OfficialColor'
           description: Official color palette of the group.
         emoji:
           type: string

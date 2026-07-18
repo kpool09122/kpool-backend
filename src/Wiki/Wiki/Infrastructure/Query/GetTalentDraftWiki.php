@@ -13,6 +13,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiGroupSummaryReadModel;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
@@ -117,7 +118,7 @@ readonly class GetTalentDraftWiki implements GetTalentDraftWikiInterface
             debutDate: $basic->debut_date,
             disbandDate: $basic->disband_date,
             fandomName: $basic->fandom_name,
-            officialColors: $basic->official_colors,
+            officialColors: OfficialColorReadModelMapper::toApiArray($basic->official_colors),
             emoji: $basic->emoji,
             representativeSymbol: $basic->representative_symbol,
         );

@@ -36,9 +36,9 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -374,7 +374,7 @@ class RejectWikiTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection();
-        $themeColor = new Color('#FF5733');
+        $themeColor = new HexColor('#FF5733');
 
         $draftWiki = new DraftWiki(
             $wikiIdentifier,
@@ -451,7 +451,7 @@ readonly class RejectWikiTestData
         public Name                     $name,
         public GroupBasic               $basic,
         public SectionContentCollection $sections,
-        public ?Color                   $themeColor,
+        public ?HexColor                   $themeColor,
         public ?WikiIdentifier          $agencyIdentifier,
         public array                    $groupIdentifiers,
         public array                    $talentIdentifiers,

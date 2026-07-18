@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $debut_date
  * @property ?string $disband_date
  * @property string $fandom_name
- * @property array<string> $official_colors
+ * @property array<array{color_code: string, label: string}> $official_colors
  * @property string $emoji
  * @property string $representative_symbol
  */

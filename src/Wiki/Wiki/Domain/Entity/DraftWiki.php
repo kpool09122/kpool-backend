@@ -13,9 +13,9 @@ use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\Color;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiRejectionReason;
+use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
@@ -34,7 +34,7 @@ class DraftWiki
         private readonly ResourceType $resourceType,
         private BasicInterface $basic,
         private SectionContentCollection $sections,
-        private ?Color $themeColor,
+        private ?HexColor $themeColor,
         private ApprovalStatus $status,
         private ?PrincipalIdentifier $editorIdentifier = null,
         private ?PrincipalIdentifier $approverIdentifier = null,
@@ -108,12 +108,12 @@ class DraftWiki
         $this->sections = $sections;
     }
 
-    public function themeColor(): ?Color
+    public function themeColor(): ?HexColor
     {
         return $this->themeColor;
     }
 
-    public function setThemeColor(?Color $themeColor): void
+    public function setThemeColor(?HexColor $themeColor): void
     {
         $this->themeColor = $themeColor;
     }

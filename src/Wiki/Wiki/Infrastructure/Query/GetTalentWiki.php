@@ -11,6 +11,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiGroupSummaryReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\WikiReadModel;
@@ -102,7 +103,7 @@ readonly class GetTalentWiki implements GetTalentWikiInterface
             debutDate: $basic->debut_date,
             disbandDate: $basic->disband_date,
             fandomName: $basic->fandom_name,
-            officialColors: $basic->official_colors,
+            officialColors: OfficialColorReadModelMapper::toApiArray($basic->official_colors),
             emoji: $basic->emoji,
             representativeSymbol: $basic->representative_symbol,
         );

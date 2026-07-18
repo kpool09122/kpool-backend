@@ -35,7 +35,7 @@ class GetSongDraftWikiTest extends TestCase
                 'generation' => '3',
                 'debut_date' => '2015-10-20',
                 'fandom_name' => 'ONCE',
-                'official_colors' => json_encode(['#FE5F8F', '#FEE500']),
+                'official_colors' => json_encode([['color_code' => '#FE5F8F', 'label' => 'Apricot'], ['color_code' => '#FEE500', 'label' => 'Yellow']]),
                 'representative_symbol' => 'Candy Bong',
             ],
         );

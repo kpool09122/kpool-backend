@@ -14,6 +14,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetMySongDraftWiki\GetMySongDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetMySongDraftWiki\GetMySongDraftWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiTalentSummaryReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiGroupSummaryReadModel;
@@ -119,7 +120,7 @@ readonly class GetMySongDraftWiki implements GetMySongDraftWikiInterface
             debutDate: $basic->debut_date,
             disbandDate: $basic->disband_date,
             fandomName: $basic->fandom_name,
-            officialColors: $basic->official_colors,
+            officialColors: OfficialColorReadModelMapper::toApiArray($basic->official_colors),
             emoji: $basic->emoji,
             representativeSymbol: $basic->representative_symbol,
         );
