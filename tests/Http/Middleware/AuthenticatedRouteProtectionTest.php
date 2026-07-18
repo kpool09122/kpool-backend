@@ -82,6 +82,29 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $middleware->handle($request, fn () => response('ok'));
     }
 
+    public function testWikiRoutesWithoutAuthApiMiddlewareMatchPublicRouteWhitelist(): void
+    {
+        $actualPublicWikiRouteUris = [];
+
+        foreach (RouteFacade::getRoutes()->getRoutes() as $route) {
+            if (! str_starts_with($route->uri(), 'api/wiki/')) {
+                continue;
+            }
+
+            if (! in_array('auth.api', $route->gatherMiddleware(), true)) {
+                $actualPublicWikiRouteUris[] = $route->uri();
+            }
+        }
+
+        $actualPublicWikiRouteUris = array_values(array_unique($actualPublicWikiRouteUris));
+        sort($actualPublicWikiRouteUris);
+
+        $expectedPublicWikiRouteUris = self::publicWikiRouteUris();
+        sort($expectedPublicWikiRouteUris);
+
+        $this->assertSame($expectedPublicWikiRouteUris, $actualPublicWikiRouteUris);
+    }
+
     /**
      * @return array<string, array{string, string}>
      */
@@ -175,6 +198,21 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki: group detail' => ['GET', '/api/wiki/wiki/ja/group/group-slug'],
             'wiki: song detail' => ['GET', '/api/wiki/wiki/ja/song/song-slug'],
             'wiki: talent detail' => ['GET', '/api/wiki/wiki/ja/talent/talent-slug'],
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function publicWikiRouteUris(): array
+    {
+        return [
+            'api/wiki/wiki/{language}/{slug}/related-profiles',
+            'api/wiki/wiki/{language}/agency/{slug}',
+            'api/wiki/wiki/{language}/group/{slug}',
+            'api/wiki/wiki/{language}/song/{slug}',
+            'api/wiki/wiki/{language}/talent/{slug}',
+            'api/wiki/wikis/{language}',
         ];
     }
 
