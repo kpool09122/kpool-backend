@@ -3,19 +3,22 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Wiki\Image\Command\ApproveImage\ApproveImageAction;
+use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
 use Application\Http\Action\Wiki\Image\Command\DeleteImage\DeleteImageAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImage\RejectImageAction;
+use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
+use Application\Http\Action\Wiki\Image\Command\RequestImageHide\RequestImageHideAction;
 use Application\Http\Action\Wiki\Image\Command\UnhideImage\UnhideImageAction;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
 use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
 use Application\Http\Action\Wiki\Image\Query\ListUploadedImages\ListUploadedImagesAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationAction;
+use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationAction;
 use Application\Http\Action\Wiki\Principal\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\AttachPolicyToRole\AttachPolicyToRoleAction;
 use Application\Http\Action\Wiki\Principal\Command\AttachRoleToPrincipalGroup\AttachRoleToPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePolicy\CreatePolicyAction;
-use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
-use Application\Http\Action\Wiki\OfficialCertification\Command\RejectCertification\RejectCertificationAction;
-use Application\Http\Action\Wiki\OfficialCertification\Command\RequestCertification\RequestCertificationAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Wiki\Principal\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\CreateRole\CreateRoleAction;
@@ -26,6 +29,7 @@ use Application\Http\Action\Wiki\Principal\Command\DetachPolicyFromRole\DetachPo
 use Application\Http\Action\Wiki\Principal\Command\DetachRoleFromPrincipalGroup\DetachRoleFromPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
 use Application\Http\Action\Wiki\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
+use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinksAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\CreateWiki\CreateWikiAction;
@@ -36,6 +40,8 @@ use Application\Http\Action\Wiki\Wiki\Command\PublishWiki\PublishWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\RejectWiki\RejectWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\RollbackWiki\RollbackWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\SubmitWiki\SubmitWikiAction;
+use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
+use Application\Http\Action\Wiki\Wiki\Command\WithdrawWiki\WithdrawWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetAgencyDraftWiki\GetAgencyDraftWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetAgencyWiki\GetAgencyWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetGroupDraftWiki\GetGroupDraftWikiAction;
@@ -54,12 +60,6 @@ use Application\Http\Action\Wiki\Wiki\Query\ListRelatedProfiles\ListRelatedProfi
 use Application\Http\Action\Wiki\Wiki\Query\ListVersionInconsistentWikis\ListVersionInconsistentWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListWikis\ListWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\SearchMasterWikis\SearchMasterWikisAction;
-use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
-use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
-use Application\Http\Action\Wiki\Image\Command\RequestImageHide\RequestImageHideAction;
-use Application\Http\Action\Wiki\VideoLink\Command\SaveVideoLinks\SaveVideoLinksAction;
-use Application\Http\Action\Wiki\Wiki\Command\TranslateWiki\TranslateWikiAction;
-use Application\Http\Action\Wiki\Wiki\Command\WithdrawWiki\WithdrawWikiAction;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
@@ -77,22 +77,22 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
     Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
 });
 Route::get('/wikis/version-inconsistencies', ListVersionInconsistentWikisAction::class)->middleware(['auth.api', 'resolve.actor']);
-Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class);
+Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class)->middleware('auth.api');
 Route::get('/wikis/{language}', ListWikisAction::class);
 Route::get('/my/draft-wikis', ListMyDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/draft-wikis', ListDraftWikisAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);
 Route::get('/wiki/{language}/agency/{slug}', GetAgencyWikiAction::class);
-Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class);
+Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class)->middleware('auth.api');
 Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/group/{slug}', GetGroupWikiAction::class);
-Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class);
+Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class)->middleware('auth.api');
 Route::get('/wiki/{language}/group/{slug}/my/draft', GetMyGroupDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/song/{slug}', GetSongWikiAction::class);
-Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class);
+Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class)->middleware('auth.api');
 Route::get('/wiki/{language}/song/{slug}/my/draft', GetMySongDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 Route::get('/wiki/{language}/talent/{slug}', GetTalentWikiAction::class);
-Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class);
+Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class)->middleware('auth.api');
 Route::get('/wiki/{language}/talent/{slug}/my/draft', GetMyTalentDraftWikiAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
 
 // Image
@@ -109,18 +109,20 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 // Principal
 Route::get('/principal/me', GetCurrentPrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
 Route::post('/principal/create', CreatePrincipalAction::class)->middleware(['auth.api', 'resolve.actor']);
-Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
-Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
-Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
-Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
-Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
-Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);
-Route::post('/role/create', CreateRoleAction::class);
-Route::delete('/role/{roleId}', DeleteRoleAction::class);
-Route::post('/role/{roleId}/attach-policy', AttachPolicyToRoleAction::class);
-Route::post('/role/{roleId}/detach-policy', DetachPolicyFromRoleAction::class);
-Route::post('/policy/create', CreatePolicyAction::class);
-Route::delete('/policy/{policyId}', DeletePolicyAction::class);
+Route::middleware('auth.api')->group(function () {
+    Route::post('/principal-group/create', CreatePrincipalGroupAction::class);
+    Route::post('/principal-group/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
+    Route::post('/principal-group/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
+    Route::delete('/principal-group/{principalGroupId}', DeletePrincipalGroupAction::class);
+    Route::post('/principal-group/{principalGroupId}/attach-role', AttachRoleToPrincipalGroupAction::class);
+    Route::post('/principal-group/{principalGroupId}/detach-role', DetachRoleFromPrincipalGroupAction::class);
+    Route::post('/role/create', CreateRoleAction::class);
+    Route::delete('/role/{roleId}', DeleteRoleAction::class);
+    Route::post('/role/{roleId}/attach-policy', AttachPolicyToRoleAction::class);
+    Route::post('/role/{roleId}/detach-policy', DetachPolicyFromRoleAction::class);
+    Route::post('/policy/create', CreatePolicyAction::class);
+    Route::delete('/policy/{policyId}', DeletePolicyAction::class);
+});
 
 // ImageHideRequest
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
@@ -130,9 +132,11 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function
 });
 
 // OfficialCertification
-Route::post('/official-certification/request', RequestCertificationAction::class);
-Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class);
-Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);
+Route::middleware('auth.api')->group(function () {
+    Route::post('/official-certification/request', RequestCertificationAction::class);
+    Route::post('/official-certification/{certificationId}/approve', ApproveCertificationAction::class);
+    Route::post('/official-certification/{certificationId}/reject', RejectCertificationAction::class);
+});
 
 // VideoLink
 Route::post('/video-link/save', SaveVideoLinksAction::class)->middleware(['auth.api', 'resolve.actor', 'resolve.wiki']);
