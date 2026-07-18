@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -31,7 +31,7 @@ class ContactEmailServiceTest extends TestCase
      */
     public function test__construct(): void
     {
-        $service = $this->app->make(EmailServiceInterface::class);
+        $service = $this->app->make(ContactEmailServiceInterface::class);
 
         $this->assertInstanceOf(ContactEmailService::class, $service);
     }
@@ -45,7 +45,7 @@ class ContactEmailServiceTest extends TestCase
 
         $contact = $this->createContact();
 
-        $service = $this->app->make(EmailServiceInterface::class);
+        $service = $this->app->make(ContactEmailServiceInterface::class);
         $service->sendContactToUser($contact);
 
         Mail::assertSent(ContactAcceptedMail::class, static fn (ContactAcceptedMail $mail): bool => $mail->hasTo((string) $contact->email())
@@ -79,7 +79,7 @@ class ContactEmailServiceTest extends TestCase
         $toEmail = new Email('john.doe@example.com');
         $content = new ReplyContent('返信内容');
 
-        $service = $this->app->make(EmailServiceInterface::class);
+        $service = $this->app->make(ContactEmailServiceInterface::class);
         $service->sendReplyToUser($toEmail, $content);
 
         Mail::assertSent(ContactReplyMail::class, static fn (ContactReplyMail $mail): bool => $mail->hasTo((string) $toEmail)

@@ -10,10 +10,10 @@ use Application\Mail\ContactReplyMail;
 use Illuminate\Support\Facades\Mail;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 
-readonly class ContactEmailService implements EmailServiceInterface
+readonly class ContactEmailService implements ContactEmailServiceInterface
 {
     public function __construct(
         private Email $administratorEmail,
