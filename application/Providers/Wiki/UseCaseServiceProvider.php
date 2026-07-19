@@ -22,8 +22,10 @@ use Source\Wiki\Image\Application\UseCase\Command\UnhideImage\UnhideImageInterfa
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImage;
 use Source\Wiki\Image\Application\UseCase\Command\UploadImage\UploadImageInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInterface;
+use Source\Wiki\Image\Application\UseCase\Query\ListImageDeletionRequests\ListImageDeletionRequestsInterface;
 use Source\Wiki\Image\Application\UseCase\Query\ListUploadedImages\ListUploadedImagesInterface;
 use Source\Wiki\Image\Infrastructure\Query\ListDraftImages;
+use Source\Wiki\Image\Infrastructure\Query\ListImageDeletionRequests;
 use Source\Wiki\Image\Infrastructure\Query\ListUploadedImages;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertification;
 use Source\Wiki\OfficialCertification\Application\UseCase\Command\ApproveCertification\ApproveCertificationInterface;
@@ -149,6 +151,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RequestImageDeletionInterface::class, RequestImageDeletion::class);
         $this->app->singleton(ApproveImageDeletionInterface::class, ApproveImageDeletion::class);
         $this->app->singleton(RejectImageDeletionInterface::class, RejectImageDeletion::class);
+        $this->app->singleton(ListImageDeletionRequestsInterface::class, ListImageDeletionRequests::class);
         $this->app->singleton(ListDraftImagesInterface::class, ListDraftImages::class);
         $this->app->singleton(ListUploadedImagesInterface::class, ListUploadedImages::class);
         $this->app->singleton(CreateWikiInterface::class, CreateWiki::class);

@@ -10,6 +10,7 @@ use Application\Http\Action\Wiki\Image\Command\RejectImageDeletion\RejectImageDe
 use Application\Http\Action\Wiki\Image\Command\RequestImageDeletion\RequestImageDeletionAction;
 use Application\Http\Action\Wiki\Image\Command\UnhideImage\UnhideImageAction;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
+use Application\Http\Action\Wiki\Image\Query\ListImageDeletionRequests\ListImageDeletionRequestsAction;
 use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
 use Application\Http\Action\Wiki\Image\Query\ListUploadedImages\ListUploadedImagesAction;
 use Application\Http\Action\Wiki\OfficialCertification\Command\ApproveCertification\ApproveCertificationAction;
@@ -126,6 +127,7 @@ Route::middleware('auth.api')->group(function () {
 
 // ImageDeletionRequest
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
+    Route::get('/image-deletion-requests', ListImageDeletionRequestsAction::class);
     Route::post('/image/{imageId}/request-deletion', RequestImageDeletionAction::class);
     Route::post('/image/{imageId}/approve-deletion', ApproveImageDeletionAction::class);
     Route::post('/image/{imageId}/reject-deletion', RejectImageDeletionAction::class);
