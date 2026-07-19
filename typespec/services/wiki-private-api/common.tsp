@@ -66,6 +66,8 @@ model DraftWikiHeroImage {
   src: string | null;
   @doc("Hero image alternative text.")
   alt: string | null;
+  @doc("Whether the hero image is hidden.")
+  isHidden: boolean | null;
 }
 
 @doc("Hero image payload for a published wiki.")

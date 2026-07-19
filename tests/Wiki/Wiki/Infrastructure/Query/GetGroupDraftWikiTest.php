@@ -32,7 +32,7 @@ class GetGroupDraftWikiTest extends TestCase
         $this->assertSame('group', $readModel->resourceType());
         $this->assertSame('pending', $readModel->status());
         $this->assertSame('#FE5F8F', $readModel->themeColor());
-        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('girl_group', $readModel->basic()['groupType']);
