@@ -24,6 +24,7 @@ class DraftWikiReadModelTest extends TestCase
                 'imageIdentifier' => null,
                 'src' => null,
                 'alt' => null,
+                'isHidden' => null,
             ],
             basic: [
                 'name' => 'TWICE',
@@ -67,7 +68,7 @@ class DraftWikiReadModelTest extends TestCase
         $this->assertSame('TWICE Draft Wiki', $readModel->title());
         $this->assertSame('Draft profile and history for TWICE.', $readModel->metaDescription());
         $this->assertSame(['TWICE', 'draft'], $readModel->keywords());
-        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null], $readModel->heroImage());
+        $this->assertSame(['imageIdentifier' => null, 'src' => null, 'alt' => null, 'isHidden' => null], $readModel->heroImage());
         $this->assertInstanceOf(GroupWikiBasicReadModel::class, $readModel->basic());
         $this->assertSame('TWICE', $readModel->basic()['name']);
         $this->assertSame('overview', $readModel->sections()[0]['id']);
@@ -88,6 +89,7 @@ class DraftWikiReadModelTest extends TestCase
                 'imageIdentifier' => null,
                 'src' => null,
                 'alt' => null,
+                'isHidden' => null,
             ],
             'basic' => [
                 'name' => 'TWICE',

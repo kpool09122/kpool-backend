@@ -28,7 +28,12 @@ readonly class GetMyGroupDraftWiki implements GetMyGroupDraftWikiInterface
         $editorIdentifier = $input->editorIdentifier();
 
         $model = DraftWikiModel::query()
-            ->select('draft_wikis.*', 'wiki_images.image_path as hero_image_path', 'wiki_images.alt_text as hero_image_alt_text')
+            ->select(
+                'draft_wikis.*',
+                'wiki_images.image_path as hero_image_path',
+                'wiki_images.alt_text as hero_image_alt_text',
+                'wiki_images.is_hidden as hero_image_is_hidden',
+            )
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'draft_wikis.image_identifier')
             ->with(['groupBasic', 'publishedWiki'])
             ->where('draft_wikis.resource_type', ResourceType::GROUP->value)
@@ -63,6 +68,9 @@ readonly class GetMyGroupDraftWiki implements GetMyGroupDraftWikiInterface
                 'imageIdentifier' => $model->image_identifier,
                 'src' => ImageUrl::fromPath($model->getAttribute('hero_image_path')),
                 'alt' => $model->getAttribute('hero_image_alt_text'),
+                'isHidden' => $model->getAttribute('hero_image_is_hidden') === null
+                    ? null
+                    : (bool) $model->getAttribute('hero_image_is_hidden'),
             ],
             basic: new GroupWikiBasicReadModel(
                 name: $basic->name,

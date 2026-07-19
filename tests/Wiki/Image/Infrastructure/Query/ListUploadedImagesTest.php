@@ -108,6 +108,34 @@ class ListUploadedImagesTest extends TestCase
     }
 
     #[Group('useDb')]
+    public function testProcessExcludesHiddenImages(): void
+    {
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f701', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            'uploaded_at' => '2026-05-01 00:00:00',
+        ]);
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f702', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            'uploaded_at' => '2026-05-02 00:00:00',
+            'is_hidden' => true,
+        ]);
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f703', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            'uploaded_at' => '2026-05-03 00:00:00',
+        ]);
+
+        $payload = $this->process(new ListUploadedImagesInput(
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f801'),
+        ))->toArray();
+
+        $this->assertSame(2, $payload['total']);
+        $this->assertSame([
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f703',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+        ], array_column($payload['images'], 'imageIdentifier'));
+    }
+
+    #[Group('useDb')]
     public function testProcessReturnsImageMetadata(): void
     {
         CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f501', [

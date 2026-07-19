@@ -3134,6 +3134,7 @@ components:
         - imageIdentifier
         - src
         - alt
+        - isHidden
       properties:
         imageIdentifier:
           type: string
@@ -3149,6 +3150,10 @@ components:
           type: string
           nullable: true
           description: Hero image alternative text.
+        isHidden:
+          type: boolean
+          nullable: true
+          description: Whether the hero image is hidden.
       description: Hero image payload for a draft wiki.
     DraftWikiListItem:
       type: object
