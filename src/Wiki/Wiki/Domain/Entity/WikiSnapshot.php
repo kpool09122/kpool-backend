@@ -22,7 +22,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\WikiFontStyle;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiSnapshotIdentifier;
 
-readonly class WikiSnapshot
+class WikiSnapshot
 {
     public function __construct(
         private WikiSnapshotIdentifier   $snapshotIdentifier,
@@ -167,5 +167,10 @@ readonly class WikiSnapshot
     public function imageIdentifier(): ?ImageIdentifier
     {
         return $this->imageIdentifier;
+    }
+
+    public function setImageIdentifier(?ImageIdentifier $imageIdentifier): void
+    {
+        $this->imageIdentifier = $imageIdentifier;
     }
 }

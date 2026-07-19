@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Domain\Repository;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -41,6 +42,11 @@ interface DraftWikiRepositoryInterface
      * @return DraftWiki[]
      */
     public function findByResourceType(ResourceType $resourceType, int $limit = 20, int $offset = 0): array;
+
+    /**
+     * @return DraftWiki[]
+     */
+    public function findByImageIdentifier(ImageIdentifier $imageIdentifier): array;
 
     public function save(DraftWiki $draftWiki): void;
 

@@ -253,7 +253,6 @@ class DeleteImageTest extends TestCase
             $altText,
             false,
             null,
-            null,
             $uploaderIdentifier,
             $uploadedAt,
             $approverIdentifier,

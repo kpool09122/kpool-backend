@@ -37,7 +37,6 @@ class ApproveImageOutputTest extends TestCase
             'Alt text',
             false,
             null,
-            null,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
             null,

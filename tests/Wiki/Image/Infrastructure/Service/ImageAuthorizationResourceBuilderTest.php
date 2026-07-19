@@ -877,7 +877,6 @@ class ImageAuthorizationResourceBuilderTest extends TestCase
             'Test alt text',
             false,
             null,
-            null,
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),

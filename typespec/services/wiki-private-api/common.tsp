@@ -638,26 +638,24 @@ model ImageSummary {
   isHidden: boolean;
 }
 
-@doc("Summary of an image hide request.")
-model ImageHideRequestSummary {
+@doc("Summary of an image deletion request.")
+model ImageDeletionRequestSummary {
   @doc("Image identifier.")
   imageIdentifier: Uuid;
   @doc("Name of the requester.")
   requesterName: string;
   @doc("Email address of the requester.")
   requesterEmail: string;
-  @doc("Reason for requesting the image to be hidden.")
+  @doc("Reason for requesting the image deletion.")
   reason: string;
-  @doc("Current review status of the hide request.")
-  status: string;
+  @doc("Whether the image is hidden while the deletion request is pending.")
+  isHidden: boolean;
 }
 
-@doc("Summary of an image hide request review result.")
-model ImageHideReviewSummary {
+@doc("Summary of an image deletion request review result.")
+model ImageDeletionReviewSummary {
   @doc("Image identifier.")
   imageIdentifier: Uuid;
-  @doc("Review status of the hide request.")
-  status: string;
   @doc("Comment left by the reviewer.")
   reviewerComment: string;
   @doc("Whether the image is hidden after the review.")

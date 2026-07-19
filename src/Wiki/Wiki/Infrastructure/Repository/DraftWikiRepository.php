@@ -187,6 +187,19 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
             ->delete();
     }
 
+    /**
+     * @return DraftWiki[]
+     */
+    public function findByImageIdentifier(ImageIdentifier $imageIdentifier): array
+    {
+        $models = DraftWikiModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('image_identifier', (string) $imageIdentifier)
+            ->get();
+
+        return $models->map(fn (DraftWikiModel $model) => $this->toDomainEntity($model))->toArray();
+    }
+
     private function saveBasic(string $wikiId, ResourceType $resourceType, BasicInterface $basic): void
     {
         $basicArray = $basic->toArray();

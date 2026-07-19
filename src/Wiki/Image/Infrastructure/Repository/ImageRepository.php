@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Image\Infrastructure\Repository;
 
-use Application\Models\Wiki\ImageHideRequest as ImageHideRequestModel;
+use Application\Models\Wiki\ImageDeletionRequest as ImageDeletionRequestModel;
 use Application\Models\Wiki\WikiImage;
 use Illuminate\Support\Str;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\HideRequest;
-use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Image\Domain\ValueObject\DeletionRequest;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -23,7 +22,7 @@ final class ImageRepository implements ImageRepositoryInterface
     public function findById(ImageIdentifier $identifier): ?Image
     {
         $model = WikiImage::query()
-            ->with('hideRequests')
+            ->with('deletionRequests')
             ->where('id', (string) $identifier)
             ->first();
 
@@ -40,7 +39,7 @@ final class ImageRepository implements ImageRepositoryInterface
     public function findByResource(ResourceType $resourceType, TranslationSetIdentifier $translationSetIdentifier): array
     {
         $models = WikiImage::query()
-            ->with('hideRequests')
+            ->with('deletionRequests')
             ->where('resource_type', $resourceType->value)
             ->where('translation_set_identifier', (string) $translationSetIdentifier)
             ->orderBy('display_order')
@@ -62,7 +61,6 @@ final class ImageRepository implements ImageRepositoryInterface
                 'source_name' => $image->sourceName(),
                 'alt_text' => $image->altText(),
                 'is_hidden' => $image->isHidden(),
-                'hidden_by' => $image->hiddenBy() ? (string) $image->hiddenBy() : null,
                 'hidden_at' => $image->hiddenAt(),
                 'uploader_id' => (string) $image->uploaderIdentifier(),
                 'uploaded_at' => $image->uploadedAt(),
@@ -74,29 +72,28 @@ final class ImageRepository implements ImageRepositoryInterface
             ],
         );
 
-        foreach ($image->hideRequests() as $hideRequest) {
-            $existingModel = ImageHideRequestModel::query()
+        foreach ($image->deletionRequests() as $deletionRequest) {
+            $existingModel = ImageDeletionRequestModel::query()
                 ->where('image_id', (string) $image->imageIdentifier())
-                ->where('requested_at', $hideRequest->requestedAt())
+                ->where('requested_at', $deletionRequest->requestedAt())
                 ->first();
 
             $attributes = [
                 'image_id' => (string) $image->imageIdentifier(),
-                'requester_name' => $hideRequest->requesterName(),
-                'requester_email' => $hideRequest->requesterEmail(),
-                'reason' => $hideRequest->reason(),
-                'status' => $hideRequest->status()->value,
-                'requested_at' => $hideRequest->requestedAt(),
-                'reviewer_id' => $hideRequest->reviewerIdentifier() ? (string) $hideRequest->reviewerIdentifier() : null,
-                'reviewed_at' => $hideRequest->reviewedAt(),
-                'reviewer_comment' => $hideRequest->reviewerComment(),
+                'requester_name' => $deletionRequest->requesterName(),
+                'requester_email' => $deletionRequest->requesterEmail(),
+                'reason' => $deletionRequest->reason(),
+                'requested_at' => $deletionRequest->requestedAt(),
+                'reviewer_id' => $deletionRequest->reviewerIdentifier() ? (string) $deletionRequest->reviewerIdentifier() : null,
+                'reviewed_at' => $deletionRequest->reviewedAt(),
+                'reviewer_comment' => $deletionRequest->reviewerComment(),
             ];
 
             if ($existingModel !== null) {
                 $existingModel->update($attributes);
             } else {
                 $attributes['id'] = (string) Str::uuid7();
-                ImageHideRequestModel::query()->create($attributes);
+                ImageDeletionRequestModel::query()->create($attributes);
             }
         }
     }
@@ -108,11 +105,11 @@ final class ImageRepository implements ImageRepositoryInterface
             ->delete();
     }
 
-    public function existsPendingHideRequest(ImageIdentifier $imageIdentifier): bool
+    public function existsPendingDeletionRequest(ImageIdentifier $imageIdentifier): bool
     {
-        return ImageHideRequestModel::query()
+        return ImageDeletionRequestModel::query()
             ->where('image_id', (string) $imageIdentifier)
-            ->where('status', ImageHideRequestStatus::PENDING->value)
+            ->whereNull('reviewed_at')
             ->exists();
     }
 
@@ -128,7 +125,6 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->source_name,
             $model->alt_text,
             $model->is_hidden,
-            $model->hidden_by ? new PrincipalIdentifier($model->hidden_by) : null,
             $model->hidden_at?->toDateTimeImmutable(),
             new PrincipalIdentifier($model->uploader_id),
             $model->uploaded_at->toDateTimeImmutable(),
@@ -137,19 +133,18 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->updater_id ? new PrincipalIdentifier($model->updater_id) : null,
             $model->updated_at?->toDateTimeImmutable(),
             new RightsConfirmationAgreed($model->rights_confirmation_agreed),
-            $model->hideRequests
-                ->map(fn (ImageHideRequestModel $hideRequestModel) => $this->toHideRequest($hideRequestModel))
+            $model->deletionRequests
+                ->map(fn (ImageDeletionRequestModel $deletionRequestModel) => $this->toDeletionRequest($deletionRequestModel))
                 ->all(),
         );
     }
 
-    private function toHideRequest(ImageHideRequestModel $model): HideRequest
+    private function toDeletionRequest(ImageDeletionRequestModel $model): DeletionRequest
     {
-        return new HideRequest(
+        return new DeletionRequest(
             $model->requester_name,
             $model->requester_email,
             $model->reason,
-            ImageHideRequestStatus::from($model->status),
             $model->requested_at->toDateTimeImmutable(),
             $model->reviewer_id ? new PrincipalIdentifier($model->reviewer_id) : null,
             $model->reviewed_at?->toDateTimeImmutable(),

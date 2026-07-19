@@ -46,7 +46,6 @@ readonly class ImageFactory implements ImageFactoryInterface
             $altText,
             false,
             null,
-            null,
             $uploaderIdentifier,
             $approvedAt,
             $approverIdentifier,
