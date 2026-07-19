@@ -24,6 +24,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['api', 'session'])
                 ->prefix('api/account')
                 ->group(base_path('routes/account_api.php'));
+            Route::middleware(['api', 'session'])
+                ->prefix('api/site-management')
+                ->group(base_path('routes/siteManagiment_public_api.php'));
 //            Route::middleware(['api', 'auth.api', 'resolve.actor', 'resolve.wiki'])
             Route::middleware(['api', 'session'])
                 ->prefix('api/wiki')

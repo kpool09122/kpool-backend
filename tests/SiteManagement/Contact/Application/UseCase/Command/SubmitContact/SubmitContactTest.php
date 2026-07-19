@@ -12,6 +12,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactOutput;
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
@@ -103,7 +104,17 @@ class SubmitContactTest extends TestCase
         $this->app->instance(EmailServiceInterface::class, $emailService);
         $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
         $submitContact = $this->app->make(SubmitContactInterface::class);
-        $submitContact->process($input);
+        $output = new SubmitContactOutput();
+        $submitContact->process($input, $output);
+
+        $this->assertSame([
+            'contactIdentifier' => (string) $contactIdentifier,
+            'identityIdentifier' => (string) $identityIdentifier,
+            'category' => $category->value,
+            'name' => (string) $name,
+            'email' => (string) $email,
+            'content' => (string) $content,
+        ], $output->toArray());
     }
 
     /**
@@ -167,7 +178,7 @@ class SubmitContactTest extends TestCase
 
         $this->expectException(FailedToSendEmailException::class);
         $submitContact = $this->app->make(SubmitContactInterface::class);
-        $submitContact->process($input);
+        $submitContact->process($input, new SubmitContactOutput());
     }
 
     /**
@@ -235,6 +246,6 @@ class SubmitContactTest extends TestCase
 
         $this->expectException(FailedToSendEmailException::class);
         $submitContact = $this->app->make(SubmitContactInterface::class);
-        $submitContact->process($input);
+        $submitContact->process($input, new SubmitContactOutput());
     }
 }

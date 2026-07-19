@@ -21,10 +21,11 @@ readonly class SubmitContact implements SubmitContactInterface
 
     /**
      * @param SubmitContactInputPort $input
+     * @param SubmitContactOutputPort $output
      * @return void
      * @throws FailedToSendEmailException
      */
-    public function process(SubmitContactInputPort $input): void
+    public function process(SubmitContactInputPort $input, SubmitContactOutputPort $output): void
     {
         $contact = $this->contactFactory->create(
             $input->category(),
@@ -47,5 +48,7 @@ readonly class SubmitContact implements SubmitContactInterface
         } catch (Throwable $e) {
             throw new FailedToSendEmailException($e->getMessage());
         }
+
+        $output->setContact($contact);
     }
 }
