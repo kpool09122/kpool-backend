@@ -11,14 +11,13 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Domain\Entity\Image;
 use Source\Wiki\Image\Domain\Repository\ImageRepositoryInterface;
-use Source\Wiki\Image\Domain\ValueObject\HideRequest;
-use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Image\Domain\ValueObject\DeletionRequest;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Tests\Helper\CreateImage;
-use Tests\Helper\CreateImageHideRequest;
+use Tests\Helper\CreateImageDeletionRequest;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -164,7 +163,6 @@ class ImageRepositoryTest extends TestCase
             'Profile image of talent',
             false,
             null,
-            null,
             $uploaderIdentifier,
             $now,
             $approverIdentifier,
@@ -224,7 +222,6 @@ class ImageRepositoryTest extends TestCase
             'Updated alt text',
             false,
             null,
-            null,
             $uploaderIdentifier,
             $now,
             $approverIdentifier,
@@ -247,12 +244,12 @@ class ImageRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：findByIdでhideRequest履歴が読み込まれ、pendingHideRequestを取得できること.
+     * 正常系：findByIdでdeletionRequest履歴が読み込まれ、pendingDeletionRequestを取得できること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testFindByIdWithPendingHideRequest(): void
+    public function testFindByIdWithPendingDeletionRequest(): void
     {
         $imageId = StrTestHelper::generateUuid();
         $requestId = StrTestHelper::generateUuid();
@@ -261,56 +258,60 @@ class ImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        CreateImageHideRequest::create($requestId, [
+        CreateImageDeletionRequest::create($requestId, [
             'image_id' => $imageId,
-            'status' => ImageHideRequestStatus::PENDING->value,
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $this->assertInstanceOf(Image::class, $image);
-        $this->assertCount(1, $image->hideRequests());
-        $this->assertInstanceOf(HideRequest::class, $image->pendingHideRequest());
-        $this->assertSame(ImageHideRequestStatus::PENDING, $image->pendingHideRequest()->status());
+        $this->assertCount(1, $image->deletionRequests());
+        $this->assertInstanceOf(DeletionRequest::class, $image->pendingDeletionRequest());
+        $this->assertNull($image->pendingDeletionRequest()->reviewedAt());
     }
 
     /**
-     * 正常系：findByIdでapprovedのhideRequest履歴も読み込まれること.
+     * 正常系：findByIdでレビュー済みのdeletionRequest履歴も読み込まれること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testFindByIdWithApprovedHideRequest(): void
+    public function testFindByIdWithApprovedDeletionRequest(): void
     {
         $imageId = StrTestHelper::generateUuid();
         $requestId = StrTestHelper::generateUuid();
+        $reviewerId = StrTestHelper::generateUuid();
+        $reviewedAt = now();
 
         CreateImage::create($imageId, [
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        CreateImageHideRequest::create($requestId, [
+        CreateImageDeletionRequest::create($requestId, [
             'image_id' => $imageId,
-            'status' => ImageHideRequestStatus::APPROVED->value,
+            'reviewer_id' => $reviewerId,
+            'reviewed_at' => $reviewedAt,
+            'reviewer_comment' => 'Reviewed',
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $this->assertInstanceOf(Image::class, $image);
-        $this->assertCount(1, $image->hideRequests());
-        $this->assertNull($image->pendingHideRequest());
-        $this->assertSame(ImageHideRequestStatus::APPROVED, $image->latestHideRequest()->status());
+        $this->assertCount(1, $image->deletionRequests());
+        $this->assertNull($image->pendingDeletionRequest());
+        $this->assertSame($reviewerId, (string) $image->latestDeletionRequest()->reviewerIdentifier());
+        $this->assertSame('Reviewed', $image->latestDeletionRequest()->reviewerComment());
     }
 
     /**
-     * 正常系：saveでhideRequestが保存されること.
+     * 正常系：saveでdeletionRequestが保存されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testSaveWithHideRequest(): void
+    public function testSaveWithDeletionRequest(): void
     {
         $imageId = StrTestHelper::generateUuid();
 
@@ -321,25 +322,24 @@ class ImageRepositoryTest extends TestCase
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
-        $image->requestHide('Test Requester', 'requester@example.com', 'Privacy concern');
+        $image->requestDeletion('Test Requester', 'requester@example.com', 'Privacy concern');
         $repository->save($image);
 
-        $this->assertDatabaseHas('image_hide_requests', [
+        $this->assertDatabaseHas('image_deletion_requests', [
             'image_id' => $imageId,
             'requester_name' => 'Test Requester',
             'requester_email' => 'requester@example.com',
             'reason' => 'Privacy concern',
-            'status' => 'pending',
         ]);
     }
 
     /**
-     * 正常系：saveでhideRequestのステータス更新（approve）が永続化されること.
+     * 正常系：saveでdeletionRequestのレビュー情報（approve）が永続化されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testSaveWithHideRequestApprove(): void
+    public function testSaveWithDeletionRequestApprove(): void
     {
         $imageId = StrTestHelper::generateUuid();
         $requestId = StrTestHelper::generateUuid();
@@ -348,38 +348,32 @@ class ImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        CreateImageHideRequest::create($requestId, [
+        CreateImageDeletionRequest::create($requestId, [
             'image_id' => $imageId,
-            'status' => ImageHideRequestStatus::PENDING->value,
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $image->approveHideRequest($reviewerIdentifier, 'Approved for privacy');
+        $image->approveDeletionRequest($reviewerIdentifier, 'Approved for privacy');
         $repository->save($image);
 
-        $this->assertDatabaseHas('image_hide_requests', [
+        $this->assertDatabaseHas('image_deletion_requests', [
             'image_id' => $imageId,
-            'status' => 'approved',
             'reviewer_id' => (string) $reviewerIdentifier,
             'reviewer_comment' => 'Approved for privacy',
         ]);
 
-        $this->assertDatabaseHas('wiki_images', [
-            'id' => $imageId,
-            'is_hidden' => true,
-        ]);
     }
 
     /**
-     * 正常系：saveでhideRequestのステータス更新（reject）が永続化されること.
+     * 正常系：saveでdeletionRequestのレビュー情報（reject）が永続化されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testSaveWithHideRequestReject(): void
+    public function testSaveWithDeletionRequestReject(): void
     {
         $imageId = StrTestHelper::generateUuid();
         $requestId = StrTestHelper::generateUuid();
@@ -388,21 +382,19 @@ class ImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        CreateImageHideRequest::create($requestId, [
+        CreateImageDeletionRequest::create($requestId, [
             'image_id' => $imageId,
-            'status' => ImageHideRequestStatus::PENDING->value,
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $image->rejectHideRequest($reviewerIdentifier, 'Not applicable');
+        $image->rejectDeletionRequest($reviewerIdentifier, 'Not applicable');
         $repository->save($image);
 
-        $this->assertDatabaseHas('image_hide_requests', [
+        $this->assertDatabaseHas('image_deletion_requests', [
             'image_id' => $imageId,
-            'status' => 'rejected',
             'reviewer_id' => (string) $reviewerIdentifier,
             'reviewer_comment' => 'Not applicable',
         ]);
@@ -414,12 +406,12 @@ class ImageRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系：existsPendingHideRequestがpendingの場合にtrueを返すこと.
+     * 正常系：existsPendingDeletionRequestがpendingの場合にtrueを返すこと.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testExistsPendingHideRequestTrue(): void
+    public function testExistsPendingDeletionRequestTrue(): void
     {
         $imageId = StrTestHelper::generateUuid();
         $requestId = StrTestHelper::generateUuid();
@@ -428,22 +420,21 @@ class ImageRepositoryTest extends TestCase
             'resource_type' => ResourceType::TALENT->value,
         ]);
 
-        CreateImageHideRequest::create($requestId, [
+        CreateImageDeletionRequest::create($requestId, [
             'image_id' => $imageId,
-            'status' => ImageHideRequestStatus::PENDING->value,
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
-        $this->assertTrue($repository->existsPendingHideRequest(new ImageIdentifier($imageId)));
+        $this->assertTrue($repository->existsPendingDeletionRequest(new ImageIdentifier($imageId)));
     }
 
     /**
-     * 正常系：existsPendingHideRequestがpendingでない場合にfalseを返すこと.
+     * 正常系：existsPendingDeletionRequestがpendingでない場合にfalseを返すこと.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testExistsPendingHideRequestFalse(): void
+    public function testExistsPendingDeletionRequestFalse(): void
     {
         $imageId = StrTestHelper::generateUuid();
 
@@ -452,7 +443,7 @@ class ImageRepositoryTest extends TestCase
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
-        $this->assertFalse($repository->existsPendingHideRequest(new ImageIdentifier($imageId)));
+        $this->assertFalse($repository->existsPendingDeletionRequest(new ImageIdentifier($imageId)));
     }
 
     /**

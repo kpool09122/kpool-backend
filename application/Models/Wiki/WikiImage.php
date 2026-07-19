@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $source_name
  * @property string $alt_text
  * @property bool $is_hidden
- * @property ?string $hidden_by
  * @property ?Carbon $hidden_at
  * @property string $uploader_id
  * @property Carbon $uploaded_at
@@ -29,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?Carbon $approved_at
  * @property ?string $updater_id
  * @property ?Carbon $updated_at
- * @property-read Collection<int, ImageHideRequest> $hideRequests
+ * @property-read Collection<int, ImageDeletionRequest> $deletionRequests
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
@@ -41,7 +40,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'source_name',
     'alt_text',
     'is_hidden',
-    'hidden_by',
     'hidden_at',
     'uploader_id',
     'uploaded_at',
@@ -72,11 +70,11 @@ class WikiImage extends Model
     ];
 
     /**
-     * @return HasMany<ImageHideRequest, $this>
+     * @return HasMany<ImageDeletionRequest, $this>
      */
-    public function hideRequests(): HasMany
+    public function deletionRequests(): HasMany
     {
-        return $this->hasMany(ImageHideRequest::class, 'image_id', 'id')
+        return $this->hasMany(ImageDeletionRequest::class, 'image_id', 'id')
             ->orderBy('requested_at');
     }
 }

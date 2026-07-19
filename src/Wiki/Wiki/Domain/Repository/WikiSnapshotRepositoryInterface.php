@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\Wiki\Domain\Repository;
 
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Version;
 use Source\Wiki\Wiki\Domain\Entity\WikiSnapshot;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiIdentifier;
@@ -30,4 +31,9 @@ interface WikiSnapshotRepositoryInterface
         TranslationSetIdentifier $translationSetIdentifier,
         Version $version,
     ): array;
+
+    /**
+     * @return WikiSnapshot[]
+     */
+    public function findByImageIdentifier(ImageIdentifier $imageIdentifier): array;
 }

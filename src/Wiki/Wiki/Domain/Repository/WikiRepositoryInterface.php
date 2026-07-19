@@ -7,6 +7,7 @@ namespace Source\Wiki\Wiki\Domain\Repository;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
@@ -48,6 +49,11 @@ interface WikiRepositoryInterface
         AccountIdentifier $accountIdentifier,
         ResourceType $resourceType,
     ): ?Wiki;
+
+    /**
+     * @return Wiki[]
+     */
+    public function findByImageIdentifier(ImageIdentifier $imageIdentifier): array;
 
     public function save(Wiki $wiki): void;
 

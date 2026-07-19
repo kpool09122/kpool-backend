@@ -190,6 +190,19 @@ readonly class WikiRepository implements WikiRepositoryInterface
             ->delete();
     }
 
+    /**
+     * @return Wiki[]
+     */
+    public function findByImageIdentifier(ImageIdentifier $imageIdentifier): array
+    {
+        $models = WikiModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('image_identifier', (string) $imageIdentifier)
+            ->get();
+
+        return $models->map(fn (WikiModel $model) => $this->toDomainEntity($model))->toArray();
+    }
+
     private function saveBasic(string $wikiId, ResourceType $resourceType, BasicInterface $basic): void
     {
         $basicArray = $basic->toArray();

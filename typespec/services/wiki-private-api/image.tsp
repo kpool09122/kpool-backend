@@ -27,8 +27,8 @@ model UploadImageRequestBody {
   rightsConfirmationAgreed: boolean;
 }
 
-@doc("Request body for creating an image hide request.")
-model RequestImageHideRequestBody {
+@doc("Request body for creating an image deletion request.")
+model RequestImageDeletionRequestBody {
   @doc("Name of the requester.")
   requesterName: string;
   @doc("Email address of the requester.")
@@ -37,8 +37,8 @@ model RequestImageHideRequestBody {
   reason: string;
 }
 
-@doc("Request body for reviewing an image hide request.")
-model ReviewImageHideRequestBody {
+@doc("Request body for reviewing an image deletion request.")
+model ReviewImageDeletionRequestBody {
   @doc("Comment from the reviewer.")
   reviewerComment: string;
 }
@@ -163,16 +163,16 @@ model OkImageResponse {
   @body body: ImageSummary;
 }
 
-@doc("Response returned when an image hide request is created.")
-model CreateImageHideRequestResponse {
+@doc("Response returned when an image deletion request is created.")
+model CreateImageDeletionRequestResponse {
   @statusCode statusCode: 201;
-  @body body: ImageHideRequestSummary;
+  @body body: ImageDeletionRequestSummary;
 }
 
-@doc("Response returned when an image hide request is reviewed.")
-model ReviewImageHideRequestResponse {
+@doc("Response returned when an image deletion request is reviewed.")
+model ReviewImageDeletionRequestResponse {
   @statusCode statusCode: 200;
-  @body body: ImageHideReviewSummary;
+  @body body: ImageDeletionReviewSummary;
 }
 
 @route("/image")
@@ -213,28 +213,28 @@ interface ImageOperations {
   ): CreateDraftImageResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/{imageId}/request-hide")
+  @route("/{imageId}/request-deletion")
   @doc("Request that an image be hidden.")
-  requestImageHide(
+  requestImageDeletion(
     @path imageId: Uuid,
-    @body body: RequestImageHideRequestBody,
-  ): CreateImageHideRequestResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+    @body body: RequestImageDeletionRequestBody,
+  ): CreateImageDeletionRequestResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/{imageId}/approve-hide-request")
-  @doc("Approve an image hide request.")
-  approveImageHideRequest(
+  @route("/{imageId}/approve-deletion")
+  @doc("Approve an image deletion request.")
+  approveImageDeletionRequest(
     @path imageId: Uuid,
-    @body body: ReviewImageHideRequestBody,
-  ): ReviewImageHideRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+    @body body: ReviewImageDeletionRequestBody,
+  ): ReviewImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
-  @route("/{imageId}/reject-hide-request")
-  @doc("Reject an image hide request.")
-  rejectImageHideRequest(
+  @route("/{imageId}/reject-deletion")
+  @doc("Reject an image deletion request.")
+  rejectImageDeletionRequest(
     @path imageId: Uuid,
-    @body body: ReviewImageHideRequestBody,
-  ): ReviewImageHideRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+    @body body: ReviewImageDeletionRequestBody,
+  ): ReviewImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/images")

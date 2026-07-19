@@ -250,7 +250,6 @@ class UnhideImageTest extends TestCase
         $altText = 'Profile image of talent';
         $uploaderIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $uploadedAt = new DateTimeImmutable();
-        $hiddenBy = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $hiddenAt = new DateTimeImmutable();
 
         $image = new Image(
@@ -263,7 +262,6 @@ class UnhideImageTest extends TestCase
             $sourceName,
             $altText,
             true,
-            $hiddenBy,
             $hiddenAt,
             $uploaderIdentifier,
             $uploadedAt,

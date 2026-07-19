@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Wiki\Image\Command\ApproveImage\ApproveImageAction;
-use Application\Http\Action\Wiki\Image\Command\ApproveImageHideRequest\ApproveImageHideRequestAction;
+use Application\Http\Action\Wiki\Image\Command\ApproveImageDeletion\ApproveImageDeletionAction;
 use Application\Http\Action\Wiki\Image\Command\DeleteImage\DeleteImageAction;
 use Application\Http\Action\Wiki\Image\Command\RejectImage\RejectImageAction;
-use Application\Http\Action\Wiki\Image\Command\RejectImageHideRequest\RejectImageHideRequestAction;
-use Application\Http\Action\Wiki\Image\Command\RequestImageHide\RequestImageHideAction;
+use Application\Http\Action\Wiki\Image\Command\RejectImageDeletion\RejectImageDeletionAction;
+use Application\Http\Action\Wiki\Image\Command\RequestImageDeletion\RequestImageDeletionAction;
 use Application\Http\Action\Wiki\Image\Command\UnhideImage\UnhideImageAction;
 use Application\Http\Action\Wiki\Image\Command\UploadImage\UploadImageAction;
 use Application\Http\Action\Wiki\Image\Query\ListDraftImages\ListDraftImagesAction;
@@ -124,11 +124,11 @@ Route::middleware('auth.api')->group(function () {
     Route::delete('/policy/{policyId}', DeletePolicyAction::class);
 });
 
-// ImageHideRequest
+// ImageDeletionRequest
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.wiki'])->group(function () {
-    Route::post('/image/{imageId}/request-hide', RequestImageHideAction::class);
-    Route::post('/image/{imageId}/approve-hide-request', ApproveImageHideRequestAction::class);
-    Route::post('/image/{imageId}/reject-hide-request', RejectImageHideRequestAction::class);
+    Route::post('/image/{imageId}/request-deletion', RequestImageDeletionAction::class);
+    Route::post('/image/{imageId}/approve-deletion', ApproveImageDeletionAction::class);
+    Route::post('/image/{imageId}/reject-deletion', RejectImageDeletionAction::class);
 });
 
 // OfficialCertification

@@ -105,11 +105,11 @@ return [
     'principal_not_member' => '이 프린시펄은 이 그룹의 멤버가 아닙니다.',
     'cannot_change_non_delegated_principal' => '위임되지 않은 프린시펄의 활성 상태는 변경할 수 없습니다.',
 
-    // ImageHideRequest
-    'image_hide_request_not_found' => '지정된 이미지 숨김 요청을 찾을 수 없습니다.',
-    'image_hide_request_not_pending_for_approval' => '대기 중인 이미지 숨김 요청만 승인할 수 있습니다.',
-    'image_hide_request_not_pending_for_rejection' => '대기 중인 이미지 숨김 요청만 거부할 수 있습니다.',
-    'image_hide_request_already_pending' => '이 이미지에 대한 숨김 요청이 이미 대기 중입니다.',
+    // ImageDeletionRequest
+    'image_deletion_request_not_found' => '지정된 이미지 숨김 요청을 찾을 수 없습니다.',
+    'image_deletion_request_not_pending_for_approval' => '대기 중인 이미지 숨김 요청만 승인할 수 있습니다.',
+    'image_deletion_request_not_pending_for_rejection' => '대기 중인 이미지 숨김 요청만 거부할 수 있습니다.',
+    'image_deletion_request_already_pending' => '이 이미지에 대한 숨김 요청이 이미 대기 중입니다.',
 
     // Wiki OfficialCertification
     'official_certification_not_found' => '지정된 공식 인증을 찾을 수 없습니다.',

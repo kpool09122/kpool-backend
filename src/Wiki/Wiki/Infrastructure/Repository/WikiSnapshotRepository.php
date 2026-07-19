@@ -116,6 +116,19 @@ readonly class WikiSnapshotRepository implements WikiSnapshotRepositoryInterface
         return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->toArray();
     }
 
+    /**
+     * @return WikiSnapshot[]
+     */
+    public function findByImageIdentifier(ImageIdentifier $imageIdentifier): array
+    {
+        $models = WikiSnapshotModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->where('image_identifier', (string) $imageIdentifier)
+            ->get();
+
+        return $models->map(fn (WikiSnapshotModel $model) => $this->toDomainEntity($model))->toArray();
+    }
+
     private function saveBasic(string $snapshotId, ResourceType $resourceType, BasicInterface $basic): void
     {
         $basicArray = $basic->toArray();

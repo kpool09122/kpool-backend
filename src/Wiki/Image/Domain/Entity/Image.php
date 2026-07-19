@@ -7,10 +7,9 @@ namespace Source\Wiki\Image\Domain\Entity;
 use DateTimeImmutable;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
-use Source\Wiki\Image\Domain\Exception\ImageHideRequestAlreadyPendingException;
-use Source\Wiki\Image\Domain\Exception\ImageHideRequestNotPendingException;
-use Source\Wiki\Image\Domain\ValueObject\HideRequest;
-use Source\Wiki\Image\Domain\ValueObject\ImageHideRequestStatus;
+use Source\Wiki\Image\Domain\Exception\ImageDeletionRequestAlreadyPendingException;
+use Source\Wiki\Image\Domain\Exception\ImageDeletionRequestNotPendingException;
+use Source\Wiki\Image\Domain\ValueObject\DeletionRequest;
 use Source\Wiki\Image\Domain\ValueObject\RightsConfirmationAgreed;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
@@ -19,7 +18,7 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 class Image
 {
     /**
-     * @param HideRequest[] $hideRequests
+     * @param DeletionRequest[] $deletionRequests
      */
     public function __construct(
         private readonly ImageIdentifier     $imageIdentifier,
@@ -31,7 +30,6 @@ class Image
         private string                       $sourceName,
         private string                       $altText,
         private bool                         $isHidden,
-        private ?PrincipalIdentifier         $hiddenBy,
         private ?DateTimeImmutable           $hiddenAt,
         private readonly PrincipalIdentifier $uploaderIdentifier,
         private readonly DateTimeImmutable $uploadedAt,
@@ -40,7 +38,7 @@ class Image
         private ?PrincipalIdentifier $updaterIdentifier,
         private ?DateTimeImmutable $updatedAt,
         private RightsConfirmationAgreed $rightsConfirmationAgreed,
-        private array $hideRequests = [],
+        private array $deletionRequests = [],
     ) {
     }
 
@@ -174,107 +172,103 @@ class Image
         return $this->isHidden;
     }
 
-    public function hiddenBy(): ?PrincipalIdentifier
-    {
-        return $this->hiddenBy;
-    }
-
     public function hiddenAt(): ?DateTimeImmutable
     {
         return $this->hiddenAt;
     }
 
-    public function hide(PrincipalIdentifier $hiddenBy): void
+    public function hide(): void
     {
         $this->isHidden = true;
-        $this->hiddenBy = $hiddenBy;
         $this->hiddenAt = new DateTimeImmutable();
     }
 
     public function unhide(): void
     {
         $this->isHidden = false;
-        $this->hiddenBy = null;
         $this->hiddenAt = null;
     }
 
     /**
-     * @return HideRequest[]
+     * @return DeletionRequest[]
      */
-    public function hideRequests(): array
+    public function deletionRequests(): array
     {
-        return $this->hideRequests;
+        return $this->deletionRequests;
     }
 
-    public function pendingHideRequest(): ?HideRequest
+    public function pendingDeletionRequest(): ?DeletionRequest
     {
-        foreach ($this->hideRequests as $hideRequest) {
-            if ($hideRequest->status()->isPending()) {
-                return $hideRequest;
+        foreach ($this->deletionRequests as $deletionRequest) {
+            if ($deletionRequest->reviewedAt() === null) {
+                return $deletionRequest;
             }
         }
 
         return null;
     }
 
-    public function latestHideRequest(): ?HideRequest
+    public function latestDeletionRequest(): ?DeletionRequest
     {
-        if ($this->hideRequests === []) {
+        if ($this->deletionRequests === []) {
             return null;
         }
 
-        return $this->hideRequests[array_key_last($this->hideRequests)];
+        return $this->deletionRequests[array_key_last($this->deletionRequests)];
     }
 
-    public function requestHide(string $requesterName, string $requesterEmail, string $reason): void
+    public function requestDeletion(string $requesterName, string $requesterEmail, string $reason): void
     {
-        if ($this->pendingHideRequest() !== null) {
-            throw new ImageHideRequestAlreadyPendingException();
+        if ($this->pendingDeletionRequest() !== null) {
+            throw new ImageDeletionRequestAlreadyPendingException();
         }
 
-        $this->hideRequests[] = new HideRequest(
+        $this->deletionRequests[] = new DeletionRequest(
             $requesterName,
             $requesterEmail,
             $reason,
-            ImageHideRequestStatus::PENDING,
             new DateTimeImmutable(),
             null,
             null,
             null,
         );
+
+        $this->isHidden = true;
+        $this->hiddenAt = new DateTimeImmutable();
     }
 
-    public function approveHideRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
+    public function approveDeletionRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
     {
-        $pendingHideRequest = $this->pendingHideRequest();
-        if ($pendingHideRequest === null) {
-            throw new ImageHideRequestNotPendingException();
+        $pendingDeletionRequest = $this->pendingDeletionRequest();
+        if ($pendingDeletionRequest === null) {
+            throw new ImageDeletionRequestNotPendingException();
         }
 
-        foreach ($this->hideRequests as $index => $hideRequest) {
-            if ($hideRequest === $pendingHideRequest) {
-                $this->hideRequests[$index] = $hideRequest->approve($reviewerIdentifier, $reviewerComment);
+        foreach ($this->deletionRequests as $index => $deletionRequest) {
+            if ($deletionRequest === $pendingDeletionRequest) {
+                $this->deletionRequests[$index] = $deletionRequest->approve($reviewerIdentifier, $reviewerComment);
 
                 break;
             }
         }
 
-        $this->hide($reviewerIdentifier);
     }
 
-    public function rejectHideRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
+    public function rejectDeletionRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
     {
-        $pendingHideRequest = $this->pendingHideRequest();
-        if ($pendingHideRequest === null) {
-            throw new ImageHideRequestNotPendingException();
+        $pendingDeletionRequest = $this->pendingDeletionRequest();
+        if ($pendingDeletionRequest === null) {
+            throw new ImageDeletionRequestNotPendingException();
         }
 
-        foreach ($this->hideRequests as $index => $hideRequest) {
-            if ($hideRequest === $pendingHideRequest) {
-                $this->hideRequests[$index] = $hideRequest->reject($reviewerIdentifier, $reviewerComment);
+        foreach ($this->deletionRequests as $index => $deletionRequest) {
+            if ($deletionRequest === $pendingDeletionRequest) {
+                $this->deletionRequests[$index] = $deletionRequest->reject($reviewerIdentifier, $reviewerComment);
 
                 break;
             }
         }
+
+        $this->unhide();
     }
 }

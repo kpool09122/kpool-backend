@@ -105,11 +105,11 @@ return [
     'principal_not_member' => 'The principal is not a member of this group.',
     'cannot_change_non_delegated_principal' => 'Cannot change the enabled status of a non-delegated principal.',
 
-    // ImageHideRequest
-    'image_hide_request_not_found' => 'The specified image hide request was not found.',
-    'image_hide_request_not_pending_for_approval' => 'Only pending image hide requests can be approved.',
-    'image_hide_request_not_pending_for_rejection' => 'Only pending image hide requests can be rejected.',
-    'image_hide_request_already_pending' => 'An image hide request is already pending for this image.',
+    // ImageDeletionRequest
+    'image_deletion_request_not_found' => 'The specified image deletion request was not found.',
+    'image_deletion_request_not_pending_for_approval' => 'Only pending image deletion requests can be approved.',
+    'image_deletion_request_not_pending_for_rejection' => 'Only pending image deletion requests can be rejected.',
+    'image_deletion_request_already_pending' => 'An image deletion request is already pending for this image.',
 
     // Wiki OfficialCertification
     'official_certification_not_found' => 'The specified official certification was not found.',

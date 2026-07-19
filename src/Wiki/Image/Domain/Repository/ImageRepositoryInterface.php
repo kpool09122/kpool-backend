@@ -22,5 +22,5 @@ interface ImageRepositoryInterface
 
     public function delete(ImageIdentifier $identifier): void;
 
-    public function existsPendingHideRequest(ImageIdentifier $imageIdentifier): bool;
+    public function existsPendingDeletionRequest(ImageIdentifier $imageIdentifier): bool;
 }

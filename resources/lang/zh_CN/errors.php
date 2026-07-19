@@ -105,11 +105,11 @@ return [
     'principal_not_member' => '该主体不是此组的成员。',
     'cannot_change_non_delegated_principal' => '无法更改非委托主体的启用状态。',
 
-    // ImageHideRequest
-    'image_hide_request_not_found' => '未找到指定的图片隐藏请求。',
-    'image_hide_request_not_pending_for_approval' => '只能批准待处理的图片隐藏请求。',
-    'image_hide_request_not_pending_for_rejection' => '只能拒绝待处理的图片隐藏请求。',
-    'image_hide_request_already_pending' => '该图片已存在待处理的隐藏请求。',
+    // ImageDeletionRequest
+    'image_deletion_request_not_found' => '未找到指定的图片隐藏请求。',
+    'image_deletion_request_not_pending_for_approval' => '只能批准待处理的图片隐藏请求。',
+    'image_deletion_request_not_pending_for_rejection' => '只能拒绝待处理的图片隐藏请求。',
+    'image_deletion_request_already_pending' => '该图片已存在待处理的隐藏请求。',
 
     // Wiki OfficialCertification
     'official_certification_not_found' => '找不到指定的官方认证。',
