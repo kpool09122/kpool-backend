@@ -125,6 +125,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /image-deletion-requests:
+    get:
+      operationId: ImageDeletionRequestListOperations_listImageDeletionRequests
+      description: List uploaded images with pending image deletion requests.
+      parameters:
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when pending image deletion request list retrieval succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListImageDeletionRequestsResponseBody'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /image/upload:
     post:
       operationId: ImageOperations_uploadImage
@@ -3414,6 +3458,67 @@ components:
           type: string
           description: Representative symbol of the group.
       description: Basic payload for a group draft wiki.
+    ImageDeletionRequestListItem:
+      type: object
+      required:
+        - imageIdentifier
+        - url
+        - resourceType
+        - translationSetIdentifier
+        - displayOrder
+        - sourceUrl
+        - sourceName
+        - altText
+        - isHidden
+        - uploadedAt
+        - name
+        - email
+        - reason
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Image identifier.
+        url:
+          type: string
+          description: Absolute image URL.
+        resourceType:
+          type: string
+          description: Resource type that the image belongs to.
+        translationSetIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Translation set identifier that the image belongs to.
+        displayOrder:
+          type: integer
+          format: int32
+          description: Display order of the image.
+        sourceUrl:
+          type: string
+          description: Original source URL of the image.
+        sourceName:
+          type: string
+          description: Original source name of the image.
+        altText:
+          type: string
+          description: Alternative text for the image.
+        isHidden:
+          type: boolean
+          description: Whether the image is hidden.
+        uploadedAt:
+          type: string
+          nullable: true
+          description: Timestamp when the image was uploaded.
+        name:
+          type: string
+          description: Name of the image deletion requester.
+        email:
+          type: string
+          description: Email address of the image deletion requester.
+        reason:
+          type: string
+          description: Reason for the image deletion request.
+      description: Uploaded image item with pending image deletion request details.
     ImageDeletionRequestSummary:
       type: object
       required:
@@ -3580,6 +3685,37 @@ components:
           format: int32
           description: Number of wikis per page.
       description: Response body for the draft wiki list endpoint.
+    ListImageDeletionRequestsResponseBody:
+      type: object
+      required:
+        - images
+        - current_page
+        - last_page
+        - total
+        - per_page
+      properties:
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageDeletionRequestListItem'
+          description: Uploaded images that have pending image deletion requests for the requested page.
+        current_page:
+          type: integer
+          format: int32
+          description: Current page number.
+        last_page:
+          type: integer
+          format: int32
+          description: Last page number.
+        total:
+          type: integer
+          format: int32
+          description: Total number of pending image deletion requests.
+        per_page:
+          type: integer
+          format: int32
+          description: Number of images per page.
+      description: Response body for the pending image deletion request list endpoint.
     ListRelatedProfilesResponseBody:
       type: object
       required:

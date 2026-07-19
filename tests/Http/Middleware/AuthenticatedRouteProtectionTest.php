@@ -138,6 +138,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki: my draft' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft'],
             'wiki: draft wikis' => ['GET', '/api/wiki/draft-wikis'],
             'wiki: draft images' => ['GET', '/api/wiki/draft-images'],
+            'wiki: image deletion requests' => ['GET', '/api/wiki/image-deletion-requests'],
             'wiki: uploaded images' => ['GET', '/api/wiki/images'],
             'wiki: image upload' => ['POST', '/api/wiki/image/upload'],
             'wiki: current principal' => ['GET', '/api/wiki/principal/me'],
@@ -170,6 +171,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
             'wiki current principal resolves actor' => ['GET', '/api/wiki/principal/me', ['resolve.actor']],
             'wiki image upload resolves actor and wiki' => ['POST', '/api/wiki/image/upload', ['resolve.actor', 'resolve.wiki']],
+            'wiki image deletion requests resolves actor and wiki' => ['GET', '/api/wiki/image-deletion-requests', ['resolve.actor', 'resolve.wiki']],
             'wiki video link resolves actor and wiki' => ['POST', '/api/wiki/video-link/save', ['resolve.actor', 'resolve.wiki']],
         ];
     }

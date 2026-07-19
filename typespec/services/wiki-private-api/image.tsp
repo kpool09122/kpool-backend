@@ -67,6 +67,36 @@ model UploadedImageListItem {
   uploadedAt: string | null;
 }
 
+@doc("Uploaded image item with pending image deletion request details.")
+model ImageDeletionRequestListItem {
+  @doc("Image identifier.")
+  imageIdentifier: Uuid;
+  @doc("Absolute image URL.")
+  url: string;
+  @doc("Resource type that the image belongs to.")
+  resourceType: string;
+  @doc("Translation set identifier that the image belongs to.")
+  translationSetIdentifier: Uuid;
+  @doc("Display order of the image.")
+  displayOrder: int32;
+  @doc("Original source URL of the image.")
+  sourceUrl: string;
+  @doc("Original source name of the image.")
+  sourceName: string;
+  @doc("Alternative text for the image.")
+  altText: string;
+  @doc("Whether the image is hidden.")
+  isHidden: boolean;
+  @doc("Timestamp when the image was uploaded.")
+  uploadedAt: string | null;
+  @doc("Name of the image deletion requester.")
+  name: string;
+  @doc("Email address of the image deletion requester.")
+  email: string;
+  @doc("Reason for the image deletion request.")
+  reason: string;
+}
+
 @doc("Approval status assigned to a draft image.")
 union DraftImageStatus {
   "approved",
@@ -125,6 +155,20 @@ model ListUploadedImagesResponseBody {
   per_page: int32;
 }
 
+@doc("Response body for the pending image deletion request list endpoint.")
+model ListImageDeletionRequestsResponseBody {
+  @doc("Uploaded images that have pending image deletion requests for the requested page.")
+  images: ImageDeletionRequestListItem[];
+  @doc("Current page number.")
+  current_page: int32;
+  @doc("Last page number.")
+  last_page: int32;
+  @doc("Total number of pending image deletion requests.")
+  total: int32;
+  @doc("Number of images per page.")
+  per_page: int32;
+}
+
 @doc("Response body for the draft image list endpoint.")
 model ListDraftImagesResponseBody {
   @doc("Draft images for the requested page.")
@@ -143,6 +187,12 @@ model ListDraftImagesResponseBody {
 model ListUploadedImagesResponse {
   @statusCode statusCode: 200;
   @body body: ListUploadedImagesResponseBody;
+}
+
+@doc("Response returned when pending image deletion request list retrieval succeeds.")
+model ListImageDeletionRequestsResponse {
+  @statusCode statusCode: 200;
+  @body body: ListImageDeletionRequestsResponseBody;
 }
 
 @doc("Response returned when draft image list retrieval succeeds.")
@@ -256,4 +306,12 @@ interface DraftImageListOperations {
     @query status: DraftImageStatus,
     @query perPage?: int32,
   ): ListDraftImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+}
+@route("/image-deletion-requests")
+interface ImageDeletionRequestListOperations {
+  @get
+  @doc("List uploaded images with pending image deletion requests.")
+  listImageDeletionRequests(
+    @query perPage?: int32 | null,
+  ): ListImageDeletionRequestsResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
