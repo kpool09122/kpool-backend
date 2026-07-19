@@ -2731,7 +2731,7 @@ components:
           description: SEO keywords for the wiki.
         heroImage:
           allOf:
-            - $ref: '#/components/schemas/DraftWikiHeroImage'
+            - $ref: '#/components/schemas/WikiHeroImage'
           description: Hero image payload.
         basic:
           allOf:
@@ -4469,7 +4469,7 @@ components:
           description: SEO keywords for the wiki.
         heroImage:
           allOf:
-            - $ref: '#/components/schemas/DraftWikiHeroImage'
+            - $ref: '#/components/schemas/WikiHeroImage'
           description: Hero image payload.
         basic:
           allOf:
@@ -4804,7 +4804,7 @@ components:
           description: SEO keywords for the wiki.
         heroImage:
           allOf:
-            - $ref: '#/components/schemas/DraftWikiHeroImage'
+            - $ref: '#/components/schemas/WikiHeroImage'
           description: Hero image payload.
         basic:
           allOf:
@@ -5116,7 +5116,7 @@ components:
           description: SEO keywords for the wiki.
         heroImage:
           allOf:
-            - $ref: '#/components/schemas/DraftWikiHeroImage'
+            - $ref: '#/components/schemas/WikiHeroImage'
           description: Hero image payload.
         basic:
           allOf:
@@ -5146,6 +5146,33 @@ components:
         - en_modern
         - en_handwritten
       description: Stable Wiki font style identifiers supported by the backend contract.
+    WikiHeroImage:
+      type: object
+      required:
+        - imageIdentifier
+        - src
+        - alt
+        - isHidden
+      properties:
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Image identifier shown as the hero image.
+        src:
+          type: string
+          nullable: true
+          description: Resolved hero image URL.
+        alt:
+          type: string
+          nullable: true
+          description: Hero image alternative text.
+        isHidden:
+          type: boolean
+          nullable: true
+          description: Whether the hero image is hidden.
+      description: Hero image payload for a published wiki.
     WikiListItem:
       type: object
       required:

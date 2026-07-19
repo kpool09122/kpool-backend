@@ -68,6 +68,18 @@ model DraftWikiHeroImage {
   alt: string | null;
 }
 
+@doc("Hero image payload for a published wiki.")
+model WikiHeroImage {
+  @doc("Image identifier shown as the hero image.")
+  imageIdentifier: Uuid | null;
+  @doc("Resolved hero image URL.")
+  src: string | null;
+  @doc("Hero image alternative text.")
+  alt: string | null;
+  @doc("Whether the hero image is hidden.")
+  isHidden: boolean | null;
+}
+
 @doc("Summary of a published agency linked from a wiki basic payload.")
 model WikiAgencySummary {
   @doc("Published agency wiki identifier.")
@@ -203,7 +215,7 @@ model WikiDetail {
   @maxItems(5)
   keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
-  heroImage: DraftWikiHeroImage;
+  heroImage: WikiHeroImage;
   @doc("Basic wiki content payload.")
   basic: GroupDraftWikiBasic;
   @doc("Section content payloads.")
@@ -343,7 +355,7 @@ model TalentWikiDetail {
   @maxItems(5)
   keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
-  heroImage: DraftWikiHeroImage;
+  heroImage: WikiHeroImage;
   @doc("Basic talent wiki content payload.")
   basic: TalentDraftWikiBasic;
   @doc("Section content payloads.")
@@ -521,7 +533,7 @@ model SongWikiDetail {
   @maxItems(5)
   keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
-  heroImage: DraftWikiHeroImage;
+  heroImage: WikiHeroImage;
   @doc("Basic song wiki content payload.")
   basic: SongDraftWikiBasic;
   @doc("Section content payloads.")
@@ -611,7 +623,7 @@ model AgencyWikiDetail {
   @maxItems(5)
   keywords: SeoKeywordText[] | null;
   @doc("Hero image payload.")
-  heroImage: DraftWikiHeroImage;
+  heroImage: WikiHeroImage;
   @doc("Basic agency wiki content payload.")
   basic: AgencyDraftWikiBasic;
   @doc("Section content payloads.")

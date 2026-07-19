@@ -25,6 +25,7 @@ class CreateImage
      *     approved_at?: string|null,
      *     updater_id?: string|null,
      *     updated_at?: string|null,
+     *     is_hidden?: bool,
      * } $overrides
      */
     public static function create(string $imageId, array $overrides = []): void
@@ -45,6 +46,7 @@ class CreateImage
             'approved_at' => $overrides['approved_at'] ?? now(),
             'updater_id' => $overrides['updater_id'] ?? null,
             'updated_at' => $overrides['updated_at'] ?? null,
+            'is_hidden' => $overrides['is_hidden'] ?? false,
         ]);
     }
 }
