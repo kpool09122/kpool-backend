@@ -237,7 +237,7 @@ class Image
         $this->hiddenAt = new DateTimeImmutable();
     }
 
-    public function approveDeletionRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
+    public function approveDeletionRequest(PrincipalIdentifier $reviewerIdentifier): void
     {
         $pendingDeletionRequest = $this->pendingDeletionRequest();
         if ($pendingDeletionRequest === null) {
@@ -246,7 +246,7 @@ class Image
 
         foreach ($this->deletionRequests as $index => $deletionRequest) {
             if ($deletionRequest === $pendingDeletionRequest) {
-                $this->deletionRequests[$index] = $deletionRequest->approve($reviewerIdentifier, $reviewerComment);
+                $this->deletionRequests[$index] = $deletionRequest->approve($reviewerIdentifier);
 
                 break;
             }
@@ -254,7 +254,7 @@ class Image
 
     }
 
-    public function rejectDeletionRequest(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): void
+    public function rejectDeletionRequest(PrincipalIdentifier $reviewerIdentifier, string $rejectReason): void
     {
         $pendingDeletionRequest = $this->pendingDeletionRequest();
         if ($pendingDeletionRequest === null) {
@@ -263,7 +263,7 @@ class Image
 
         foreach ($this->deletionRequests as $index => $deletionRequest) {
             if ($deletionRequest === $pendingDeletionRequest) {
-                $this->deletionRequests[$index] = $deletionRequest->reject($reviewerIdentifier, $reviewerComment);
+                $this->deletionRequests[$index] = $deletionRequest->reject($reviewerIdentifier, $rejectReason);
 
                 break;
             }

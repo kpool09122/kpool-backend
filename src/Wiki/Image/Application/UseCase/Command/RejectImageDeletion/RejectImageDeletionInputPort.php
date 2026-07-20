@@ -13,5 +13,5 @@ interface RejectImageDeletionInputPort
 
     public function principalIdentifier(): PrincipalIdentifier;
 
-    public function reviewerComment(): string;
+    public function rejectReason(): string;
 }

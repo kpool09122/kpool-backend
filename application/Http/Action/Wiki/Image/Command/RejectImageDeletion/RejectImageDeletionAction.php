@@ -46,7 +46,7 @@ readonly class RejectImageDeletionAction
                 $input = new RejectImageDeletionInput(
                     new ImageIdentifier($request->imageId()),
                     $this->wikiContext->principalIdentifier,
-                    $request->reviewerComment(),
+                    $request->rejectReason(),
                 );
                 $output = new RejectImageDeletionOutput();
             } catch (InvalidArgumentException $e) {

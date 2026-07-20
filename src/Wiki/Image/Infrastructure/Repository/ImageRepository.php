@@ -86,7 +86,7 @@ final class ImageRepository implements ImageRepositoryInterface
                 'requested_at' => $deletionRequest->requestedAt(),
                 'reviewer_id' => $deletionRequest->reviewerIdentifier() ? (string) $deletionRequest->reviewerIdentifier() : null,
                 'reviewed_at' => $deletionRequest->reviewedAt(),
-                'reviewer_comment' => $deletionRequest->reviewerComment(),
+                'reject_reason' => $deletionRequest->rejectReason(),
             ];
 
             if ($existingModel !== null) {
@@ -148,7 +148,7 @@ final class ImageRepository implements ImageRepositoryInterface
             $model->requested_at->toDateTimeImmutable(),
             $model->reviewer_id ? new PrincipalIdentifier($model->reviewer_id) : null,
             $model->reviewed_at?->toDateTimeImmutable(),
-            $model->reviewer_comment,
+            $model->reject_reason,
         );
     }
 }

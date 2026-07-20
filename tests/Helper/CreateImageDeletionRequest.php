@@ -17,7 +17,7 @@ class CreateImageDeletionRequest
      *     requested_at?: mixed,
      *     reviewer_id?: string|null,
      *     reviewed_at?: mixed,
-     *     reviewer_comment?: string|null,
+     *     reject_reason?: string|null,
      * } $overrides
      */
     public static function create(string $requestId, array $overrides = []): void
@@ -31,7 +31,7 @@ class CreateImageDeletionRequest
             'requested_at' => $overrides['requested_at'] ?? now(),
             'reviewer_id' => $overrides['reviewer_id'] ?? null,
             'reviewed_at' => $overrides['reviewed_at'] ?? null,
-            'reviewer_comment' => $overrides['reviewer_comment'] ?? null,
+            'reject_reason' => $overrides['reject_reason'] ?? null,
         ]);
     }
 }

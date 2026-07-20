@@ -56,7 +56,7 @@ readonly class ApproveImageDeletion implements ApproveImageDeletionInterface
             throw new DisallowedException();
         }
 
-        $image->approveDeletionRequest($input->principalIdentifier(), $input->reviewerComment());
+        $image->approveDeletionRequest($input->principalIdentifier());
         $this->imageRepository->save($image);
         foreach ($this->wikiRepository->findByImageIdentifier($input->imageIdentifier()) as $wiki) {
             $wiki->setImageIdentifier(null);

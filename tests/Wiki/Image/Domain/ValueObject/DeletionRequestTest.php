@@ -26,7 +26,7 @@ class DeletionRequestTest extends TestCase
         $this->assertInstanceOf(DateTimeImmutable::class, $deletionRequest->requestedAt());
         $this->assertNull($deletionRequest->reviewerIdentifier());
         $this->assertNull($deletionRequest->reviewedAt());
-        $this->assertNull($deletionRequest->reviewerComment());
+        $this->assertNull($deletionRequest->rejectReason());
     }
 
     /**
@@ -37,11 +37,11 @@ class DeletionRequestTest extends TestCase
         $deletionRequest = $this->createPendingDeletionRequest();
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
-        $approved = $deletionRequest->approve($reviewerIdentifier, 'Approved for privacy');
+        $approved = $deletionRequest->approve($reviewerIdentifier);
 
         $this->assertSame((string) $reviewerIdentifier, (string) $approved->reviewerIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $approved->reviewedAt());
-        $this->assertSame('Approved for privacy', $approved->reviewerComment());
+        $this->assertNull($approved->rejectReason());
         // 元のインスタンスは変わらないこと
         $this->assertNull($deletionRequest->reviewedAt());
     }
@@ -58,7 +58,7 @@ class DeletionRequestTest extends TestCase
 
         $this->assertSame((string) $reviewerIdentifier, (string) $rejected->reviewerIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $rejected->reviewedAt());
-        $this->assertSame('Not applicable', $rejected->reviewerComment());
+        $this->assertSame('Not applicable', $rejected->rejectReason());
         // 元のインスタンスは変わらないこと
         $this->assertNull($deletionRequest->reviewedAt());
     }
@@ -72,7 +72,7 @@ class DeletionRequestTest extends TestCase
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $this->expectException(ImageDeletionRequestNotPendingException::class);
-        $deletionRequest->approve($reviewerIdentifier, 'comment');
+        $deletionRequest->approve($reviewerIdentifier);
     }
 
     /**
@@ -109,7 +109,7 @@ class DeletionRequestTest extends TestCase
             new DateTimeImmutable(),
             new PrincipalIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable(),
-            'Approved',
+            null,
         );
     }
 }

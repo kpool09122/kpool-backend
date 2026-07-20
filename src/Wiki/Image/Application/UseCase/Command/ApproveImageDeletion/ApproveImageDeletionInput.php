@@ -12,7 +12,6 @@ readonly class ApproveImageDeletionInput implements ApproveImageDeletionInputPor
     public function __construct(
         private ImageIdentifier $imageIdentifier,
         private PrincipalIdentifier $principalIdentifier,
-        private string $reviewerComment,
     ) {
     }
 
@@ -26,8 +25,4 @@ readonly class ApproveImageDeletionInput implements ApproveImageDeletionInputPor
         return $this->principalIdentifier;
     }
 
-    public function reviewerComment(): string
-    {
-        return $this->reviewerComment;
-    }
 }

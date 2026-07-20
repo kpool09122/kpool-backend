@@ -12,6 +12,4 @@ interface ApproveImageDeletionInputPort
     public function imageIdentifier(): ImageIdentifier;
 
     public function principalIdentifier(): PrincipalIdentifier;
-
-    public function reviewerComment(): string;
 }

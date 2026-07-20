@@ -16,7 +16,7 @@ class ApproveImageDeletionOutput implements ApproveImageDeletionOutputPort
     }
 
     /**
-     * @return array{imageIdentifier: ?string, reviewerComment: ?string, isHidden: ?bool}
+     * @return array{imageIdentifier: ?string, isHidden: ?bool}
      */
     public function toArray(): array
     {
@@ -24,14 +24,12 @@ class ApproveImageDeletionOutput implements ApproveImageDeletionOutputPort
         if ($this->image === null || $deletionRequest === null) {
             return [
                 'imageIdentifier' => null,
-                'reviewerComment' => null,
                 'isHidden' => null,
             ];
         }
 
         return [
             'imageIdentifier' => (string) $this->image->imageIdentifier(),
-            'reviewerComment' => $deletionRequest->reviewerComment(),
             'isHidden' => $this->image->isHidden(),
         ];
     }

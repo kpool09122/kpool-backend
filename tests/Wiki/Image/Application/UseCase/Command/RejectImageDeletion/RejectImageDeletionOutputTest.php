@@ -66,7 +66,7 @@ class RejectImageDeletionOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame((string) $imageIdentifier, $result['imageIdentifier']);
-        $this->assertSame('Not applicable', $result['reviewerComment']);
+        $this->assertSame('Not applicable', $result['rejectReason']);
         $this->assertFalse($result['isHidden']);
     }
 
@@ -83,7 +83,7 @@ class RejectImageDeletionOutputTest extends TestCase
 
         $this->assertSame([
             'imageIdentifier' => null,
-            'reviewerComment' => null,
+            'rejectReason' => null,
             'isHidden' => null,
         ], $result);
     }

@@ -10,12 +10,12 @@ use PHPUnit\Framework\TestCase;
 class RejectImageDeletionRequestTest extends TestCase
 {
     /**
-     * 正常系: reviewerComment が必須であること.
+     * 正常系: rejectReason が必須であること.
      */
-    public function testReviewerCommentIsRequired(): void
+    public function testRejectReasonIsRequired(): void
     {
         $request = new RejectImageDeletionRequest();
 
-        $this->assertSame(['required', 'string'], $request->rules()['reviewerComment']);
+        $this->assertSame(['required', 'string'], $request->rules()['rejectReason']);
     }
 }
