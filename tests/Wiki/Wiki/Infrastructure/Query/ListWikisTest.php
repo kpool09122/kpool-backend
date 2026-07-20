@@ -191,6 +191,7 @@ class ListWikisTest extends TestCase
             'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
             'image_path' => '/images/test/public-card.jpg',
             'alt_text' => 'Published wiki card image',
+            'is_hidden' => true,
         ]);
 
         $this->createWiki(
@@ -212,6 +213,7 @@ class ListWikisTest extends TestCase
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
         $this->assertSame('http://127.0.0.1:8080/images/test/public-card.jpg', $payload['wikis'][0]['imageUrl']);
         $this->assertSame('Published wiki card image', $payload['wikis'][0]['imageAltText']);
+        $this->assertTrue($payload['wikis'][0]['isHidden']);
     }
 
     private function listWikis(): ListWikisInterface

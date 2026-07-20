@@ -13,6 +13,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikis
 use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisOutput;
 use Tests\Helper\CreateDraftWiki;
+use Tests\Helper\CreateImage;
 use Tests\TestCase;
 
 class ListMyDraftWikisTest extends TestCase
@@ -109,6 +110,35 @@ class ListMyDraftWikisTest extends TestCase
         $this->assertSame([
             '01965bb2-bcc9-7c6f-8b90-89f7f217f611',
         ], array_column($payload['wikis'], 'wikiIdentifier'));
+    }
+
+    #[Group('useDb')]
+    public function testProcessReturnsDraftWikiImageHiddenStatusWhenImageExists(): void
+    {
+        CreateImage::create('01965bb2-bcc9-7c6f-8b90-89f7f217f801', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'image_path' => '/images/test/my-draft-card.jpg',
+            'alt_text' => 'My draft wiki card image',
+            'is_hidden' => true,
+        ]);
+
+        CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f802', 'talent', [
+            'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
+            'image_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            'status' => ApprovalStatus::Pending->value,
+            'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+        ]);
+
+        $payload = $this->process(new ListMyDraftWikisInput(
+            statuses: [ApprovalStatus::Pending],
+            editorIdentifier: new PrincipalIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f701'),
+            translationSetIdentifier: new TranslationSetIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f901'),
+        ))->toArray();
+
+        $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
+        $this->assertSame('http://127.0.0.1:8080/images/test/my-draft-card.jpg', $payload['wikis'][0]['imageUrl']);
+        $this->assertSame('My draft wiki card image', $payload['wikis'][0]['imageAltText']);
+        $this->assertTrue($payload['wikis'][0]['isHidden']);
     }
 
     private function listMyDraftWikis(): ListMyDraftWikisInterface

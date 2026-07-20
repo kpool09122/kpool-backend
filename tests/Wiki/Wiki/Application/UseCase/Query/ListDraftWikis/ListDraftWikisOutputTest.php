@@ -24,6 +24,7 @@ class ListDraftWikisOutputTest extends TestCase
             imageIdentifier: null,
             imageUrl: null,
             imageAltText: null,
+            isHidden: null,
             status: ApprovalStatus::Pending->value,
             rejectionReason: '内容が不十分です',
             name: 'Chaeyoung',

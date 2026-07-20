@@ -3220,6 +3220,7 @@ components:
         - imageIdentifier
         - imageUrl
         - imageAltText
+        - isHidden
         - editedAt
         - approvedAt
         - translatedAt
@@ -3306,6 +3307,10 @@ components:
           type: string
           nullable: true
           description: Alternative text of the representative image.
+        isHidden:
+          type: boolean
+          nullable: true
+          description: Whether the representative image is hidden.
         editedAt:
           type: string
           nullable: true
@@ -5331,6 +5336,7 @@ components:
         - imageIdentifier
         - imageUrl
         - imageAltText
+        - isHidden
         - name
         - normalizedName
         - publishedAt
@@ -5399,6 +5405,10 @@ components:
           type: string
           nullable: true
           description: Alternative text of the representative image.
+        isHidden:
+          type: boolean
+          nullable: true
+          description: Whether the representative image is hidden.
         name:
           type: string
           description: Display name of the wiki.

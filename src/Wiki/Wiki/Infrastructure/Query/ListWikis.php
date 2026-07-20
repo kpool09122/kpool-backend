@@ -38,7 +38,7 @@ readonly class ListWikis implements ListWikisInterface
     public function process(ListWikisInputPort $input, ListWikisOutputPort $output): void
     {
         $query = WikiModel::query()
-            ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text')
+            ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
             ->leftJoin('wiki_images', 'wiki_images.id', '=', 'wikis.image_identifier')
             ->with(['talentBasic', 'groupBasic', 'agencyBasic', 'songBasic'])
             ->where('wikis.language', $input->language()->value);
@@ -156,6 +156,7 @@ readonly class ListWikis implements ListWikisInterface
             imageIdentifier: $wiki->image_identifier,
             imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
             imageAltText: $wiki->getAttribute('image_alt_text'),
+            isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
             name: (string) $basic->getAttribute('name'),
             normalizedName: (string) $basic->getAttribute('normalized_name'),
             publishedAt: $this->formatDateTime($wiki->published_at),
@@ -194,5 +195,10 @@ readonly class ListWikis implements ListWikisInterface
         }
 
         return (string) $dateTime;
+    }
+
+    private function nullableBool(mixed $value): ?bool
+    {
+        return $value === null ? null : (bool) $value;
     }
 }
