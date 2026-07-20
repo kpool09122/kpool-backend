@@ -82,10 +82,15 @@ readonly class CreatePrincipalAction
             throw new UnprocessableEntityHttpException(detail: 'identityIdentifier must match authenticated identity');
         }
 
-        $belongsToAccount = DB::table('identity_groups')
-            ->join('identity_group_memberships', 'identity_groups.id', '=', 'identity_group_memberships.identity_group_id')
-            ->where('identity_groups.account_id', (string) $input->accountIdentifier())
-            ->where('identity_group_memberships.identity_id', (string) $this->actorContext->identityIdentifier)
+        $belongsToAccount = DB::table('account_principal_groups')
+            ->join(
+                'account_principal_group_memberships',
+                'account_principal_groups.id',
+                '=',
+                'account_principal_group_memberships.principal_group_id'
+            )
+            ->where('account_principal_groups.account_id', (string) $input->accountIdentifier())
+            ->where('account_principal_group_memberships.principal_id', (string) $this->actorContext->identityIdentifier)
             ->exists();
 
         if (! $belongsToAccount) {

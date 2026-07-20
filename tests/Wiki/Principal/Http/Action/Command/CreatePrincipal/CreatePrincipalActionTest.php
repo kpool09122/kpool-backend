@@ -176,15 +176,20 @@ class CreatePrincipalActionTest extends TestCase
         $query = Mockery::mock();
         $query->shouldReceive('join')
             ->once()
-            ->with('identity_group_memberships', 'identity_groups.id', '=', 'identity_group_memberships.identity_group_id')
+            ->with(
+                'account_principal_group_memberships',
+                'account_principal_groups.id',
+                '=',
+                'account_principal_group_memberships.principal_group_id'
+            )
             ->andReturnSelf();
         $query->shouldReceive('where')
             ->once()
-            ->with('identity_groups.account_id', $accountIdentifier)
+            ->with('account_principal_groups.account_id', $accountIdentifier)
             ->andReturnSelf();
         $query->shouldReceive('where')
             ->once()
-            ->with('identity_group_memberships.identity_id', $identityIdentifier)
+            ->with('account_principal_group_memberships.principal_id', $identityIdentifier)
             ->andReturnSelf();
         $query->shouldReceive('exists')
             ->once()
@@ -192,7 +197,7 @@ class CreatePrincipalActionTest extends TestCase
 
         DB::shouldReceive('table')
             ->once()
-            ->with('identity_groups')
+            ->with('account_principal_groups')
             ->andReturn($query);
     }
 }

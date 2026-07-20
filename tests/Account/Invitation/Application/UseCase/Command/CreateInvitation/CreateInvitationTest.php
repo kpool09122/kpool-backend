@@ -19,9 +19,10 @@ use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
-use Source\Account\Policy\Domain\Service\PolicyEvaluatorInterface;
-use Source\Account\Policy\Domain\ValueObject\AccountAction;
-use Source\Account\Policy\Domain\ValueObject\AccountResource;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -182,9 +183,11 @@ class CreateInvitationTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')
             ->once()
             ->with(
-                $inviterIdentityIdentifier,
-                AccountAction::INVITATION_CREATE,
-                Mockery::on(static fn (AccountResource $resource) => (string) $resource->accountIdentifier() === (string) $accountIdentifier)
+                Mockery::on(
+                    static fn (Principal $principal): bool => (string) $principal->principalIdentifier() === (string) $inviterIdentityIdentifier
+                ),
+                Action::INVITATION_CREATE,
+                Mockery::on(static fn (Resource $resource) => (string) $resource->accountIdentifier() === (string) $accountIdentifier)
             )
             ->andReturnTrue();
 
@@ -221,9 +224,11 @@ class CreateInvitationTest extends TestCase
         $policyEvaluator->shouldReceive('evaluate')
             ->once()
             ->with(
-                $data->inviterIdentityIdentifier,
-                AccountAction::INVITATION_CREATE,
-                Mockery::on(static fn (AccountResource $resource) => (string) $resource->accountIdentifier() === (string) $data->accountIdentifier)
+                Mockery::on(
+                    static fn (Principal $principal): bool => (string) $principal->principalIdentifier() === (string) $data->inviterIdentityIdentifier
+                ),
+                Action::INVITATION_CREATE,
+                Mockery::on(static fn (Resource $resource) => (string) $resource->accountIdentifier() === (string) $data->accountIdentifier)
             )
             ->andReturn($allowed);
 

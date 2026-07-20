@@ -8,7 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
 use Source\Account\DelegationPermission\Infrastructure\Factory\DelegationPermissionFactory;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -36,19 +36,19 @@ class DelegationPermissionFactoryTest extends TestCase
      */
     public function testCreate(): void
     {
-        $identityGroupIdentifier = new IdentityGroupIdentifier(StrTestHelper::generateUuid());
+        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $targetAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
 
         $factory = $this->app->make(DelegationPermissionFactoryInterface::class);
         $delegationPermission = $factory->create(
-            $identityGroupIdentifier,
+            $principalGroupIdentifier,
             $targetAccountIdentifier,
             $affiliationIdentifier,
         );
 
         $this->assertTrue(UuidValidator::isValid((string) $delegationPermission->delegationPermissionIdentifier()));
-        $this->assertSame($identityGroupIdentifier, $delegationPermission->identityGroupIdentifier());
+        $this->assertSame($principalGroupIdentifier, $delegationPermission->principalGroupIdentifier());
         $this->assertSame($targetAccountIdentifier, $delegationPermission->targetAccountIdentifier());
         $this->assertSame($affiliationIdentifier, $delegationPermission->affiliationIdentifier());
         $this->assertNotNull($delegationPermission->createdAt());

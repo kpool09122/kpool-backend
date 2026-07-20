@@ -6,13 +6,13 @@ namespace Source\Account\DelegationPermission\Domain\Factory;
 
 use Source\Account\DelegationPermission\Domain\Entity\DelegationPermission;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface DelegationPermissionFactoryInterface
 {
     public function create(
-        IdentityGroupIdentifier $identityGroupIdentifier,
+        PrincipalGroupIdentifier $principalGroupIdentifier,
         AccountIdentifier $targetAccountIdentifier,
         AffiliationIdentifier $affiliationIdentifier,
     ): DelegationPermission;

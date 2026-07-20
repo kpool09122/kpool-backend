@@ -33,26 +33,26 @@ use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegat
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermission as RevokeDelegationPermissionUseCase;
 use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermissionInterface as RevokeDelegationPermissionInterfaceNew;
-use Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroup;
-use Source\Account\IdentityGroup\Application\UseCase\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroupInterface;
-use Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup\CreateIdentityGroup;
-use Source\Account\IdentityGroup\Application\UseCase\Command\CreateIdentityGroup\CreateIdentityGroupInterface;
-use Source\Account\IdentityGroup\Application\UseCase\Command\DeleteIdentityGroup\DeleteIdentityGroup;
-use Source\Account\IdentityGroup\Application\UseCase\Command\DeleteIdentityGroup\DeleteIdentityGroupInterface;
-use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroup;
-use Source\Account\IdentityGroup\Application\UseCase\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupInterface;
 use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitation;
 use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInterface;
+use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
+use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
+use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
+use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroupInterface;
+use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroup;
+use Source\Account\Principal\Application\UseCase\Command\DeletePrincipalGroup\DeletePrincipalGroupInterface;
+use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroup;
+use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupInterface;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
         $this->app->singleton(CreateAccountInterface::class, CreateAccount::class);
-        $this->app->singleton(CreateIdentityGroupInterface::class, CreateIdentityGroup::class);
-        $this->app->singleton(DeleteIdentityGroupInterface::class, DeleteIdentityGroup::class);
-        $this->app->singleton(AddIdentityToIdentityGroupInterface::class, AddIdentityToIdentityGroup::class);
-        $this->app->singleton(RemoveIdentityFromIdentityGroupInterface::class, RemoveIdentityFromIdentityGroup::class);
+        $this->app->singleton(CreatePrincipalGroupInterface::class, CreatePrincipalGroup::class);
+        $this->app->singleton(DeletePrincipalGroupInterface::class, DeletePrincipalGroup::class);
+        $this->app->singleton(AddPrincipalToPrincipalGroupInterface::class, AddPrincipalToPrincipalGroup::class);
+        $this->app->singleton(RemovePrincipalFromPrincipalGroupInterface::class, RemovePrincipalFromPrincipalGroup::class);
         $this->app->singleton(GrantDelegationPermissionInterface::class, GrantDelegationPermission::class);
         $this->app->singleton(RevokeDelegationPermissionInterfaceNew::class, RevokeDelegationPermissionUseCase::class);
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);

@@ -8,9 +8,10 @@ use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
-use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
-use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class CreateAccount implements CreateAccountInterface
@@ -20,8 +21,8 @@ readonly class CreateAccount implements CreateAccountInterface
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
         private AccountFactoryInterface $accountFactory,
-        private IdentityGroupFactoryInterface $identityGroupFactory,
-        private IdentityGroupRepositoryInterface $identityGroupRepository,
+        private PrincipalGroupFactoryInterface $principalGroupFactory,
+        private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -52,7 +53,7 @@ readonly class CreateAccount implements CreateAccountInterface
 
         $this->accountRepository->save($account);
 
-        $identityGroup = $this->identityGroupFactory->create(
+        $principalGroup = $this->principalGroupFactory->create(
             $account->accountIdentifier(),
             self::DEFAULT_IDENTITY_GROUP_NAME,
             AccountRole::OWNER,
@@ -60,10 +61,10 @@ readonly class CreateAccount implements CreateAccountInterface
         );
 
         if ($input->identityIdentifier() !== null) {
-            $identityGroup->addMember($input->identityIdentifier());
+            $principalGroup->addMember(new Principal($input->identityIdentifier()));
         }
 
-        $this->identityGroupRepository->save($identityGroup);
+        $this->principalGroupRepository->save($principalGroup);
 
         $this->eventDispatcher->dispatch(new AccountCreated(
             accountIdentifier: $account->accountIdentifier(),

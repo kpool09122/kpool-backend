@@ -8,9 +8,10 @@ use Source\Account\Invitation\Application\Exception\DisallowedInvitationExceptio
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
-use Source\Account\Policy\Domain\Service\PolicyEvaluatorInterface;
-use Source\Account\Policy\Domain\ValueObject\AccountAction;
-use Source\Account\Policy\Domain\ValueObject\AccountResource;
+use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
 readonly class CreateInvitation implements CreateInvitationInterface
@@ -64,9 +65,9 @@ readonly class CreateInvitation implements CreateInvitationInterface
     private function assertInviterHasPermission(CreateInvitationInputPort $input): void
     {
         $allowed = $this->policyEvaluator->evaluate(
-            $input->inviterIdentityIdentifier(),
-            AccountAction::INVITATION_CREATE,
-            AccountResource::account($input->accountIdentifier()),
+            new Principal($input->inviterIdentityIdentifier()),
+            Action::INVITATION_CREATE,
+            Resource::account($input->accountIdentifier()),
         );
 
         if ($allowed) {

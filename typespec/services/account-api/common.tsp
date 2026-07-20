@@ -95,8 +95,8 @@ model DelegationSummary {
 model DelegationPermissionSummary {
   @doc("Delegation permission identifier.")
   delegationPermissionIdentifier: Uuid;
-  @doc("Identity group identifier that owns the permission.")
-  identityGroupIdentifier: Uuid;
+  @doc("Principal group identifier that owns the permission.")
+  principalGroupIdentifier: Uuid;
   @doc("Target account identifier.")
   targetAccountIdentifier: Uuid;
   @doc("Affiliation identifier covered by the permission.")
@@ -105,25 +105,25 @@ model DelegationPermissionSummary {
   createdAt: Timestamp;
 }
 
-@doc("Identity group snapshot returned after updates.")
-model IdentityGroupSummary {
-  @doc("Identity group identifier.")
-  identityGroupIdentifier: Uuid;
+@doc("Principal group snapshot returned after updates.")
+model PrincipalGroupSummary {
+  @doc("Principal group identifier.")
+  principalGroupIdentifier: Uuid;
   @doc("Owning account identifier.")
   accountIdentifier: Uuid;
-  @doc("Identity group name.")
+  @doc("Principal group name.")
   name: string;
-  @doc("Identity group role.")
+  @doc("Principal group role.")
   role: string;
-  @doc("Whether this is the default identity group.")
+  @doc("Whether this is the default principal group.")
   isDefault: boolean;
   @doc("Identity identifiers currently assigned to the group.")
   members?: Uuid[];
 }
 
-@doc("Identity group snapshot returned immediately after creation.")
-model CreatedIdentityGroupSummary extends IdentityGroupSummary {
-  @doc("Timestamp when the identity group was created.")
+@doc("Principal group snapshot returned immediately after creation.")
+model CreatedPrincipalGroupSummary extends PrincipalGroupSummary {
+  @doc("Timestamp when the principal group was created.")
   createdAt: Timestamp;
 }
 
@@ -134,7 +134,7 @@ model InvitationSummary {
   @doc("Target account identifier.")
   accountIdentifier: Uuid;
   @doc("Identity identifier that created the invitation.")
-  invitedByIdentityIdentifier: Uuid;
+  invitedByPrincipalIdentifier: Uuid;
   @doc("Invitee email address.")
   email: string;
   @doc("Invitation token.")
