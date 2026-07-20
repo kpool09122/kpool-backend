@@ -36,7 +36,7 @@ class ApproveImageDeletionOutputTest extends TestCase
             new DateTimeImmutable(),
             $reviewerIdentifier,
             new DateTimeImmutable(),
-            'Approved for privacy',
+            null,
         );
 
         $image = new Image(
@@ -66,7 +66,6 @@ class ApproveImageDeletionOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame((string) $imageIdentifier, $result['imageIdentifier']);
-        $this->assertSame('Approved for privacy', $result['reviewerComment']);
         $this->assertTrue($result['isHidden']);
     }
 
@@ -83,7 +82,6 @@ class ApproveImageDeletionOutputTest extends TestCase
 
         $this->assertSame([
             'imageIdentifier' => null,
-            'reviewerComment' => null,
             'isHidden' => null,
         ], $result);
     }

@@ -37,10 +37,10 @@ model RequestImageDeletionRequestBody {
   reason: string;
 }
 
-@doc("Request body for reviewing an image deletion request.")
-model ReviewImageDeletionRequestBody {
-  @doc("Comment from the reviewer.")
-  reviewerComment: string;
+@doc("Request body for rejecting an image deletion request.")
+model RejectImageDeletionRequestBody {
+  @doc("Reason for rejecting the image deletion request.")
+  rejectReason: string;
 }
 
 @doc("Uploaded image item returned by the uploaded image list endpoint.")
@@ -219,10 +219,16 @@ model CreateImageDeletionRequestResponse {
   @body body: ImageDeletionRequestSummary;
 }
 
-@doc("Response returned when an image deletion request is reviewed.")
-model ReviewImageDeletionRequestResponse {
+@doc("Response returned when an image deletion request is approved.")
+model ApproveImageDeletionRequestResponse {
   @statusCode statusCode: 200;
-  @body body: ImageDeletionReviewSummary;
+  @body body: ImageDeletionApprovalSummary;
+}
+
+@doc("Response returned when an image deletion request is rejected.")
+model RejectImageDeletionRequestResponse {
+  @statusCode statusCode: 200;
+  @body body: ImageDeletionRejectionSummary;
 }
 
 @route("/image")
@@ -275,16 +281,15 @@ interface ImageOperations {
   @doc("Approve an image deletion request.")
   approveImageDeletionRequest(
     @path imageId: Uuid,
-    @body body: ReviewImageDeletionRequestBody,
-  ): ReviewImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  ): ApproveImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @post
   @route("/{imageId}/reject-deletion")
   @doc("Reject an image deletion request.")
   rejectImageDeletionRequest(
     @path imageId: Uuid,
-    @body body: ReviewImageDeletionRequestBody,
-  ): ReviewImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+    @body body: RejectImageDeletionRequestBody,
+  ): RejectImageDeletionRequestResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }
 
 @route("/images")

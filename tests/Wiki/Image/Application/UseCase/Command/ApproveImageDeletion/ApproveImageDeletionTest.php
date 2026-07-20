@@ -120,7 +120,7 @@ class ApproveImageDeletionTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
         $resource = new Resource(type: ResourceType::IMAGE);
 
-        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier, 'Approved for privacy');
+        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')
@@ -175,7 +175,7 @@ class ApproveImageDeletionTest extends TestCase
     {
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier, 'comment');
+        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')
@@ -212,7 +212,7 @@ class ApproveImageDeletionTest extends TestCase
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
         $resource = new Resource(type: ResourceType::IMAGE);
-        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier, 'comment');
+        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')
@@ -260,7 +260,7 @@ class ApproveImageDeletionTest extends TestCase
         $image = $this->createTestImageWithPendingDeletionRequest();
         $imageIdentifier = $image->imageIdentifier();
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier, 'comment');
+        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')
@@ -303,7 +303,7 @@ class ApproveImageDeletionTest extends TestCase
         $principal = new Principal($principalIdentifier, new IdentityIdentifier(StrTestHelper::generateUuid()), null, [], []);
         $resource = new Resource(type: ResourceType::IMAGE);
 
-        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier, 'comment');
+        $input = new ApproveImageDeletionInput($imageIdentifier, $principalIdentifier);
 
         $imageRepository = Mockery::mock(ImageRepositoryInterface::class);
         $imageRepository->shouldReceive('findById')

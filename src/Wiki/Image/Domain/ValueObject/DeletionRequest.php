@@ -17,7 +17,7 @@ readonly class DeletionRequest
         private DateTimeImmutable $requestedAt,
         private ?PrincipalIdentifier $reviewerIdentifier,
         private ?DateTimeImmutable $reviewedAt,
-        private ?string $reviewerComment,
+        private ?string $rejectReason,
     ) {
     }
 
@@ -51,12 +51,12 @@ readonly class DeletionRequest
         return $this->reviewedAt;
     }
 
-    public function reviewerComment(): ?string
+    public function rejectReason(): ?string
     {
-        return $this->reviewerComment;
+        return $this->rejectReason;
     }
 
-    public function approve(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): self
+    public function approve(PrincipalIdentifier $reviewerIdentifier): self
     {
         if ($this->reviewedAt !== null) {
             throw new ImageDeletionRequestNotPendingException();
@@ -69,11 +69,11 @@ readonly class DeletionRequest
             $this->requestedAt,
             $reviewerIdentifier,
             new DateTimeImmutable(),
-            $reviewerComment,
+            null,
         );
     }
 
-    public function reject(PrincipalIdentifier $reviewerIdentifier, string $reviewerComment): self
+    public function reject(PrincipalIdentifier $reviewerIdentifier, string $rejectReason): self
     {
         if ($this->reviewedAt !== null) {
             throw new ImageDeletionRequestNotPendingException();
@@ -86,7 +86,7 @@ readonly class DeletionRequest
             $this->requestedAt,
             $reviewerIdentifier,
             new DateTimeImmutable(),
-            $reviewerComment,
+            $rejectReason,
         );
     }
 }

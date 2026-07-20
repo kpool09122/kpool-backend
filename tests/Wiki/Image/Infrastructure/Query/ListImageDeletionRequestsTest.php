@@ -88,7 +88,7 @@ class ListImageDeletionRequestsTest extends TestCase
             'image_id' => '01965bb2-bcc9-7c6f-8b90-89f7f448f202',
             'reviewer_id' => StrTestHelper::generateUuid(),
             'reviewed_at' => '2026-05-03 00:00:00',
-            'reviewer_comment' => '対応済み',
+            'reject_reason' => '対応済み',
         ]);
 
         $payload = $this->process(new ListImageDeletionRequestsInput($principalIdentifier))->toArray();

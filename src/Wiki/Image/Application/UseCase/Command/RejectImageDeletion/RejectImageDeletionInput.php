@@ -12,7 +12,7 @@ readonly class RejectImageDeletionInput implements RejectImageDeletionInputPort
     public function __construct(
         private ImageIdentifier $imageIdentifier,
         private PrincipalIdentifier $principalIdentifier,
-        private string $reviewerComment,
+        private string $rejectReason,
     ) {
     }
 
@@ -26,8 +26,8 @@ readonly class RejectImageDeletionInput implements RejectImageDeletionInputPort
         return $this->principalIdentifier;
     }
 
-    public function reviewerComment(): string
+    public function rejectReason(): string
     {
-        return $this->reviewerComment;
+        return $this->rejectReason;
     }
 }

@@ -25,11 +25,9 @@ class ApproveImageDeletionInputTest extends TestCase
         $input = new ApproveImageDeletionInput(
             $imageIdentifier,
             $principalIdentifier,
-            'Approved for privacy',
         );
 
         $this->assertSame((string) $imageIdentifier, (string) $input->imageIdentifier());
         $this->assertSame((string) $principalIdentifier, (string) $input->principalIdentifier());
-        $this->assertSame('Approved for privacy', $input->reviewerComment());
     }
 }

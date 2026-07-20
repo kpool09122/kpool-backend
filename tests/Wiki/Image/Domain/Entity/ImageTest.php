@@ -205,12 +205,12 @@ class ImageTest extends TestCase
         $image->requestDeletion('Test Requester', 'requester@example.com', 'Privacy concern');
 
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $image->approveDeletionRequest($reviewerIdentifier, 'Approved for privacy');
+        $image->approveDeletionRequest($reviewerIdentifier);
 
         $this->assertNull($image->pendingDeletionRequest());
         $this->assertSame((string) $reviewerIdentifier, (string) $image->latestDeletionRequest()->reviewerIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $image->latestDeletionRequest()->reviewedAt());
-        $this->assertSame('Approved for privacy', $image->latestDeletionRequest()->reviewerComment());
+        $this->assertNull($image->latestDeletionRequest()->rejectReason());
         $this->assertTrue($image->isHidden());
     }
 
@@ -228,7 +228,7 @@ class ImageTest extends TestCase
         $this->assertNull($image->pendingDeletionRequest());
         $this->assertSame((string) $reviewerIdentifier, (string) $image->latestDeletionRequest()->reviewerIdentifier());
         $this->assertInstanceOf(DateTimeImmutable::class, $image->latestDeletionRequest()->reviewedAt());
-        $this->assertSame('Not applicable', $image->latestDeletionRequest()->reviewerComment());
+        $this->assertSame('Not applicable', $image->latestDeletionRequest()->rejectReason());
         $this->assertFalse($image->isHidden());
     }
 
@@ -272,7 +272,7 @@ class ImageTest extends TestCase
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $this->expectException(ImageDeletionRequestNotPendingException::class);
-        $image->approveDeletionRequest($reviewerIdentifier, 'comment');
+        $image->approveDeletionRequest($reviewerIdentifier);
     }
 
     /**

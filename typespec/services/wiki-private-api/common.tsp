@@ -666,13 +666,21 @@ model ImageDeletionRequestSummary {
   isHidden: boolean;
 }
 
-@doc("Summary of an image deletion request review result.")
-model ImageDeletionReviewSummary {
+@doc("Summary of an image deletion request approval result.")
+model ImageDeletionApprovalSummary {
   @doc("Image identifier.")
   imageIdentifier: Uuid;
-  @doc("Comment left by the reviewer.")
-  reviewerComment: string;
-  @doc("Whether the image is hidden after the review.")
+  @doc("Whether the image is hidden after the approval.")
+  isHidden: boolean;
+}
+
+@doc("Summary of an image deletion request rejection result.")
+model ImageDeletionRejectionSummary {
+  @doc("Image identifier.")
+  imageIdentifier: Uuid;
+  @doc("Reason for rejecting the image deletion request.")
+  rejectReason: string;
+  @doc("Whether the image is hidden after the rejection.")
   isHidden: boolean;
 }
 

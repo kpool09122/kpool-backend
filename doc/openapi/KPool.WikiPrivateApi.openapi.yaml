@@ -301,11 +301,11 @@ paths:
             $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
-          description: Response returned when an image deletion request is reviewed.
+          description: Response returned when an image deletion request is approved.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImageDeletionReviewSummary'
+                $ref: '#/components/schemas/ImageDeletionApprovalSummary'
         '403':
           description: Access is forbidden.
           content:
@@ -336,12 +336,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReviewImageDeletionRequestBody'
   /image/{imageId}/reject:
     post:
       operationId: ImageOperations_rejectImage
@@ -401,11 +395,11 @@ paths:
             $ref: '#/components/schemas/KPool.Common.Uuid'
       responses:
         '200':
-          description: Response returned when an image deletion request is reviewed.
+          description: Response returned when an image deletion request is rejected.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImageDeletionReviewSummary'
+                $ref: '#/components/schemas/ImageDeletionRejectionSummary'
         '403':
           description: Access is forbidden.
           content:
@@ -441,7 +435,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewImageDeletionRequestBody'
+              $ref: '#/components/schemas/RejectImageDeletionRequestBody'
   /image/{imageId}/request-deletion:
     post:
       operationId: ImageOperations_requestImageDeletion
@@ -3463,6 +3457,38 @@ components:
           type: string
           description: Representative symbol of the group.
       description: Basic payload for a group draft wiki.
+    ImageDeletionApprovalSummary:
+      type: object
+      required:
+        - imageIdentifier
+        - isHidden
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Image identifier.
+        isHidden:
+          type: boolean
+          description: Whether the image is hidden after the approval.
+      description: Summary of an image deletion request approval result.
+    ImageDeletionRejectionSummary:
+      type: object
+      required:
+        - imageIdentifier
+        - rejectReason
+        - isHidden
+      properties:
+        imageIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Image identifier.
+        rejectReason:
+          type: string
+          description: Reason for rejecting the image deletion request.
+        isHidden:
+          type: boolean
+          description: Whether the image is hidden after the rejection.
+      description: Summary of an image deletion request rejection result.
     ImageDeletionRequestListItem:
       type: object
       required:
@@ -3550,24 +3576,6 @@ components:
           type: boolean
           description: Whether the image is hidden while the deletion request is pending.
       description: Summary of an image deletion request.
-    ImageDeletionReviewSummary:
-      type: object
-      required:
-        - imageIdentifier
-        - reviewerComment
-        - isHidden
-      properties:
-        imageIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Image identifier.
-        reviewerComment:
-          type: string
-          description: Comment left by the reviewer.
-        isHidden:
-          type: boolean
-          description: Whether the image is hidden after the review.
-      description: Summary of an image deletion request review result.
     ImageDraftSummary:
       type: object
       required:
@@ -4010,6 +4018,15 @@ components:
           format: int32
           description: Published version number.
       description: Summary of a published wiki.
+    RejectImageDeletionRequestBody:
+      type: object
+      required:
+        - rejectReason
+      properties:
+        rejectReason:
+          type: string
+          description: Reason for rejecting the image deletion request.
+      description: Request body for rejecting an image deletion request.
     RejectWikiRequestBody:
       type: object
       required:
@@ -4109,15 +4126,6 @@ components:
           type: string
           description: Reason for requesting the image to be hidden.
       description: Request body for creating an image deletion request.
-    ReviewImageDeletionRequestBody:
-      type: object
-      required:
-        - reviewerComment
-      properties:
-        reviewerComment:
-          type: string
-          description: Comment from the reviewer.
-      description: Request body for reviewing an image deletion request.
     RoleSummary:
       type: object
       required:

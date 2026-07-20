@@ -292,7 +292,7 @@ class ImageRepositoryTest extends TestCase
             'image_id' => $imageId,
             'reviewer_id' => $reviewerId,
             'reviewed_at' => $reviewedAt,
-            'reviewer_comment' => 'Reviewed',
+            'reject_reason' => 'Reviewed',
         ]);
 
         $repository = $this->app->make(ImageRepositoryInterface::class);
@@ -302,7 +302,7 @@ class ImageRepositoryTest extends TestCase
         $this->assertCount(1, $image->deletionRequests());
         $this->assertNull($image->pendingDeletionRequest());
         $this->assertSame($reviewerId, (string) $image->latestDeletionRequest()->reviewerIdentifier());
-        $this->assertSame('Reviewed', $image->latestDeletionRequest()->reviewerComment());
+        $this->assertSame('Reviewed', $image->latestDeletionRequest()->rejectReason());
     }
 
     /**
@@ -356,13 +356,13 @@ class ImageRepositoryTest extends TestCase
         $image = $repository->findById(new ImageIdentifier($imageId));
 
         $reviewerIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $image->approveDeletionRequest($reviewerIdentifier, 'Approved for privacy');
+        $image->approveDeletionRequest($reviewerIdentifier);
         $repository->save($image);
 
         $this->assertDatabaseHas('image_deletion_requests', [
             'image_id' => $imageId,
             'reviewer_id' => (string) $reviewerIdentifier,
-            'reviewer_comment' => 'Approved for privacy',
+            'reject_reason' => null,
         ]);
 
     }
@@ -396,7 +396,7 @@ class ImageRepositoryTest extends TestCase
         $this->assertDatabaseHas('image_deletion_requests', [
             'image_id' => $imageId,
             'reviewer_id' => (string) $reviewerIdentifier,
-            'reviewer_comment' => 'Not applicable',
+            'reject_reason' => 'Not applicable',
         ]);
 
         $this->assertDatabaseHas('wiki_images', [

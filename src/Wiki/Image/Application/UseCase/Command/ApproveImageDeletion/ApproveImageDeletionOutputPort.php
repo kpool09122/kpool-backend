@@ -11,7 +11,7 @@ interface ApproveImageDeletionOutputPort
     public function setImage(Image $image): void;
 
     /**
-     * @return array{imageIdentifier: ?string, reviewerComment: ?string, isHidden: ?bool}
+     * @return array{imageIdentifier: ?string, isHidden: ?bool}
      */
     public function toArray(): array;
 }

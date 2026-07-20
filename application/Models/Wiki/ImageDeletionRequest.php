@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $requested_at
  * @property ?string $reviewer_id
  * @property ?Carbon $reviewed_at
- * @property ?string $reviewer_comment
+ * @property ?string $reject_reason
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
  * @property-read ?WikiImage $image
@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
     'requested_at',
     'reviewer_id',
     'reviewed_at',
-    'reviewer_comment',
+    'reject_reason',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'image_deletion_requests', keyType: 'string')]
 class ImageDeletionRequest extends Model

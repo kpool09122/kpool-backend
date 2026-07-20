@@ -16,18 +16,11 @@ class ApproveImageDeletionRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'reviewerComment' => ['required', 'string'],
-        ];
+        return [];
     }
 
     public function imageId(): string
     {
         return (string) $this->route('imageId');
-    }
-
-    public function reviewerComment(): string
-    {
-        return (string) $this->input('reviewerComment');
     }
 }

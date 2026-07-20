@@ -48,7 +48,7 @@ readonly class RejectImageDeletion implements RejectImageDeletionInterface
             throw new DisallowedException();
         }
 
-        $image->rejectDeletionRequest($input->principalIdentifier(), $input->reviewerComment());
+        $image->rejectDeletionRequest($input->principalIdentifier(), $input->rejectReason());
         $this->imageRepository->save($image);
 
         $output->setImage($image);

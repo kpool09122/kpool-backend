@@ -30,6 +30,6 @@ class RejectImageDeletionInputTest extends TestCase
 
         $this->assertSame((string) $imageIdentifier, (string) $input->imageIdentifier());
         $this->assertSame((string) $principalIdentifier, (string) $input->principalIdentifier());
-        $this->assertSame('Not applicable', $input->reviewerComment());
+        $this->assertSame('Not applicable', $input->rejectReason());
     }
 }

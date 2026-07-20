@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('requested_at')->comment('申請日時');
             $table->uuid('reviewer_id')->nullable()->comment('審査者ID');
             $table->timestamp('reviewed_at')->nullable()->comment('審査日時');
-            $table->text('reviewer_comment')->nullable()->comment('審査コメント');
+            $table->text('reject_reason')->nullable()->comment('拒否理由');
             $table->timestamps();
 
             $table->index('image_id', 'idx_image_id');

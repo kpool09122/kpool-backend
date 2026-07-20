@@ -17,7 +17,7 @@ class RejectImageDeletionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reviewerComment' => ['required', 'string'],
+            'rejectReason' => ['required', 'string'],
         ];
     }
 
@@ -26,8 +26,8 @@ class RejectImageDeletionRequest extends FormRequest
         return (string) $this->route('imageId');
     }
 
-    public function reviewerComment(): string
+    public function rejectReason(): string
     {
-        return (string) $this->input('reviewerComment');
+        return (string) $this->input('rejectReason');
     }
 }
