@@ -33,6 +33,10 @@ use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
 use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
+use Source\Account\Policy\Domain\Repository\AccountPolicyRepositoryInterface;
+use Source\Account\Policy\Domain\Service\PolicyEvaluatorInterface as AccountPolicyEvaluatorInterface;
+use Source\Account\Policy\Infrastructure\Repository\AccountPolicyRepository;
+use Source\Account\Policy\Infrastructure\Service\PolicyEvaluator as AccountPolicyEvaluator;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 
 class DomainServiceProvider extends ServiceProvider
@@ -43,6 +47,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountRepositoryInterface::class, AccountRepository::class);
         $this->app->singleton(IdentityGroupFactoryInterface::class, IdentityGroupFactory::class);
         $this->app->singleton(IdentityGroupRepositoryInterface::class, IdentityGroupRepository::class);
+        $this->app->singleton(AccountPolicyRepositoryInterface::class, AccountPolicyRepository::class);
+        $this->app->singleton(AccountPolicyEvaluatorInterface::class, AccountPolicyEvaluator::class);
         $this->app->singleton(DelegationPermissionFactoryInterface::class, DelegationPermissionFactory::class);
         $this->app->singleton(DelegationPermissionRepositoryInterface::class, DelegationPermissionRepository::class);
         $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);
