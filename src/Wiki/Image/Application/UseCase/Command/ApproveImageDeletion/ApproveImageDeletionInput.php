@@ -24,5 +24,4 @@ readonly class ApproveImageDeletionInput implements ApproveImageDeletionInputPor
     {
         return $this->principalIdentifier;
     }
-
 }

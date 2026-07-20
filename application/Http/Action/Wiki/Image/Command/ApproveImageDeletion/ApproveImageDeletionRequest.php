@@ -23,5 +23,4 @@ class ApproveImageDeletionRequest extends FormRequest
     {
         return (string) $this->route('imageId');
     }
-
 }
