@@ -47,7 +47,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
             );
 
         $query = WikiModel::query()
-            ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text')
+            ->select('wikis.*', 'wiki_images.image_path as image_path', 'wiki_images.alt_text as image_alt_text', 'wiki_images.is_hidden as image_is_hidden')
             ->joinSub($inconsistentSets, 'version_inconsistent_sets', function ($join): void {
                 $join->on('version_inconsistent_sets.translation_set_identifier', '=', 'wikis.translation_set_identifier')
                     ->on('version_inconsistent_sets.latest_version', '=', 'wikis.version');
@@ -135,6 +135,7 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
             imageIdentifier: $wiki->image_identifier,
             imageUrl: ImageUrl::fromPath($wiki->getAttribute('image_path')),
             imageAltText: $wiki->getAttribute('image_alt_text'),
+            isHidden: $this->nullableBool($wiki->getAttribute('image_is_hidden')),
             name: (string) $basic->getAttribute('name'),
             normalizedName: (string) $basic->getAttribute('normalized_name'),
             publishedAt: $this->formatDateTime($wiki->published_at),
@@ -173,5 +174,10 @@ readonly class ListVersionInconsistentWikis implements ListVersionInconsistentWi
         }
 
         return (string) $dateTime;
+    }
+
+    private function nullableBool(mixed $value): ?bool
+    {
+        return $value === null ? null : (bool) $value;
     }
 }

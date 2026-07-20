@@ -23,6 +23,7 @@ class ListWikisOutputTest extends TestCase
             imageIdentifier: '01965bb2-bcc9-7c6f-8b90-89f7f217f104',
             imageUrl: 'http://localhost/storage/wiki/example.jpg',
             imageAltText: 'Chaeyoung profile image',
+            isHidden: false,
             name: 'Chaeyoung',
             normalizedName: 'chaeyoung',
             publishedAt: '2026-05-01T00:00:00+00:00',

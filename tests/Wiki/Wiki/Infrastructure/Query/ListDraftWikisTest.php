@@ -345,6 +345,7 @@ class ListDraftWikisTest extends TestCase
             'imageIdentifier' => null,
             'imageUrl' => null,
             'imageAltText' => null,
+            'isHidden' => null,
             'status' => ApprovalStatus::Approved->value,
             'rejectionReason' => null,
             'name' => 'TWICE',
@@ -363,6 +364,7 @@ class ListDraftWikisTest extends TestCase
             'translation_set_identifier' => '01965bb2-bcc9-7c6f-8b90-89f7f217f901',
             'image_path' => '/images/test/card.jpg',
             'alt_text' => 'Wiki card image',
+            'is_hidden' => true,
         ]);
 
         CreateDraftWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f802', 'talent', [
@@ -380,6 +382,7 @@ class ListDraftWikisTest extends TestCase
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f801', $payload['wikis'][0]['imageIdentifier']);
         $this->assertSame('http://127.0.0.1:8080/images/test/card.jpg', $payload['wikis'][0]['imageUrl']);
         $this->assertSame('Wiki card image', $payload['wikis'][0]['imageAltText']);
+        $this->assertTrue($payload['wikis'][0]['isHidden']);
     }
 
     private function listDraftWikis(): ListDraftWikisInterface

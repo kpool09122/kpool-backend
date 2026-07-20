@@ -216,6 +216,8 @@ model WikiListItem {
   imageUrl: string | null;
   @doc("Alternative text of the representative image.")
   imageAltText: string | null;
+  @doc("Whether the representative image is hidden.")
+  isHidden: boolean | null;
   @doc("Display name of the wiki.")
   name: string;
   @doc("Normalized name used for search.")
@@ -295,6 +297,8 @@ model DraftWikiListItem {
   imageUrl: string | null;
   @doc("Alternative text of the representative image.")
   imageAltText: string | null;
+  @doc("Whether the representative image is hidden.")
+  isHidden: boolean | null;
   @doc("Timestamp when the draft was edited.")
   editedAt: string | null;
   @doc("Timestamp when the draft was approved.")
