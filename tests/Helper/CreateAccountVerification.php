@@ -6,7 +6,7 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
-use Source\Account\AccountVerification\Domain\ValueObject\VerificationIdentifier;
+use Source\Account\Account\Domain\ValueObject\VerificationIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class CreateAccountVerification

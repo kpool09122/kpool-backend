@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
-use Application\Http\Action\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
-use Application\Http\Action\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
-use Application\Http\Action\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
+use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
+use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
+use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RejectAffiliation\RejectAffiliationAction;
 use Application\Http\Action\Account\Affiliation\Command\RequestAffiliation\RequestAffiliationAction;
