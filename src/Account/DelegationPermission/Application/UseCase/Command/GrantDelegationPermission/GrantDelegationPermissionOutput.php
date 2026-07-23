@@ -29,7 +29,7 @@ class GrantDelegationPermissionOutput implements GrantDelegationPermissionOutput
 
         return [
             'delegationPermissionIdentifier' => (string) $dp->delegationPermissionIdentifier(),
-            'identityGroupIdentifier' => (string) $dp->identityGroupIdentifier(),
+            'principalGroupIdentifier' => (string) $dp->principalGroupIdentifier(),
             'targetAccountIdentifier' => (string) $dp->targetAccountIdentifier(),
             'affiliationIdentifier' => (string) $dp->affiliationIdentifier(),
             'createdAt' => $dp->createdAt()->format(DateTimeInterface::ATOM),

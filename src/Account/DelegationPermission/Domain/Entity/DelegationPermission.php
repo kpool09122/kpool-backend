@@ -7,14 +7,14 @@ namespace Source\Account\DelegationPermission\Domain\Entity;
 use DateTimeImmutable;
 use Source\Account\DelegationPermission\Domain\ValueObject\DelegationPermissionIdentifier;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 readonly class DelegationPermission
 {
     public function __construct(
         private DelegationPermissionIdentifier $delegationPermissionIdentifier,
-        private IdentityGroupIdentifier $identityGroupIdentifier,
+        private PrincipalGroupIdentifier $principalGroupIdentifier,
         private AccountIdentifier $targetAccountIdentifier,
         private AffiliationIdentifier $affiliationIdentifier,
         private DateTimeImmutable $createdAt,
@@ -26,9 +26,9 @@ readonly class DelegationPermission
         return $this->delegationPermissionIdentifier;
     }
 
-    public function identityGroupIdentifier(): IdentityGroupIdentifier
+    public function principalGroupIdentifier(): PrincipalGroupIdentifier
     {
-        return $this->identityGroupIdentifier;
+        return $this->principalGroupIdentifier;
     }
 
     public function targetAccountIdentifier(): AccountIdentifier

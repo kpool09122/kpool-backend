@@ -15,7 +15,7 @@ use Source\Account\DelegationPermission\Domain\Entity\DelegationPermission;
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
 use Source\Account\DelegationPermission\Domain\ValueObject\DelegationPermissionIdentifier;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -41,13 +41,13 @@ class RevokeDelegationPermissionTest extends TestCase
     public function testProcess(): void
     {
         $delegationPermissionIdentifier = new DelegationPermissionIdentifier(StrTestHelper::generateUuid());
-        $identityGroupIdentifier = new IdentityGroupIdentifier(StrTestHelper::generateUuid());
+        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $targetAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
 
         $delegationPermission = new DelegationPermission(
             $delegationPermissionIdentifier,
-            $identityGroupIdentifier,
+            $principalGroupIdentifier,
             $targetAccountIdentifier,
             $affiliationIdentifier,
             new DateTimeImmutable(),

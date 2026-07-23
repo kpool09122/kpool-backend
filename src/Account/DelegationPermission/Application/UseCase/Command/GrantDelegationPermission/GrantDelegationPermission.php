@@ -6,31 +6,31 @@ namespace Source\Account\DelegationPermission\Application\UseCase\Command\GrantD
 
 use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFactoryInterface;
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
-use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundException;
-use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
+use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 
 readonly class GrantDelegationPermission implements GrantDelegationPermissionInterface
 {
     public function __construct(
-        private IdentityGroupRepositoryInterface $identityGroupRepository,
+        private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private DelegationPermissionRepositoryInterface $delegationPermissionRepository,
         private DelegationPermissionFactoryInterface $delegationPermissionFactory,
     ) {
     }
 
     /**
-     * @throws IdentityGroupNotFoundException
+     * @throws PrincipalGroupNotFoundException
      */
     public function process(GrantDelegationPermissionInputPort $input, GrantDelegationPermissionOutputPort $output): void
     {
-        $identityGroup = $this->identityGroupRepository->findById($input->identityGroupIdentifier());
+        $principalGroup = $this->principalGroupRepository->findById($input->principalGroupIdentifier());
 
-        if ($identityGroup === null) {
-            throw new IdentityGroupNotFoundException();
+        if ($principalGroup === null) {
+            throw new PrincipalGroupNotFoundException();
         }
 
         $delegationPermission = $this->delegationPermissionFactory->create(
-            $input->identityGroupIdentifier(),
+            $input->principalGroupIdentifier(),
             $input->targetAccountIdentifier(),
             $input->affiliationIdentifier(),
         );

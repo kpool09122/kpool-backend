@@ -17,15 +17,15 @@ class GrantDelegationPermissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'identityGroupIdentifier' => ['required', 'uuid'],
+            'principalGroupIdentifier' => ['required', 'uuid'],
             'targetAccountIdentifier' => ['required', 'uuid'],
             'affiliationIdentifier' => ['required', 'uuid'],
         ];
     }
 
-    public function identityGroupIdentifier(): string
+    public function principalGroupIdentifier(): string
     {
-        return (string) $this->input('identityGroupIdentifier');
+        return (string) $this->input('principalGroupIdentifier');
     }
 
     public function targetAccountIdentifier(): string

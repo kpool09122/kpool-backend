@@ -23,16 +23,22 @@ use Source\Account\DelegationPermission\Domain\Factory\DelegationPermissionFacto
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
 use Source\Account\DelegationPermission\Infrastructure\Factory\DelegationPermissionFactory;
 use Source\Account\DelegationPermission\Infrastructure\Repository\DelegationPermissionRepository;
-use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
-use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
-use Source\Account\IdentityGroup\Infrastructure\Factory\IdentityGroupFactory;
-use Source\Account\IdentityGroup\Infrastructure\Repository\IdentityGroupRepository;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
 use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
+use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
+use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface as PolicyEvaluatorInterface;
+use Source\Account\Principal\Infrastructure\Factory\PrincipalGroupFactory;
+use Source\Account\Principal\Infrastructure\Repository\PolicyRepository;
+use Source\Account\Principal\Infrastructure\Repository\PrincipalGroupRepository;
+use Source\Account\Principal\Infrastructure\Repository\RoleRepository;
+use Source\Account\Principal\Infrastructure\Service\PolicyEvaluator as PolicyEvaluator;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 
 class DomainServiceProvider extends ServiceProvider
@@ -41,8 +47,11 @@ class DomainServiceProvider extends ServiceProvider
     {
         $this->app->singleton(AccountFactoryInterface::class, AccountFactory::class);
         $this->app->singleton(AccountRepositoryInterface::class, AccountRepository::class);
-        $this->app->singleton(IdentityGroupFactoryInterface::class, IdentityGroupFactory::class);
-        $this->app->singleton(IdentityGroupRepositoryInterface::class, IdentityGroupRepository::class);
+        $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);
+        $this->app->singleton(PrincipalGroupRepositoryInterface::class, PrincipalGroupRepository::class);
+        $this->app->singleton(PolicyRepositoryInterface::class, PolicyRepository::class);
+        $this->app->singleton(RoleRepositoryInterface::class, RoleRepository::class);
+        $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
         $this->app->singleton(DelegationPermissionFactoryInterface::class, DelegationPermissionFactory::class);
         $this->app->singleton(DelegationPermissionRepositoryInterface::class, DelegationPermissionRepository::class);
         $this->app->singleton(DelegationTerminationServiceInterface::class, DelegationTerminationService::class);

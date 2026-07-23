@@ -16,10 +16,10 @@ use Application\Http\Action\Account\Delegation\Command\RequestDelegation\Request
 use Application\Http\Action\Account\Delegation\Command\RevokeDelegation\RevokeDelegationAction;
 use Application\Http\Action\Account\DelegationPermission\Command\GrantDelegationPermission\GrantDelegationPermissionAction;
 use Application\Http\Action\Account\DelegationPermission\Command\RevokeDelegationPermission\RevokeDelegationPermissionAction;
-use Application\Http\Action\Account\IdentityGroup\Command\AddIdentityToIdentityGroup\AddIdentityToIdentityGroupAction;
-use Application\Http\Action\Account\IdentityGroup\Command\CreateIdentityGroup\CreateIdentityGroupAction;
-use Application\Http\Action\Account\IdentityGroup\Command\DeleteIdentityGroup\DeleteIdentityGroupAction;
-use Application\Http\Action\Account\IdentityGroup\Command\RemoveIdentityFromIdentityGroup\RemoveIdentityFromIdentityGroupAction;
+use Application\Http\Action\Account\PrincipalGroup\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupAction;
+use Application\Http\Action\Account\PrincipalGroup\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
+use Application\Http\Action\Account\PrincipalGroup\Command\DeletePrincipalGroup\DeletePrincipalGroupAction;
+use Application\Http\Action\Account\PrincipalGroup\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
 use Application\Http\Action\Account\Invitation\Command\CreateInvitation\CreateInvitationAction;
 use Illuminate\Support\Facades\Route;
 
@@ -39,11 +39,11 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::post('/delegation-permissions', GrantDelegationPermissionAction::class);
     Route::delete('/delegation-permissions/{delegationPermissionId}', RevokeDelegationPermissionAction::class);
 
-    // IdentityGroup
-    Route::post('/identity-groups', CreateIdentityGroupAction::class);
-    Route::post('/identity-groups/{identityGroupId}/add-member', AddIdentityToIdentityGroupAction::class);
-    Route::post('/identity-groups/{identityGroupId}/remove-member', RemoveIdentityFromIdentityGroupAction::class);
-    Route::delete('/identity-groups/{identityGroupId}', DeleteIdentityGroupAction::class);
+    // PrincipalGroup
+    Route::post('/principal-groups', CreatePrincipalGroupAction::class);
+    Route::post('/principal-groups/{principalGroupId}/add-member', AddPrincipalToPrincipalGroupAction::class);
+    Route::post('/principal-groups/{principalGroupId}/remove-member', RemovePrincipalFromPrincipalGroupAction::class);
+    Route::delete('/principal-groups/{principalGroupId}', DeletePrincipalGroupAction::class);
 
     // Invitation
     Route::post('/invitations', CreateInvitationAction::class);

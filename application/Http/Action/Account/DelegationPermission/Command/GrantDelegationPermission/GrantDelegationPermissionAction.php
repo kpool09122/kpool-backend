@@ -14,9 +14,9 @@ use Psr\Log\LoggerInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInput;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionOutput;
-use Source\Account\IdentityGroup\Application\Exception\IdentityGroupNotFoundException;
+use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -39,7 +39,7 @@ readonly class GrantDelegationPermissionAction
         try {
             try {
                 $input = new GrantDelegationPermissionInput(
-                    identityGroupIdentifier: new IdentityGroupIdentifier($request->identityGroupIdentifier()),
+                    principalGroupIdentifier: new PrincipalGroupIdentifier($request->principalGroupIdentifier()),
                     targetAccountIdentifier: new AccountIdentifier($request->targetAccountIdentifier()),
                     affiliationIdentifier: new AffiliationIdentifier($request->affiliationIdentifier()),
                 );
@@ -55,10 +55,10 @@ readonly class GrantDelegationPermissionAction
             try {
                 $this->grantDelegationPermission->process($input, $output);
                 DB::commit();
-            } catch (IdentityGroupNotFoundException $e) {
+            } catch (PrincipalGroupNotFoundException $e) {
                 DB::rollBack();
 
-                throw new NotFoundHttpException(detail: error_message('identity_group_not_found', $language), previous: $e);
+                throw new NotFoundHttpException(detail: error_message('principal_group_not_found', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

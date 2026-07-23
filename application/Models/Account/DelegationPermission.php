@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $identity_group_id
+ * @property string $principal_group_id
  * @property string $target_account_id
  * @property string $affiliation_id
  * @property \Illuminate\Support\Carbon $created_at
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'id',
-    'identity_group_id',
+    'principal_group_id',
     'target_account_id',
     'affiliation_id',
 ])]

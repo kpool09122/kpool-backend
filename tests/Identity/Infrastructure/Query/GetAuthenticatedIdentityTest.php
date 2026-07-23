@@ -6,15 +6,15 @@ namespace Tests\Identity\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateAccountPrincipalGroup;
 use Tests\Helper\CreateIdentity;
-use Tests\Helper\CreateIdentityGroup;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -24,7 +24,7 @@ class GetAuthenticatedIdentityTest extends TestCase
     public function testProcessReturnsAuthenticatedIdentity(): void
     {
         $accountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5aa');
-        $identityGroupIdentifier = new IdentityGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5bb');
+        $principalGroupIdentifier = new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5bb');
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
         CreateAccount::create((string) $accountIdentifier);
         CreateIdentity::create($identityIdentifier, [
@@ -33,11 +33,11 @@ class GetAuthenticatedIdentityTest extends TestCase
             'language' => 'ja',
             'profile_image' => 'profile/test.png',
         ]);
-        CreateIdentityGroup::create($identityGroupIdentifier, $accountIdentifier);
-        DB::table('identity_group_memberships')->insert([
+        CreateAccountPrincipalGroup::create($principalGroupIdentifier, $accountIdentifier);
+        DB::table('account_principal_group_memberships')->insert([
             'id' => StrTestHelper::generateUuid(),
-            'identity_group_id' => (string) $identityGroupIdentifier,
-            'identity_id' => (string) $identityIdentifier,
+            'principal_group_id' => (string) $principalGroupIdentifier,
+            'principal_id' => (string) $identityIdentifier,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

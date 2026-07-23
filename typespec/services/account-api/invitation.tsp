@@ -8,7 +8,7 @@ model CreateInvitationRequestBody {
   @doc("Account identifier that owns the invitations.")
   accountIdentifier: Uuid;
   @doc("Identity identifier sending the invitations.")
-  inviterIdentityIdentifier: Uuid;
+  inviterPrincipalIdentifier: Uuid;
   @doc("Invitee email addresses.")
   emails: string[];
 }

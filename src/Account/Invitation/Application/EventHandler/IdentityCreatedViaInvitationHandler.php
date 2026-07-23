@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Account\Invitation\Application\EventHandler;
 
-use Source\Account\IdentityGroup\Domain\Factory\IdentityGroupFactoryInterface;
-use Source\Account\IdentityGroup\Domain\Repository\IdentityGroupRepositoryInterface;
-use Source\Account\IdentityGroup\Domain\ValueObject\AccountRole;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
@@ -19,8 +19,8 @@ readonly class IdentityCreatedViaInvitationHandler
 
     public function __construct(
         private InvitationRepositoryInterface $invitationRepository,
-        private IdentityGroupRepositoryInterface $identityGroupRepository,
-        private IdentityGroupFactoryInterface $identityGroupFactory,
+        private PrincipalGroupRepositoryInterface $principalGroupRepository,
+        private PrincipalGroupFactoryInterface $principalGroupFactory,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -35,13 +35,13 @@ readonly class IdentityCreatedViaInvitationHandler
 
         $invitation->assertAcceptable();
 
-        $memberGroup = $this->identityGroupRepository->findByAccountIdAndRole(
+        $memberGroup = $this->principalGroupRepository->findByAccountIdAndRole(
             $invitation->accountIdentifier(),
             AccountRole::MEMBER
         );
 
         if ($memberGroup === null) {
-            $memberGroup = $this->identityGroupFactory->create(
+            $memberGroup = $this->principalGroupFactory->create(
                 $invitation->accountIdentifier(),
                 self::MEMBER_GROUP_NAME,
                 AccountRole::MEMBER,
@@ -50,7 +50,7 @@ readonly class IdentityCreatedViaInvitationHandler
         }
 
         $memberGroup->addMember($event->identityIdentifier);
-        $this->identityGroupRepository->save($memberGroup);
+        $this->principalGroupRepository->save($memberGroup);
 
         $invitation->accept($event->identityIdentifier);
         $this->invitationRepository->save($invitation);

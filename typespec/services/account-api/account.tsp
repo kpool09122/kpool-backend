@@ -12,7 +12,7 @@ model CreateAccountRequestBody {
   @doc("Account display name.")
   accountName: string;
   @doc("Identity identifier to attach to the account.")
-  identityIdentifier?: Uuid | null;
+  principalIdentifier?: Uuid | null;
 }
 
 @doc("Response returned when an account is created.")

@@ -6,7 +6,7 @@ namespace KPool.AccountApi;
 @doc("Request body for granting a delegation permission.")
 model GrantDelegationPermissionRequestBody {
   @doc("Identity group identifier receiving the permission.")
-  identityGroupIdentifier: Uuid;
+  principalGroupIdentifier: Uuid;
   @doc("Account identifier that can be delegated.")
   targetAccountIdentifier: Uuid;
   @doc("Affiliation identifier covered by the permission.")

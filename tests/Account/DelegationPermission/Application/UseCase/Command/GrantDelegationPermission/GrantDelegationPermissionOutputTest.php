@@ -11,7 +11,7 @@ use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegat
 use Source\Account\DelegationPermission\Domain\Entity\DelegationPermission;
 use Source\Account\DelegationPermission\Domain\ValueObject\DelegationPermissionIdentifier;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\StrTestHelper;
 
@@ -20,14 +20,14 @@ class GrantDelegationPermissionOutputTest extends TestCase
     public function testToArrayWithDelegationPermission(): void
     {
         $delegationPermissionIdentifier = new DelegationPermissionIdentifier(StrTestHelper::generateUuid());
-        $identityGroupIdentifier = new IdentityGroupIdentifier(StrTestHelper::generateUuid());
+        $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $targetAccountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $affiliationIdentifier = new AffiliationIdentifier(StrTestHelper::generateUuid());
         $createdAt = new DateTimeImmutable();
 
         $delegationPermission = new DelegationPermission(
             $delegationPermissionIdentifier,
-            $identityGroupIdentifier,
+            $principalGroupIdentifier,
             $targetAccountIdentifier,
             $affiliationIdentifier,
             $createdAt,
@@ -39,7 +39,7 @@ class GrantDelegationPermissionOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame((string) $delegationPermissionIdentifier, $result['delegationPermissionIdentifier']);
-        $this->assertSame((string) $identityGroupIdentifier, $result['identityGroupIdentifier']);
+        $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $targetAccountIdentifier, $result['targetAccountIdentifier']);
         $this->assertSame((string) $affiliationIdentifier, $result['affiliationIdentifier']);
         $this->assertSame($createdAt->format(DateTimeInterface::ATOM), $result['createdAt']);

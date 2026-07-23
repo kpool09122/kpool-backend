@@ -10,7 +10,7 @@ use Source\Account\DelegationPermission\Domain\Entity\DelegationPermission;
 use Source\Account\DelegationPermission\Domain\Repository\DelegationPermissionRepositoryInterface;
 use Source\Account\DelegationPermission\Domain\ValueObject\DelegationPermissionIdentifier;
 use Source\Account\Shared\Domain\ValueObject\AffiliationIdentifier;
-use Source\Account\Shared\Domain\ValueObject\IdentityGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class DelegationPermissionRepository implements DelegationPermissionRepositoryInterface
@@ -20,7 +20,7 @@ class DelegationPermissionRepository implements DelegationPermissionRepositoryIn
         DelegationPermissionEloquent::query()->updateOrCreate(
             ['id' => (string) $delegationPermission->delegationPermissionIdentifier()],
             [
-                'identity_group_id' => (string) $delegationPermission->identityGroupIdentifier(),
+                'principal_group_id' => (string) $delegationPermission->principalGroupIdentifier(),
                 'target_account_id' => (string) $delegationPermission->targetAccountIdentifier(),
                 'affiliation_id' => (string) $delegationPermission->affiliationIdentifier(),
             ]
@@ -54,14 +54,14 @@ class DelegationPermissionRepository implements DelegationPermissionRepositoryIn
     }
 
     /**
-     * @param array<IdentityGroupIdentifier> $identityGroupIdentifiers
+     * @param array<PrincipalGroupIdentifier> $principalGroupIdentifiers
      */
-    public function existsForAnyIdentityGroup(array $identityGroupIdentifiers, AccountIdentifier $targetAccountIdentifier): bool
+    public function existsForAnyPrincipalGroup(array $principalGroupIdentifiers, AccountIdentifier $targetAccountIdentifier): bool
     {
-        $identityGroupIds = array_map(fn ($id) => (string) $id, $identityGroupIdentifiers);
+        $principalGroupIds = array_map(fn ($id) => (string) $id, $principalGroupIdentifiers);
 
         return DelegationPermissionEloquent::query()
-            ->whereIn('identity_group_id', $identityGroupIds)
+            ->whereIn('principal_group_id', $principalGroupIds)
             ->where('target_account_id', (string) $targetAccountIdentifier)
             ->exists();
     }
@@ -77,7 +77,7 @@ class DelegationPermissionRepository implements DelegationPermissionRepositoryIn
     {
         return new DelegationPermission(
             new DelegationPermissionIdentifier($eloquent->id),
-            new IdentityGroupIdentifier($eloquent->identity_group_id),
+            new PrincipalGroupIdentifier($eloquent->principal_group_id),
             new AccountIdentifier($eloquent->target_account_id),
             new AffiliationIdentifier($eloquent->affiliation_id),
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),

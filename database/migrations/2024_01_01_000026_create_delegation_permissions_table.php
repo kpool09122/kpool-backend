@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('delegation_permissions', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('委譲権限ID');
-            $table->uuid('identity_group_id')->index()->comment('IdentityグループID');
+            $table->uuid('principal_group_id')->index()->comment('PrincipalグループID');
             $table->uuid('target_account_id')->index()->comment('対象アカウントID');
             $table->uuid('affiliation_id')->index()->comment('所属ID');
             $table->timestamps();
 
-            $table->foreign('identity_group_id')
+            $table->foreign('principal_group_id')
                 ->references('id')
-                ->on('identity_groups')
+                ->on('account_principal_groups')
                 ->cascadeOnDelete();
 
             $table->foreign('target_account_id')
@@ -28,7 +28,7 @@ return new class extends Migration
                 ->on('accounts')
                 ->cascadeOnDelete();
 
-            $table->unique(['identity_group_id', 'target_account_id', 'affiliation_id'], 'delegation_permissions_unique');
+            $table->unique(['principal_group_id', 'target_account_id', 'affiliation_id'], 'delegation_permissions_unique');
         });
     }
 
