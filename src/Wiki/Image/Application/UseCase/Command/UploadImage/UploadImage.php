@@ -60,7 +60,7 @@ readonly class UploadImage implements UploadImageInterface
             $input->resourceType(),
             $input->translationSetIdentifier(),
             $input->principalIdentifier(),
-            $uploadResult->resized,
+            $uploadResult->path,
             $input->displayOrder(),
             $input->sourceUrl(),
             $input->sourceName(),

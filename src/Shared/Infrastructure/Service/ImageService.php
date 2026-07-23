@@ -72,19 +72,10 @@ class ImageService implements ImageServiceInterface
 
     private function storeImage(GdImage $gdImage): ImageUploadResult
     {
-        $baseFileName = 'images/' . Str::uuid();
+        $normalizedImage = $this->resizeImage($gdImage);
+        $path = $this->saveAsWebp($normalizedImage, 'images/' . Str::uuid() . '.webp');
 
-        // オリジナル画像をwebpで保存
-        $originalPath = $this->saveAsWebp($gdImage, $baseFileName . '_original.webp');
-
-        // リサイズ版を作成して保存
-        $resizedImage = $this->resizeImage($gdImage);
-        $resizedPath = $this->saveAsWebp($resizedImage, $baseFileName . '_resized.webp');
-
-        return new ImageUploadResult(
-            new ImagePath($originalPath),
-            new ImagePath($resizedPath),
-        );
+        return new ImageUploadResult(new ImagePath($path));
     }
 
     /**

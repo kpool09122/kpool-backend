@@ -281,10 +281,7 @@ class UploadImageTest extends TestCase
 
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.webp');
-        $uploadResult = new ImageUploadResult(
-            new ImagePath('images/test_original.webp'),
-            $imagePath,
-        );
+        $uploadResult = new ImageUploadResult($imagePath);
         $uploadedAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(

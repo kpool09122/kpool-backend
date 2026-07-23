@@ -56,13 +56,13 @@ class ImageServiceTest extends TestCase
     }
 
     /**
-     * 正常系: オリジナル画像とリサイズ画像の両方がストレージに保存されること.
+     * 正常系: 正規化済み画像1ファイルだけがストレージに保存されること.
      *
      * @return void
      * @throws BindingResolutionException
      * @throws InvalidBase64ImageException
      */
-    public function testUploadSavesBothFilesToStorage(): void
+    public function testUploadSavesSingleFileToStorage(): void
     {
         Storage::fake('s3');
 
@@ -73,9 +73,9 @@ class ImageServiceTest extends TestCase
 
         $result = $imageService->upload($base64Image);
 
-        // 両方のファイルがストレージに保存されていることを確認
-        Storage::disk('s3')->assertExists((string)$result->original);
-        Storage::disk('s3')->assertExists((string)$result->resized);
+        Storage::disk('s3')->assertExists((string)$result->path);
+        $this->assertCount(1, Storage::disk('s3')->allFiles('images'));
+        $this->assertMatchesRegularExpression('/^images\/[0-9a-f-]{36}\.webp$/', (string)$result->path);
     }
 
     /**
@@ -96,8 +96,9 @@ class ImageServiceTest extends TestCase
 
         $result = $imageService->upload($base64Image);
 
-        $this->assertStringEndsWith('.webp', (string)$result->original);
-        $this->assertStringEndsWith('.webp', (string)$result->resized);
+        $this->assertStringEndsWith('.webp', (string)$result->path);
+        $this->assertStringNotContainsString('_original.webp', (string)$result->path);
+        $this->assertStringNotContainsString('_resized.webp', (string)$result->path);
     }
 
     /**
@@ -163,8 +164,7 @@ class ImageServiceTest extends TestCase
 
         $result = $imageService->upload($base64Image);
 
-        // リサイズ版のファイルを取得してサイズを確認
-        $resizedData = Storage::disk('s3')->get((string)$result->resized);
+        $resizedData = Storage::disk('s3')->get((string)$result->path);
         $resizedImage = imagecreatefromstring($resizedData);
 
         $resizedWidth = imagesx($resizedImage);
@@ -203,8 +203,7 @@ class ImageServiceTest extends TestCase
 
         $result = $imageService->upload($base64Image);
 
-        // リサイズ版のファイルを取得してサイズを確認
-        $resizedData = Storage::disk('s3')->get((string)$result->resized);
+        $resizedData = Storage::disk('s3')->get((string)$result->path);
         $resizedImage = imagecreatefromstring($resizedData);
 
         $resizedWidth = imagesx($resizedImage);
@@ -245,8 +244,7 @@ class ImageServiceTest extends TestCase
 
         $result = $imageService->upload($base64Image);
 
-        // リサイズ版のファイルを取得してサイズを確認
-        $resizedData = Storage::disk('s3')->get((string)$result->resized);
+        $resizedData = Storage::disk('s3')->get((string)$result->path);
         $resizedImage = imagecreatefromstring($resizedData);
 
         $resizedWidth = imagesx($resizedImage);

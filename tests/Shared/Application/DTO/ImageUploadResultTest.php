@@ -11,19 +11,17 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 class ImageUploadResultTest extends TestCase
 {
     /**
-     * 正常系: インスタンスが作成でき、各プロパティに正しくアクセスできること.
+     * 正常系: 画像アップロード結果が単一の保存パスを保持すること.
      *
      * @return void
      */
-    public function testConstructAndAccessProperties(): void
+    public function testCreateImageUploadResult(): void
     {
-        $original = new ImagePath('images/original.webp');
-        $resized = new ImagePath('images/resized.webp');
+        $path = new ImagePath('images/normalized.webp');
 
-        $result = new ImageUploadResult($original, $resized);
+        $result = new ImageUploadResult($path);
 
         $this->assertInstanceOf(ImageUploadResult::class, $result);
-        $this->assertSame($original, $result->original);
-        $this->assertSame($resized, $result->resized);
+        $this->assertSame($path, $result->path);
     }
 }

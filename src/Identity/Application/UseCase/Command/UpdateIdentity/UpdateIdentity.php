@@ -49,7 +49,7 @@ readonly class UpdateIdentity implements UpdateIdentityInterface
         if ($input->profileImageProvided()) {
             if ($input->base64EncodedImage() !== null) {
                 $uploadResult = $this->imageService->upload($input->base64EncodedImage());
-                $identity->setProfileImage($uploadResult->resized);
+                $identity->setProfileImage($uploadResult->path);
             } else {
                 $identity->setProfileImage(null);
             }

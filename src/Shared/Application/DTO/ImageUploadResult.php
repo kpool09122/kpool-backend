@@ -9,8 +9,7 @@ use Source\Shared\Domain\ValueObject\ImagePath;
 readonly class ImageUploadResult
 {
     public function __construct(
-        public ImagePath $original,
-        public ImagePath $resized,
+        public ImagePath $path,
     ) {
     }
 }

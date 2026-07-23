@@ -117,10 +117,7 @@ class CreateIdentityTest extends TestCase
             ->andReturnNull();
 
         $imagePath = new ImagePath('/path/to/profile.webp');
-        $uploadResult = new ImageUploadResult(
-            new ImagePath('/path/to/profile_original.webp'),
-            $imagePath,
-        );
+        $uploadResult = new ImageUploadResult($imagePath);
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
             ->once()
