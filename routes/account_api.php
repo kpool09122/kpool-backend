@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Application\Http\Action\Account\Account\Command\CreateAccount\CreateAccountAction;
 use Application\Http\Action\Account\Account\Command\DeleteAccount\DeleteAccountAction;
+use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\ApproveVerification\ApproveVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RejectVerification\RejectVerificationAction;
 use Application\Http\Action\Account\Account\AccountVerification\Command\RequestVerification\RequestVerificationAction;
@@ -28,6 +29,7 @@ Route::post('/accounts', CreateAccountAction::class);
 
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     // Account
+    Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
     Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
 
     // Delegation

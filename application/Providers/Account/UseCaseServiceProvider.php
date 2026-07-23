@@ -15,6 +15,8 @@ use Source\Account\Account\Application\UseCase\Command\RejectVerification\Reject
 use Source\Account\Account\Application\UseCase\Command\RejectVerification\RejectVerificationInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerification;
 use Source\Account\Account\Application\UseCase\Command\RequestVerification\RequestVerificationInterface;
+use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
+use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliation;
 use Source\Account\Affiliation\Application\UseCase\Command\ApproveAffiliation\ApproveAffiliationInterface;
 use Source\Account\Affiliation\Application\UseCase\Command\RejectAffiliation\RejectAffiliation;
@@ -56,6 +58,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GrantDelegationPermissionInterface::class, GrantDelegationPermission::class);
         $this->app->singleton(RevokeDelegationPermissionInterfaceNew::class, RevokeDelegationPermissionUseCase::class);
         $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);
+        $this->app->singleton(UpdateAccountInterface::class, UpdateAccount::class);
         $this->app->singleton(RevokeDelegationInterface::class, RevokeDelegation::class);
         $this->app->singleton(RequestDelegationInterface::class, RequestDelegation::class);
         $this->app->singleton(ApproveDelegationInterface::class, ApproveDelegation::class);
