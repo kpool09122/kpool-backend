@@ -22,6 +22,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         $router = $this->app['router'];
         $router->aliasMiddleware('auth.api', \Application\Http\Middleware\EnsureAuthenticated::class);
         $router->aliasMiddleware('resolve.actor', \Application\Http\Middleware\ResolveActorContext::class);
+        $router->aliasMiddleware('resolve.account', \Application\Http\Middleware\ResolveAccountContext::class);
         $router->aliasMiddleware('resolve.wiki', \Application\Http\Middleware\ResolveWikiContext::class);
         $router->aliasMiddleware('session', \Illuminate\Session\Middleware\StartSession::class);
 
@@ -164,8 +165,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public static function contextAwareAuthenticatedRouteProvider(): array
     {
         return [
-            'identity authenticated routes resolve actor' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
-            'account authenticated routes resolve actor' => ['POST', '/api/account/delegations', ['resolve.actor']],
+            'identity authenticated routes resolve actor and account for me' => ['GET', '/api/identity/auth/me', ['resolve.actor', 'resolve.account']],
+            'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],

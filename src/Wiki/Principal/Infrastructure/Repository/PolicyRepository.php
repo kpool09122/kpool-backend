@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Wiki\Policy as PolicyEloquent;
+use Application\Models\Wiki\Principal as PrincipalEloquent;
+use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
+use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
+use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
 use Source\Wiki\Principal\Domain\Entity\Policy;
 use Source\Wiki\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -31,6 +36,8 @@ class PolicyRepository implements PolicyRepositoryInterface
                 'is_system_policy' => $policy->isSystemPolicy(),
             ]
         );
+
+        $this->forgetWikiContextsForPolicy((string) $policy->policyIdentifier());
     }
 
     public function findById(PolicyIdentifier $policyIdentifier): ?Policy
@@ -83,9 +90,50 @@ class PolicyRepository implements PolicyRepositoryInterface
 
     public function delete(Policy $policy): void
     {
+        $this->forgetWikiContextsForPolicy((string) $policy->policyIdentifier());
+
         PolicyEloquent::query()
             ->where('id', (string) $policy->policyIdentifier())
             ->delete();
+    }
+
+    private function forgetWikiContextsForPolicy(string $policyId): void
+    {
+        $roleIds = RolePolicyAttachmentEloquent::query()
+            ->where('policy_id', $policyId)
+            ->pluck('role_id')
+            ->all();
+
+        if (empty($roleIds)) {
+            return;
+        }
+
+        $principalGroupIds = PrincipalGroupRoleAttachmentEloquent::query()
+            ->whereIn('role_id', $roleIds)
+            ->pluck('principal_group_id')
+            ->all();
+
+        if (empty($principalGroupIds)) {
+            return;
+        }
+
+        $principalIds = PrincipalGroupMembershipEloquent::query()
+            ->whereIn('principal_group_id', $principalGroupIds)
+            ->pluck('principal_id')
+            ->all();
+
+        if (empty($principalIds)) {
+            return;
+        }
+
+        $identityIds = PrincipalEloquent::query()
+            ->whereIn('id', $principalIds)
+            ->pluck('identity_id')
+            ->all();
+
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+        }
     }
 
     /**

@@ -4,16 +4,24 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Query;
 
-use Application\Models\Account\PrincipalGroup as PrincipalGroupModel;
+use Application\Http\Context\AccountContext;
+use Application\Http\Context\AccountResolver;
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Identity\Identity as IdentityModel;
+use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
-use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 
-readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInterface
+readonly class GetAuthenticatedIdentity
 {
+    public function __construct(
+        private AccountResolver $accountResolver,
+        private AuthContextCache $cache,
+    ) {
+    }
+
     /**
      * @throws IdentityNotFoundException
      */
@@ -27,15 +35,17 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             throw new IdentityNotFoundException();
         }
 
-        $accountIdentifier = PrincipalGroupModel::query()
-            ->join(
-                'account_principal_group_memberships',
-                'account_principal_groups.id',
-                '=',
-                'account_principal_group_memberships.principal_group_id'
-            )
-            ->where('account_principal_group_memberships.principal_id', (string) $input->identityIdentifier())
-            ->value('account_principal_groups.account_id');
+        /** @var AccountContext|null $accountContext */
+        $accountContext = null;
+
+        try {
+            $accountContext = $this->cache->resolveAccount(
+                $input->identityIdentifier(),
+                fn () => $this->accountResolver->resolve($input->identityIdentifier()),
+            );
+        } catch (AccountNotFoundException) {
+            $accountContext = null;
+        }
 
         return new AuthenticatedIdentityReadModel(
             identityIdentifier: $model->id,
@@ -43,7 +53,8 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             email: $model->email,
             language: $model->language,
             profileImage: ImageUrl::fromPath($model->profile_image),
-            accountIdentifier: $accountIdentifier === null ? null : (string) $accountIdentifier,
+            accountIdentifier: $accountContext === null ? null : (string) $accountContext->accountIdentifier,
+            accountRole: $accountContext === null ? null : $accountContext->role->value,
         );
     }
 }

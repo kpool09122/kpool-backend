@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Identity\Infrastructure\Query;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
@@ -42,6 +43,9 @@ class GetAuthenticatedIdentityTest extends TestCase
             'updated_at' => now(),
         ]);
 
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->once();
+
         $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
@@ -51,6 +55,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertSame('http://127.0.0.1:8080/storage/profile/test.png', $readModel->profileImage());
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5aa', $readModel->accountIdentifier());
+        $this->assertSame('owner', $readModel->accountRole());
     }
 
     #[Group('useDb')]
@@ -64,6 +69,9 @@ class GetAuthenticatedIdentityTest extends TestCase
             'profile_image' => null,
         ]);
 
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->never();
+
         $useCase = $this->app->make(GetAuthenticatedIdentityInterface::class);
         $readModel = $useCase->process(new GetAuthenticatedIdentityInput($identityIdentifier));
 
@@ -73,6 +81,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertNull($readModel->profileImage());
         $this->assertNull($readModel->accountIdentifier());
+        $this->assertNull($readModel->accountRole());
     }
 
     #[Group('useDb')]
