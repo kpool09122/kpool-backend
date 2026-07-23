@@ -26,6 +26,7 @@ class GetAuthenticatedIdentityTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5aa');
         $principalGroupIdentifier = new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5bb');
+        $principalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14d5cc';
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
         CreateAccount::create((string) $accountIdentifier);
         CreateIdentity::create($identityIdentifier, [
@@ -35,10 +36,17 @@ class GetAuthenticatedIdentityTest extends TestCase
             'profile_image' => 'profile/test.png',
         ]);
         CreateAccountPrincipalGroup::create($principalGroupIdentifier, $accountIdentifier);
+        DB::table('account_principals')->insert([
+            'id' => $principalIdentifier,
+            'identity_id' => (string) $identityIdentifier,
+            'account_id' => (string) $accountIdentifier,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         DB::table('account_principal_group_memberships')->insert([
             'id' => StrTestHelper::generateUuid(),
             'principal_group_id' => (string) $principalGroupIdentifier,
-            'principal_id' => (string) $identityIdentifier,
+            'principal_id' => $principalIdentifier,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

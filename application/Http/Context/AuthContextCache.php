@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Application\Http\Context;
 
 use Illuminate\Support\Facades\Redis;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as WikiPrincipalIdentifier;
 use Throwable;
 
 class AuthContextCache
@@ -57,9 +58,11 @@ class AuthContextCache
         }
 
         $context = $dbResolver();
+        $principal = $context->principal();
         $this->write($this->accountKey($identityIdentifier), [
-            'accountIdentifier' => (string) $context->accountIdentifier,
-            'role' => $context->role->value,
+            'principalIdentifier' => (string) $principal->principalIdentifier(),
+            'identityIdentifier' => (string) $principal->identityIdentifier(),
+            'accountIdentifier' => (string) $principal->accountIdentifier(),
         ]);
 
         return $context;
@@ -198,18 +201,20 @@ class AuthContextCache
     /** @param array<string, mixed> $payload */
     private function accountFromPayload(array $payload): ?AccountContext
     {
-        if (! is_string($payload['accountIdentifier'] ?? null) || ! is_string($payload['role'] ?? null)) {
-            return null;
-        }
-
-        $role = AccountRole::tryFrom($payload['role']);
-        if ($role === null) {
+        if (
+            ! is_string($payload['principalIdentifier'] ?? null)
+            || ! is_string($payload['identityIdentifier'] ?? null)
+            || ! is_string($payload['accountIdentifier'] ?? null)
+        ) {
             return null;
         }
 
         return new AccountContext(
-            accountIdentifier: new AccountIdentifier($payload['accountIdentifier']),
-            role: $role,
+            principal: new AccountPrincipal(
+                new AccountPrincipalIdentifier($payload['principalIdentifier']),
+                new IdentityIdentifier($payload['identityIdentifier']),
+                new AccountIdentifier($payload['accountIdentifier']),
+            ),
         );
     }
 
@@ -220,6 +225,6 @@ class AuthContextCache
             return null;
         }
 
-        return new WikiContext(new PrincipalIdentifier($payload['principalIdentifier']));
+        return new WikiContext(new WikiPrincipalIdentifier($payload['principalIdentifier']));
     }
 }

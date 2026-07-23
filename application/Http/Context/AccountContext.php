@@ -4,24 +4,17 @@ declare(strict_types=1);
 
 namespace Application\Http\Context;
 
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Source\Account\Principal\Domain\Entity\Principal;
 
 readonly class AccountContext
 {
     public function __construct(
-        public AccountIdentifier $accountIdentifier,
-        public AccountRole $role,
+        private Principal $principal,
     ) {
     }
 
-    public function isOwner(): bool
+    public function principal(): Principal
     {
-        return $this->role === AccountRole::OWNER;
-    }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === AccountRole::ADMIN;
+        return $this->principal;
     }
 }

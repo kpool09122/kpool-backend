@@ -50,6 +50,7 @@ return [
     // Account
     'account_already_exists' => 'アカウントは既に存在します。',
     'account_not_found' => '指定されたアカウントが見つかりません。',
+    'account_update_forbidden' => '現在のアクターではアカウント情報を更新できません。',
     'account_deletion_blocked' => '未解決の条件があるため、アカウントを削除できません。',
     'identity_group_not_found' => '指定されたアイデンティティグループが見つかりません。',
     'identity_already_member' => 'このアイデンティティは既にこのグループのメンバーです。',

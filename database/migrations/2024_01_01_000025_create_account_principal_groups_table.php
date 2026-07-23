@@ -11,6 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('account_principals', static function (Blueprint $table) {
+            $table->uuid('id')->primary()->comment('Principal ID');
+            $table->uuid('identity_id')->comment('Identity ID');
+            $table->uuid('account_id')->index()->comment('アカウントID');
+            $table->timestamps();
+
+            $table->foreign('identity_id')
+                ->references('id')
+                ->on('identities')
+                ->cascadeOnDelete();
+            $table->foreign('account_id')
+                ->references('id')
+                ->on('accounts')
+                ->cascadeOnDelete();
+            $table->unique(['identity_id', 'account_id']);
+        });
+
         Schema::create('account_principal_groups', static function (Blueprint $table) {
             $table->uuid('id')->primary()->comment('PrincipalグループID');
             $table->uuid('account_id')->index()->comment('アカウントID');
@@ -38,7 +55,7 @@ return new class extends Migration
 
             $table->foreign('principal_id')
                 ->references('id')
-                ->on('identities')
+                ->on('account_principals')
                 ->cascadeOnDelete();
 
             $table->unique(['principal_group_id', 'principal_id']);
@@ -52,5 +69,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('account_principal_group_memberships');
         Schema::dropIfExists('account_principal_groups');
+        Schema::dropIfExists('account_principals');
     }
 };

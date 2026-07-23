@@ -22,6 +22,7 @@ use Source\Account\Principal\Domain\ValueObject\ResourceType;
 use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
@@ -32,16 +33,15 @@ class PolicyEvaluatorTest extends TestCase
     public function testEvaluateAllowsWhenRolePolicyHasAllowStatement(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($identityIdentifier);
-        $principalGroup = $this->createPrincipalGroup($accountIdentifier, $identityIdentifier, AccountRole::OWNER);
+        $principal = $this->createPrincipal($accountIdentifier);
+        $principalGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), AccountRole::OWNER);
         $policy = $this->createPolicy('ACCOUNT_OWNER_BASIC', Effect::ALLOW, [Action::INVITATION_CREATE]);
 
         /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndPrincipal')
             ->once()
-            ->with($accountIdentifier, $principal)
+            ->with($accountIdentifier, $principal->principalIdentifier())
             ->andReturn([$principalGroup]);
 
         /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
@@ -70,14 +70,13 @@ class PolicyEvaluatorTest extends TestCase
     public function testEvaluateDeniesWhenNoPrincipalGroupExists(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($identityIdentifier);
+        $principal = $this->createPrincipal($accountIdentifier);
 
         /** @var PrincipalGroupRepositoryInterface&\Mockery\MockInterface $principalGroupRepository */
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndPrincipal')
             ->once()
-            ->with($accountIdentifier, $principal)
+            ->with($accountIdentifier, $principal->principalIdentifier())
             ->andReturn([]);
 
         /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
@@ -100,9 +99,8 @@ class PolicyEvaluatorTest extends TestCase
     public function testEvaluatePrioritizesExplicitDeny(): void
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $principal = new Principal($identityIdentifier);
-        $principalGroup = $this->createPrincipalGroup($accountIdentifier, $identityIdentifier, AccountRole::ADMIN);
+        $principal = $this->createPrincipal($accountIdentifier);
+        $principalGroup = $this->createPrincipalGroup($accountIdentifier, $principal->principalIdentifier(), AccountRole::ADMIN);
         $allowPolicy = $this->createPolicy('ALLOW_INVITATION', Effect::ALLOW, [Action::INVITATION_CREATE]);
         $denyPolicy = $this->createPolicy('DENY_INVITATION', Effect::DENY, [Action::INVITATION_CREATE]);
 
@@ -110,7 +108,7 @@ class PolicyEvaluatorTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndPrincipal')
             ->once()
-            ->with($accountIdentifier, $principal)
+            ->with($accountIdentifier, $principal->principalIdentifier())
             ->andReturn([$principalGroup]);
 
         /** @var PolicyRepositoryInterface&\Mockery\MockInterface $policyRepository */
@@ -158,9 +156,18 @@ class PolicyEvaluatorTest extends TestCase
         );
     }
 
+    private function createPrincipal(AccountIdentifier $accountIdentifier): Principal
+    {
+        return new Principal(
+            new PrincipalIdentifier(StrTestHelper::generateUuid()),
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            $accountIdentifier,
+        );
+    }
+
     private function createPrincipalGroup(
         AccountIdentifier $accountIdentifier,
-        IdentityIdentifier $identityIdentifier,
+        PrincipalIdentifier $principalIdentifier,
         AccountRole $role,
     ): PrincipalGroup {
         $principalGroup = new PrincipalGroup(
@@ -171,7 +178,7 @@ class PolicyEvaluatorTest extends TestCase
             true,
             new DateTimeImmutable(),
         );
-        $principalGroup->addMember($identityIdentifier);
+        $principalGroup->addMember($principalIdentifier);
 
         return $principalGroup;
     }

@@ -20,9 +20,11 @@ use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
 use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -42,6 +44,7 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
         $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
         $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
         $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
         $useCase = $this->app->make(CreateInvitationInterface::class);
@@ -173,6 +176,8 @@ class CreateInvitationTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, $inviterIdentityIdentifier, $accountIdentifier);
         $email1 = new Email('user1@example.com');
         $email2 = new Email('user2@example.com');
         $invitation1 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email1);
@@ -184,12 +189,18 @@ class CreateInvitationTest extends TestCase
             ->once()
             ->with(
                 Mockery::on(
-                    static fn (Principal $principal): bool => (string) $principal->principalIdentifier() === (string) $inviterIdentityIdentifier
+                    static fn (Principal $actual): bool => $actual === $principal
                 ),
                 Action::INVITATION_CREATE,
                 Mockery::on(static fn (Resource $resource) => (string) $resource->accountIdentifier() === (string) $accountIdentifier)
             )
             ->andReturnTrue();
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+            ->once()
+            ->with($inviterIdentityIdentifier, $accountIdentifier)
+            ->andReturn($principal);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $eventDispatcher->shouldReceive('dispatch')
@@ -207,6 +218,7 @@ class CreateInvitationTest extends TestCase
         $invitationFactory->shouldReceive('create')->once()->with($accountIdentifier, $inviterIdentityIdentifier, $email2)->andReturn($invitation2);
 
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
@@ -225,7 +237,7 @@ class CreateInvitationTest extends TestCase
             ->once()
             ->with(
                 Mockery::on(
-                    static fn (Principal $principal): bool => (string) $principal->principalIdentifier() === (string) $data->inviterIdentityIdentifier
+                    static fn (Principal $principal): bool => $principal === $data->principal
                 ),
                 Action::INVITATION_CREATE,
                 Mockery::on(static fn (Resource $resource) => (string) $resource->accountIdentifier() === (string) $data->accountIdentifier)
@@ -233,12 +245,21 @@ class CreateInvitationTest extends TestCase
             ->andReturn($allowed);
 
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findByIdentityIdentifierAndAccountIdentifier')
+            ->once()
+            ->with($data->inviterIdentityIdentifier, $data->accountIdentifier)
+            ->andReturn($data->principal);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
     }
 
     private function createTestData(): CreateInvitationTestData
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, $inviterIdentityIdentifier, $accountIdentifier);
         $email = new Email('invitee@example.com');
         $invitation = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email);
         $input = new CreateInvitationInput($accountIdentifier, $inviterIdentityIdentifier, [$email]);
@@ -246,6 +267,8 @@ class CreateInvitationTest extends TestCase
         return new CreateInvitationTestData(
             $accountIdentifier,
             $inviterIdentityIdentifier,
+            $principalIdentifier,
+            $principal,
             $email,
             $invitation,
             $input,
@@ -277,6 +300,8 @@ readonly class CreateInvitationTestData
     public function __construct(
         public AccountIdentifier $accountIdentifier,
         public IdentityIdentifier $inviterIdentityIdentifier,
+        public PrincipalIdentifier $principalIdentifier,
+        public Principal $principal,
         public Email $email,
         public Invitation $invitation,
         public CreateInvitationInput $input,

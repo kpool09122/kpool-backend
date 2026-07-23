@@ -8,11 +8,11 @@ use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Account\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use DateTimeImmutable;
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\Uid\Uuid;
@@ -41,12 +41,12 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ->delete();
 
         $currentMemberIds = [];
-        foreach ($principalGroup->members() as $principal) {
-            $currentMemberIds[] = (string) $principal->principalIdentifier();
+        foreach ($principalGroup->members() as $principalIdentifier) {
+            $currentMemberIds[] = (string) $principalIdentifier;
             PrincipalGroupMembershipEloquent::query()->create([
                 'id' => (string) Uuid::v7(),
                 'principal_group_id' => (string) $principalGroup->principalGroupIdentifier(),
-                'principal_id' => (string) $principal->principalIdentifier(),
+                'principal_id' => (string) $principalIdentifier,
             ]);
         }
 
@@ -83,12 +83,12 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     /**
      * @return array<PrincipalGroup>
      */
-    public function findByPrincipal(Principal $principal): array
+    public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array
     {
         $eloquents = PrincipalGroupEloquent::query()
             ->with('members')
-            ->whereHas('members', function ($query) use ($principal) {
-                $query->where('principal_id', (string) $principal->principalIdentifier());
+            ->whereHas('members', function ($query) use ($principalIdentifier) {
+                $query->where('principal_id', (string) $principalIdentifier);
             })
             ->get();
 
@@ -100,13 +100,13 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
      */
     public function findByAccountIdAndPrincipal(
         AccountIdentifier $accountIdentifier,
-        Principal $principal
+        PrincipalIdentifier $principalIdentifier
     ): array {
         $eloquents = PrincipalGroupEloquent::query()
             ->with('members')
             ->where('account_id', (string) $accountIdentifier)
-            ->whereHas('members', function ($query) use ($principal) {
-                $query->where('principal_id', (string) $principal->principalIdentifier());
+            ->whereHas('members', function ($query) use ($principalIdentifier) {
+                $query->where('principal_id', (string) $principalIdentifier);
             })
             ->get();
 
@@ -159,9 +159,14 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         $this->forgetAccountContexts($memberIds);
     }
 
-    /** @param array<int, string> $identityIds */
-    private function forgetAccountContexts(array $identityIds): void
+    /** @param array<int, string> $principalIds */
+    private function forgetAccountContexts(array $principalIds): void
     {
+        $identityIds = \Application\Models\Account\Principal::query()
+            ->whereIn('id', $principalIds)
+            ->pluck('identity_id')
+            ->all();
+
         foreach ($identityIds as $identityId) {
             app(AuthContextCache::class)->forgetAccount(new IdentityIdentifier($identityId));
         }
@@ -180,7 +185,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
         /** @var PrincipalGroupMembershipEloquent $member */
         foreach ($eloquent->members as $member) {
-            $principalGroup->addMember(new Principal(new IdentityIdentifier($member->principal_id)));
+            $principalGroup->addMember(new PrincipalIdentifier($member->principal_id));
         }
 
         return $principalGroup;

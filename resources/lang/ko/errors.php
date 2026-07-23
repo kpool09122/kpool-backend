@@ -50,6 +50,7 @@ return [
     // Account
     'account_already_exists' => '계정이 이미 존재합니다.',
     'account_not_found' => '지정된 계정을 찾을 수 없습니다.',
+    'account_update_forbidden' => '현재 행위자는 계정 정보를 업데이트할 수 없습니다.',
     'account_deletion_blocked' => '해결되지 않은 조건이 있어 계정을 삭제할 수 없습니다.',
     'identity_group_not_found' => '지정된 아이덴티티 그룹을 찾을 수 없습니다.',
     'identity_already_member' => '해당 아이덴티티는 이미 이 그룹의 멤버입니다.',

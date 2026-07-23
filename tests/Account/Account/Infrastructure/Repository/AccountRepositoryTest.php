@@ -136,6 +136,33 @@ class AccountRepositoryTest extends TestCase
     }
 
     /**
+     * 正常系: 保存済みAccountのnameを更新できること
+     *
+     * @throws BindingResolutionException
+     */
+    #[Group('useDb')]
+    public function testSaveUpdatesAccountName(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        $account = $this->createTestAccount(accountId: $accountId);
+
+        $repository = $this->app->make(AccountRepositoryInterface::class);
+        $repository->save($account);
+
+        $account->changeName(new AccountName('Updated Account'));
+        $repository->save($account);
+
+        $result = $repository->findById(new AccountIdentifier($accountId));
+
+        $this->assertNotNull($result);
+        $this->assertSame('Updated Account', (string) $result->name());
+        $this->assertDatabaseHas('accounts', [
+            'id' => $accountId,
+            'name' => 'Updated Account',
+        ]);
+    }
+
+    /**
      * 正常系: 正しくAccountを削除できること
      *
      * @throws BindingResolutionException

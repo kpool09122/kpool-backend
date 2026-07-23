@@ -89,8 +89,14 @@ readonly class CreatePrincipalAction
                 '=',
                 'account_principal_group_memberships.principal_group_id'
             )
+            ->join(
+                'account_principals',
+                'account_principal_group_memberships.principal_id',
+                '=',
+                'account_principals.id'
+            )
             ->where('account_principal_groups.account_id', (string) $input->accountIdentifier())
-            ->where('account_principal_group_memberships.principal_id', (string) $this->actorContext->identityIdentifier)
+            ->where('account_principals.identity_id', (string) $this->actorContext->identityIdentifier)
             ->exists();
 
         if (! $belongsToAccount) {
