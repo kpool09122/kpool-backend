@@ -118,6 +118,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
 
             // Account: signup 用の POST /accounts 以外は認証必須
+            'account: update account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: delete account' => ['DELETE', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: request delegation' => ['POST', '/api/account/delegations'],
             'account: create invitation' => ['POST', '/api/account/invitations'],
@@ -166,6 +167,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         return [
             'identity authenticated routes resolve actor' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
             'account authenticated routes resolve actor' => ['POST', '/api/account/delegations', ['resolve.actor']],
+            'account update resolves actor' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],

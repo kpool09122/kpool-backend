@@ -50,6 +50,7 @@ return [
     // Account
     'account_already_exists' => '账户已存在。',
     'account_not_found' => '找不到指定的账户。',
+    'account_update_forbidden' => '当前操作者无法更新账户信息。',
     'account_deletion_blocked' => '由于存在未解决的条件，无法删除账户。',
     'identity_group_not_found' => '找不到指定的身份组。',
     'identity_already_member' => '该身份已是此组的成员。',

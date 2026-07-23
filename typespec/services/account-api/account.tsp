@@ -3,6 +3,12 @@ using KPool.Common;
 
 namespace KPool.AccountApi;
 
+@doc("Request body for updating account information.")
+model UpdateAccountRequestBody {
+  @doc("Updated account display name.")
+  accountName: string;
+}
+
 @doc("Request body for creating an account.")
 model CreateAccountRequestBody {
   @doc("Account email address.")
@@ -34,6 +40,14 @@ interface AccountOperations {
   createAccount(
     @body body: CreateAccountRequestBody,
   ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
+  @patch
+  @route("/{accountId}")
+  @doc("Update account information.")
+  updateAccount(
+    @path accountId: Uuid,
+    @body body: UpdateAccountRequestBody,
+  ): OkAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
   @delete
   @route("/{accountId}")

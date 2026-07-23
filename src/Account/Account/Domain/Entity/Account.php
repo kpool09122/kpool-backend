@@ -19,7 +19,7 @@ class Account
         private readonly AccountIdentifier $accountIdentifier,
         private readonly Email $email,
         private readonly AccountType $type,
-        private readonly AccountName $name,
+        private AccountName $name,
         private readonly AccountStatus $status,
         private AccountCategory $accountCategory,
         private readonly DeletionReadinessChecklist $deletionReadiness,
@@ -44,6 +44,11 @@ class Account
     public function name(): AccountName
     {
         return $this->name;
+    }
+
+    public function changeName(AccountName $name): void
+    {
+        $this->name = $name;
     }
 
     public function status(): AccountStatus
