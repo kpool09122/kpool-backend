@@ -6,8 +6,8 @@ namespace Tests\Helper;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
-use Source\Account\AccountVerification\Domain\ValueObject\DocumentIdentifier;
-use Source\Account\AccountVerification\Domain\ValueObject\VerificationIdentifier;
+use Source\Account\Account\Domain\ValueObject\DocumentIdentifier;
+use Source\Account\Account\Domain\ValueObject\VerificationIdentifier;
 
 class CreateVerificationDocument
 {
