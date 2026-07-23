@@ -7,7 +7,6 @@ namespace Tests\Wiki\Image\Application\UseCase\Command\UploadImage;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -94,7 +93,7 @@ class UploadImageTest extends TestCase
         $imageService->shouldReceive('upload')
             ->once()
             ->with($testData->base64EncodedImage)
-            ->andReturn($testData->uploadResult);
+            ->andReturn($testData->uploadedImagePath);
 
         $draftImageFactory = Mockery::mock(DraftImageFactoryInterface::class);
         $draftImageFactory->shouldReceive('create')
@@ -281,10 +280,8 @@ class UploadImageTest extends TestCase
 
         $imageIdentifier = new ImageIdentifier(StrTestHelper::generateUuid());
         $imagePath = new ImagePath('images/test.webp');
-        $uploadResult = new ImageUploadResult(
-            new ImagePath('images/test_original.webp'),
-            $imagePath,
-        );
+
+
         $uploadedAt = new DateTimeImmutable();
 
         $draftImage = new DraftImage(
@@ -318,7 +315,7 @@ class UploadImageTest extends TestCase
             $rightsConfirmationAgreed,
             $imageIdentifier,
             $imagePath,
-            $uploadResult,
+            $imagePath,
             $uploadedAt,
             $draftImage,
         );
@@ -344,7 +341,7 @@ readonly class UploadImageTestData
         public RightsConfirmationAgreed $rightsConfirmationAgreed,
         public ImageIdentifier $imageIdentifier,
         public ImagePath $imagePath,
-        public ImageUploadResult $uploadResult,
+        public ImagePath $uploadedImagePath,
         public DateTimeImmutable $uploadedAt,
         public DraftImage $draftImage,
     ) {

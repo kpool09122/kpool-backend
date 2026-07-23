@@ -62,8 +62,8 @@ readonly class CreateIdentity implements CreateIdentityInterface
         $identity->copyEmailVerifiedAt($session);
 
         if ($input->base64EncodedImage()) {
-            $uploadResult = $this->imageService->upload($input->base64EncodedImage());
-            $identity->setProfileImage($uploadResult->resized);
+            $imagePath = $this->imageService->upload($input->base64EncodedImage());
+            $identity->setProfileImage($imagePath);
         }
 
         $this->identityRepository->save($identity);

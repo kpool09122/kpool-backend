@@ -26,7 +26,6 @@ use Source\Identity\Domain\ValueObject\AuthCode;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
@@ -117,15 +116,12 @@ class CreateIdentityTest extends TestCase
             ->andReturnNull();
 
         $imagePath = new ImagePath('/path/to/profile.webp');
-        $uploadResult = new ImageUploadResult(
-            new ImagePath('/path/to/profile_original.webp'),
-            $imagePath,
-        );
+
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('upload')
             ->once()
             ->with($base64EncodedImage)
-            ->andReturn($uploadResult);
+            ->andReturn($imagePath);
 
         $identityFactory = Mockery::mock(IdentityFactoryInterface::class);
         $identityFactory->shouldReceive('create')

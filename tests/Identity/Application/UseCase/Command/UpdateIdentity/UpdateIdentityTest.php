@@ -17,7 +17,6 @@ use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -38,7 +37,7 @@ class UpdateIdentityTest extends TestCase
         );
         $updatedName = new IdentityName('updated-identity');
         $base64Image = base64_encode('dummy-image');
-        $resizedPath = new ImagePath('images/profile_resized.webp');
+        $imagePath = new ImagePath('images/profile.webp');
 
         /** @var IdentityRepositoryInterface&\Mockery\MockInterface $repository */
         $repository = Mockery::mock(IdentityRepositoryInterface::class);
@@ -46,7 +45,7 @@ class UpdateIdentityTest extends TestCase
         $repository->shouldReceive('save')->once()->with(Mockery::on(
             static fn (Identity $saved): bool => (string) $saved->identityName() === 'updated-identity'
                 && $saved->language() === Language::KOREAN
-                && (string) $saved->profileImage() === 'images/profile_resized.webp'
+                && (string) $saved->profileImage() === 'images/profile.webp'
         ))->andReturnNull();
 
         /** @var ImageServiceInterface&\Mockery\MockInterface $imageService */
@@ -54,7 +53,7 @@ class UpdateIdentityTest extends TestCase
         $imageService->shouldReceive('upload')
             ->once()
             ->with($base64Image)
-            ->andReturn(new ImageUploadResult(new ImagePath('images/profile_original.webp'), $resizedPath));
+            ->andReturn($imagePath);
         $imageService->shouldReceive('delete')
             ->once()
             ->with(Mockery::on(static fn (ImagePath $path): bool => (string) $path === 'images/current_profile.webp'))
@@ -80,7 +79,7 @@ class UpdateIdentityTest extends TestCase
 
         $this->assertSame('updated-identity', $output->toArray()['identityName']);
         $this->assertSame('ko', $output->toArray()['language']);
-        $this->assertSame('images/profile_resized.webp', $output->toArray()['profileImage']);
+        $this->assertSame('images/profile.webp', $output->toArray()['profileImage']);
     }
 
     public function testProcessDeletesProfileImageWhenImageFieldIsProvidedAsNull(): void
