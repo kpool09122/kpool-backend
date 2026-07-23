@@ -1,0 +1,367 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\SiteManagement\Contact\Application\UseCase\Command\ReplyContact;
+
+use DateTimeImmutable;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Mockery;
+use RuntimeException;
+use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContact;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInput;
+use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
+use Source\SiteManagement\Contact\Application\UseCase\Exception\ContactNotFoundException;
+use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
+use Source\SiteManagement\Contact\Domain\Entity\Contact;
+use Source\SiteManagement\Contact\Domain\Entity\ReplyCotact;
+use Source\SiteManagement\Contact\Domain\Factory\ReplyContactFactoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Repository\ReplyContactRepositoryInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\ValueObject\Category;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
+use Source\SiteManagement\Contact\Domain\ValueObject\ContactReplyIdentifier;
+use Source\SiteManagement\Contact\Domain\ValueObject\Content;
+use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
+use Source\SiteManagement\Shared\Domain\Exception\UnauthorizedException;
+use Source\SiteManagement\User\Domain\Entity\User;
+use Source\SiteManagement\User\Domain\Repository\UserRepositoryInterface;
+use Tests\Helper\StrTestHelper;
+use Tests\TestCase;
+
+class ReplyContactTest extends TestCase
+{
+    /**
+     * 正常系: インスタンスが生成されること
+     *
+     * @throws BindingResolutionException
+     */
+    public function test__construct(): void
+    {
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+
+        $replyContact = $this->app->make(ReplyContactInterface::class);
+        $this->assertInstanceOf(ReplyContact::class, $replyContact);
+    }
+
+    /**
+     * 正常系：問い合わせ者へ返信メールを送信し、送信履歴が保存されること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testProcess(): void
+    {
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $contact = new Contact(
+            $contactIdentifier,
+            $identityIdentifier,
+            Category::SUGGESTIONS,
+            new ContactName('お名前'),
+            new Email('john.doe@example.com'),
+            new Content('お問い合わせ内容')
+        );
+
+        $expectedContent = 'お問い合わせありがとうございます。
+
+ご要望いただいた「公式MV一覧をYouTube連携で表示する機能」について、今後の改善候補として検討いたします。
+実装可否や時期が決まり次第、サイト内のお知らせ等でご案内いたします。
+
+貴重なご意見をお寄せいただき、ありがとうございました。';
+        $input = new ReplyContactInput(
+            $contactIdentifier,
+            $identityIdentifier,
+            $expectedContent,
+        );
+        $this->bindAdminUser($identityIdentifier);
+
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldReceive('findById')
+            ->once()
+            ->with($contactIdentifier)
+            ->andReturn($contact);
+
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $emailService->shouldReceive('sendReplyToUser')
+            ->once()
+            ->withArgs(function (Email $toEmail, ReplyContent $content) use ($contact, $expectedContent): bool {
+                return (string)$toEmail === (string)$contact->email()
+                    && (string)$content === $expectedContent;
+            })
+            ->andReturnNull();
+
+        $unsentReply = new ReplyCotact(
+            new ContactReplyIdentifier(StrTestHelper::generateUuid()),
+            $contactIdentifier,
+            $identityIdentifier,
+            $contact->email(),
+            new ReplyContent($expectedContent),
+            null,
+            null,
+            new DateTimeImmutable('2020-01-01 00:00:00'),
+        );
+        $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
+        $replyContactFactory->shouldReceive('create')
+            ->once()
+            ->withArgs(function (
+                ContactIdentifier $ci,
+                ?IdentityIdentifier $ii,
+                Email $toEmail,
+                ReplyContent $content,
+                ?DateTimeImmutable $sentAt,
+                ?DateTimeImmutable $failedAt,
+            ) use ($contactIdentifier, $contact, $expectedContent, $identityIdentifier): bool {
+                return $ci === $contactIdentifier
+                    && $ii === $identityIdentifier
+                    && (string)$toEmail === (string)$contact->email()
+                    && (string)$content === $expectedContent
+                    && $sentAt === null
+                    && $failedAt === null;
+            })
+            ->andReturn($unsentReply);
+
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findById')
+            ->once()
+            ->with($unsentReply->replyIdentifier())
+            ->andReturn($unsentReply);
+        $replyContactRepository->shouldReceive('save')
+            ->once()
+            ->with($unsentReply)
+            ->andReturnNull();
+        $replyContactRepository->shouldReceive('save')
+            ->once()
+            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $identityIdentifier): bool {
+                return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
+                    && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
+                    && (string)$saved->identityIdentifier() === (string)$identityIdentifier
+                    && (string)$saved->toEmail() === (string)$contact->email()
+                    && (string)$saved->content() === $expectedContent
+                    && $saved->sentAt() instanceof DateTimeImmutable
+                    && $saved->failedAt() === null
+                    && $saved->createdAt() === $unsentReply->createdAt();
+            })
+            ->andReturnNull();
+
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+
+        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
+     * 異常系：管理者ではない場合、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testWhenUserIsNotAdmin(): void
+    {
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $input = new ReplyContactInput(
+            $contactIdentifier,
+            $identityIdentifier,
+            '返信内容',
+        );
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findByIdentityIdentifier')
+            ->once()
+            ->with($identityIdentifier)
+            ->andReturnNull();
+
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldNotReceive('findById');
+
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $emailService->shouldNotReceive('sendReplyToUser');
+
+        $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
+        $replyContactFactory->shouldNotReceive('create');
+
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldNotReceive('save');
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+
+        $this->expectException(UnauthorizedException::class);
+        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
+     * 異常系：問い合わせが存在しない場合、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testWhenContactNotFound(): void
+    {
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $expectedContent = 'お問い合わせありがとうございます。
+
+内容を確認のうえ、担当より折り返しご連絡いたします。
+今しばらくお待ちください。';
+        $input = new ReplyContactInput(
+            $contactIdentifier,
+            $identityIdentifier,
+            $expectedContent,
+        );
+        $this->bindAdminUser($identityIdentifier);
+
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldReceive('findById')
+            ->once()
+            ->with($contactIdentifier)
+            ->andReturnNull();
+
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $emailService->shouldNotReceive('sendReplyToUser');
+
+        $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
+        $replyContactFactory->shouldNotReceive('create');
+
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldNotReceive('save');
+
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+
+        $this->expectException(ContactNotFoundException::class);
+        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase->process($input);
+    }
+
+    /**
+     * 異常系：メール送信に失敗した場合も、FAILEDとして履歴は保存され、例外がスローされること.
+     *
+     * @throws BindingResolutionException
+     */
+    public function testWhenFailedToSendEmail(): void
+    {
+        $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $contact = new Contact(
+            $contactIdentifier,
+            $identityIdentifier,
+            Category::SUGGESTIONS,
+            new ContactName('お名前'),
+            new Email('john.doe@example.com'),
+            new Content('お問い合わせ内容')
+        );
+
+        $expectedContent = 'お問い合わせありがとうございます。
+
+ご連絡いただいた件につきまして、現在確認を進めております。
+恐れ入りますが、回答まで今しばらくお時間をいただけますと幸いです。';
+        $input = new ReplyContactInput(
+            $contactIdentifier,
+            $identityIdentifier,
+            $expectedContent,
+        );
+        $this->bindAdminUser($identityIdentifier);
+
+        $contactRepository = Mockery::mock(ContactRepositoryInterface::class);
+        $contactRepository->shouldReceive('findById')
+            ->once()
+            ->with($contactIdentifier)
+            ->andReturn($contact);
+
+        $emailService = Mockery::mock(ContactEmailServiceInterface::class);
+        $emailService->shouldReceive('sendReplyToUser')
+            ->once()
+            ->andThrow(new RuntimeException('send failed'));
+
+        $unsentReply = new ReplyCotact(
+            new ContactReplyIdentifier(StrTestHelper::generateUuid()),
+            $contactIdentifier,
+            $identityIdentifier,
+            $contact->email(),
+            new ReplyContent($expectedContent),
+            null,
+            null,
+            new DateTimeImmutable('2020-01-01 00:00:00'),
+        );
+        $replyContactFactory = Mockery::mock(ReplyContactFactoryInterface::class);
+        $replyContactFactory->shouldReceive('create')
+            ->once()
+            ->withArgs(function (
+                ContactIdentifier $ci,
+                ?IdentityIdentifier $ii,
+                Email $toEmail,
+                ReplyContent $content,
+                ?DateTimeImmutable $sentAt,
+                ?DateTimeImmutable $failedAt,
+            ) use ($contactIdentifier, $contact, $expectedContent, $identityIdentifier): bool {
+                return $ci === $contactIdentifier
+                    && $ii === $identityIdentifier
+                    && (string)$toEmail === (string)$contact->email()
+                    && (string)$content === $expectedContent
+                    && $sentAt === null
+                    && $failedAt === null;
+            })
+            ->andReturn($unsentReply);
+
+        $replyContactRepository = Mockery::mock(ReplyContactRepositoryInterface::class);
+        $replyContactRepository->shouldReceive('findById')
+            ->once()
+            ->with($unsentReply->replyIdentifier())
+            ->andReturn($unsentReply);
+        $replyContactRepository->shouldReceive('save')
+            ->once()
+            ->with($unsentReply)
+            ->andReturnNull();
+        $replyContactRepository->shouldReceive('save')
+            ->once()
+            ->withArgs(function (ReplyCotact $saved) use ($unsentReply, $contact, $expectedContent, $identityIdentifier): bool {
+                return (string)$saved->replyIdentifier() === (string)$unsentReply->replyIdentifier()
+                    && (string)$saved->contactIdentifier() === (string)$unsentReply->contactIdentifier()
+                    && (string)$saved->identityIdentifier() === (string)$identityIdentifier
+                    && (string)$saved->toEmail() === (string)$contact->email()
+                    && (string)$saved->content() === $expectedContent
+                    && $saved->sentAt() === null
+                    && $saved->failedAt() instanceof DateTimeImmutable
+                    && $saved->createdAt() === $unsentReply->createdAt();
+            })
+            ->andReturnNull();
+
+        $this->app->instance(ContactRepositoryInterface::class, $contactRepository);
+        $this->app->instance(ReplyContactFactoryInterface::class, $replyContactFactory);
+        $this->app->instance(ReplyContactRepositoryInterface::class, $replyContactRepository);
+        $this->app->instance(ContactEmailServiceInterface::class, $emailService);
+
+        $this->expectException(FailedToSendEmailException::class);
+        $useCase = $this->app->make(ReplyContactInterface::class);
+        $useCase->process($input);
+    }
+
+    private function bindAdminUser(IdentityIdentifier $identityIdentifier): void
+    {
+        $user = Mockery::mock(User::class);
+        $user->shouldReceive('isAdmin')
+            ->once()
+            ->andReturnTrue();
+
+        $userRepository = Mockery::mock(UserRepositoryInterface::class);
+        $userRepository->shouldReceive('findByIdentityIdentifier')
+            ->once()
+            ->with($identityIdentifier)
+            ->andReturn($user);
+
+        $this->app->instance(UserRepositoryInterface::class, $userRepository);
+    }
+}
