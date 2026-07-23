@@ -8,7 +8,6 @@ use GdImage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Application\Exception\InvalidRemoteImageException;
 use Source\Shared\Application\Service\ImageServiceInterface;
@@ -21,10 +20,10 @@ class ImageService implements ImageServiceInterface
 
     /**
      * @param string $base64EncodedImage
-     * @return ImageUploadResult
+     * @return ImagePath
      * @throws InvalidBase64ImageException
      */
-    public function upload(string $base64EncodedImage): ImageUploadResult
+    public function upload(string $base64EncodedImage): ImagePath
     {
         $imageData = base64_decode($base64EncodedImage, true);
 
@@ -40,7 +39,7 @@ class ImageService implements ImageServiceInterface
         return $this->storeImage($gdImage);
     }
 
-    public function importFromUrl(string $imageUrl): ImageUploadResult
+    public function importFromUrl(string $imageUrl): ImagePath
     {
         try {
             $response = Http::timeout(5)->get($imageUrl);
@@ -70,12 +69,12 @@ class ImageService implements ImageServiceInterface
         return Storage::disk((string) config('filesystems.image_disk', 'public'))->delete((string) $path);
     }
 
-    private function storeImage(GdImage $gdImage): ImageUploadResult
+    private function storeImage(GdImage $gdImage): ImagePath
     {
         $normalizedImage = $this->resizeImage($gdImage);
         $path = $this->saveAsWebp($normalizedImage, 'images/' . Str::uuid() . '.webp');
 
-        return new ImageUploadResult(new ImagePath($path));
+        return new ImagePath($path);
     }
 
     /**

@@ -17,7 +17,6 @@ use Source\Identity\Domain\Service\AuthServiceInterface;
 use Source\Identity\Domain\ValueObject\HashedPassword;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
-use Source\Shared\Application\DTO\ImageUploadResult;
 use Source\Shared\Application\Service\ImageServiceInterface;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -54,7 +53,7 @@ class UpdateIdentityTest extends TestCase
         $imageService->shouldReceive('upload')
             ->once()
             ->with($base64Image)
-            ->andReturn(new ImageUploadResult($imagePath));
+            ->andReturn($imagePath);
         $imageService->shouldReceive('delete')
             ->once()
             ->with(Mockery::on(static fn (ImagePath $path): bool => (string) $path === 'images/current_profile.webp'))

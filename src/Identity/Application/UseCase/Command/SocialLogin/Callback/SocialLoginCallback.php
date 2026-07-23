@@ -84,8 +84,8 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         $newIdentity = $this->identityFactory->createFromSocialProfile($profile);
         if ($profile->avatarUrl() !== null) {
             try {
-                $uploadResult = $this->imageService->importFromUrl($profile->avatarUrl());
-                $newIdentity->setProfileImage($uploadResult->path);
+                $imagePath = $this->imageService->importFromUrl($profile->avatarUrl());
+                $newIdentity->setProfileImage($imagePath);
             } catch (InvalidRemoteImageException $e) {
                 $this->logger->warning('Failed to import social profile image.', [
                     'provider' => $input->provider()->value,

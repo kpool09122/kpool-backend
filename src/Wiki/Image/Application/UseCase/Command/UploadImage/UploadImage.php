@@ -53,14 +53,14 @@ readonly class UploadImage implements UploadImageInterface
             throw new DisallowedException();
         }
 
-        $uploadResult = $this->imageService->upload($input->base64EncodedImage());
+        $imagePath = $this->imageService->upload($input->base64EncodedImage());
 
         $draftImage = $this->draftImageFactory->create(
             $input->publishedImageIdentifier(),
             $input->resourceType(),
             $input->translationSetIdentifier(),
             $input->principalIdentifier(),
-            $uploadResult->path,
+            $imagePath,
             $input->displayOrder(),
             $input->sourceUrl(),
             $input->sourceName(),
