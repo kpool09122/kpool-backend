@@ -27,7 +27,7 @@ Route::get('/auth/social/{provider}/callback', SocialLoginCallbackAction::class)
 
 // Authenticated
 Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
-    Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
+    Route::get('/auth/me', GetAuthenticatedIdentityAction::class)->middleware('resolve.account');
     Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
     Route::post('/auth/logout', LogoutAction::class);
     Route::post('/auth/switch-identity', SwitchIdentityAction::class);

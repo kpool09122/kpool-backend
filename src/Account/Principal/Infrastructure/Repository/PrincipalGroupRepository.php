@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Account\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use DateTimeImmutable;
@@ -20,6 +21,11 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
     public function save(PrincipalGroup $principalGroup): void
     {
+        $previousMemberIds = PrincipalGroupMembershipEloquent::query()
+            ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
+            ->pluck('principal_id')
+            ->all();
+
         PrincipalGroupEloquent::query()->updateOrCreate(
             ['id' => (string) $principalGroup->principalGroupIdentifier()],
             [
@@ -34,13 +40,17 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
             ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
             ->delete();
 
+        $currentMemberIds = [];
         foreach ($principalGroup->members() as $principal) {
+            $currentMemberIds[] = (string) $principal->principalIdentifier();
             PrincipalGroupMembershipEloquent::query()->create([
                 'id' => (string) Uuid::v7(),
                 'principal_group_id' => (string) $principalGroup->principalGroupIdentifier(),
                 'principal_id' => (string) $principal->principalIdentifier(),
             ]);
         }
+
+        $this->forgetAccountContexts(array_unique(array_merge($previousMemberIds, $currentMemberIds)));
     }
 
     public function findById(PrincipalGroupIdentifier $identifier): ?PrincipalGroup
@@ -137,9 +147,24 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     public function delete(PrincipalGroup $principalGroup): void
     {
+        $memberIds = PrincipalGroupMembershipEloquent::query()
+            ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
+            ->pluck('principal_id')
+            ->all();
+
         PrincipalGroupEloquent::query()
             ->where('id', (string) $principalGroup->principalGroupIdentifier())
             ->delete();
+
+        $this->forgetAccountContexts($memberIds);
+    }
+
+    /** @param array<int, string> $identityIds */
+    private function forgetAccountContexts(array $identityIds): void
+    {
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetAccount(new IdentityIdentifier($identityId));
+        }
     }
 
     private function toDomainEntity(PrincipalGroupEloquent $eloquent): PrincipalGroup
