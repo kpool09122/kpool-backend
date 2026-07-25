@@ -7,7 +7,7 @@ namespace Tests\Account\Invitation\Infrastructure\Factory;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Account\Invitation\Infrastructure\Factory\InvitationFactory;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -76,8 +76,8 @@ class InvitationFactoryTest extends TestCase
         );
 
         $token = $invitation->token();
-        $this->assertInstanceOf(InvitationToken::class, $token);
-        $this->assertSame(InvitationToken::TOKEN_LENGTH, strlen((string) $token));
+        $this->assertInstanceOf(OneTimeToken::class, $token);
+        $this->assertSame(OneTimeToken::TOKEN_LENGTH, strlen((string) $token));
         $this->assertTrue(ctype_xdigit((string) $token));
     }
 

@@ -7,7 +7,7 @@ namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
@@ -396,7 +396,7 @@ class CreateIdentityTest extends TestCase
     }
 
     /**
-     * 正常系: invitationTokenが指定された場合、IdentityCreatedViaInvitationイベントがディスパッチされること
+     * 正常系: oneTimeTokenが指定された場合、IdentityCreatedViaInvitationイベントがディスパッチされること
      *
      * @return void
      * @throws BindingResolutionException
@@ -412,7 +412,7 @@ class CreateIdentityTest extends TestCase
         $password = new PlainPassword('PlainPass1!');
         $confirmedPassword = new PlainPassword('PlainPass1!');
         $base64EncodedImage = null;
-        $invitationToken = new InvitationToken(bin2hex(random_bytes(32)));
+        $oneTimeToken = new OneTimeToken(bin2hex(random_bytes(32)));
 
         $input = new CreateIdentityInput(
             $identityName,
@@ -421,7 +421,7 @@ class CreateIdentityTest extends TestCase
             $password,
             $confirmedPassword,
             $base64EncodedImage,
-            $invitationToken,
+            $oneTimeToken,
         );
 
         $verifiedAt = new DateTimeImmutable();
@@ -469,7 +469,7 @@ class CreateIdentityTest extends TestCase
             ->with(Mockery::on(
                 static fn ($event) => $event instanceof IdentityCreatedViaInvitation
                     && (string) $event->identityIdentifier === (string) $identityIdentifier
-                    && (string) $event->invitationToken === (string) $invitationToken
+                    && (string) $event->oneTimeToken === (string) $oneTimeToken
             ));
 
         $this->app->instance(AuthCodeSessionRepositoryInterface::class, $authCodeSessionRepository);
@@ -486,7 +486,7 @@ class CreateIdentityTest extends TestCase
     }
 
     /**
-     * 正常系: invitationTokenがnullの場合、IdentityCreatedViaInvitationイベントがディスパッチされないこと
+     * 正常系: oneTimeTokenがnullの場合、IdentityCreatedViaInvitationイベントがディスパッチされないこと
      *
      * @return void
      * @throws BindingResolutionException

@@ -133,7 +133,7 @@ model InvitationSummary {
   invitedByPrincipalIdentifier: Uuid;
   @doc("Invitee email address.")
   email: string;
-  @doc("Invitation token.")
+  @doc("One-time token.")
   token: string;
   @doc("Invitation status.")
   status: string;

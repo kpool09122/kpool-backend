@@ -19,7 +19,7 @@ use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Identity\Domain\Entity\Identity;
@@ -169,7 +169,7 @@ class InvitationMailServiceTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
-        $token = new InvitationToken(bin2hex(random_bytes(32)));
+        $token = new OneTimeToken(bin2hex(random_bytes(32)));
 
         $invitation = new Invitation(
             new InvitationIdentifier(StrTestHelper::generateUuid()),

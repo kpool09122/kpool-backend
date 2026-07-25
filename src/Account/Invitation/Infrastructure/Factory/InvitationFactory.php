@@ -9,7 +9,7 @@ use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -36,7 +36,7 @@ readonly class InvitationFactory implements InvitationFactoryInterface
             $accountIdentifier,
             $invitedByIdentityIdentifier,
             $email,
-            new InvitationToken(bin2hex(random_bytes(32))),
+            new OneTimeToken(bin2hex(random_bytes(32))),
             InvitationStatus::PENDING,
             $now->modify('+' . self::EXPIRATION_HOURS . ' hours'),
             null,

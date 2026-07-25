@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
@@ -19,7 +19,7 @@ readonly class CreateIdentityInput implements CreateIdentityInputPort
         private PlainPassword    $password,
         private PlainPassword    $confirmedPassword,
         private ?string          $base64EncodedImage,
-        private ?InvitationToken $invitationToken = null,
+        private ?OneTimeToken $oneTimeToken = null,
     ) {
     }
 
@@ -53,8 +53,8 @@ readonly class CreateIdentityInput implements CreateIdentityInputPort
         return $this->base64EncodedImage;
     }
 
-    public function invitationToken(): ?InvitationToken
+    public function oneTimeToken(): ?OneTimeToken
     {
-        return $this->invitationToken;
+        return $this->oneTimeToken;
     }
 }

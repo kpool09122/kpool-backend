@@ -9,7 +9,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use RuntimeException;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallback;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Callback\SocialLoginCallbackInterface;
@@ -316,12 +316,12 @@ class SocialLoginCallbackTest extends TestCase
     }
 
     /**
-     * 正常系: 初回ログイン時、SignupSessionにinvitationTokenがあればIdentityCreatedViaInvitationイベントを発行すること.
+     * 正常系: 初回ログイン時、SignupSessionにoneTimeTokenがあればIdentityCreatedViaInvitationイベントを発行すること.
      *
      * @return void
      * @throws BindingResolutionException
      */
-    public function testProcessWhenUserNotFoundWithInvitationToken(): void
+    public function testProcessWhenUserNotFoundWithOneTimeToken(): void
     {
         $provider = SocialProvider::GOOGLE;
         $code = new OAuthCode('code');
@@ -332,8 +332,8 @@ class SocialLoginCallbackTest extends TestCase
         $email = new Email('invited-user@example.com');
         $profile = new SocialProfile($provider, 'invited-provider-user', $email, 'Invited User');
         $newUser = $this->createIdentity($email);
-        $invitationToken = new InvitationToken(bin2hex(random_bytes(32)));
-        $signupSession = new SignupSession(null, $invitationToken);
+        $oneTimeToken = new OneTimeToken(bin2hex(random_bytes(32)));
+        $signupSession = new SignupSession(null, $oneTimeToken);
 
         $oauthStateRepository = Mockery::mock(OAuthStateRepositoryInterface::class);
         $oauthStateRepository->shouldReceive('consume')
@@ -390,7 +390,7 @@ class SocialLoginCallbackTest extends TestCase
             ->with(Mockery::on(
                 fn ($event) => $event instanceof IdentityCreatedViaInvitation
                     && (string) $event->identityIdentifier === (string) $newUser->identityIdentifier()
-                    && (string) $event->invitationToken === (string) $invitationToken
+                    && (string) $event->oneTimeToken === (string) $oneTimeToken
             ));
 
         $this->app->instance(OAuthStateRepositoryInterface::class, $oauthStateRepository);

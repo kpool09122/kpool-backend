@@ -12,7 +12,7 @@ use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;
 use Source\Account\Invitation\Domain\Exception\InvitationNotPendingException;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -26,7 +26,7 @@ class InvitationTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $invitedByIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('test@example.com');
-        $token = new InvitationToken(StrTestHelper::generateHex(64));
+        $token = new OneTimeToken(StrTestHelper::generateHex(64));
         $status = InvitationStatus::PENDING;
         $expiresAt = new DateTimeImmutable('+7 days');
         $createdAt = new DateTimeImmutable();
@@ -187,7 +187,7 @@ class InvitationTest extends TestCase
             new AccountIdentifier(StrTestHelper::generateUuid()),
             new IdentityIdentifier(StrTestHelper::generateUuid()),
             new Email('test@example.com'),
-            new InvitationToken(StrTestHelper::generateHex(64)),
+            new OneTimeToken(StrTestHelper::generateHex(64)),
             $status,
             $expiresAt,
             $acceptedByIdentityIdentifier,

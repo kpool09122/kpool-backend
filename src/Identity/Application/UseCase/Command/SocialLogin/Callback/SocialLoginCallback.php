@@ -99,10 +99,10 @@ readonly class SocialLoginCallback implements SocialLoginCallbackInterface
         }
         $this->identityRepository->save($newIdentity);
 
-        if ($invitationToken = $signupSession?->invitationToken()) {
+        if ($oneTimeToken = $signupSession?->oneTimeToken()) {
             $this->eventDispatcher->dispatch(new IdentityCreatedViaInvitation(
                 identityIdentifier: $newIdentity->identityIdentifier(),
-                invitationToken: $invitationToken,
+                oneTimeToken: $oneTimeToken,
             ));
         } else {
             $this->eventDispatcher->dispatch(new IdentityCreated(

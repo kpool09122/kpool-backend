@@ -6,7 +6,7 @@ namespace Source\Identity\Infrastructure\Repository;
 
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
@@ -23,8 +23,8 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
         if ($ttl > 0) {
             $data = [
                 'account_type' => $session->accountType()?->value,
-                'invitation_token' => $session->invitationToken() !== null
-                    ? (string) $session->invitationToken()
+                'one_time_token' => $session->oneTimeToken() !== null
+                    ? (string) $session->oneTimeToken()
                     : null,
                 'return_to' => $session->returnTo(),
             ];
@@ -51,13 +51,13 @@ class SignupSessionRepository implements SignupSessionRepositoryInterface
             ? AccountType::tryFrom($data['account_type'])
             : null;
 
-        $invitationToken = isset($data['invitation_token'])
-            ? new InvitationToken($data['invitation_token'])
+        $oneTimeToken = isset($data['one_time_token'])
+            ? new OneTimeToken($data['one_time_token'])
             : null;
 
         $returnTo = isset($data['return_to']) ? (string) $data['return_to'] : null;
 
-        return new SignupSession($accountType, $invitationToken, $returnTo);
+        return new SignupSession($accountType, $oneTimeToken, $returnTo);
     }
 
     public function delete(OAuthState $state): void

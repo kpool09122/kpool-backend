@@ -68,10 +68,10 @@ readonly class CreateIdentity implements CreateIdentityInterface
 
         $this->identityRepository->save($identity);
 
-        if ($input->invitationToken() !== null) {
+        if ($input->oneTimeToken() !== null) {
             $this->eventDispatcher->dispatch(new IdentityCreatedViaInvitation(
                 identityIdentifier: $identity->identityIdentifier(),
-                invitationToken: $input->invitationToken(),
+                oneTimeToken: $input->oneTimeToken(),
             ));
         }
 

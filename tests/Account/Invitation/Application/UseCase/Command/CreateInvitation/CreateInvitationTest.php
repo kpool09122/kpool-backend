@@ -18,7 +18,7 @@ use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -285,7 +285,7 @@ class CreateInvitationTest extends TestCase
             $accountIdentifier,
             $inviterIdentityIdentifier,
             $email,
-            new InvitationToken(bin2hex(random_bytes(32))),
+            new OneTimeToken(bin2hex(random_bytes(32))),
             InvitationStatus::PENDING,
             new DateTimeImmutable('+7 days'),
             null,

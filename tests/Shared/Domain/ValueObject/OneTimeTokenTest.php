@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Invitation\Domain\ValueObject;
+namespace Tests\Shared\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\Helper\StrTestHelper;
 
 /**
- * @covers \Source\Account\Invitation\Domain\ValueObject\InvitationToken
+ * @covers \Source\Shared\Domain\ValueObject\OneTimeToken
  */
-class InvitationTokenTest extends TestCase
+class OneTimeTokenTest extends TestCase
 {
     /**
      * 64文字のhexadecimal文字列で正常に生成できることを確認する
@@ -20,7 +20,7 @@ class InvitationTokenTest extends TestCase
     public function test__construct(): void
     {
         $value = StrTestHelper::generateHex(64);
-        $token = new InvitationToken($value);
+        $token = new OneTimeToken($value);
 
         $this->assertSame($value, (string) $token);
     }
@@ -31,9 +31,9 @@ class InvitationTokenTest extends TestCase
     public function testThrowsExceptionWhenTooShort(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('InvitationToken must be 64 characters.');
+        $this->expectExceptionMessage('OneTimeToken must be 64 characters.');
 
-        new InvitationToken(StrTestHelper::generateHex(62));
+        new OneTimeToken(StrTestHelper::generateHex(62));
     }
 
     /**
@@ -42,9 +42,9 @@ class InvitationTokenTest extends TestCase
     public function testThrowsExceptionWhenTooLong(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('InvitationToken must be 64 characters.');
+        $this->expectExceptionMessage('OneTimeToken must be 64 characters.');
 
-        new InvitationToken(StrTestHelper::generateHex(66));
+        new OneTimeToken(StrTestHelper::generateHex(66));
     }
 
     /**
@@ -53,8 +53,8 @@ class InvitationTokenTest extends TestCase
     public function testThrowsExceptionWhenNotHexadecimal(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('InvitationToken must be a hexadecimal string.');
+        $this->expectExceptionMessage('OneTimeToken must be a hexadecimal string.');
 
-        new InvitationToken(str_repeat('g', 64));
+        new OneTimeToken(str_repeat('g', 64));
     }
 }

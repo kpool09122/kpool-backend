@@ -22,7 +22,7 @@ class CreateIdentityRequest extends FormRequest
             'password' => ['required', 'string'],
             'confirmedPassword' => ['required', 'string'],
             'base64EncodedImage' => ['nullable', 'string'],
-            'invitationToken' => ['nullable', 'string'],
+            'oneTimeToken' => ['nullable', 'string'],
         ];
     }
 
@@ -53,9 +53,9 @@ class CreateIdentityRequest extends FormRequest
         return $value !== null ? (string) $value : null;
     }
 
-    public function invitationToken(): ?string
+    public function oneTimeToken(): ?string
     {
-        $value = $this->input('invitationToken');
+        $value = $this->input('oneTimeToken');
 
         return $value !== null ? (string) $value : null;
     }

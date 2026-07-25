@@ -11,7 +11,7 @@ use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Account\Invitation\Infrastructure\Repository\InvitationRepository;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -60,7 +60,7 @@ class InvitationRepositoryTest extends TestCase
             new AccountIdentifier($accountId),
             new IdentityIdentifier($inviterIdentityId),
             new Email($email),
-            new InvitationToken($token),
+            new OneTimeToken($token),
             $status,
             $expiresAt,
             $acceptedByIdentityId !== null ? new IdentityIdentifier($acceptedByIdentityId) : null,
@@ -225,7 +225,7 @@ class InvitationRepositoryTest extends TestCase
         $repository = $this->app->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
-        $result = $repository->findByToken(new InvitationToken($token));
+        $result = $repository->findByToken(new OneTimeToken($token));
 
         $this->assertNotNull($result);
         $this->assertSame($invitationId, (string) $result->invitationIdentifier());
@@ -241,7 +241,7 @@ class InvitationRepositoryTest extends TestCase
     public function testFindByTokenWhenNotFound(): void
     {
         $repository = $this->app->make(InvitationRepositoryInterface::class);
-        $result = $repository->findByToken(new InvitationToken(bin2hex(random_bytes(32))));
+        $result = $repository->findByToken(new OneTimeToken(bin2hex(random_bytes(32))));
 
         $this->assertNull($result);
     }
@@ -385,7 +385,7 @@ class InvitationRepositoryTest extends TestCase
         $repository = $this->app->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
-        $result = $repository->findByToken(new InvitationToken($token));
+        $result = $repository->findByToken(new OneTimeToken($token));
 
         $this->assertNotNull($result);
         $this->assertSame($invitationId, (string) $result->invitationIdentifier());
@@ -428,7 +428,7 @@ class InvitationRepositoryTest extends TestCase
         $repository = $this->app->make(InvitationRepositoryInterface::class);
         $repository->save($invitation);
 
-        $result = $repository->findByToken(new InvitationToken($token));
+        $result = $repository->findByToken(new OneTimeToken($token));
 
         $this->assertNotNull($result);
         $this->assertSame($invitationId, (string) $result->invitationIdentifier());

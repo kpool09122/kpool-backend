@@ -1357,7 +1357,7 @@ components:
           description: Invitee email address.
         token:
           type: string
-          description: Invitation token.
+          description: One-time token.
         status:
           type: string
           description: Invitation status.

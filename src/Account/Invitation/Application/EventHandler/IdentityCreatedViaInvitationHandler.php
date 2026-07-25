@@ -31,7 +31,7 @@ readonly class IdentityCreatedViaInvitationHandler
 
     public function handle(IdentityCreatedViaInvitation $event): void
     {
-        $invitation = $this->invitationRepository->findByToken($event->invitationToken);
+        $invitation = $this->invitationRepository->findByToken($event->oneTimeToken);
 
         if ($invitation === null) {
             throw new InvitationNotFoundException('招待が見つかりません。');
