@@ -10,6 +10,7 @@ use Application\Http\Context\AuthContextCache;
 use Application\Http\Context\WikiContext;
 use Illuminate\Support\Facades\Redis;
 use RuntimeException;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -111,6 +112,7 @@ class AuthContextCacheTest extends TestCase
             'principalIdentifier' => (string) $principalIdentifier,
             'identityIdentifier' => (string) $identityIdentifier,
             'accountIdentifier' => (string) $accountIdentifier,
+            'accountType' => AccountType::CORPORATION->value,
             'accountPolicies' => [
                 [
                     'policyIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5aa',
@@ -130,6 +132,7 @@ class AuthContextCacheTest extends TestCase
         $this->assertSame((string) $principalIdentifier, (string) $context->principal()->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $context->principal()->identityIdentifier());
         $this->assertSame((string) $accountIdentifier, (string) $context->principal()->accountIdentifier());
+        $this->assertSame(AccountType::CORPORATION, $context->accountType());
         $this->assertSame('ACCOUNT_OWNER_BASIC', $context->accountPolicies()[0]['name']);
     }
 
@@ -157,6 +160,7 @@ class AuthContextCacheTest extends TestCase
                     && $decoded['principalIdentifier'] === (string) $principalIdentifier
                     && $decoded['identityIdentifier'] === (string) $identityIdentifier
                     && $decoded['accountIdentifier'] === (string) $accountIdentifier
+                    && $decoded['accountType'] === AccountType::CORPORATION->value
                     && ! array_key_exists('accountRole', $decoded)
                     && $decoded['accountPolicies'][0]['name'] === 'ACCOUNT_ADMIN_BASIC';
             });
@@ -165,6 +169,7 @@ class AuthContextCacheTest extends TestCase
             $identityIdentifier,
             fn () => new AccountContext(
                 new AccountPrincipal($principalIdentifier, $identityIdentifier, $accountIdentifier),
+                AccountType::CORPORATION,
                 [
                     [
                         'policyIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5bb',

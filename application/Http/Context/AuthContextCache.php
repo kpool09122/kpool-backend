@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Context;
 
 use Illuminate\Support\Facades\Redis;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -63,6 +64,7 @@ class AuthContextCache
             'principalIdentifier' => (string) $principal->principalIdentifier(),
             'identityIdentifier' => (string) $principal->identityIdentifier(),
             'accountIdentifier' => (string) $principal->accountIdentifier(),
+            'accountType' => $context->accountType()->value,
             'accountPolicies' => $context->accountPolicies(),
         ]);
 
@@ -206,8 +208,14 @@ class AuthContextCache
             ! is_string($payload['principalIdentifier'] ?? null)
             || ! is_string($payload['identityIdentifier'] ?? null)
             || ! is_string($payload['accountIdentifier'] ?? null)
+            || ! is_string($payload['accountType'] ?? null)
             || ! is_array($payload['accountPolicies'] ?? null)
         ) {
+            return null;
+        }
+
+        $accountType = AccountType::tryFrom($payload['accountType']);
+        if ($accountType === null) {
             return null;
         }
 
@@ -217,6 +225,7 @@ class AuthContextCache
                 new IdentityIdentifier($payload['identityIdentifier']),
                 new AccountIdentifier($payload['accountIdentifier']),
             ),
+            accountType: $accountType,
             accountPolicies: $payload['accountPolicies'],
         );
     }

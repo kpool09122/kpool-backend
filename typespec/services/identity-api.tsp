@@ -45,6 +45,8 @@ model AccountEffectivePolicySummary {
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
   accountIdentifier: Uuid | null;
+  @doc("Account type associated with the authenticated identity.")
+  accountType: string | null;
   @doc("Effective policies for the authenticated identity in the current account.")
   accountPolicies: AccountEffectivePolicySummary[];
 }

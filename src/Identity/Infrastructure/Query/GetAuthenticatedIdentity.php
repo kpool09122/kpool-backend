@@ -55,6 +55,7 @@ readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInter
             language: $model->language,
             profileImage: ImageUrl::fromPath($model->profile_image),
             accountIdentifier: $accountContext === null ? null : (string) $accountContext->principal()->accountIdentifier(),
+            accountType: $accountContext?->accountType()->value,
             accountPolicies: $accountContext?->accountPolicies() ?? [],
         );
     }

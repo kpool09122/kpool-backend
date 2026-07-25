@@ -7,6 +7,12 @@ namespace Tests\Account\Invitation\Application\UseCase\Command\InviteMember;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
+use Source\Account\Account\Domain\Entity\Account;
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountName;
+use Source\Account\Account\Domain\ValueObject\AccountStatus;
+use Source\Account\Account\Domain\ValueObject\AccountType;
+use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
 use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
@@ -24,6 +30,7 @@ use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
+use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -45,6 +52,7 @@ class InviteMemberTest extends TestCase
         $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
         $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
         $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
+        $this->app->instance(AccountRepositoryInterface::class, Mockery::mock(AccountRepositoryInterface::class));
         $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
         $useCase = $this->app->make(InviteMemberInterface::class);
@@ -61,6 +69,7 @@ class InviteMemberTest extends TestCase
     {
         $data = $this->createTestData();
 
+        $this->bindAccountRepository($data);
         $this->bindPolicyEvaluator($data, true);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -110,8 +119,32 @@ class InviteMemberTest extends TestCase
         $this->expectExceptionMessage('招待を作成する権限がありません。');
 
         $data = $this->createTestData();
+        $this->bindAccountRepository($data);
         $this->bindPolicyEvaluator($data, false);
 
+        $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
+        $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
+
+        $useCase = $this->app->make(InviteMemberInterface::class);
+        $output = new InviteMemberOutput();
+        $useCase->process($data->input, $output);
+    }
+
+    /**
+     * 異常系: 法人以外のアカウントではメンバーを招待できないこと
+     *
+     * @throws BindingResolutionException
+     */
+    public function testProcessThrowsExceptionWhenAccountIsNotCorporation(): void
+    {
+        $this->expectException(DisallowedInvitationException::class);
+        $this->expectExceptionMessage('法人アカウントのみメンバーを招待できます。');
+
+        $data = $this->createTestData(AccountType::INDIVIDUAL);
+
+        $this->bindAccountRepository($data);
+        $this->app->instance(PolicyEvaluatorInterface::class, Mockery::mock(PolicyEvaluatorInterface::class));
+        $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
         $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
         $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
 
@@ -128,6 +161,7 @@ class InviteMemberTest extends TestCase
     public function testProcessRevokesExistingPendingInvitation(): void
     {
         $data = $this->createTestData();
+        $this->bindAccountRepository($data);
         $this->bindPolicyEvaluator($data, true);
 
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
@@ -183,6 +217,7 @@ class InviteMemberTest extends TestCase
         $invitation1 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email1);
         $invitation2 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email2);
         $input = new InviteMemberInput($accountIdentifier, $inviterIdentityIdentifier, [$email1, $email2]);
+        $account = $this->createAccount($accountIdentifier, AccountType::CORPORATION);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
@@ -219,6 +254,12 @@ class InviteMemberTest extends TestCase
 
         $this->app->instance(PolicyEvaluatorInterface::class, $policyEvaluator);
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')
+            ->once()
+            ->with($accountIdentifier)
+            ->andReturn($account);
+        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
@@ -254,12 +295,23 @@ class InviteMemberTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
     }
 
-    private function createTestData(): InviteMemberTestData
+    private function bindAccountRepository(InviteMemberTestData $data): void
+    {
+        $accountRepository = Mockery::mock(AccountRepositoryInterface::class);
+        $accountRepository->shouldReceive('findById')
+            ->once()
+            ->with($data->accountIdentifier)
+            ->andReturn($data->account);
+        $this->app->instance(AccountRepositoryInterface::class, $accountRepository);
+    }
+
+    private function createTestData(AccountType $accountType = AccountType::CORPORATION): InviteMemberTestData
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
         $principal = new Principal($principalIdentifier, $inviterIdentityIdentifier, $accountIdentifier);
+        $account = $this->createAccount($accountIdentifier, $accountType);
         $email = new Email('invitee@example.com');
         $invitation = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email);
         $input = new InviteMemberInput($accountIdentifier, $inviterIdentityIdentifier, [$email]);
@@ -269,9 +321,23 @@ class InviteMemberTest extends TestCase
             $inviterIdentityIdentifier,
             $principalIdentifier,
             $principal,
+            $account,
             $email,
             $invitation,
             $input,
+        );
+    }
+
+    private function createAccount(AccountIdentifier $accountIdentifier, AccountType $accountType): Account
+    {
+        return new Account(
+            $accountIdentifier,
+            new Email('account@example.com'),
+            $accountType,
+            new AccountName('Test Account'),
+            AccountStatus::ACTIVE,
+            AccountCategory::GENERAL,
+            DeletionReadinessChecklist::ready(),
         );
     }
 
@@ -302,6 +368,7 @@ readonly class InviteMemberTestData
         public IdentityIdentifier $inviterIdentityIdentifier,
         public PrincipalIdentifier $principalIdentifier,
         public Principal $principal,
+        public Account $account,
         public Email $email,
         public Invitation $invitation,
         public InviteMemberInput $input,

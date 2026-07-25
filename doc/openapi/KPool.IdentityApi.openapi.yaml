@@ -479,6 +479,7 @@ components:
       type: object
       required:
         - accountIdentifier
+        - accountType
         - accountPolicies
       properties:
         accountIdentifier:
@@ -487,6 +488,10 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Account identifier associated with the authenticated identity.
+        accountType:
+          type: string
+          nullable: true
+          description: Account type associated with the authenticated identity.
         accountPolicies:
           type: array
           items:
