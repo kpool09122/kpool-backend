@@ -9,6 +9,7 @@ use Application\Http\Context\PrincipalResolver;
 use Application\Http\Context\WikiContext;
 use Application\Http\Middleware\ResolveWikiContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redis;
 use Mockery;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
@@ -40,7 +41,10 @@ class ResolveWikiContextTest extends TestCase
 
         $principalResolver = new PrincipalResolver($repository);
 
-        $middleware = new ResolveWikiContext($principalResolver);
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->once();
+
+        $middleware = new ResolveWikiContext($principalResolver, app(\Application\Http\Context\AuthContextCache::class));
         $request = Request::create('/api/wiki/test', 'GET');
 
         $middleware->handle($request, function () {

@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 // Account
 Route::post('/accounts', CreateAccountAction::class);
 
-Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
+Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(function () {
     // Account
     Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
 

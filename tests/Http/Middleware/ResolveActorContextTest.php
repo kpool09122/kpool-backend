@@ -9,6 +9,7 @@ use Application\Http\Middleware\ResolveActorContext;
 use Application\Models\Identity\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redis;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -30,7 +31,10 @@ class ResolveActorContextTest extends TestCase
         Auth::shouldReceive('user')->once()->andReturn($identity);
 
         $request = Request::create('/api/test', 'GET');
-        $middleware = new ResolveActorContext();
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->once();
+
+        $middleware = app(ResolveActorContext::class);
 
         $middleware->handle($request, function () {
             return response('ok');
@@ -61,7 +65,10 @@ class ResolveActorContextTest extends TestCase
         Auth::shouldReceive('user')->once()->andReturn($identity);
 
         $request = Request::create('/api/test', 'GET');
-        $middleware = new ResolveActorContext();
+        Redis::shouldReceive('get')->once()->andReturn(null);
+        Redis::shouldReceive('setex')->once();
+
+        $middleware = app(ResolveActorContext::class);
 
         $middleware->handle($request, function () {
             return response('ok');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
+use Application\Models\Wiki\Principal as PrincipalEloquent;
 use Application\Models\Wiki\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
 use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
@@ -19,6 +21,11 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 {
     public function save(PrincipalGroup $principalGroup): void
     {
+        $previousPrincipalIds = PrincipalGroupMembershipEloquent::query()
+            ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
+            ->pluck('principal_id')
+            ->all();
+
         PrincipalGroupEloquent::query()->updateOrCreate(
             ['id' => (string) $principalGroup->principalGroupIdentifier()],
             [
@@ -30,6 +37,10 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
         $this->syncMembers($principalGroup);
         $this->syncRoles($principalGroup);
+        $this->forgetWikiContextsForPrincipalIds(array_unique(array_merge($previousPrincipalIds, array_map(
+            static fn (PrincipalIdentifier $identifier) => (string) $identifier,
+            $principalGroup->members()
+        ))));
     }
 
     public function findById(PrincipalGroupIdentifier $principalGroupIdentifier): ?PrincipalGroup
@@ -106,9 +117,33 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
 
     public function delete(PrincipalGroup $principalGroup): void
     {
+        $principalIds = PrincipalGroupMembershipEloquent::query()
+            ->where('principal_group_id', (string) $principalGroup->principalGroupIdentifier())
+            ->pluck('principal_id')
+            ->all();
+
         PrincipalGroupEloquent::query()
             ->where('id', (string) $principalGroup->principalGroupIdentifier())
             ->delete();
+
+        $this->forgetWikiContextsForPrincipalIds($principalIds);
+    }
+
+    /** @param array<int, string> $principalIds */
+    private function forgetWikiContextsForPrincipalIds(array $principalIds): void
+    {
+        if (empty($principalIds)) {
+            return;
+        }
+
+        $identityIds = PrincipalEloquent::query()
+            ->whereIn('id', $principalIds)
+            ->pluck('identity_id')
+            ->all();
+
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+        }
     }
 
     private function syncMembers(PrincipalGroup $principalGroup): void

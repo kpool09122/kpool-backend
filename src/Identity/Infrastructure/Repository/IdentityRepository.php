@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Identity\Identity as IdentityEloquent;
 use Application\Models\Identity\IdentitySocialConnection as IdentitySocialConnectionEloquent;
 use Illuminate\Support\Carbon;
@@ -81,6 +82,7 @@ readonly class IdentityRepository implements IdentityRepositoryInterface
         );
 
         $this->syncSocialConnections($eloquent, $identity->socialConnections());
+        app(AuthContextCache::class)->forgetActor($identity->identityIdentifier());
     }
 
     public function findById(IdentityIdentifier $identifier): ?Identity

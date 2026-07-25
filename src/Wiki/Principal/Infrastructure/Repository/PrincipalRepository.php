@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
 use Application\Models\Wiki\Principal as PrincipalEloquent;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
@@ -89,6 +90,10 @@ class PrincipalRepository implements PrincipalRepositoryInterface
 
     public function save(Principal $principal): void
     {
+        $previousIdentityId = PrincipalEloquent::query()
+            ->where('id', (string) $principal->principalIdentifier())
+            ->value('identity_id');
+
         PrincipalEloquent::query()->updateOrCreate(
             ['id' => (string) $principal->principalIdentifier()],
             [
@@ -102,13 +107,26 @@ class PrincipalRepository implements PrincipalRepositoryInterface
                 'enabled' => $principal->isEnabled(),
             ]
         );
+
+        foreach (array_unique(array_filter([$previousIdentityId, (string) $principal->identityIdentifier()])) as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+        }
     }
 
     public function deleteByDelegation(DelegationIdentifier $delegationIdentifier): void
     {
+        $identityIds = PrincipalEloquent::query()
+            ->where('delegation_identifier', (string) $delegationIdentifier)
+            ->pluck('identity_id')
+            ->all();
+
         PrincipalEloquent::query()
             ->where('delegation_identifier', (string) $delegationIdentifier)
             ->delete();
+
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new IdentityIdentifier($identityId));
+        }
     }
 
     private function toDomainEntity(PrincipalEloquent $eloquent): Principal

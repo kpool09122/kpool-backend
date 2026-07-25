@@ -76,6 +76,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.api' => \Application\Http\Middleware\EnsureAuthenticated::class,
             'resolve.actor' => \Application\Http\Middleware\ResolveActorContext::class,
+            'resolve.account' => \Application\Http\Middleware\ResolveAccountContext::class,
             'resolve.wiki' => \Application\Http\Middleware\ResolveWikiContext::class,
             'session' => StartSession::class,
         ]);

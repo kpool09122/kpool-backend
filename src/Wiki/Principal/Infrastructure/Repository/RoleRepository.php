@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
+use Application\Models\Wiki\Principal as PrincipalEloquent;
+use Application\Models\Wiki\PrincipalGroupMembership as PrincipalGroupMembershipEloquent;
+use Application\Models\Wiki\PrincipalGroupRoleAttachment as PrincipalGroupRoleAttachmentEloquent;
 use Application\Models\Wiki\Role as RoleEloquent;
 use Application\Models\Wiki\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use DateTimeImmutable;
@@ -25,6 +29,7 @@ class RoleRepository implements RoleRepositoryInterface
         );
 
         $this->syncPolicies($role);
+        $this->forgetWikiContextsForRole((string) $role->roleIdentifier());
     }
 
     public function findById(RoleIdentifier $roleIdentifier): ?Role
@@ -94,9 +99,41 @@ class RoleRepository implements RoleRepositoryInterface
 
     public function delete(Role $role): void
     {
+        $this->forgetWikiContextsForRole((string) $role->roleIdentifier());
+
         RoleEloquent::query()
             ->where('id', (string) $role->roleIdentifier())
             ->delete();
+    }
+
+    private function forgetWikiContextsForRole(string $roleId): void
+    {
+        $principalGroupIds = PrincipalGroupRoleAttachmentEloquent::query()
+            ->where('role_id', $roleId)
+            ->pluck('principal_group_id')
+            ->all();
+
+        if (empty($principalGroupIds)) {
+            return;
+        }
+
+        $principalIds = PrincipalGroupMembershipEloquent::query()
+            ->whereIn('principal_group_id', $principalGroupIds)
+            ->pluck('principal_id')
+            ->all();
+
+        if (empty($principalIds)) {
+            return;
+        }
+
+        $identityIds = PrincipalEloquent::query()
+            ->whereIn('id', $principalIds)
+            ->pluck('identity_id')
+            ->all();
+
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetWiki(new \Source\Shared\Domain\ValueObject\IdentityIdentifier($identityId));
+        }
     }
 
     private function syncPolicies(Role $role): void
