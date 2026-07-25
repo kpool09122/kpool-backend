@@ -6,6 +6,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContac
 
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
@@ -21,4 +22,6 @@ interface SubmitContactInputPort
     public function email(): Email;
 
     public function content(): Content;
+
+    public function language(): Language;
 }

@@ -7,6 +7,7 @@ namespace Source\SiteManagement\Contact\Infrastructure\Factory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
@@ -26,7 +27,8 @@ readonly class ContactFactory implements ContactFactoryInterface
         ContactName $contactName,
         Email $email,
         Content $content,
-        ?IdentityIdentifier $identityIdentifier = null,
+        ?IdentityIdentifier $identityIdentifier,
+        Language $language,
     ): Contact {
         return new Contact(
             new ContactIdentifier($this->generator->generate()),
@@ -34,7 +36,8 @@ readonly class ContactFactory implements ContactFactoryInterface
             $category,
             $contactName,
             $email,
-            $content
+            $content,
+            $language,
         );
     }
 }

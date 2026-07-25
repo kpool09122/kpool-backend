@@ -6,6 +6,7 @@ namespace Tests\SiteManagement\Contact\Application\UseCase\Command\SubmitContact
 
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -26,6 +27,7 @@ class SubmitContactInputTest extends TestCase
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
+        $language = Language::JAPANESE;
         $content = new Content('いつも楽しくサイトを利用させていただいております。
 
 一つ、追加してほしい機能がありご連絡いたしました。
@@ -40,11 +42,13 @@ class SubmitContactInputTest extends TestCase
             $name,
             $email,
             $content,
+            $language,
         );
         $this->assertSame((string)$identityIdentifier, (string)$input->identityIdentifier());
         $this->assertSame($category->value, $input->category()->value);
         $this->assertSame((string)$name, (string)$input->name());
         $this->assertSame((string)$email, (string)$input->email());
         $this->assertSame((string)$content, (string)$input->content());
+        $this->assertSame($language, $input->language());
     }
 }

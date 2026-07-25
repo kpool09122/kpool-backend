@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\SiteManagement\Contact\Command\SubmitContact;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubmitContactRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */

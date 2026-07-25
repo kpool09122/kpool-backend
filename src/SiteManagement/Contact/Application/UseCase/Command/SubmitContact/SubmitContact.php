@@ -7,13 +7,13 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContac
 use Source\SiteManagement\Contact\Application\UseCase\Exception\FailedToSendEmailException;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
-use Source\SiteManagement\Contact\Domain\Service\EmailServiceInterface;
+use Source\SiteManagement\Contact\Domain\Service\ContactEmailServiceInterface;
 use Throwable;
 
 readonly class SubmitContact implements SubmitContactInterface
 {
     public function __construct(
-        private EmailServiceInterface $emailService,
+        private ContactEmailServiceInterface $emailService,
         private ContactFactoryInterface $contactFactory,
         private ContactRepositoryInterface $contactRepository,
     ) {
@@ -33,6 +33,7 @@ readonly class SubmitContact implements SubmitContactInterface
             $input->email(),
             $input->content(),
             $input->identityIdentifier(),
+            $input->language(),
         );
 
         $this->contactRepository->save($contact);

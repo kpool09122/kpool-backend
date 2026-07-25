@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Shared\Domain\ValueObject\Email;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactOutput;
@@ -47,6 +48,7 @@ readonly class SubmitContactAction
                     new ContactName($request->name()),
                     new Email($request->email()),
                     new Content($request->content()),
+                    Language::from($request->language()),
                 );
             } catch (InvalidArgumentException | ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);

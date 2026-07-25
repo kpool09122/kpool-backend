@@ -8,6 +8,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Factory\ContactFactoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -42,6 +43,7 @@ class ContactFactoryTest extends TestCase
         $category = Category::SUGGESTIONS;
         $name = new ContactName('新機能の追加に関するお願い');
         $email = new Email('john.doe@example.com');
+        $language = Language::JAPANESE;
         $content = new Content('いつも楽しくサイトを利用させていただいております。
 
 一つ、追加してほしい機能がありご連絡いたしました。
@@ -57,6 +59,7 @@ class ContactFactoryTest extends TestCase
             $email,
             $content,
             $identityIdentifier,
+            $language,
         );
         $this->assertTrue(UuidValidator::isValid((string)$contact->contactIdentifier()));
         $this->assertSame((string)$identityIdentifier, (string)$contact->identityIdentifier());
@@ -64,5 +67,6 @@ class ContactFactoryTest extends TestCase
         $this->assertSame((string)$name, (string)$contact->name());
         $this->assertSame((string)$email, (string)$contact->email());
         $this->assertSame((string)$content, (string)$contact->content());
+        $this->assertSame($language, $contact->language());
     }
 }
