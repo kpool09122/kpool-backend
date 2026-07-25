@@ -6,6 +6,7 @@ namespace Source\SiteManagement\Contact\Domain\Entity;
 
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactIdentifier;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
@@ -20,6 +21,7 @@ readonly class Contact
         private ContactName $name,
         private Email $email,
         private Content $content,
+        private Language $language,
     ) {
     }
 
@@ -51,5 +53,10 @@ readonly class Contact
     public function content(): Content
     {
         return $this->content;
+    }
+
+    public function language(): Language
+    {
+        return $this->language;
     }
 }

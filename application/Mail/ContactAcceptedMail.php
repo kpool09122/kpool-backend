@@ -16,6 +16,12 @@ class ContactAcceptedMail extends Mailable
     use Queueable;
     use SerializesModels;
 
+    private const array SUBJECTS = [
+        'ja' => 'お問い合わせを受け付けました',
+        'en' => 'We Have Received Your Inquiry',
+        'ko' => '문의가 접수되었습니다',
+    ];
+
     public function __construct(
         public readonly Contact $contact,
     ) {
@@ -24,14 +30,14 @@ class ContactAcceptedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'お問い合わせを受け付けました',
+            subject: self::SUBJECTS[$this->contact->language()->value],
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            text: 'emails.contact.accepted',
+            text: 'emails.contact.accepted_' . $this->contact->language()->value,
         );
     }
 }

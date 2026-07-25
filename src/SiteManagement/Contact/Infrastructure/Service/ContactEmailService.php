@@ -34,10 +34,10 @@ readonly class ContactEmailService implements ContactEmailServiceInterface
         );
     }
 
-    public function sendReplyToUser(Email $toEmail, ReplyContent $content): void
+    public function sendReplyToUser(Contact $contact, ReplyContent $content): void
     {
-        Mail::to((string) $toEmail)->send(
-            new ContactReplyMail($content)
+        Mail::to((string) $contact->email())->send(
+            new ContactReplyMail($content, $contact->language())
         );
     }
 }

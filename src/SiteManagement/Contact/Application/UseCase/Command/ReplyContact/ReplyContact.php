@@ -59,7 +59,7 @@ readonly class ReplyContact implements ReplyContactInterface
 
         try {
             $this->emailService->sendReplyToUser(
-                $contact->email(),
+                $contact,
                 $content,
             );
         } catch (Throwable $e) {

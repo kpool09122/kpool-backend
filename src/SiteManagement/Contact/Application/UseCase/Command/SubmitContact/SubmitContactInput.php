@@ -6,6 +6,7 @@ namespace Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContac
 
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
 use Source\SiteManagement\Contact\Domain\ValueObject\ContactName;
 use Source\SiteManagement\Contact\Domain\ValueObject\Content;
@@ -18,6 +19,7 @@ readonly class SubmitContactInput implements SubmitContactInputPort
         private ContactName $name,
         private Email $email,
         private Content $content,
+        private Language $language,
     ) {
     }
 
@@ -44,5 +46,10 @@ readonly class SubmitContactInput implements SubmitContactInputPort
     public function content(): Content
     {
         return $this->content;
+    }
+
+    public function language(): Language
+    {
+        return $this->language;
     }
 }

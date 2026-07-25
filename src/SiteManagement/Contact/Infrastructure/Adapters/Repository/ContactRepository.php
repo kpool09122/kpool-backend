@@ -8,6 +8,7 @@ use Application\Models\SiteManagement\Contact as ContactModel;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
@@ -34,6 +35,7 @@ final readonly class ContactRepository implements ContactRepositoryInterface
                 'name' => (string)$contact->name(),
                 'email' => $this->encryptionService->encrypt((string)$contact->email()),
                 'content' => (string)$contact->content(),
+                'language' => $contact->language()->value,
             ]
         );
     }
@@ -54,6 +56,7 @@ final readonly class ContactRepository implements ContactRepositoryInterface
             new ContactName((string)$model->name),
             new Email($this->encryptionService->decrypt((string)$model->email)),
             new Content((string)$model->content),
+            Language::from((string)$model->language),
         );
     }
 }

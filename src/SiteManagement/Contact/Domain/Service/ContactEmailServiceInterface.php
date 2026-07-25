@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Source\SiteManagement\Contact\Domain\Service;
 
-use Source\Shared\Domain\ValueObject\Email;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\ValueObject\ReplyContent;
 
@@ -19,7 +18,7 @@ interface ContactEmailServiceInterface
     ): void;
 
     public function sendReplyToUser(
-        Email $toEmail,
+        Contact $contact,
         ReplyContent $content,
     ): void;
 }

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
     'name',
     'email',
     'content',
+    'language',
 ])]
 #[\Illuminate\Database\Eloquent\Attributes\Table(name: 'contacts', keyType: 'string')]
 class Contact extends Model

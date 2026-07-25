@@ -9,6 +9,7 @@ use Mockery;
 use RuntimeException;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactInterface;
@@ -67,6 +68,7 @@ class SubmitContactTest extends TestCase
             $name,
             $email,
             $content,
+            Language::JAPANESE,
         );
 
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -77,11 +79,12 @@ class SubmitContactTest extends TestCase
             $name,
             $email,
             $content,
+            Language::JAPANESE,
         );
         $contactFactory = Mockery::mock(ContactFactoryInterface::class);
         $contactFactory->shouldReceive('create')
             ->once()
-            ->with($category, $name, $email, $content, $identityIdentifier)
+            ->with($category, $name, $email, $content, $identityIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
@@ -143,6 +146,7 @@ class SubmitContactTest extends TestCase
             $name,
             $email,
             $content,
+            Language::JAPANESE,
         );
 
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -153,11 +157,12 @@ class SubmitContactTest extends TestCase
             $name,
             $email,
             $content,
+            Language::JAPANESE,
         );
         $contactFactory = Mockery::mock(ContactFactoryInterface::class);
         $contactFactory->shouldReceive('create')
             ->once()
-            ->with($category, $name, $email, $content, $identityIdentifier)
+            ->with($category, $name, $email, $content, $identityIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
@@ -207,6 +212,7 @@ class SubmitContactTest extends TestCase
             $name,
             $email,
             $content,
+            Language::JAPANESE,
         );
 
         $contactIdentifier = new ContactIdentifier(StrTestHelper::generateUuid());
@@ -217,11 +223,12 @@ class SubmitContactTest extends TestCase
             $name,
             $email,
             $content,
+            Language::JAPANESE,
         );
         $contactFactory = Mockery::mock(ContactFactoryInterface::class);
         $contactFactory->shouldReceive('create')
             ->once()
-            ->with($category, $name, $email, $content, $identityIdentifier)
+            ->with($category, $name, $email, $content, $identityIdentifier, Language::JAPANESE)
             ->andReturn($contact);
 
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);

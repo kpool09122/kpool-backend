@@ -7,6 +7,7 @@ namespace Tests\SiteManagement\Contact\Application\UseCase\Command\SubmitContact
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\SubmitContact\SubmitContactOutput;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
@@ -28,6 +29,7 @@ class SubmitContactOutputTest extends TestCase
             new ContactName('問い合わせ太郎'),
             new Email('john.doe@example.com'),
             new Content('お問い合わせ内容'),
+            Language::JAPANESE,
         );
 
         $output = new SubmitContactOutput();

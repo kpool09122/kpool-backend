@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Application\Service\Encryption\EncryptionServiceInterface;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Domain\Entity\Contact;
 use Source\SiteManagement\Contact\Domain\Repository\ContactRepositoryInterface;
 use Source\SiteManagement\Contact\Domain\ValueObject\Category;
@@ -38,7 +39,8 @@ class ContactRepositoryTest extends TestCase
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
-            new Content('お問い合わせ内容')
+            new Content('お問い合わせ内容'),
+            Language::KOREAN,
         );
 
         $repository = $this->app->make(ContactRepositoryInterface::class);
@@ -59,6 +61,7 @@ class ContactRepositoryTest extends TestCase
         $encryptionService = $this->app->make(EncryptionServiceInterface::class);
         $this->assertSame((string)$contact->email(), $encryptionService->decrypt($record->email));
         $this->assertSame((string)$contact->content(), $record->content);
+        $this->assertSame($contact->language()->value, $record->language);
     }
 
     /**
@@ -82,6 +85,7 @@ class ContactRepositoryTest extends TestCase
             'name' => 'お名前',
             'email' => $encryptionService->encrypt((string)$email),
             'content' => 'お問い合わせ内容',
+            'language' => Language::ENGLISH->value,
             'created_at' => $createdAt->format('Y-m-d H:i:s'),
             'updated_at' => $createdAt->format('Y-m-d H:i:s'),
         ]);
@@ -95,6 +99,7 @@ class ContactRepositoryTest extends TestCase
         $this->assertSame('お名前', (string)$contact->name());
         $this->assertSame((string)$email, (string)$contact->email());
         $this->assertSame('お問い合わせ内容', (string)$contact->content());
+        $this->assertSame(Language::ENGLISH, $contact->language());
     }
 
     /**

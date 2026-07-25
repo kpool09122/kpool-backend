@@ -33,6 +33,7 @@ readonly class SubmitContact implements SubmitContactInterface
             $input->email(),
             $input->content(),
             $input->identityIdentifier(),
+            $input->language(),
         );
 
         $this->contactRepository->save($contact);

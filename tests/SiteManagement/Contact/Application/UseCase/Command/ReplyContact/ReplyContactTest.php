@@ -10,6 +10,7 @@ use Mockery;
 use RuntimeException;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\Language;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContact;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInput;
 use Source\SiteManagement\Contact\Application\UseCase\Command\ReplyContact\ReplyContactInterface;
@@ -64,7 +65,8 @@ class ReplyContactTest extends TestCase
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
-            new Content('お問い合わせ内容')
+            new Content('お問い合わせ内容'),
+            Language::JAPANESE,
         );
 
         $expectedContent = 'お問い合わせありがとうございます。
@@ -89,8 +91,8 @@ class ReplyContactTest extends TestCase
         $emailService = Mockery::mock(ContactEmailServiceInterface::class);
         $emailService->shouldReceive('sendReplyToUser')
             ->once()
-            ->withArgs(function (Email $toEmail, ReplyContent $content) use ($contact, $expectedContent): bool {
-                return (string)$toEmail === (string)$contact->email()
+            ->withArgs(function (Contact $actualContact, ReplyContent $content) use ($contact, $expectedContent): bool {
+                return $actualContact === $contact
                     && (string)$content === $expectedContent;
             })
             ->andReturnNull();
@@ -261,7 +263,8 @@ class ReplyContactTest extends TestCase
             Category::SUGGESTIONS,
             new ContactName('お名前'),
             new Email('john.doe@example.com'),
-            new Content('お問い合わせ内容')
+            new Content('お問い合わせ内容'),
+            Language::JAPANESE,
         );
 
         $expectedContent = 'お問い合わせありがとうございます。
