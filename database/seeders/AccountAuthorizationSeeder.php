@@ -33,7 +33,7 @@ class AccountAuthorizationSeeder extends Seeder
                 effect: Effect::ALLOW,
                 actions: [
                     Action::INVITATION_CREATE,
-                    Action::UPDATE_NAME,
+                    Action::UPDATE,
                     Action::SETTINGS_UPDATE,
                     Action::DELETE,
                     Action::BILLING_MANAGE,
@@ -48,7 +48,7 @@ class AccountAuthorizationSeeder extends Seeder
                 effect: Effect::ALLOW,
                 actions: [
                     Action::INVITATION_CREATE,
-                    Action::UPDATE_NAME,
+                    Action::UPDATE,
                     Action::SETTINGS_UPDATE,
                     Action::DELEGATION_MANAGE,
                 ],

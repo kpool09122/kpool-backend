@@ -38,7 +38,7 @@ readonly class UpdateAccount implements UpdateAccountInterface
             (string) $input->principal()->accountIdentifier() !== (string) $account->accountIdentifier()
             || ! $this->policyEvaluator->evaluate(
                 $input->principal(),
-                Action::UPDATE_NAME,
+                Action::UPDATE,
                 Resource::account($account->accountIdentifier()),
             )
         ) {

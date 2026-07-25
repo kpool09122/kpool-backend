@@ -6,6 +6,9 @@ namespace Source\Identity\Application\UseCase\Query;
 
 readonly class AuthenticatedIdentityReadModel
 {
+    /**
+     * @param array<int, array<string, mixed>> $accountPolicies
+     */
     public function __construct(
         private string $identityIdentifier,
         private string $identityName,
@@ -13,7 +16,7 @@ readonly class AuthenticatedIdentityReadModel
         private string $language,
         private ?string $profileImage,
         private ?string $accountIdentifier,
-        private ?string $accountRole,
+        private array $accountPolicies = [],
     ) {
     }
 
@@ -47,9 +50,12 @@ readonly class AuthenticatedIdentityReadModel
         return $this->accountIdentifier;
     }
 
-    public function accountRole(): ?string
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function accountPolicies(): array
     {
-        return $this->accountRole;
+        return $this->accountPolicies;
     }
 
     /**
@@ -64,7 +70,7 @@ readonly class AuthenticatedIdentityReadModel
             'language' => $this->language,
             'profileImage' => $this->profileImage,
             'accountIdentifier' => $this->accountIdentifier,
-            'accountRole' => $this->accountRole,
+            'accountPolicies' => $this->accountPolicies,
         ];
     }
 }

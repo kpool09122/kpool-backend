@@ -63,6 +63,7 @@ class AuthContextCache
             'principalIdentifier' => (string) $principal->principalIdentifier(),
             'identityIdentifier' => (string) $principal->identityIdentifier(),
             'accountIdentifier' => (string) $principal->accountIdentifier(),
+            'accountPolicies' => $context->accountPolicies(),
         ]);
 
         return $context;
@@ -205,6 +206,7 @@ class AuthContextCache
             ! is_string($payload['principalIdentifier'] ?? null)
             || ! is_string($payload['identityIdentifier'] ?? null)
             || ! is_string($payload['accountIdentifier'] ?? null)
+            || ! is_array($payload['accountPolicies'] ?? null)
         ) {
             return null;
         }
@@ -215,6 +217,7 @@ class AuthContextCache
                 new IdentityIdentifier($payload['identityIdentifier']),
                 new AccountIdentifier($payload['accountIdentifier']),
             ),
+            accountPolicies: $payload['accountPolicies'],
         );
     }
 

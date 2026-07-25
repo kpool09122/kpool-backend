@@ -111,6 +111,14 @@ class AuthContextCacheTest extends TestCase
             'principalIdentifier' => (string) $principalIdentifier,
             'identityIdentifier' => (string) $identityIdentifier,
             'accountIdentifier' => (string) $accountIdentifier,
+            'accountPolicies' => [
+                [
+                    'policyIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5aa',
+                    'name' => 'ACCOUNT_OWNER_BASIC',
+                    'isSystemPolicy' => true,
+                    'statements' => [],
+                ],
+            ],
         ]));
         Redis::shouldReceive('setex')->never();
 
@@ -122,6 +130,7 @@ class AuthContextCacheTest extends TestCase
         $this->assertSame((string) $principalIdentifier, (string) $context->principal()->principalIdentifier());
         $this->assertSame((string) $identityIdentifier, (string) $context->principal()->identityIdentifier());
         $this->assertSame((string) $accountIdentifier, (string) $context->principal()->accountIdentifier());
+        $this->assertSame('ACCOUNT_OWNER_BASIC', $context->accountPolicies()[0]['name']);
     }
 
     public function testResolveAccountFallsBackToDbAndStoresPrincipalContextOnOldPayload(): void
@@ -147,13 +156,23 @@ class AuthContextCacheTest extends TestCase
                     && $ttl === 3600
                     && $decoded['principalIdentifier'] === (string) $principalIdentifier
                     && $decoded['identityIdentifier'] === (string) $identityIdentifier
-                    && $decoded['accountIdentifier'] === (string) $accountIdentifier;
+                    && $decoded['accountIdentifier'] === (string) $accountIdentifier
+                    && ! array_key_exists('accountRole', $decoded)
+                    && $decoded['accountPolicies'][0]['name'] === 'ACCOUNT_ADMIN_BASIC';
             });
 
         $context = (new AuthContextCache())->resolveAccount(
             $identityIdentifier,
             fn () => new AccountContext(
                 new AccountPrincipal($principalIdentifier, $identityIdentifier, $accountIdentifier),
+                [
+                    [
+                        'policyIdentifier' => '019de7f3-78f3-7b55-9ed5-17f63e14d5bb',
+                        'name' => 'ACCOUNT_ADMIN_BASIC',
+                        'isSystemPolicy' => true,
+                        'statements' => [],
+                    ],
+                ],
             ),
         );
 

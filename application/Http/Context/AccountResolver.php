@@ -6,13 +6,28 @@ namespace Application\Http\Context;
 
 use Application\Models\Account\Principal as PrincipalModel;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\ValueObject\Action;
+use Source\Account\Principal\Domain\ValueObject\ResourceType;
+use Source\Account\Principal\Domain\ValueObject\Statement;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-class AccountResolver
+readonly class AccountResolver
 {
+    public function __construct(
+        private PrincipalGroupRepositoryInterface $principalGroupRepository,
+        private RoleRepositoryInterface $roleRepository,
+        private PolicyRepositoryInterface $policyRepository,
+    ) {
+    }
+
     /** @throws AccountNotFoundException */
     public function resolve(IdentityIdentifier $identityIdentifier): AccountContext
     {
@@ -24,12 +39,73 @@ class AccountResolver
             throw new AccountNotFoundException('Account context not found.');
         }
 
-        return new AccountContext(
-            principal: new Principal(
-                new PrincipalIdentifier($principal->id),
-                new IdentityIdentifier($principal->identity_id),
-                new AccountIdentifier($principal->account_id),
-            ),
+        $accountPrincipal = new Principal(
+            new PrincipalIdentifier($principal->id),
+            new IdentityIdentifier($principal->identity_id),
+            new AccountIdentifier($principal->account_id),
         );
+
+        $principalGroups = $this->principalGroupRepository->findByAccountIdAndPrincipal(
+            $accountPrincipal->accountIdentifier(),
+            $accountPrincipal->principalIdentifier(),
+        );
+        $roles = [];
+        foreach ($principalGroups as $principalGroup) {
+            $roles[$principalGroup->role()->value] = $principalGroup->role();
+        }
+
+        return new AccountContext(
+            principal: $accountPrincipal,
+            accountPolicies: $this->effectivePolicies(array_values($roles)),
+        );
+    }
+
+    /**
+     * @param AccountRole[] $accountRoles
+     * @return array<int, array<string, mixed>>
+     */
+    private function effectivePolicies(array $accountRoles): array
+    {
+        if (empty($accountRoles)) {
+            return [];
+        }
+
+        $roles = $this->roleRepository->findByRoles($accountRoles);
+        $policyIdentifiers = [];
+        foreach ($roles as $role) {
+            foreach ($role->policies() as $policyIdentifier) {
+                $policyIdentifiers[(string) $policyIdentifier] = $policyIdentifier;
+            }
+        }
+
+        $policies = $this->policyRepository->findByIds(array_values($policyIdentifiers));
+        ksort($policies);
+
+        return array_map($this->toPolicyArray(...), array_values($policies));
+    }
+
+    /**
+     * @return array{policyIdentifier: string, name: string, isSystemPolicy: bool, statements: array<int, array<string, mixed>>}
+     */
+    private function toPolicyArray(Policy $policy): array
+    {
+        return [
+            'policyIdentifier' => (string) $policy->policyIdentifier(),
+            'name' => $policy->name(),
+            'isSystemPolicy' => $policy->isSystemPolicy(),
+            'statements' => array_map($this->toStatementArray(...), $policy->statements()),
+        ];
+    }
+
+    /**
+     * @return array{effect: string, actions: array<int, string>, resourceTypes: array<int, string>}
+     */
+    private function toStatementArray(Statement $statement): array
+    {
+        return [
+            'effect' => $statement->effect()->value,
+            'actions' => array_map(static fn (Action $action): string => $action->value, $statement->actions()),
+            'resourceTypes' => array_map(static fn (ResourceType $resourceType): string => $resourceType->value, $statement->resourceTypes()),
+        ];
     }
 }

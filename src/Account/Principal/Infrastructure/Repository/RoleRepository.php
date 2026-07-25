@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Infrastructure\Repository;
 
+use Application\Http\Context\AuthContextCache;
+use Application\Models\Account\Principal as PrincipalEloquent;
+use Application\Models\Account\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Account\RolePolicyAttachment as RolePolicyAttachmentEloquent;
 use Source\Account\Principal\Domain\Entity\Role;
 use Source\Account\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Domain\ValueObject\PolicyIdentifier;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class RoleRepository implements RoleRepositoryInterface
 {
@@ -31,6 +35,8 @@ class RoleRepository implements RoleRepositoryInterface
         if (! empty($records)) {
             RolePolicyAttachmentEloquent::query()->insert($records);
         }
+
+        $this->forgetAccountContextsForRoles([$role->role()]);
     }
 
     public function findByRole(AccountRole $role): Role
@@ -67,5 +73,31 @@ class RoleRepository implements RoleRepositoryInterface
         }
 
         return $result;
+    }
+
+    /** @param AccountRole[] $roles */
+    private function forgetAccountContextsForRoles(array $roles): void
+    {
+        if (empty($roles)) {
+            return;
+        }
+
+        $roleValues = array_map(static fn (AccountRole $role): string => $role->value, $roles);
+        $principalIds = PrincipalGroupEloquent::query()
+            ->whereIn('role', $roleValues)
+            ->join('account_principal_group_memberships', 'account_principal_groups.id', '=', 'account_principal_group_memberships.principal_group_id')
+            ->pluck('account_principal_group_memberships.principal_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $identityIds = PrincipalEloquent::query()
+            ->whereIn('id', $principalIds)
+            ->pluck('identity_id')
+            ->all();
+
+        foreach ($identityIds as $identityId) {
+            app(AuthContextCache::class)->forgetAccount(new IdentityIdentifier($identityId));
+        }
     }
 }

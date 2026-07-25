@@ -430,10 +430,56 @@ paths:
               $ref: '#/components/schemas/UpdateIdentityRequestBody'
 components:
   schemas:
+    AccountEffectivePolicySummary:
+      type: object
+      required:
+        - policyIdentifier
+        - name
+        - isSystemPolicy
+        - statements
+      properties:
+        policyIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Policy identifier.
+        name:
+          type: string
+          description: Policy name.
+        isSystemPolicy:
+          type: boolean
+          description: Whether this is a system policy.
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountPolicyStatement'
+          description: Statements that define the effective policy.
+      description: Effective account policy summary for the authenticated identity.
+    AccountPolicyStatement:
+      type: object
+      required:
+        - effect
+        - actions
+        - resourceTypes
+      properties:
+        effect:
+          type: string
+          description: Whether the statement allows or denies the action.
+        actions:
+          type: array
+          items:
+            type: string
+          description: Actions covered by this statement.
+        resourceTypes:
+          type: array
+          items:
+            type: string
+          description: Resource types covered by this statement.
+      description: Policy statement returned for account effective policies.
     AuthenticatedIdentitySummary:
       type: object
       required:
         - accountIdentifier
+        - accountPolicies
       properties:
         accountIdentifier:
           type: string
@@ -441,6 +487,11 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Account identifier associated with the authenticated identity.
+        accountPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountEffectivePolicySummary'
+          description: Effective policies for the authenticated identity in the current account.
       allOf:
         - $ref: '#/components/schemas/IdentitySummary'
       description: Authenticated identity summary returned for the current identity.

@@ -19,10 +19,34 @@ model IdentitySummary {
   profileImage?: string | null;
 }
 
+@doc("Policy statement returned for account effective policies.")
+model AccountPolicyStatement {
+  @doc("Whether the statement allows or denies the action.")
+  effect: string;
+  @doc("Actions covered by this statement.")
+  actions: string[];
+  @doc("Resource types covered by this statement.")
+  resourceTypes: string[];
+}
+
+@doc("Effective account policy summary for the authenticated identity.")
+model AccountEffectivePolicySummary {
+  @doc("Policy identifier.")
+  policyIdentifier: Uuid;
+  @doc("Policy name.")
+  name: string;
+  @doc("Whether this is a system policy.")
+  isSystemPolicy: boolean;
+  @doc("Statements that define the effective policy.")
+  statements: AccountPolicyStatement[];
+}
+
 @doc("Authenticated identity summary returned for the current identity.")
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
   accountIdentifier: Uuid | null;
+  @doc("Effective policies for the authenticated identity in the current account.")
+  accountPolicies: AccountEffectivePolicySummary[];
 }
 
 @doc("Public profile fields for a requested identity.")
