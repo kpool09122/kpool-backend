@@ -14,7 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityOutput;
@@ -27,6 +26,7 @@ use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

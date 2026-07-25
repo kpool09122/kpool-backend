@@ -15,7 +15,6 @@ use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
@@ -30,6 +29,7 @@ use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -92,7 +92,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')
             ->once()
-            ->with($data->accountIdentifier, AccountRole::MEMBER)
+            ->with($data->accountIdentifier, AccountRole::BASIC)
             ->andReturn($data->memberGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
@@ -153,7 +153,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')
             ->once()
-            ->with($data->accountIdentifier, AccountRole::MEMBER)
+            ->with($data->accountIdentifier, AccountRole::BASIC)
             ->andReturnNull();
         $principalGroupRepository->shouldReceive('save')
             ->once()
@@ -162,7 +162,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($data->accountIdentifier, 'Members', AccountRole::MEMBER, false)
+            ->with($data->accountIdentifier, 'Members', AccountRole::BASIC, false)
             ->andReturn($data->memberGroup);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -337,7 +337,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
             'Members',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );

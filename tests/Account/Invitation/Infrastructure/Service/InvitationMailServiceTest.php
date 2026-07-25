@@ -19,7 +19,6 @@ use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Account\Invitation\Infrastructure\Service\InvitationMailService;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Identity\Domain\Entity\Identity;
@@ -28,6 +27,7 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

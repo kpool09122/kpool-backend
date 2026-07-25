@@ -6,10 +6,10 @@ namespace Source\Identity\Infrastructure\Repository;
 
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 class SignupSessionRepository implements SignupSessionRepositoryInterface
 {

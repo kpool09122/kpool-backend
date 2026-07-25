@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Source\Account\Invitation\Domain\Event;
 
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 readonly class InvitationCreated
 {

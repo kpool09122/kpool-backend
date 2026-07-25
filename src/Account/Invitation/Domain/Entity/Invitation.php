@@ -10,10 +10,10 @@ use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;
 use Source\Account\Invitation\Domain\Exception\InvitationNotPendingException;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 class Invitation
 {

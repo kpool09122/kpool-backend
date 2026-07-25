@@ -29,7 +29,7 @@ class CreatePrincipalGroupOutputTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             $createdAt,
         );
@@ -42,7 +42,7 @@ class CreatePrincipalGroupOutputTest extends TestCase
         $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
         $this->assertSame('Test Group', $result['name']);
-        $this->assertSame('member', $result['role']);
+        $this->assertSame('basic', $result['role']);
         $this->assertFalse($result['isDefault']);
         $this->assertSame($createdAt->format(DateTimeInterface::ATOM), $result['createdAt']);
     }

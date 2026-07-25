@@ -8,7 +8,7 @@ enum AccountRole: string
 {
     case OWNER = 'owner';
     case ADMIN = 'admin';
-    case MEMBER = 'member';
+    case BASIC = 'basic';
     case BILLING_CONTACT = 'billing_contact';
     case PRODUCT_OWNER = 'product_owner';
 

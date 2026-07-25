@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Identity\Domain\Event;
 
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 readonly class IdentityCreatedViaInvitation
 {

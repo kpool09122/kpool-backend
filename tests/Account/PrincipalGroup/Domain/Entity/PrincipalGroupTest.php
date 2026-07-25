@@ -120,7 +120,7 @@ class PrincipalGroupTest extends TestCase
             principalGroupIdentifier: new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             accountIdentifier: new AccountIdentifier(StrTestHelper::generateUuid()),
             name: 'テストグループ',
-            role: AccountRole::MEMBER,
+            role: AccountRole::BASIC,
             isDefault: false,
             createdAt: new DateTimeImmutable(),
         );

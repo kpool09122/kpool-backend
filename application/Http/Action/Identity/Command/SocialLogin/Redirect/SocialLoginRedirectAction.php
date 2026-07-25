@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectOutput;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 

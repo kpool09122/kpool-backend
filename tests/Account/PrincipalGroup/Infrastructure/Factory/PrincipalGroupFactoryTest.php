@@ -67,7 +67,7 @@ class PrincipalGroupFactoryTest extends TestCase
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $name = 'Non Default Group';
-        $role = AccountRole::MEMBER;
+        $role = AccountRole::BASIC;
         $isDefault = false;
 
         $factory = $this->app->make(PrincipalGroupFactoryInterface::class);

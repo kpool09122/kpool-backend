@@ -8,11 +8,11 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\Redis;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Domain\Repository\SignupSessionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\OAuthState;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Infrastructure\Repository\SignupSessionRepository;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\TestCase;
 
 class SignupSessionRepositoryTest extends TestCase

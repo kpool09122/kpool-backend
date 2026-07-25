@@ -82,7 +82,7 @@ class CreatePrincipalGroupTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $name = 'Talent X Responsible Team';
-        $role = AccountRole::MEMBER;
+        $role = AccountRole::BASIC;
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,

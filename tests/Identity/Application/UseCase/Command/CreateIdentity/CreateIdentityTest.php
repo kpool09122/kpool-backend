@@ -7,7 +7,6 @@ namespace Tests\Identity\Application\UseCase\Command\CreateIdentity;
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
-use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentity;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
@@ -32,6 +31,7 @@ use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\ImagePath;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 

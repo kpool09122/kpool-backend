@@ -41,14 +41,14 @@ readonly class IdentityCreatedViaInvitationHandler
 
         $memberGroup = $this->principalGroupRepository->findByAccountIdAndRole(
             $invitation->accountIdentifier(),
-            AccountRole::MEMBER
+            AccountRole::BASIC
         );
 
         if ($memberGroup === null) {
             $memberGroup = $this->principalGroupFactory->create(
                 $invitation->accountIdentifier(),
                 self::MEMBER_GROUP_NAME,
-                AccountRole::MEMBER,
+                AccountRole::BASIC,
                 false,
             );
         }
