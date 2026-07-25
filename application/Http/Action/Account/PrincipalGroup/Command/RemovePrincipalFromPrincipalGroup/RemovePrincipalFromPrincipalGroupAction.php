@@ -18,7 +18,7 @@ use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrin
 use Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupOutput;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -41,7 +41,7 @@ readonly class RemovePrincipalFromPrincipalGroupAction
             try {
                 $input = new RemovePrincipalFromPrincipalGroupInput(
                     principalGroupIdentifier: new PrincipalGroupIdentifier($request->principalGroupId()),
-                    principalIdentifier: new IdentityIdentifier($request->principalIdentifier()),
+                    principalIdentifier: new PrincipalIdentifier($request->principalIdentifier()),
                 );
                 $output = new RemovePrincipalFromPrincipalGroupOutput();
             } catch (InvalidArgumentException $e) {

@@ -51,6 +51,19 @@ class AccountTest extends TestCase
     }
 
     /**
+     * 正常系: 正しくアカウント名を変更できること.
+     */
+    public function testChangeName(): void
+    {
+        $dummyAccount = $this->createDummyAccountTestData();
+        $newName = new AccountName('Updated Account');
+
+        $dummyAccount->account->changeName($newName);
+
+        $this->assertSame((string) $newName, (string) $dummyAccount->account->name());
+    }
+
+    /**
      * 正常系: 削除に必要な前提条件を満たしていれば例外が発生しないこと.
      */
     public function testAssertDeletable(): void

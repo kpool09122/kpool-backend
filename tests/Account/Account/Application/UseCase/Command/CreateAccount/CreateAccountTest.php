@@ -19,12 +19,16 @@ use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
+use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\AccountCategory;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
@@ -44,11 +48,15 @@ class CreateAccountTest extends TestCase
     {
         $repository = Mockery::mock(AccountRepositoryInterface::class);
         $factory = Mockery::mock(AccountFactoryInterface::class);
+        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
@@ -81,6 +89,17 @@ class CreateAccountTest extends TestCase
             ->with($testData->email, $testData->accountType, $testData->accountName)
             ->andReturn($testData->account);
 
+        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
+        $principalFactory->shouldReceive('create')
+            ->once()
+            ->with($testData->identityIdentifier, $testData->identifier)
+            ->andReturn($testData->principal);
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('save')
+            ->once()
+            ->with($testData->principal);
+
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
@@ -106,6 +125,8 @@ class CreateAccountTest extends TestCase
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
@@ -120,7 +141,7 @@ class CreateAccountTest extends TestCase
         $this->assertSame((string) $testData->email, $result['email']);
         $this->assertSame($testData->accountType->value, $result['type']);
         $this->assertSame((string) $testData->accountName, $result['name']);
-        $this->assertTrue($testData->principalGroup->hasMember($testData->identityIdentifier));
+        $this->assertTrue($testData->principalGroup->hasMember($testData->principalIdentifier));
     }
 
     /**
@@ -148,6 +169,12 @@ class CreateAccountTest extends TestCase
             ->with($testData->email, $testData->accountType, $testData->accountName)
             ->andReturn($testData->account);
 
+        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
+        $principalFactory->shouldNotReceive('create');
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('save');
+
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
@@ -173,6 +200,8 @@ class CreateAccountTest extends TestCase
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
@@ -207,6 +236,12 @@ class CreateAccountTest extends TestCase
         $factory = Mockery::mock(AccountFactoryInterface::class);
         $factory->shouldNotReceive('create');
 
+        $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
+        $principalFactory->shouldNotReceive('create');
+
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldNotReceive('save');
+
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldNotReceive('create');
 
@@ -224,6 +259,8 @@ class CreateAccountTest extends TestCase
 
         $this->app->instance(AccountRepositoryInterface::class, $repository);
         $this->app->instance(AccountFactoryInterface::class, $factory);
+        $this->app->instance(PrincipalFactoryInterface::class, $principalFactory);
+        $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
         $this->app->instance(PrincipalGroupFactoryInterface::class, $principalGroupFactory);
         $this->app->instance(PrincipalGroupRepositoryInterface::class, $principalGroupRepository);
         $this->app->instance(EventDispatcherInterface::class, $eventDispatcher);
@@ -258,6 +295,8 @@ class CreateAccountTest extends TestCase
         );
 
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principal = new Principal($principalIdentifier, $identityIdentifier, $identifier);
 
         $principalGroup = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
@@ -285,6 +324,8 @@ class CreateAccountTest extends TestCase
             $account,
             $input,
             $identityIdentifier,
+            $principalIdentifier,
+            $principal,
             $principalGroup,
             $language,
         );
@@ -302,6 +343,8 @@ readonly class CreateAccountTestData
         public Account $account,
         public CreateAccountInput $input,
         public IdentityIdentifier $identityIdentifier,
+        public PrincipalIdentifier $principalIdentifier,
+        public Principal $principal,
         public PrincipalGroup $principalGroup,
         public Language $language,
     ) {

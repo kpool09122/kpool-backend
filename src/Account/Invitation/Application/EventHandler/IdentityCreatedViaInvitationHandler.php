@@ -7,8 +7,10 @@ namespace Source\Account\Invitation\Application\EventHandler;
 use Source\Account\Invitation\Application\Exception\InvitationNotFoundException;
 use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
+use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
@@ -21,6 +23,8 @@ readonly class IdentityCreatedViaInvitationHandler
         private InvitationRepositoryInterface $invitationRepository,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private PrincipalGroupFactoryInterface $principalGroupFactory,
+        private PrincipalFactoryInterface $principalFactory,
+        private PrincipalRepositoryInterface $principalRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -49,7 +53,13 @@ readonly class IdentityCreatedViaInvitationHandler
             );
         }
 
-        $memberGroup->addMember($event->identityIdentifier);
+        $principal = $this->principalFactory->create(
+            $event->identityIdentifier,
+            $invitation->accountIdentifier(),
+        );
+        $this->principalRepository->save($principal);
+
+        $memberGroup->addMember($principal->principalIdentifier());
         $this->principalGroupRepository->save($memberGroup);
 
         $invitation->accept($event->identityIdentifier);

@@ -73,6 +73,16 @@ class FullAccessTestAccountSeeder extends Seeder
             ],
         ], ['id']);
 
+        DB::table('account_principals')->upsert([
+            [
+                'id' => self::PRINCIPAL_ID,
+                'identity_id' => self::IDENTITY_ID,
+                'account_id' => self::ACCOUNT_ID,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ], ['id']);
+
         DB::table('account_principal_groups')->upsert([
             [
                 'id' => self::PRINCIPAL_GROUP_ID,
@@ -89,7 +99,7 @@ class FullAccessTestAccountSeeder extends Seeder
             [
                 'id' => self::ACCOUNT_PRINCIPAL_GROUP_MEMBERSHIP_ID,
                 'principal_group_id' => self::PRINCIPAL_GROUP_ID,
-                'principal_id' => self::IDENTITY_ID,
+                'principal_id' => self::PRINCIPAL_ID,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

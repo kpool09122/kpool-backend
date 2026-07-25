@@ -183,13 +183,22 @@ class CreatePrincipalActionTest extends TestCase
                 'account_principal_group_memberships.principal_group_id'
             )
             ->andReturnSelf();
+        $query->shouldReceive('join')
+            ->once()
+            ->with(
+                'account_principals',
+                'account_principal_group_memberships.principal_id',
+                '=',
+                'account_principals.id'
+            )
+            ->andReturnSelf();
         $query->shouldReceive('where')
             ->once()
             ->with('account_principal_groups.account_id', $accountIdentifier)
             ->andReturnSelf();
         $query->shouldReceive('where')
             ->once()
-            ->with('account_principal_group_memberships.principal_id', $identityIdentifier)
+            ->with('account_principals.identity_id', $identityIdentifier)
             ->andReturnSelf();
         $query->shouldReceive('exists')
             ->once()

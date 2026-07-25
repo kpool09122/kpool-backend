@@ -171,6 +171,58 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateAccountRequestBody'
   /accounts/{accountId}:
+    patch:
+      operationId: AccountOperations_updateAccount
+      description: Update account information.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an account operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountRequestBody'
     delete:
       operationId: AccountOperations_deleteAccount
       description: Delete an account.
@@ -641,173 +693,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RevokeDelegationRequestBody'
-  /identity-groups:
-    post:
-      operationId: IdentityGroupOperations_createIdentityGroup
-      description: Create an identity group.
-      parameters: []
-      responses:
-        '201':
-          description: Response returned when an identity group is created.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreatedIdentityGroupSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateIdentityGroupRequestBody'
-  /identity-groups/{identityGroupId}:
-    delete:
-      operationId: IdentityGroupOperations_deleteIdentityGroup
-      description: Delete an identity group.
-      parameters:
-        - name: identityGroupId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '204':
-          description: Response with no content.
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-  /identity-groups/{identityGroupId}/add-member:
-    post:
-      operationId: IdentityGroupOperations_addIdentityToIdentityGroup
-      description: Add an identity to an identity group.
-      parameters:
-        - name: identityGroupId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '200':
-          description: Response returned when an identity group operation succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IdentityGroupSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MutateIdentityGroupMemberRequestBody'
-  /identity-groups/{identityGroupId}/remove-member:
-    post:
-      operationId: IdentityGroupOperations_removeIdentityFromIdentityGroup
-      description: Remove an identity from an identity group.
-      parameters:
-        - name: identityGroupId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '200':
-          description: Response returned when an identity group operation succeeds.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IdentityGroupSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MutateIdentityGroupMemberRequestBody'
   /invitations:
     post:
       operationId: InvitationOperations_createInvitation
@@ -852,6 +737,173 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateInvitationRequestBody'
+  /principal-groups:
+    post:
+      operationId: PrincipalGroupOperations_createPrincipalGroup
+      description: Create an principal group.
+      parameters: []
+      responses:
+        '201':
+          description: Response returned when an principal group is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedPrincipalGroupSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePrincipalGroupRequestBody'
+  /principal-groups/{principalGroupId}:
+    delete:
+      operationId: PrincipalGroupOperations_deletePrincipalGroup
+      description: Delete an principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '204':
+          description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /principal-groups/{principalGroupId}/add-member:
+    post:
+      operationId: PrincipalGroupOperations_addPrincipalToPrincipalGroup
+      description: Add an identity to an principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an principal group operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalGroupSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
+  /principal-groups/{principalGroupId}/remove-member:
+    post:
+      operationId: PrincipalGroupOperations_removePrincipalFromPrincipalGroup
+      description: Remove an identity from an principal group.
+      parameters:
+        - name: principalGroupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an principal group operation succeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalGroupSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MutatePrincipalGroupMemberRequestBody'
 components:
   schemas:
     AccountSummary:
@@ -1045,7 +1097,7 @@ components:
         accountName:
           type: string
           description: Account display name.
-        identityIdentifier:
+        principalIdentifier:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -1075,7 +1127,28 @@ components:
           type: string
           description: Account category assigned during creation.
       description: Account creation request result. Empty when the request is accepted without exposing whether an account already exists.
-    CreateIdentityGroupRequestBody:
+    CreateInvitationRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - inviterPrincipalIdentifier
+        - emails
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier that owns the invitations.
+        inviterPrincipalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier sending the invitations.
+        emails:
+          type: array
+          items:
+            type: string
+          description: Invitee email addresses.
+      description: Request body for creating invitations.
+    CreatePrincipalGroupRequestBody:
       type: object
       required:
         - accountIdentifier
@@ -1088,32 +1161,11 @@ components:
           description: Owning account identifier.
         name:
           type: string
-          description: Identity group name.
+          description: Principal group name.
         role:
           type: string
-          description: Role assigned to the identity group.
-      description: Request body for creating an identity group.
-    CreateInvitationRequestBody:
-      type: object
-      required:
-        - accountIdentifier
-        - inviterIdentityIdentifier
-        - emails
-      properties:
-        accountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier that owns the invitations.
-        inviterIdentityIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier sending the invitations.
-        emails:
-          type: array
-          items:
-            type: string
-          description: Invitee email addresses.
-      description: Request body for creating invitations.
+          description: Role assigned to the principal group.
+      description: Request body for creating an principal group.
     CreatedAccountSummary:
       type: object
       required:
@@ -1125,7 +1177,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/AccountSummary'
       description: Account creation result.
-    CreatedIdentityGroupSummary:
+    CreatedPrincipalGroupSummary:
       type: object
       required:
         - createdAt
@@ -1133,15 +1185,15 @@ components:
         createdAt:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
-          description: Timestamp when the identity group was created.
+          description: Timestamp when the principal group was created.
       allOf:
-        - $ref: '#/components/schemas/IdentityGroupSummary'
-      description: Identity group snapshot returned immediately after creation.
+        - $ref: '#/components/schemas/PrincipalGroupSummary'
+      description: Principal group snapshot returned immediately after creation.
     DelegationPermissionSummary:
       type: object
       required:
         - delegationPermissionIdentifier
-        - identityGroupIdentifier
+        - principalGroupIdentifier
         - targetAccountIdentifier
         - affiliationIdentifier
         - createdAt
@@ -1150,10 +1202,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Delegation permission identifier.
-        identityGroupIdentifier:
+        principalGroupIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity group identifier that owns the permission.
+          description: Principal group identifier that owns the permission.
         targetAccountIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -1220,11 +1272,11 @@ components:
     GrantDelegationPermissionRequestBody:
       type: object
       required:
-        - identityGroupIdentifier
+        - principalGroupIdentifier
         - targetAccountIdentifier
         - affiliationIdentifier
       properties:
-        identityGroupIdentifier:
+        principalGroupIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity group identifier receiving the permission.
@@ -1237,44 +1289,12 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Affiliation identifier covered by the permission.
       description: Request body for granting a delegation permission.
-    IdentityGroupSummary:
-      type: object
-      required:
-        - identityGroupIdentifier
-        - accountIdentifier
-        - name
-        - role
-        - isDefault
-      properties:
-        identityGroupIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity group identifier.
-        accountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Owning account identifier.
-        name:
-          type: string
-          description: Identity group name.
-        role:
-          type: string
-          description: Identity group role.
-        isDefault:
-          type: boolean
-          description: Whether this is the default identity group.
-        members:
-          type: array
-          items:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifiers currently assigned to the group.
-      description: Identity group snapshot returned after updates.
     InvitationSummary:
       type: object
       required:
         - invitationIdentifier
         - accountIdentifier
-        - invitedByIdentityIdentifier
+        - invitedByPrincipalIdentifier
         - email
         - token
         - status
@@ -1289,7 +1309,7 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Target account identifier.
-        invitedByIdentityIdentifier:
+        invitedByPrincipalIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier that created the invitation.
@@ -1338,16 +1358,48 @@ components:
       type: string
       format: uuid
       description: UUID identifier.
-    MutateIdentityGroupMemberRequestBody:
+    MutatePrincipalGroupMemberRequestBody:
       type: object
       required:
-        - identityIdentifier
+        - principalIdentifier
       properties:
-        identityIdentifier:
+        principalIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Identity identifier to add or remove.
-      description: Request body for mutating identity group membership.
+      description: Request body for mutating principal group membership.
+    PrincipalGroupSummary:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - accountIdentifier
+        - name
+        - role
+        - isDefault
+      properties:
+        principalGroupIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Principal group identifier.
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Owning account identifier.
+        name:
+          type: string
+          description: Principal group name.
+        role:
+          type: string
+          description: Principal group role.
+        isDefault:
+          type: boolean
+          description: Whether this is the default principal group.
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifiers currently assigned to the group.
+      description: Principal group snapshot returned after updates.
     RejectAffiliationRequestBody:
       type: object
       required:
@@ -1466,6 +1518,15 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Terminator account identifier.
       description: Request body for terminating an affiliation.
+    UpdateAccountRequestBody:
+      type: object
+      required:
+        - accountName
+      properties:
+        accountName:
+          type: string
+          description: Updated account display name.
+      description: Request body for updating account information.
     VerificationDocumentSummary:
       type: object
       required:

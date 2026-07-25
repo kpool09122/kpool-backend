@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup;
 
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 readonly class AddPrincipalToPrincipalGroupInput implements AddPrincipalToPrincipalGroupInputPort
 {
     public function __construct(
         private PrincipalGroupIdentifier $principalGroupIdentifier,
-        private IdentityIdentifier $principalIdentifier,
+        private PrincipalIdentifier $principalIdentifier,
     ) {
     }
 
@@ -20,7 +20,7 @@ readonly class AddPrincipalToPrincipalGroupInput implements AddPrincipalToPrinci
         return $this->principalGroupIdentifier;
     }
 
-    public function principalIdentifier(): IdentityIdentifier
+    public function principalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
     }

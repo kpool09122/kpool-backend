@@ -17,8 +17,8 @@ use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -44,7 +44,7 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
@@ -84,7 +84,7 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
     public function testThrowsWhenNotFound(): void
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
@@ -112,7 +112,7 @@ class AddPrincipalToPrincipalGroupTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,

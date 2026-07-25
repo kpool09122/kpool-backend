@@ -9,12 +9,12 @@ use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 class PrincipalGroup
 {
-    /** @var array<string, Principal> */
+    /** @var array<string, PrincipalIdentifier> */
     private array $members = [];
 
     public function __construct(
@@ -58,7 +58,7 @@ class PrincipalGroup
     }
 
     /**
-     * @return array<string, Principal>
+     * @return array<string, PrincipalIdentifier>
      */
     public function members(): array
     {
@@ -70,41 +70,26 @@ class PrincipalGroup
         return count($this->members);
     }
 
-    public function hasMember(Principal|IdentityIdentifier $principal): bool
+    public function hasMember(PrincipalIdentifier $principalIdentifier): bool
     {
-        $principal = $this->normalizePrincipal($principal);
-
-        return isset($this->members[(string) $principal->principalIdentifier()]);
+        return isset($this->members[(string) $principalIdentifier]);
     }
 
-    public function addMember(Principal|IdentityIdentifier $principal): void
+    public function addMember(PrincipalIdentifier $principalIdentifier): void
     {
-        $principal = $this->normalizePrincipal($principal);
-
-        if ($this->hasMember($principal)) {
+        if ($this->hasMember($principalIdentifier)) {
             throw new PrincipalAlreadyMemberException();
         }
 
-        $this->members[(string) $principal->principalIdentifier()] = $principal;
+        $this->members[(string) $principalIdentifier] = $principalIdentifier;
     }
 
-    public function removeMember(Principal|IdentityIdentifier $principal): void
+    public function removeMember(PrincipalIdentifier $principalIdentifier): void
     {
-        $principal = $this->normalizePrincipal($principal);
-
-        if (! $this->hasMember($principal)) {
+        if (! $this->hasMember($principalIdentifier)) {
             throw new PrincipalNotMemberException();
         }
 
-        unset($this->members[(string) $principal->principalIdentifier()]);
-    }
-
-    private function normalizePrincipal(Principal|IdentityIdentifier $principal): Principal
-    {
-        if ($principal instanceof Principal) {
-            return $principal;
-        }
-
-        return new Principal($principal);
+        unset($this->members[(string) $principalIdentifier]);
     }
 }

@@ -54,7 +54,7 @@ readonly class PolicyEvaluator implements PolicyEvaluatorInterface
     {
         $principalGroups = $this->principalGroupRepository->findByAccountIdAndPrincipal(
             $resource->accountIdentifier(),
-            $principal,
+            $principal->principalIdentifier(),
         );
 
         if (empty($principalGroups)) {

@@ -18,8 +18,8 @@ use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -45,7 +45,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
@@ -86,7 +86,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     public function testThrowsWhenNotFound(): void
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $repository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $repository->shouldReceive('findById')
@@ -114,7 +114,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
@@ -151,7 +151,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,
@@ -193,8 +193,8 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
     {
         $principalGroupIdentifier = new PrincipalGroupIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $anotherPrincipalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $anotherPrincipalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup = new PrincipalGroup(
             $principalGroupIdentifier,

@@ -11,8 +11,8 @@ use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Principal\Domain\Exception\PrincipalNotMemberException;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
 class PrincipalGroupTest extends TestCase
@@ -50,7 +50,7 @@ class PrincipalGroupTest extends TestCase
     public function testAddMember(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup->addMember($principalIdentifier);
 
@@ -64,7 +64,7 @@ class PrincipalGroupTest extends TestCase
     public function testAddMemberThrowsExceptionWhenAlreadyMember(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup->addMember($principalIdentifier);
 
@@ -78,7 +78,7 @@ class PrincipalGroupTest extends TestCase
     public function testRemoveMember(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $principalGroup->addMember($principalIdentifier);
         $principalGroup->removeMember($principalIdentifier);
@@ -93,7 +93,7 @@ class PrincipalGroupTest extends TestCase
     public function testRemoveMemberThrowsExceptionWhenNotMember(): void
     {
         $principalGroup = $this->createPrincipalGroup();
-        $principalIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
 
         $this->expectException(PrincipalNotMemberException::class);
         $principalGroup->removeMember($principalIdentifier);
@@ -108,8 +108,8 @@ class PrincipalGroupTest extends TestCase
 
         $this->assertSame(0, $principalGroup->memberCount());
 
-        $principalGroup->addMember(new IdentityIdentifier(StrTestHelper::generateUuid()));
-        $principalGroup->addMember(new IdentityIdentifier(StrTestHelper::generateUuid()));
+        $principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
+        $principalGroup->addMember(new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame(2, $principalGroup->memberCount());
     }

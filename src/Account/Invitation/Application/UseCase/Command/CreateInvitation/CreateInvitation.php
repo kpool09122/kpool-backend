@@ -8,7 +8,7 @@ use Source\Account\Invitation\Application\Exception\DisallowedInvitationExceptio
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
-use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
@@ -20,6 +20,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
         private InvitationRepositoryInterface $invitationRepository,
         private InvitationFactoryInterface $invitationFactory,
         private PolicyEvaluatorInterface $policyEvaluator,
+        private PrincipalRepositoryInterface $principalRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -64,8 +65,17 @@ readonly class CreateInvitation implements CreateInvitationInterface
 
     private function assertInviterHasPermission(CreateInvitationInputPort $input): void
     {
+        $principal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier(
+            $input->inviterIdentityIdentifier(),
+            $input->accountIdentifier(),
+        );
+
+        if ($principal === null) {
+            throw new DisallowedInvitationException('招待を作成する権限がありません。');
+        }
+
         $allowed = $this->policyEvaluator->evaluate(
-            new Principal($input->inviterIdentityIdentifier()),
+            $principal,
             Action::INVITATION_CREATE,
             Resource::account($input->accountIdentifier()),
         );

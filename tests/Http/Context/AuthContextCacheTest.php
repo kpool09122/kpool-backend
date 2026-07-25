@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Http\Context;
 
+use Application\Http\Context\AccountContext;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Context\WikiContext;
 use Illuminate\Support\Facades\Redis;
 use RuntimeException;
-use Source\Account\Principal\Domain\ValueObject\AccountRole;
+use Source\Account\Principal\Domain\Entity\Principal as AccountPrincipal;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier as WikiPrincipalIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -102,11 +104,13 @@ class AuthContextCacheTest extends TestCase
     public function testResolveAccountSerializesAndDeserializes(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new AccountPrincipalIdentifier(StrTestHelper::generateUuid());
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
 
         Redis::shouldReceive('get')->once()->andReturn(json_encode([
+            'principalIdentifier' => (string) $principalIdentifier,
+            'identityIdentifier' => (string) $identityIdentifier,
             'accountIdentifier' => (string) $accountIdentifier,
-            'role' => 'admin',
         ]));
         Redis::shouldReceive('setex')->never();
 
@@ -115,14 +119,51 @@ class AuthContextCacheTest extends TestCase
             fn () => throw new RuntimeException('DB resolver must not be called'),
         );
 
-        $this->assertSame((string) $accountIdentifier, (string) $context->accountIdentifier);
-        $this->assertSame(AccountRole::ADMIN, $context->role);
+        $this->assertSame((string) $principalIdentifier, (string) $context->principal()->principalIdentifier());
+        $this->assertSame((string) $identityIdentifier, (string) $context->principal()->identityIdentifier());
+        $this->assertSame((string) $accountIdentifier, (string) $context->principal()->accountIdentifier());
+    }
+
+    public function testResolveAccountFallsBackToDbAndStoresPrincipalContextOnOldPayload(): void
+    {
+        $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new AccountPrincipalIdentifier(StrTestHelper::generateUuid());
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+
+        Redis::shouldReceive('get')->once()->andReturn(json_encode([
+            'accountIdentifier' => (string) $accountIdentifier,
+            'role' => 'admin',
+        ]));
+        Redis::shouldReceive('setex')
+            ->once()
+            ->withArgs(function (
+                string $key,
+                int $ttl,
+                string $payload,
+            ) use ($identityIdentifier, $principalIdentifier, $accountIdentifier): bool {
+                $decoded = json_decode($payload, true);
+
+                return $key === 'auth-context:account:' . $identityIdentifier
+                    && $ttl === 3600
+                    && $decoded['principalIdentifier'] === (string) $principalIdentifier
+                    && $decoded['identityIdentifier'] === (string) $identityIdentifier
+                    && $decoded['accountIdentifier'] === (string) $accountIdentifier;
+            });
+
+        $context = (new AuthContextCache())->resolveAccount(
+            $identityIdentifier,
+            fn () => new AccountContext(
+                new AccountPrincipal($principalIdentifier, $identityIdentifier, $accountIdentifier),
+            ),
+        );
+
+        $this->assertSame((string) $principalIdentifier, (string) $context->principal()->principalIdentifier());
     }
 
     public function testResolveWikiSerializesAndDeserializes(): void
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
+        $principalIdentifier = new WikiPrincipalIdentifier(StrTestHelper::generateUuid());
 
         Redis::shouldReceive('get')->once()->andReturn(json_encode([
             'principalIdentifier' => (string) $principalIdentifier,
@@ -131,7 +172,7 @@ class AuthContextCacheTest extends TestCase
 
         $context = (new AuthContextCache())->resolveWiki(
             $identityIdentifier,
-            fn () => new WikiContext(new PrincipalIdentifier(StrTestHelper::generateUuid())),
+            fn () => new WikiContext(new WikiPrincipalIdentifier(StrTestHelper::generateUuid())),
         );
 
         $this->assertSame((string) $principalIdentifier, (string) $context->principalIdentifier);

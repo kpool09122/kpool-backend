@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Domain\Repository;
 
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface PrincipalGroupRepositoryInterface
@@ -24,14 +24,14 @@ interface PrincipalGroupRepositoryInterface
     /**
      * @return array<PrincipalGroup>
      */
-    public function findByPrincipal(Principal $principal): array;
+    public function findByPrincipalId(PrincipalIdentifier $principalIdentifier): array;
 
     /**
      * @return array<PrincipalGroup>
      */
     public function findByAccountIdAndPrincipal(
         AccountIdentifier $accountIdentifier,
-        Principal $principal
+        PrincipalIdentifier $principalIdentifier
     ): array;
 
     public function findDefaultByAccountId(AccountIdentifier $accountIdentifier): ?PrincipalGroup;

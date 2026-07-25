@@ -17,7 +17,7 @@ use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipal
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupOutput;
 use Source\Account\Principal\Domain\Exception\PrincipalAlreadyMemberException;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
-use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -40,7 +40,7 @@ readonly class AddPrincipalToPrincipalGroupAction
             try {
                 $input = new AddPrincipalToPrincipalGroupInput(
                     principalGroupIdentifier: new PrincipalGroupIdentifier($request->principalGroupId()),
-                    principalIdentifier: new IdentityIdentifier($request->principalIdentifier()),
+                    principalIdentifier: new PrincipalIdentifier($request->principalIdentifier()),
                 );
                 $output = new AddPrincipalToPrincipalGroupOutput();
             } catch (InvalidArgumentException $e) {

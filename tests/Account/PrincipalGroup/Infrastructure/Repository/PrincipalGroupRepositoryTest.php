@@ -6,13 +6,14 @@ namespace Tests\Account\PrincipalGroup\Infrastructure\Repository;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Account\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\Account\Shared\Domain\ValueObject\PrincipalGroupIdentifier;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
@@ -99,6 +100,8 @@ class PrincipalGroupRepositoryTest extends TestCase
         $accountId = StrTestHelper::generateUuid();
         $identityId1 = StrTestHelper::generateUuid();
         $identityId2 = StrTestHelper::generateUuid();
+        $principalId1 = StrTestHelper::generateUuid();
+        $principalId2 = StrTestHelper::generateUuid();
 
         // FK制約のためIdentityを事前に作成
         CreateIdentity::create(
@@ -109,13 +112,14 @@ class PrincipalGroupRepositoryTest extends TestCase
             new IdentityIdentifier($identityId2),
             ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
         );
-
         $principalGroup = $this->createTestPrincipalGroup(
             principalGroupId: $principalGroupId,
             accountId: $accountId,
         );
-        $principalGroup->addMember(new IdentityIdentifier($identityId1));
-        $principalGroup->addMember(new IdentityIdentifier($identityId2));
+        $this->createPrincipal($principalId1, $identityId1, $accountId);
+        $this->createPrincipal($principalId2, $identityId2, $accountId);
+        $principalGroup->addMember(new PrincipalIdentifier($principalId1));
+        $principalGroup->addMember(new PrincipalIdentifier($principalId2));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -126,12 +130,12 @@ class PrincipalGroupRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('account_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
-            'principal_id' => $identityId1,
+            'principal_id' => $principalId1,
         ]);
 
         $this->assertDatabaseHas('account_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
-            'principal_id' => $identityId2,
+            'principal_id' => $principalId2,
         ]);
     }
 
@@ -179,17 +183,18 @@ class PrincipalGroupRepositoryTest extends TestCase
         $principalGroupId = StrTestHelper::generateUuid();
         $accountId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
 
         CreateIdentity::create(
             new IdentityIdentifier($identityId),
             ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
         );
-
         $principalGroup = $this->createTestPrincipalGroup(
             principalGroupId: $principalGroupId,
             accountId: $accountId,
         );
-        $principalGroup->addMember(new IdentityIdentifier($identityId));
+        $this->createPrincipal($principalId, $identityId, $accountId);
+        $principalGroup->addMember(new PrincipalIdentifier($principalId));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -198,7 +203,7 @@ class PrincipalGroupRepositoryTest extends TestCase
 
         $this->assertNotNull($result);
         $this->assertCount(1, $result->members());
-        $this->assertTrue($result->hasMember(new IdentityIdentifier($identityId)));
+        $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId)));
     }
 
     /**
@@ -279,16 +284,18 @@ class PrincipalGroupRepositoryTest extends TestCase
     public function testFindByIdentityId(): void
     {
         $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
         CreateIdentity::create(
             new IdentityIdentifier($identityId),
             ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
         );
 
         $principalGroup1 = $this->createTestPrincipalGroup(name: 'Group 1');
-        $principalGroup1->addMember(new IdentityIdentifier($identityId));
+        $this->createPrincipal($principalId, $identityId, (string) $principalGroup1->accountIdentifier());
+        $principalGroup1->addMember(new PrincipalIdentifier($principalId));
 
         $principalGroup2 = $this->createTestPrincipalGroup(name: 'Group 2');
-        $principalGroup2->addMember(new IdentityIdentifier($identityId));
+        $principalGroup2->addMember(new PrincipalIdentifier($principalId));
 
         // このグループにはメンバーを追加しない
         $principalGroup3 = $this->createTestPrincipalGroup(name: 'Group 3');
@@ -298,7 +305,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository->save($principalGroup2);
         $repository->save($principalGroup3);
 
-        $result = $repository->findByPrincipal(new Principal(new IdentityIdentifier($identityId)));
+        $result = $repository->findByPrincipalId(new PrincipalIdentifier($principalId));
 
         $this->assertCount(2, $result);
         $names = array_map(static fn ($g) => $g->name(), $result);
@@ -316,7 +323,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     public function testFindByIdentityIdWhenNotFound(): void
     {
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
-        $result = $repository->findByPrincipal(new Principal(new IdentityIdentifier(StrTestHelper::generateUuid())));
+        $result = $repository->findByPrincipalId(new PrincipalIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertSame([], $result);
     }
@@ -331,12 +338,14 @@ class PrincipalGroupRepositoryTest extends TestCase
     {
         $accountId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
 
         CreateAccount::create($accountId);
         CreateIdentity::create(
             new IdentityIdentifier($identityId),
             ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
         );
+        $this->createPrincipal($principalId, $identityId, $accountId);
 
         $principalGroup1 = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
@@ -346,7 +355,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             true,
             new DateTimeImmutable(),
         );
-        $principalGroup1->addMember(new IdentityIdentifier($identityId));
+        $principalGroup1->addMember(new PrincipalIdentifier($principalId));
 
         $principalGroup2 = new PrincipalGroup(
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
@@ -356,7 +365,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             false,
             new DateTimeImmutable(),
         );
-        $principalGroup2->addMember(new IdentityIdentifier($identityId));
+        $principalGroup2->addMember(new PrincipalIdentifier($principalId));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup1);
@@ -364,7 +373,7 @@ class PrincipalGroupRepositoryTest extends TestCase
 
         $result = $repository->findByAccountIdAndPrincipal(
             new AccountIdentifier($accountId),
-            new Principal(new IdentityIdentifier($identityId))
+            new PrincipalIdentifier($principalId)
         );
 
         $this->assertCount(2, $result);
@@ -384,7 +393,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findByAccountIdAndPrincipal(
             new AccountIdentifier(StrTestHelper::generateUuid()),
-            new Principal(new IdentityIdentifier(StrTestHelper::generateUuid()))
+            new PrincipalIdentifier(StrTestHelper::generateUuid())
         );
 
         $this->assertSame([], $result);
@@ -401,6 +410,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $accountId1 = StrTestHelper::generateUuid();
         $accountId2 = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
 
         CreateAccount::create($accountId1);
         CreateAccount::create($accountId2);
@@ -408,6 +418,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             new IdentityIdentifier($identityId),
             ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
         );
+        $this->createPrincipal($principalId, $identityId, $accountId1);
 
         // accountId1にidentityIdを追加
         $principalGroup = new PrincipalGroup(
@@ -418,7 +429,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             true,
             new DateTimeImmutable(),
         );
-        $principalGroup->addMember(new IdentityIdentifier($identityId));
+        $principalGroup->addMember(new PrincipalIdentifier($principalId));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -426,7 +437,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         // accountId2で検索すると見つからない
         $result = $repository->findByAccountIdAndPrincipal(
             new AccountIdentifier($accountId2),
-            new Principal(new IdentityIdentifier($identityId))
+            new PrincipalIdentifier($principalId)
         );
 
         $this->assertSame([], $result);
@@ -496,6 +507,7 @@ class PrincipalGroupRepositoryTest extends TestCase
     {
         $principalGroupId = StrTestHelper::generateUuid();
         $identityId = StrTestHelper::generateUuid();
+        $principalId = StrTestHelper::generateUuid();
 
         CreateIdentity::create(
             new IdentityIdentifier($identityId),
@@ -503,7 +515,8 @@ class PrincipalGroupRepositoryTest extends TestCase
         );
 
         $principalGroup = $this->createTestPrincipalGroup(principalGroupId: $principalGroupId);
-        $principalGroup->addMember(new IdentityIdentifier($identityId));
+        $this->createPrincipal($principalId, $identityId, (string) $principalGroup->accountIdentifier());
+        $principalGroup->addMember(new PrincipalIdentifier($principalId));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -658,6 +671,8 @@ class PrincipalGroupRepositoryTest extends TestCase
         $accountId = StrTestHelper::generateUuid();
         $identityId1 = StrTestHelper::generateUuid();
         $identityId2 = StrTestHelper::generateUuid();
+        $principalId1 = StrTestHelper::generateUuid();
+        $principalId2 = StrTestHelper::generateUuid();
 
         CreateIdentity::create(
             new IdentityIdentifier($identityId1),
@@ -667,13 +682,14 @@ class PrincipalGroupRepositoryTest extends TestCase
             new IdentityIdentifier($identityId2),
             ['email' => StrTestHelper::generateSmallAlphaStr(10) . '@example.com']
         );
-
         // 最初のメンバーで保存
         $principalGroup = $this->createTestPrincipalGroup(
             principalGroupId: $principalGroupId,
             accountId: $accountId,
         );
-        $principalGroup->addMember(new IdentityIdentifier($identityId1));
+        $this->createPrincipal($principalId1, $identityId1, $accountId);
+        $this->createPrincipal($principalId2, $identityId2, $accountId);
+        $principalGroup->addMember(new PrincipalIdentifier($principalId1));
 
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $repository->save($principalGroup);
@@ -692,7 +708,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             false,
             new DateTimeImmutable(),
         );
-        $updatedGroup->addMember(new IdentityIdentifier($identityId2));
+        $updatedGroup->addMember(new PrincipalIdentifier($principalId2));
 
         $repository->save($updatedGroup);
 
@@ -703,7 +719,18 @@ class PrincipalGroupRepositoryTest extends TestCase
         $this->assertSame(AccountRole::ADMIN, $result->role());
         $this->assertFalse($result->isDefault());
         $this->assertCount(1, $result->members());
-        $this->assertTrue($result->hasMember(new IdentityIdentifier($identityId2)));
-        $this->assertFalse($result->hasMember(new IdentityIdentifier($identityId1)));
+        $this->assertTrue($result->hasMember(new PrincipalIdentifier($principalId2)));
+        $this->assertFalse($result->hasMember(new PrincipalIdentifier($principalId1)));
+    }
+
+    private function createPrincipal(string $principalId, string $identityId, string $accountId): void
+    {
+        DB::table('account_principals')->insert([
+            'id' => $principalId,
+            'identity_id' => $identityId,
+            'account_id' => $accountId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

@@ -50,6 +50,7 @@ return [
     // Account
     'account_already_exists' => 'The account already exists.',
     'account_not_found' => 'The specified account was not found.',
+    'account_update_forbidden' => 'The account information cannot be updated by the current actor.',
     'account_deletion_blocked' => 'The account cannot be deleted due to unresolved conditions.',
     'identity_group_not_found' => 'The specified identity group was not found.',
     'identity_already_member' => 'The identity is already a member of this group.',

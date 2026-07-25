@@ -6,7 +6,6 @@ namespace Source\Account\Principal\Application\UseCase\Command\RemovePrincipalFr
 
 use Source\Account\Principal\Application\Exception\CannotRemoveLastOwnerException;
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 
@@ -44,7 +43,7 @@ readonly class RemovePrincipalFromPrincipalGroup implements RemovePrincipalFromP
             }
         }
 
-        $principalGroup->removeMember(new Principal($input->principalIdentifier()));
+        $principalGroup->removeMember($input->principalIdentifier());
 
         $this->principalGroupRepository->save($principalGroup);
 

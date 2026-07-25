@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup;
 
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 
 class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroupOutputPort
 {
@@ -34,7 +34,7 @@ class AddPrincipalToPrincipalGroupOutput implements AddPrincipalToPrincipalGroup
             'role' => $ig->role()->value,
             'isDefault' => $ig->isDefault(),
             'members' => array_map(
-                static fn (Principal $principal) => (string) $principal->principalIdentifier(),
+                static fn (PrincipalIdentifier $principalIdentifier) => (string) $principalIdentifier,
                 array_values($ig->members()),
             ),
         ];

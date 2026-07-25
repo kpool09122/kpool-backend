@@ -8,9 +8,10 @@ use Source\Account\Account\Domain\Event\AccountCreated;
 use Source\Account\Account\Domain\Event\AccountCreationConflicted;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Principal\Domain\Entity\Principal;
+use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Account\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Account\Principal\Domain\ValueObject\AccountRole;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
@@ -21,6 +22,8 @@ readonly class CreateAccount implements CreateAccountInterface
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
         private AccountFactoryInterface $accountFactory,
+        private PrincipalFactoryInterface $principalFactory,
+        private PrincipalRepositoryInterface $principalRepository,
         private PrincipalGroupFactoryInterface $principalGroupFactory,
         private PrincipalGroupRepositoryInterface $principalGroupRepository,
         private EventDispatcherInterface $eventDispatcher,
@@ -61,7 +64,12 @@ readonly class CreateAccount implements CreateAccountInterface
         );
 
         if ($input->identityIdentifier() !== null) {
-            $principalGroup->addMember(new Principal($input->identityIdentifier()));
+            $principal = $this->principalFactory->create(
+                $input->identityIdentifier(),
+                $account->accountIdentifier(),
+            );
+            $this->principalRepository->save($principal);
+            $principalGroup->addMember($principal->principalIdentifier());
         }
 
         $this->principalGroupRepository->save($principalGroup);

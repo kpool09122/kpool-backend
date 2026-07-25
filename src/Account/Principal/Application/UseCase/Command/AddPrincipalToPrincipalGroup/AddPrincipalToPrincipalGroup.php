@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup;
 
 use Source\Account\Principal\Application\Exception\PrincipalGroupNotFoundException;
-use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 
 readonly class AddPrincipalToPrincipalGroup implements AddPrincipalToPrincipalGroupInterface
@@ -26,7 +25,7 @@ readonly class AddPrincipalToPrincipalGroup implements AddPrincipalToPrincipalGr
             throw new PrincipalGroupNotFoundException();
         }
 
-        $principalGroup->addMember(new Principal($input->principalIdentifier()));
+        $principalGroup->addMember($input->principalIdentifier());
 
         $this->principalGroupRepository->save($principalGroup);
 
