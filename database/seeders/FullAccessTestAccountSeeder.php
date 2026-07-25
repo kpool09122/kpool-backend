@@ -15,6 +15,7 @@ class FullAccessTestAccountSeeder extends Seeder
     private const string IDENTITY_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa02';
     private const string PRINCIPAL_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa03';
     private const string PRINCIPAL_GROUP_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa04';
+    private const string ACCOUNT_PRINCIPAL_GROUP_MEMBERSHIP_ID = '01965bb2-bcc9-7c6f-8b90-89f7f217fa05';
     private const string EMAIL = 'test@example.com';
 
     public function run(): void
@@ -77,6 +78,7 @@ class FullAccessTestAccountSeeder extends Seeder
                 'id' => self::PRINCIPAL_GROUP_ID,
                 'account_id' => self::ACCOUNT_ID,
                 'name' => 'Full Access Test Group',
+                'role' => 'owner',
                 'is_default' => true,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -84,6 +86,27 @@ class FullAccessTestAccountSeeder extends Seeder
         ], ['id']);
 
         DB::table('account_principal_group_memberships')->upsert([
+            [
+                'id' => self::ACCOUNT_PRINCIPAL_GROUP_MEMBERSHIP_ID,
+                'principal_group_id' => self::PRINCIPAL_GROUP_ID,
+                'principal_id' => self::IDENTITY_ID,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ], ['principal_group_id', 'principal_id']);
+
+        DB::table('principal_groups')->upsert([
+            [
+                'id' => self::PRINCIPAL_GROUP_ID,
+                'account_id' => self::ACCOUNT_ID,
+                'name' => 'Full Access Test Group',
+                'is_default' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ], ['id']);
+
+        DB::table('principal_group_memberships')->upsert([
             [
                 'principal_group_id' => self::PRINCIPAL_GROUP_ID,
                 'principal_id' => self::PRINCIPAL_ID,

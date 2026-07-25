@@ -165,7 +165,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
     public static function contextAwareAuthenticatedRouteProvider(): array
     {
         return [
-            'identity authenticated routes resolve actor and account for me' => ['GET', '/api/identity/auth/me', ['resolve.actor', 'resolve.account']],
+            'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],

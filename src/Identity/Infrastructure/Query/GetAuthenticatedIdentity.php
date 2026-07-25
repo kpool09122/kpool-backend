@@ -11,10 +11,11 @@ use Application\Models\Identity\Identity as IdentityModel;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInputPort;
+use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Domain\Exception\IdentityNotFoundException;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 
-readonly class GetAuthenticatedIdentity
+readonly class GetAuthenticatedIdentity implements GetAuthenticatedIdentityInterface
 {
     public function __construct(
         private AccountResolver $accountResolver,
