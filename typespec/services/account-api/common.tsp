@@ -15,10 +15,6 @@ model AccountSummary {
   name: string;
   @doc("Account status.")
   status: string;
-}
-
-@doc("Account creation result.")
-model CreatedAccountSummary extends AccountSummary {
   @doc("Account category assigned during creation.")
   accountCategory: string;
 }

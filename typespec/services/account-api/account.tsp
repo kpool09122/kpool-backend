@@ -41,6 +41,13 @@ interface AccountOperations {
     @body body: CreateAccountRequestBody,
   ): CreateAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 
+  @get
+  @route("/{accountId}")
+  @doc("Get account information.")
+  getAccount(
+    @path accountId: Uuid,
+  ): OkAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+
   @patch
   @route("/{accountId}")
   @doc("Update account information.")
