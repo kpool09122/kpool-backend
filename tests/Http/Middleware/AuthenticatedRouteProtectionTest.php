@@ -119,6 +119,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'identity: update me' => ['PATCH', '/api/identity/identities/me'],
 
             // Account: signup 用の POST /accounts 以外は認証必須
+            'account: get account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: update account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: delete account' => ['DELETE', '/api/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: request delegation' => ['POST', '/api/account/delegations'],
@@ -168,7 +169,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
         return [
             'identity authenticated routes resolve actor for me' => ['GET', '/api/identity/auth/me', ['resolve.actor']],
             'account authenticated routes resolve actor and account' => ['POST', '/api/account/delegations', ['resolve.actor', 'resolve.account']],
-            'account update resolves actor' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor']],
+            'account get resolves actor and account' => ['GET', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
+            'account update resolves actor and account' => ['PATCH', '/api/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
             'monetization routes resolve actor from bootstrap group' => ['POST', '/api/monetization/accounts', ['resolve.actor']],
             'wiki commands resolve actor and wiki' => ['POST', '/api/wiki/wiki/create', ['resolve.actor', 'resolve.wiki']],
             'wiki my draft resolves actor and wiki' => ['GET', '/api/wiki/wiki/ja/group/group-slug/my/draft', ['resolve.actor', 'resolve.wiki']],
