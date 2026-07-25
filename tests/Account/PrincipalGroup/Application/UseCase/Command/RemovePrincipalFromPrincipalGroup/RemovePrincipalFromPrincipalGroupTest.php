@@ -51,7 +51,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -120,7 +120,7 @@ class RemovePrincipalFromPrincipalGroupTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );

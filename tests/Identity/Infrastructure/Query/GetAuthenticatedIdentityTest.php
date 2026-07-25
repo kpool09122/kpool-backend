@@ -29,7 +29,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $principalGroupIdentifier = new PrincipalGroupIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5bb');
         $principalIdentifier = '019de7f3-78f3-7b55-9ed5-17f63e14d5cc';
         $identityIdentifier = new IdentityIdentifier('019de7f3-78f3-7b55-9ed5-17f63e14d5fe');
-        CreateAccount::create((string) $accountIdentifier);
+        CreateAccount::create((string) $accountIdentifier, ['type' => 'corporation']);
         $this->app->make(AccountAuthorizationSeeder::class)->run();
         CreateIdentity::create($identityIdentifier, [
             'identity_name' => 'test-user',
@@ -65,6 +65,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertSame('http://127.0.0.1:8080/storage/profile/test.png', $readModel->profileImage());
         $this->assertSame('019de7f3-78f3-7b55-9ed5-17f63e14d5aa', $readModel->accountIdentifier());
+        $this->assertSame('corporation', $readModel->accountType());
         $this->assertCount(1, $readModel->accountPolicies());
         $this->assertSame('ACCOUNT_OWNER_BASIC', $readModel->accountPolicies()[0]['name']);
         $this->assertSame('account:update', $readModel->accountPolicies()[0]['statements'][0]['actions'][1]);
@@ -93,6 +94,7 @@ class GetAuthenticatedIdentityTest extends TestCase
         $this->assertSame('ja', $readModel->language());
         $this->assertNull($readModel->profileImage());
         $this->assertNull($readModel->accountIdentifier());
+        $this->assertNull($readModel->accountType());
         $this->assertSame([], $readModel->accountPolicies());
     }
 

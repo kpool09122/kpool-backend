@@ -14,7 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInput;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityInterface;
 use Source\Identity\Application\UseCase\Command\CreateIdentity\CreateIdentityOutput;
@@ -27,6 +26,7 @@ use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Application\Exception\InvalidBase64ImageException;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -54,8 +54,8 @@ readonly class CreateIdentityAction
                     password: new PlainPassword($request->password()),
                     confirmedPassword: new PlainPassword($request->confirmedPassword()),
                     base64EncodedImage: $request->base64EncodedImage(),
-                    invitationToken: $request->invitationToken() !== null
-                        ? new InvitationToken($request->invitationToken())
+                    oneTimeToken: $request->oneTimeToken() !== null
+                        ? new OneTimeToken($request->oneTimeToken())
                         : null,
                 );
                 $output = new CreateIdentityOutput();

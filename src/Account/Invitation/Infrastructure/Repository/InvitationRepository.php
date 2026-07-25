@@ -10,10 +10,10 @@ use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 class InvitationRepository implements InvitationRepositoryInterface
 {
@@ -37,7 +37,7 @@ class InvitationRepository implements InvitationRepositoryInterface
         );
     }
 
-    public function findByToken(InvitationToken $token): ?Invitation
+    public function findByToken(OneTimeToken $token): ?Invitation
     {
         $eloquent = InvitationEloquent::query()
             ->where('token', (string) $token)
@@ -74,7 +74,7 @@ class InvitationRepository implements InvitationRepositoryInterface
             new AccountIdentifier($eloquent->account_id),
             new IdentityIdentifier($eloquent->invited_by_identity_id),
             new Email($eloquent->email),
-            new InvitationToken($eloquent->token),
+            new OneTimeToken($eloquent->token),
             InvitationStatus::from($eloquent->status),
             new DateTimeImmutable($eloquent->expires_at->toDateTimeString()),
             $eloquent->accepted_by_identity_id !== null

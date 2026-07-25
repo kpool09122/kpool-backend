@@ -32,7 +32,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->comment('PrincipalグループID');
             $table->uuid('account_id')->index()->comment('アカウントID');
             $table->string('name', 100)->comment('グループ名');
-            $table->string('role', 20)->comment('ロール（owner, admin, member）');
+            $table->string('role', 20)->comment('ロール');
             $table->boolean('is_default')->default(false)->comment('デフォルトグループかどうか');
             $table->timestamps();
 

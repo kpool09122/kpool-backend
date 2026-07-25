@@ -24,20 +24,20 @@ class AccountAuthorizationSeederTest extends TestCase
 
         $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_OWNER_BASIC']);
         $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_ADMIN_BASIC']);
-        $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_MEMBER_BASIC']);
+        $this->assertDatabaseHas('account_policies', ['name' => 'ACCOUNT_BASIC']);
 
         $policyRepository = $this->app->make(PolicyRepositoryInterface::class);
         $roleRepository = $this->app->make(RoleRepositoryInterface::class);
-        $roles = $roleRepository->findByRoles([AccountRole::OWNER, AccountRole::ADMIN, AccountRole::MEMBER]);
+        $roles = $roleRepository->findByRoles([AccountRole::OWNER, AccountRole::ADMIN, AccountRole::BASIC]);
         $ownerPolicies = $policyRepository->findByIds($roles[AccountRole::OWNER->value]->policies());
         $adminPolicies = $policyRepository->findByIds($roles[AccountRole::ADMIN->value]->policies());
-        $memberPolicies = $policyRepository->findByIds($roles[AccountRole::MEMBER->value]->policies());
+        $basicPolicies = $policyRepository->findByIds($roles[AccountRole::BASIC->value]->policies());
 
         $this->assertTrue($this->hasAction($ownerPolicies, Action::INVITATION_CREATE));
         $this->assertTrue($this->hasAction($ownerPolicies, Action::UPDATE));
         $this->assertTrue($this->hasAction($adminPolicies, Action::INVITATION_CREATE));
         $this->assertTrue($this->hasAction($adminPolicies, Action::UPDATE));
-        $this->assertFalse($this->hasAction($memberPolicies, Action::INVITATION_CREATE));
+        $this->assertFalse($this->hasAction($basicPolicies, Action::INVITATION_CREATE));
     }
 
     /**

@@ -19,7 +19,7 @@ class AccountRoleTest extends TestCase
         $this->assertTrue(AccountRole::PRODUCT_OWNER->canReviewVerification());
 
         $this->assertFalse(AccountRole::ADMIN->canReviewVerification());
-        $this->assertFalse(AccountRole::MEMBER->canReviewVerification());
+        $this->assertFalse(AccountRole::BASIC->canReviewVerification());
         $this->assertFalse(AccountRole::BILLING_CONTACT->canReviewVerification());
         $this->assertFalse(AccountRole::OWNER->canReviewVerification());
     }

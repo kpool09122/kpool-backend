@@ -10,10 +10,10 @@ use Source\Account\Invitation\Domain\Exception\InvitationExpiredException;
 use Source\Account\Invitation\Domain\Exception\InvitationNotPendingException;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 class Invitation
 {
@@ -22,7 +22,7 @@ class Invitation
         private readonly AccountIdentifier $accountIdentifier,
         private readonly IdentityIdentifier $invitedByIdentityIdentifier,
         private readonly Email $email,
-        private readonly InvitationToken $token,
+        private readonly OneTimeToken $token,
         private InvitationStatus $status,
         private readonly DateTimeImmutable $expiresAt,
         private ?IdentityIdentifier $acceptedByIdentityIdentifier,
@@ -51,7 +51,7 @@ class Invitation
         return $this->email;
     }
 
-    public function token(): InvitationToken
+    public function token(): OneTimeToken
     {
         return $this->token;
     }

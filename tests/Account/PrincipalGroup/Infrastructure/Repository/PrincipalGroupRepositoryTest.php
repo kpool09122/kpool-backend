@@ -244,7 +244,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier($accountId),
             'Members',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -467,7 +467,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier($accountId),
             'Non Default Group',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -557,7 +557,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier($accountId),
             'Members',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -568,12 +568,12 @@ class PrincipalGroupRepositoryTest extends TestCase
 
         $result = $repository->findByAccountIdAndRole(
             new AccountIdentifier($accountId),
-            AccountRole::MEMBER
+            AccountRole::BASIC
         );
 
         $this->assertNotNull($result);
         $this->assertSame('Members', $result->name());
-        $this->assertSame(AccountRole::MEMBER, $result->role());
+        $this->assertSame(AccountRole::BASIC, $result->role());
     }
 
     /**
@@ -587,7 +587,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         $repository = $this->app->make(PrincipalGroupRepositoryInterface::class);
         $result = $repository->findByAccountIdAndRole(
             new AccountIdentifier(StrTestHelper::generateUuid()),
-            AccountRole::MEMBER
+            AccountRole::BASIC
         );
 
         $this->assertNull($result);
@@ -619,7 +619,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         // MEMBERで検索するとOWNERグループは見つからない
         $result = $repository->findByAccountIdAndRole(
             new AccountIdentifier($accountId),
-            AccountRole::MEMBER
+            AccountRole::BASIC
         );
 
         $this->assertNull($result);
@@ -642,7 +642,7 @@ class PrincipalGroupRepositoryTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier($accountId1),
             'Members',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -653,7 +653,7 @@ class PrincipalGroupRepositoryTest extends TestCase
         // 別のAccountIdで検索すると見つからない
         $result = $repository->findByAccountIdAndRole(
             new AccountIdentifier($accountId2),
-            AccountRole::MEMBER
+            AccountRole::BASIC
         );
 
         $this->assertNull($result);

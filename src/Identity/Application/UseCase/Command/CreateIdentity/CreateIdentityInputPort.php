@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\CreateIdentity;
 
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Domain\ValueObject\IdentityName;
 use Source\Identity\Domain\ValueObject\PlainPassword;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 interface CreateIdentityInputPort
 {
@@ -24,5 +24,5 @@ interface CreateIdentityInputPort
 
     public function base64EncodedImage(): ?string;
 
-    public function invitationToken(): ?InvitationToken;
+    public function oneTimeToken(): ?OneTimeToken;
 }

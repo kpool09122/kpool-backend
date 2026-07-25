@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Application\Http\Context;
 
+use Application\Models\Account\Account as AccountModel;
 use Application\Models\Account\Principal as PrincipalModel;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Principal\Domain\Entity\Policy;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Repository\PolicyRepositoryInterface;
@@ -39,6 +41,14 @@ readonly class AccountResolver
             throw new AccountNotFoundException('Account context not found.');
         }
 
+        $account = AccountModel::query()
+            ->where('id', $principal->account_id)
+            ->first();
+
+        if ($account === null) {
+            throw new AccountNotFoundException('Account context not found.');
+        }
+
         $accountPrincipal = new Principal(
             new PrincipalIdentifier($principal->id),
             new IdentityIdentifier($principal->identity_id),
@@ -56,6 +66,7 @@ readonly class AccountResolver
 
         return new AccountContext(
             principal: $accountPrincipal,
+            accountType: AccountType::from($account->type),
             accountPolicies: $this->effectivePolicies(array_values($roles)),
         );
     }

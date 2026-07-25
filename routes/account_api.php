@@ -22,7 +22,7 @@ use Application\Http\Action\Account\PrincipalGroup\Command\AddPrincipalToPrincip
 use Application\Http\Action\Account\PrincipalGroup\Command\CreatePrincipalGroup\CreatePrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\DeletePrincipalGroup\DeletePrincipalGroupAction;
 use Application\Http\Action\Account\PrincipalGroup\Command\RemovePrincipalFromPrincipalGroup\RemovePrincipalFromPrincipalGroupAction;
-use Application\Http\Action\Account\Invitation\Command\CreateInvitation\CreateInvitationAction;
+use Application\Http\Action\Account\Invitation\Command\InviteMember\InviteMemberAction;
 use Illuminate\Support\Facades\Route;
 
 // Account
@@ -50,7 +50,7 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account'])->group(funct
     Route::delete('/principal-groups/{principalGroupId}', DeletePrincipalGroupAction::class);
 
     // Invitation
-    Route::post('/invitations', CreateInvitationAction::class);
+    Route::post('/invitations', InviteMemberAction::class);
 
     // AccountVerification
     Route::post('/account-verifications', RequestVerificationAction::class);

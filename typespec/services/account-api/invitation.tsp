@@ -3,18 +3,18 @@ using KPool.Common;
 
 namespace KPool.AccountApi;
 
-@doc("Request body for creating invitations.")
-model CreateInvitationRequestBody {
-  @doc("Account identifier that owns the invitations.")
+@doc("Request body for inviting account members.")
+model InviteMemberRequestBody {
+  @doc("Account identifier to invite members to.")
   accountIdentifier: Uuid;
-  @doc("Identity identifier sending the invitations.")
+  @doc("Identity identifier sending the member invitations.")
   inviterPrincipalIdentifier: Uuid;
   @doc("Invitee email addresses.")
   emails: string[];
 }
 
-@doc("Response returned when invitations are created.")
-model CreateInvitationResponse {
+@doc("Response returned when members are invited.")
+model InviteMemberResponse {
   @statusCode statusCode: 201;
   @body body: InvitationSummary[];
 }
@@ -22,8 +22,8 @@ model CreateInvitationResponse {
 @route("/invitations")
 interface InvitationOperations {
   @post
-  @doc("Create invitations for one or more email addresses.")
-  createInvitation(
-    @body body: CreateInvitationRequestBody,
-  ): CreateInvitationResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
+  @doc("Invite members for one or more email addresses.")
+  inviteMember(
+    @body body: InviteMemberRequestBody,
+  ): InviteMemberResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 }

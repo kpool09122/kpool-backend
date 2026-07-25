@@ -15,7 +15,6 @@ use Source\Account\Invitation\Domain\Event\InvitationAccepted;
 use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Factory\PrincipalFactoryInterface;
@@ -30,6 +29,7 @@ use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -83,7 +83,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationRepository->shouldReceive('findByToken')
             ->once()
-            ->with($data->invitationToken)
+            ->with($data->oneTimeToken)
             ->andReturn($data->invitation);
         $invitationRepository->shouldReceive('save')
             ->once()
@@ -92,7 +92,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')
             ->once()
-            ->with($data->accountIdentifier, AccountRole::MEMBER)
+            ->with($data->accountIdentifier, AccountRole::BASIC)
             ->andReturn($data->memberGroup);
         $principalGroupRepository->shouldReceive('save')
             ->once()
@@ -144,7 +144,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationRepository->shouldReceive('findByToken')
             ->once()
-            ->with($data->invitationToken)
+            ->with($data->oneTimeToken)
             ->andReturn($data->invitation);
         $invitationRepository->shouldReceive('save')
             ->once()
@@ -153,7 +153,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
         $principalGroupRepository->shouldReceive('findByAccountIdAndRole')
             ->once()
-            ->with($data->accountIdentifier, AccountRole::MEMBER)
+            ->with($data->accountIdentifier, AccountRole::BASIC)
             ->andReturnNull();
         $principalGroupRepository->shouldReceive('save')
             ->once()
@@ -162,7 +162,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $principalGroupFactory = Mockery::mock(PrincipalGroupFactoryInterface::class);
         $principalGroupFactory->shouldReceive('create')
             ->once()
-            ->with($data->accountIdentifier, 'Members', AccountRole::MEMBER, false)
+            ->with($data->accountIdentifier, 'Members', AccountRole::BASIC, false)
             ->andReturn($data->memberGroup);
 
         $principalFactory = Mockery::mock(PrincipalFactoryInterface::class);
@@ -204,7 +204,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationRepository->shouldReceive('findByToken')
             ->once()
-            ->with($data->invitationToken)
+            ->with($data->oneTimeToken)
             ->andReturnNull();
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -244,7 +244,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationRepository->shouldReceive('findByToken')
             ->once()
-            ->with($data->invitationToken)
+            ->with($data->oneTimeToken)
             ->andReturn($expiredInvitation);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -285,7 +285,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         $invitationRepository = Mockery::mock(InvitationRepositoryInterface::class);
         $invitationRepository->shouldReceive('findByToken')
             ->once()
-            ->with($data->invitationToken)
+            ->with($data->oneTimeToken)
             ->andReturn($usedInvitation);
 
         $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
@@ -310,13 +310,13 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
     {
         $identityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $invitationToken = new InvitationToken(bin2hex(random_bytes(32)));
+        $oneTimeToken = new OneTimeToken(bin2hex(random_bytes(32)));
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
 
         $event = new IdentityCreatedViaInvitation(
             identityIdentifier: $identityIdentifier,
-            invitationToken: $invitationToken,
+            oneTimeToken: $oneTimeToken,
         );
 
         $invitation = new Invitation(
@@ -324,7 +324,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             $accountIdentifier,
             $inviterIdentityIdentifier,
             new Email('invitee@example.com'),
-            $invitationToken,
+            $oneTimeToken,
             InvitationStatus::PENDING,
             new DateTimeImmutable('+7 days'),
             null,
@@ -337,7 +337,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
             new PrincipalGroupIdentifier(StrTestHelper::generateUuid()),
             $accountIdentifier,
             'Members',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -345,7 +345,7 @@ class IdentityCreatedViaInvitationHandlerTest extends TestCase
         return new IdentityCreatedViaInvitationHandlerTestData(
             $identityIdentifier,
             $principalIdentifier,
-            $invitationToken,
+            $oneTimeToken,
             $accountIdentifier,
             $event,
             $invitation,
@@ -360,7 +360,7 @@ readonly class IdentityCreatedViaInvitationHandlerTestData
     public function __construct(
         public IdentityIdentifier $identityIdentifier,
         public PrincipalIdentifier $principalIdentifier,
-        public InvitationToken $invitationToken,
+        public OneTimeToken $oneTimeToken,
         public AccountIdentifier $accountIdentifier,
         public IdentityCreatedViaInvitation $event,
         public Invitation $invitation,

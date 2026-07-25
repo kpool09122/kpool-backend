@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Source\Identity\Domain\ValueObject;
 
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 
 readonly class SignupSession
 {
     public function __construct(
         private ?AccountType $accountType = null,
-        private ?InvitationToken $invitationToken = null,
+        private ?OneTimeToken $oneTimeToken = null,
         private ?string $returnTo = null,
     ) {
     }
@@ -21,9 +21,9 @@ readonly class SignupSession
         return $this->accountType;
     }
 
-    public function invitationToken(): ?InvitationToken
+    public function oneTimeToken(): ?OneTimeToken
     {
-        return $this->invitationToken;
+        return $this->oneTimeToken;
     }
 
     public function returnTo(): ?string

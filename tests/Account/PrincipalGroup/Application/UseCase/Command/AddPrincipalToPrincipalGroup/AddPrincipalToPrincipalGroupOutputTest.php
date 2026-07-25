@@ -29,7 +29,7 @@ class AddPrincipalToPrincipalGroupOutputTest extends TestCase
             $principalGroupIdentifier,
             $accountIdentifier,
             'Test Group',
-            AccountRole::MEMBER,
+            AccountRole::BASIC,
             false,
             new DateTimeImmutable(),
         );
@@ -43,7 +43,7 @@ class AddPrincipalToPrincipalGroupOutputTest extends TestCase
         $this->assertSame((string) $principalGroupIdentifier, $result['principalGroupIdentifier']);
         $this->assertSame((string) $accountIdentifier, $result['accountIdentifier']);
         $this->assertSame('Test Group', $result['name']);
-        $this->assertSame('member', $result['role']);
+        $this->assertSame('basic', $result['role']);
         $this->assertFalse($result['isDefault']);
         $this->assertCount(1, $result['members']);
         $this->assertSame((string) $principalIdentifier, $result['members'][0]);

@@ -45,6 +45,8 @@ model AccountEffectivePolicySummary {
 model AuthenticatedIdentitySummary extends IdentitySummary {
   @doc("Account identifier associated with the authenticated identity.")
   accountIdentifier: Uuid | null;
+  @doc("Account type associated with the authenticated identity.")
+  accountType: string | null;
   @doc("Effective policies for the authenticated identity in the current account.")
   accountPolicies: AccountEffectivePolicySummary[];
 }
@@ -113,8 +115,8 @@ model CreateIdentityRequestBody {
   confirmedPassword: string;
   @doc("Base64-encoded profile image.")
   base64EncodedImage?: string | null;
-  @doc("Invitation token used during signup.")
-  invitationToken?: string | null;
+  @doc("One-time token used during signup.")
+  oneTimeToken?: string | null;
 }
 
 
@@ -234,7 +236,7 @@ interface IdentityAuthOperations {
   socialLoginRedirect(
     @path provider: string,
     @query accountType?: string,
-    @query invitationToken?: string,
+    @query oneTimeToken?: string,
     @query return_to?: string | null,
   ): RedirectUrlResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse;
 

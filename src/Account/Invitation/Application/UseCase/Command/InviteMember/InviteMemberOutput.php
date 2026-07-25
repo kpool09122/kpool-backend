@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use Source\Account\Invitation\Domain\Entity\Invitation;
 
-class CreateInvitationOutput implements CreateInvitationOutputPort
+class InviteMemberOutput implements InviteMemberOutputPort
 {
     /** @var array<Invitation> */
     private array $invitations = [];

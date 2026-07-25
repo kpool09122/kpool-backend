@@ -56,11 +56,11 @@ class AccountAuthorizationSeeder extends Seeder
             ),
         ]);
 
-        $memberPolicy = $this->createPolicy('01982020-0456-7000-8000-000000000003', 'ACCOUNT_MEMBER_BASIC', []);
+        $basicPolicy = $this->createPolicy('01982020-0456-7000-8000-000000000003', 'ACCOUNT_BASIC', []);
 
         $this->roleRepository->save(new Role(AccountRole::OWNER, [$ownerPolicy->policyIdentifier()]));
         $this->roleRepository->save(new Role(AccountRole::ADMIN, [$adminPolicy->policyIdentifier()]));
-        $this->roleRepository->save(new Role(AccountRole::MEMBER, [$memberPolicy->policyIdentifier()]));
+        $this->roleRepository->save(new Role(AccountRole::BASIC, [$basicPolicy->policyIdentifier()]));
     }
 
     /**

@@ -270,7 +270,7 @@ paths:
           schema:
             type: string
           explode: false
-        - name: invitationToken
+        - name: oneTimeToken
           in: query
           required: false
           schema:
@@ -479,6 +479,7 @@ components:
       type: object
       required:
         - accountIdentifier
+        - accountType
         - accountPolicies
       properties:
         accountIdentifier:
@@ -487,6 +488,10 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
           description: Account identifier associated with the authenticated identity.
+        accountType:
+          type: string
+          nullable: true
+          description: Account type associated with the authenticated identity.
         accountPolicies:
           type: array
           items:
@@ -519,10 +524,10 @@ components:
           type: string
           nullable: true
           description: Base64-encoded profile image.
-        invitationToken:
+        oneTimeToken:
           type: string
           nullable: true
-          description: Invitation token used during signup.
+          description: One-time token used during signup.
       description: Request body for registering a new identity.
     IdentityProfileSummary:
       type: object

@@ -14,10 +14,10 @@ use Source\Account\Invitation\Domain\Repository\InvitationRepositoryInterface;
 use Source\Account\Invitation\Domain\Service\InvitationMailServiceInterface;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -99,7 +99,7 @@ class InvitationCreatedHandlerTest extends TestCase
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $email = new Email('invitee@example.com');
-        $token = new InvitationToken(bin2hex(random_bytes(32)));
+        $token = new OneTimeToken(bin2hex(random_bytes(32)));
 
         $event = new InvitationCreated(
             invitationIdentifier: $invitationIdentifier,
@@ -133,7 +133,7 @@ class InvitationCreatedHandlerTest extends TestCase
 readonly class InvitationCreatedHandlerTestData
 {
     public function __construct(
-        public InvitationToken $token,
+        public OneTimeToken $token,
         public InvitationCreated $event,
         public Invitation $invitation,
     ) {

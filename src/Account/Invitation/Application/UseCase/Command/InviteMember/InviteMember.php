@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
+use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountType;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
@@ -14,19 +16,21 @@ use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
-readonly class CreateInvitation implements CreateInvitationInterface
+readonly class InviteMember implements InviteMemberInterface
 {
     public function __construct(
         private InvitationRepositoryInterface $invitationRepository,
         private InvitationFactoryInterface $invitationFactory,
         private PolicyEvaluatorInterface $policyEvaluator,
         private PrincipalRepositoryInterface $principalRepository,
+        private AccountRepositoryInterface $accountRepository,
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
-    public function process(CreateInvitationInputPort $input, CreateInvitationOutputPort $output): void
+    public function process(InviteMemberInputPort $input, InviteMemberOutputPort $output): void
     {
+        $this->assertAccountAllowsInvitation($input);
         $this->assertInviterHasPermission($input);
 
         $invitations = [];
@@ -63,7 +67,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
         $output->setInvitations($invitations);
     }
 
-    private function assertInviterHasPermission(CreateInvitationInputPort $input): void
+    private function assertInviterHasPermission(InviteMemberInputPort $input): void
     {
         $principal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier(
             $input->inviterIdentityIdentifier(),
@@ -85,5 +89,16 @@ readonly class CreateInvitation implements CreateInvitationInterface
         }
 
         throw new DisallowedInvitationException('招待を作成する権限がありません。');
+    }
+
+    private function assertAccountAllowsInvitation(InviteMemberInputPort $input): void
+    {
+        $account = $this->accountRepository->findById($input->accountIdentifier());
+
+        if ($account?->type() === AccountType::CORPORATION) {
+            return;
+        }
+
+        throw new DisallowedInvitationException('法人アカウントのみメンバーを招待できます。');
     }
 }

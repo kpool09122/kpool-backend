@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Domain\ValueObject\AccountType;
-use Source\Account\Invitation\Domain\ValueObject\InvitationToken;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInput;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectInterface;
 use Source\Identity\Application\UseCase\Command\SocialLogin\Redirect\SocialLoginRedirectOutput;
 use Source\Identity\Domain\Exception\InvalidOAuthStateException;
 use Source\Identity\Domain\ValueObject\SignupSession;
 use Source\Identity\Domain\ValueObject\SocialProvider;
+use Source\Shared\Domain\ValueObject\OneTimeToken;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -41,13 +41,13 @@ readonly class SocialLoginRedirectAction
             try {
                 $provider = SocialProvider::fromString($request->provider());
                 $returnTo = ReturnToUrl::normalize($request->returnTo());
-                $signupSession = ($request->accountType() !== null || $request->invitationToken() !== null || $returnTo !== null)
+                $signupSession = ($request->accountType() !== null || $request->oneTimeToken() !== null || $returnTo !== null)
                     ? new SignupSession(
                         accountType: $request->accountType() !== null
                             ? AccountType::from($request->accountType())
                             : null,
-                        invitationToken: $request->invitationToken() !== null
-                            ? new InvitationToken($request->invitationToken())
+                        oneTimeToken: $request->oneTimeToken() !== null
+                            ? new OneTimeToken($request->oneTimeToken())
                             : null,
                         returnTo: $returnTo,
                     )

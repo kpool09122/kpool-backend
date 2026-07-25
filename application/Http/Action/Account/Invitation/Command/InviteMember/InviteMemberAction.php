@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\Invitation\Command\CreateInvitation;
+namespace Application\Http\Action\Account\Invitation\Command\InviteMember;
 
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
@@ -12,33 +12,33 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInput;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInterface;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationOutput;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberOutput;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-readonly class CreateInvitationAction
+readonly class InviteMemberAction
 {
     public function __construct(
-        private CreateInvitationInterface $createInvitation,
+        private InviteMemberInterface $inviteMember,
         private LoggerInterface $logger,
     ) {
     }
 
     /**
-     * @param CreateInvitationRequest $request
+     * @param InviteMemberRequest $request
      * @return JsonResponse
      * @throws InternalServerErrorHttpException
      */
-    public function __invoke(CreateInvitationRequest $request): JsonResponse
+    public function __invoke(InviteMemberRequest $request): JsonResponse
     {
         try {
             try {
-                $input = new CreateInvitationInput(
+                $input = new InviteMemberInput(
                     accountIdentifier: new AccountIdentifier($request->accountIdentifier()),
                     inviterIdentityIdentifier: new IdentityIdentifier($request->inviterIdentityIdentifier()),
                     emails: array_map(
@@ -46,7 +46,7 @@ readonly class CreateInvitationAction
                         $request->emails()
                     ),
                 );
-                $output = new CreateInvitationOutput();
+                $output = new InviteMemberOutput();
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             }
@@ -56,7 +56,7 @@ readonly class CreateInvitationAction
             $language = $request->language();
 
             try {
-                $this->createInvitation->process($input, $output);
+                $this->inviteMember->process($input, $output);
                 DB::commit();
             } catch (DisallowedInvitationException $e) {
                 DB::rollBack();
