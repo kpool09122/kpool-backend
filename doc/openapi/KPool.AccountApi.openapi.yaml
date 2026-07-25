@@ -741,12 +741,12 @@ paths:
               $ref: '#/components/schemas/RevokeDelegationRequestBody'
   /invitations:
     post:
-      operationId: InvitationOperations_createInvitation
-      description: Create invitations for one or more email addresses.
+      operationId: InvitationOperations_inviteMember
+      description: Invite members for one or more email addresses.
       parameters: []
       responses:
         '201':
-          description: Response returned when invitations are created.
+          description: Response returned when members are invited.
           content:
             application/json:
               schema:
@@ -782,7 +782,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateInvitationRequestBody'
+              $ref: '#/components/schemas/InviteMemberRequestBody'
   /principal-groups:
     post:
       operationId: PrincipalGroupOperations_createPrincipalGroup
@@ -1177,27 +1177,6 @@ components:
           type: string
           description: Account category assigned during creation.
       description: Account creation request result. Empty when the request is accepted without exposing whether an account already exists.
-    CreateInvitationRequestBody:
-      type: object
-      required:
-        - accountIdentifier
-        - inviterPrincipalIdentifier
-        - emails
-      properties:
-        accountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Account identifier that owns the invitations.
-        inviterPrincipalIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Identity identifier sending the invitations.
-        emails:
-          type: array
-          items:
-            type: string
-          description: Invitee email addresses.
-      description: Request body for creating invitations.
     CreatePrincipalGroupRequestBody:
       type: object
       required:
@@ -1370,6 +1349,27 @@ components:
             - $ref: '#/components/schemas/KPool.Common.Timestamp'
           description: Invitation creation timestamp.
       description: Invitation state.
+    InviteMemberRequestBody:
+      type: object
+      required:
+        - accountIdentifier
+        - inviterPrincipalIdentifier
+        - emails
+      properties:
+        accountIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Account identifier to invite members to.
+        inviterPrincipalIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Identity identifier sending the member invitations.
+        emails:
+          type: array
+          items:
+            type: string
+          description: Invitee email addresses.
+      description: Request body for inviting account members.
     KPool.Common.ProblemDetails:
       type: object
       properties:

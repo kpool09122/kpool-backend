@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Tests\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitation;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInput;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInterface;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationOutput;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberOutput;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Invitation\Domain\Factory\InvitationFactoryInterface;
@@ -32,7 +32,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class CreateInvitationTest extends TestCase
+class InviteMemberTest extends TestCase
 {
     /**
      * 正常系: DIが正しく動作していること
@@ -47,9 +47,9 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, Mockery::mock(PrincipalRepositoryInterface::class));
         $this->app->instance(EventDispatcherInterface::class, Mockery::mock(EventDispatcherInterface::class));
 
-        $useCase = $this->app->make(CreateInvitationInterface::class);
+        $useCase = $this->app->make(InviteMemberInterface::class);
 
-        $this->assertInstanceOf(CreateInvitation::class, $useCase);
+        $this->assertInstanceOf(InviteMember::class, $useCase);
     }
 
     /**
@@ -92,8 +92,8 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
-        $useCase = $this->app->make(CreateInvitationInterface::class);
-        $output = new CreateInvitationOutput();
+        $useCase = $this->app->make(InviteMemberInterface::class);
+        $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
 
         $this->assertCount(1, $output->toArray());
@@ -115,8 +115,8 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationRepositoryInterface::class, Mockery::mock(InvitationRepositoryInterface::class));
         $this->app->instance(InvitationFactoryInterface::class, Mockery::mock(InvitationFactoryInterface::class));
 
-        $useCase = $this->app->make(CreateInvitationInterface::class);
-        $output = new CreateInvitationOutput();
+        $useCase = $this->app->make(InviteMemberInterface::class);
+        $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
     }
 
@@ -160,8 +160,8 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
-        $useCase = $this->app->make(CreateInvitationInterface::class);
-        $output = new CreateInvitationOutput();
+        $useCase = $this->app->make(InviteMemberInterface::class);
+        $output = new InviteMemberOutput();
         $useCase->process($data->input, $output);
 
         $this->assertCount(1, $output->toArray());
@@ -182,7 +182,7 @@ class CreateInvitationTest extends TestCase
         $email2 = new Email('user2@example.com');
         $invitation1 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email1);
         $invitation2 = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email2);
-        $input = new CreateInvitationInput($accountIdentifier, $inviterIdentityIdentifier, [$email1, $email2]);
+        $input = new InviteMemberInput($accountIdentifier, $inviterIdentityIdentifier, [$email1, $email2]);
 
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
@@ -223,14 +223,14 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(InvitationRepositoryInterface::class, $invitationRepository);
         $this->app->instance(InvitationFactoryInterface::class, $invitationFactory);
 
-        $useCase = $this->app->make(CreateInvitationInterface::class);
-        $output = new CreateInvitationOutput();
+        $useCase = $this->app->make(InviteMemberInterface::class);
+        $output = new InviteMemberOutput();
         $useCase->process($input, $output);
 
         $this->assertCount(2, $output->toArray());
     }
 
-    private function bindPolicyEvaluator(CreateInvitationTestData $data, bool $allowed): void
+    private function bindPolicyEvaluator(InviteMemberTestData $data, bool $allowed): void
     {
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')
@@ -254,7 +254,7 @@ class CreateInvitationTest extends TestCase
         $this->app->instance(PrincipalRepositoryInterface::class, $principalRepository);
     }
 
-    private function createTestData(): CreateInvitationTestData
+    private function createTestData(): InviteMemberTestData
     {
         $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
@@ -262,9 +262,9 @@ class CreateInvitationTest extends TestCase
         $principal = new Principal($principalIdentifier, $inviterIdentityIdentifier, $accountIdentifier);
         $email = new Email('invitee@example.com');
         $invitation = $this->createInvitation($accountIdentifier, $inviterIdentityIdentifier, $email);
-        $input = new CreateInvitationInput($accountIdentifier, $inviterIdentityIdentifier, [$email]);
+        $input = new InviteMemberInput($accountIdentifier, $inviterIdentityIdentifier, [$email]);
 
-        return new CreateInvitationTestData(
+        return new InviteMemberTestData(
             $accountIdentifier,
             $inviterIdentityIdentifier,
             $principalIdentifier,
@@ -295,7 +295,7 @@ class CreateInvitationTest extends TestCase
     }
 }
 
-readonly class CreateInvitationTestData
+readonly class InviteMemberTestData
 {
     public function __construct(
         public AccountIdentifier $accountIdentifier,
@@ -304,7 +304,7 @@ readonly class CreateInvitationTestData
         public Principal $principal,
         public Email $email,
         public Invitation $invitation,
-        public CreateInvitationInput $input,
+        public InviteMemberInput $input,
     ) {
     }
 }

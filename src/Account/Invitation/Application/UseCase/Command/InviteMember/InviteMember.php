@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use Source\Account\Invitation\Application\Exception\DisallowedInvitationException;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
@@ -14,7 +14,7 @@ use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 
-readonly class CreateInvitation implements CreateInvitationInterface
+readonly class InviteMember implements InviteMemberInterface
 {
     public function __construct(
         private InvitationRepositoryInterface $invitationRepository,
@@ -25,7 +25,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
     ) {
     }
 
-    public function process(CreateInvitationInputPort $input, CreateInvitationOutputPort $output): void
+    public function process(InviteMemberInputPort $input, InviteMemberOutputPort $output): void
     {
         $this->assertInviterHasPermission($input);
 
@@ -63,7 +63,7 @@ readonly class CreateInvitation implements CreateInvitationInterface
         $output->setInvitations($invitations);
     }
 
-    private function assertInviterHasPermission(CreateInvitationInputPort $input): void
+    private function assertInviterHasPermission(InviteMemberInputPort $input): void
     {
         $principal = $this->principalRepository->findByIdentityIdentifierAndAccountIdentifier(
             $input->inviterIdentityIdentifier(),

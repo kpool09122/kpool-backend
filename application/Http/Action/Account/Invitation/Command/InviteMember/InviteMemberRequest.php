@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Application\Http\Action\Account\Invitation\Command\CreateInvitation;
+namespace Application\Http\Action\Account\Invitation\Command\InviteMember;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateInvitationRequest extends FormRequest
+class InviteMemberRequest extends FormRequest
 {
     use ResolvesLanguage;
 

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Tests\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use PHPUnit\Framework\TestCase;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInput;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 
 /**
- * @covers \Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInput
+ * @covers \Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInput
  */
-class CreateInvitationInputTest extends TestCase
+class InviteMemberInputTest extends TestCase
 {
     /**
      * 正常系: インスタンスが正しく作成できること
@@ -28,7 +28,7 @@ class CreateInvitationInputTest extends TestCase
             new Email('test2@example.com'),
         ];
 
-        $input = new CreateInvitationInput(
+        $input = new InviteMemberInput(
             $accountIdentifier,
             $inviterIdentityIdentifier,
             $emails,
@@ -48,7 +48,7 @@ class CreateInvitationInputTest extends TestCase
         $inviterIdentityIdentifier = new IdentityIdentifier(StrTestHelper::generateUuid());
         $emails = [];
 
-        $input = new CreateInvitationInput(
+        $input = new InviteMemberInput(
             $accountIdentifier,
             $inviterIdentityIdentifier,
             $emails,

@@ -37,8 +37,8 @@ use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegat
 use Source\Account\DelegationPermission\Application\UseCase\Command\GrantDelegationPermission\GrantDelegationPermissionInterface;
 use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermission as RevokeDelegationPermissionUseCase;
 use Source\Account\DelegationPermission\Application\UseCase\Command\RevokeDelegationPermission\RevokeDelegationPermissionInterface as RevokeDelegationPermissionInterfaceNew;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitation;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationInterface;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMember;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberInterface;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroup;
 use Source\Account\Principal\Application\UseCase\Command\AddPrincipalToPrincipalGroup\AddPrincipalToPrincipalGroupInterface;
 use Source\Account\Principal\Application\UseCase\Command\CreatePrincipalGroup\CreatePrincipalGroup;
@@ -76,6 +76,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(RejectVerificationInterface::class, RejectVerification::class);
 
         // Invitation
-        $this->app->singleton(CreateInvitationInterface::class, CreateInvitation::class);
+        $this->app->singleton(InviteMemberInterface::class, InviteMember::class);
     }
 }

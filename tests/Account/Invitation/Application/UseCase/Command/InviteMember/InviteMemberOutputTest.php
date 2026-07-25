@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Tests\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use DateTimeImmutable;
-use Source\Account\Invitation\Application\UseCase\Command\CreateInvitation\CreateInvitationOutput;
+use Source\Account\Invitation\Application\UseCase\Command\InviteMember\InviteMemberOutput;
 use Source\Account\Invitation\Domain\Entity\Invitation;
 use Source\Account\Invitation\Domain\ValueObject\InvitationIdentifier;
 use Source\Account\Invitation\Domain\ValueObject\InvitationStatus;
@@ -16,7 +16,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class CreateInvitationOutputTest extends TestCase
+class InviteMemberOutputTest extends TestCase
 {
     /**
      * 正常系: InvitationsがセットされるとtoArrayが正しい値を返すこと.
@@ -45,7 +45,7 @@ class CreateInvitationOutputTest extends TestCase
             $createdAt,
         );
 
-        $output = new CreateInvitationOutput();
+        $output = new InviteMemberOutput();
         $output->setInvitations([$invitation]);
 
         $result = $output->toArray();
@@ -66,7 +66,7 @@ class CreateInvitationOutputTest extends TestCase
      */
     public function testToArrayWithoutInvitations(): void
     {
-        $output = new CreateInvitationOutput();
+        $output = new InviteMemberOutput();
         $this->assertSame([], $output->toArray());
     }
 }

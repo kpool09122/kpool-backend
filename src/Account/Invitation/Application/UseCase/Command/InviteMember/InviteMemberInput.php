@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Source\Account\Invitation\Application\UseCase\Command\CreateInvitation;
+namespace Source\Account\Invitation\Application\UseCase\Command\InviteMember;
 
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Email;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-readonly class CreateInvitationInput implements CreateInvitationInputPort
+readonly class InviteMemberInput implements InviteMemberInputPort
 {
     /**
      * @param array<Email> $emails
